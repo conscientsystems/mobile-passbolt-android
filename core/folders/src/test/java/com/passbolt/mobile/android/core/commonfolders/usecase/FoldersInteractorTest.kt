@@ -1,9 +1,11 @@
 package com.passbolt.mobile.android.core.commonfolders.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.RemoveLocalFoldersWithUpdateStateUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.SetLocalFoldersUpdateStateUseCase
+import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpdateLocalFoldersIsSharedUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpsertLocalFoldersUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.networking.NetworkResult
@@ -52,6 +54,8 @@ class FoldersInteractorTest : KoinTest {
                     single { mock<RemoveLocalFoldersWithUpdateStateUseCase>() }
                     single { mock<RemoveLocalFolderPermissionsUseCase>() }
                     single { mock<AddLocalFolderPermissionsUseCase>() }
+                    single { mock<UpdateLocalFoldersIsSharedUseCase>() }
+                    single { mock<GetAccountDataUseCase>() }
                     single { mock<GetSelectedAccountUseCase>() }
                     singleOf(::FoldersInteractor)
                 },
@@ -62,6 +66,19 @@ class FoldersInteractorTest : KoinTest {
     fun setUp() {
         whenever(get<GetSelectedAccountUseCase>().execute(Unit))
             .doReturn(GetSelectedAccountUseCase.Output(SELECTED_ACCOUNT_ID))
+        whenever(get<GetAccountDataUseCase>().execute(any()))
+            .doReturn(
+                GetAccountDataUseCase.Output(
+                    firstName = null,
+                    lastName = null,
+                    email = null,
+                    avatarUrl = null,
+                    url = "",
+                    serverId = SERVER_USER_ID,
+                    label = null,
+                    role = null,
+                ),
+            )
     }
 
     @Test
@@ -231,6 +248,7 @@ class FoldersInteractorTest : KoinTest {
 
     private companion object {
         private const val SELECTED_ACCOUNT_ID = "selectedAccountId"
+        private const val SERVER_USER_ID = "serverUserId"
         private const val FOLDERS_PAGE_SIZE = 2_000
 
         private val FOLDER_WITH_ATTRIBUTES =

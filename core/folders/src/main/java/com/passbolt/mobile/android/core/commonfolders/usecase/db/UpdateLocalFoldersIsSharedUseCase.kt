@@ -1,7 +1,8 @@
 package com.passbolt.mobile.android.core.commonfolders.usecase.db
 
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.singleOf
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.database.DatabaseProvider
 
 /**
  * Passbolt - Open source password manager for teams
@@ -25,21 +26,19 @@ import org.koin.core.module.dsl.singleOf
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+class UpdateLocalFoldersIsSharedUseCase(
+    private val databaseProvider: DatabaseProvider,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : AsyncUseCase<UpdateLocalFoldersIsSharedUseCase.Input, Unit> {
+    override suspend fun execute(input: Input) {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        databaseProvider
+            .get(userId)
+            .foldersDao()
+            .updateIsShared(input.currentUserServerId)
+    }
 
-internal fun Module.foldersDbModule() {
-    singleOf(::SetLocalFoldersUpdateStateUseCase)
-    singleOf(::UpsertLocalFoldersUseCase)
-    singleOf(::RemoveLocalFoldersWithUpdateStateUseCase)
-    singleOf(::GetLocalResourcesAndFoldersUseCase)
-    singleOf(::GetLocalResourcesAndFoldersPaginatedUseCase)
-    singleOf(::GetLocalSubFoldersForFolderUseCase)
-    singleOf(::GetLocalSubFoldersForFolderPaginatedUseCase)
-    singleOf(::GetLocalSubFolderResourcesFilteredUseCase)
-    singleOf(::GetLocalSubFolderResourcesFilteredPaginatedUseCase)
-    singleOf(::GetLocalFolderDetailsUseCase)
-    singleOf(::GetLocalFolderLocationUseCase)
-    singleOf(::GetLocalFolderPermissionsUseCase)
-    singleOf(::GetLocalParentFolderPermissionsToApplyToNewItemUseCase)
-    singleOf(::AddLocalFolderUseCase)
-    singleOf(::UpdateLocalFoldersIsSharedUseCase)
+    data class Input(
+        val currentUserServerId: String,
+    )
 }

@@ -204,6 +204,25 @@ interface FoldersDao : BaseDao<Folder> {
     suspend fun getFolderGroupsPermissions(folderId: String): List<GroupPermission>
 
     @Transaction
+    @Query(
+        "UPDATE Folder SET isShared = (" +
+            "EXISTS (" +
+            "SELECT 1 FROM FolderAndUsersCrossRef " +
+            "WHERE FolderAndUsersCrossRef.folderId = Folder.folderId " +
+            "AND FolderAndUsersCrossRef.userId != :currentUserId" +
+            ") " +
+            "OR EXISTS (" +
+            "SELECT 1 FROM FolderAndGroupsCrossRef " +
+            "INNER JOIN UsersAndGroupCrossRef " +
+            "ON UsersAndGroupCrossRef.groupId = FolderAndGroupsCrossRef.groupId " +
+            "WHERE FolderAndGroupsCrossRef.folderId = Folder.folderId " +
+            "AND UsersAndGroupCrossRef.userId != :currentUserId" +
+            ")" +
+            ")",
+    )
+    suspend fun updateIsShared(currentUserId: String)
+
+    @Transaction
     @Query("UPDATE Folder SET updateState = :updateState")
     suspend fun setAllUpdateState(updateState: FolderUpdateState)
 

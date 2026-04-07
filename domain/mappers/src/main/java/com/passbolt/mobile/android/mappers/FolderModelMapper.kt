@@ -33,23 +33,18 @@ import com.passbolt.mobile.android.ui.FolderWithCountAndPath
 class FolderModelMapper(
     private val permissionsModelMapper: PermissionsModelMapper,
 ) {
-    fun map(folder: FolderResponseDto): FolderModelWithAttributes {
-        val currentUserPermission = folder.permission
-        val otherUsersPermissions =
-            folder.permissions.filter { folderPermission ->
-                folderPermission.aroForeignKey != currentUserPermission.aroForeignKey
-            }
-        return FolderModelWithAttributes(
+    fun map(folder: FolderResponseDto): FolderModelWithAttributes =
+        FolderModelWithAttributes(
             FolderModel(
                 folderId = folder.id.toString(),
                 parentFolderId = folder.folderParentId?.toString(),
                 name = folder.name.orEmpty(),
-                isShared = otherUsersPermissions.isNotEmpty(),
+                // updated in batch after folders and permissions are inserted
+                isShared = false,
                 permission = permissionsModelMapper.map(folder.permission.type),
             ),
             folder.permissions.map(permissionsModelMapper::map),
         )
-    }
 
     fun map(folderModel: FolderModel): Folder = map(folderModel, FolderUpdateState.UPDATED)
 
