@@ -62,6 +62,14 @@ fun HomeResourceList(
         }
     }
 
+    // Auto-scroll to top when search query changes - multiple paginated sources load at once
+    // and sections added above the current scroll position (e.g. folders before resources) can push content off-screen
+    LaunchedEffect(state.searchQuery) {
+        if (state.searchQuery.isNotBlank()) {
+            listState.scrollToItem(0)
+        }
+    }
+
     val showEmpty = rememberDebouncedBoolean(headerConfig.areAllSectionsEmpty)
 
     if (showEmpty) {
