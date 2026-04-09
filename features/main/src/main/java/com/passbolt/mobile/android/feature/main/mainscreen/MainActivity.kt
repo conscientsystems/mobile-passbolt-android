@@ -5,6 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
+import com.passbolt.mobile.android.core.ui.orientation.LockCompactScreenOrientation
 import org.koin.android.ext.android.inject
 
 // NOTE: When changing name or package read core/navigation/README.md
@@ -15,6 +16,9 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         runtimeAuthenticatedFlag.require(this)
-        setContent { MainScreen() }
+        setContent {
+            LockCompactScreenOrientation()
+            MainScreen()
+        }
     }
 }

@@ -100,6 +100,7 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidxComposeBom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "composeLifecycleViewModel" }

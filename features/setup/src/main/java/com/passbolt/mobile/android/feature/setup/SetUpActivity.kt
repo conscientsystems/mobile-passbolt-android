@@ -41,6 +41,7 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationK
 import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationKey.ScanQrCodes
 import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationKey.TransferDetails
 import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationKey.Welcome
+import com.passbolt.mobile.android.core.ui.orientation.LockCompactScreenOrientation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.koinInject
@@ -69,6 +70,7 @@ class SetUpActivity :
         enableEdgeToEdge()
 
         setContent {
+            LockCompactScreenOrientation()
             @OptIn(KoinExperimentalAPI::class)
             KoinScope(
                 scopeID = SETUP_NAVIGATOR_SCOPE_ID,
