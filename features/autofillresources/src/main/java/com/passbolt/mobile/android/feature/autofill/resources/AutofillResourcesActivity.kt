@@ -13,6 +13,7 @@ import com.passbolt.mobile.android.common.lifecycleawarelazy.lifecycleAwareLazy
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AutofillMode
 import com.passbolt.mobile.android.core.navigation.compose.APP_NAVIGATOR_SCOPE
+import com.passbolt.mobile.android.core.ui.orientation.LockCompactScreenOrientation
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.NewResourceCreated
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.SelectAutofillItem
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.AutofillCallback
@@ -61,6 +62,7 @@ class AutofillResourcesActivity :
             scope.get(named(bundledAutofillMode)) { parametersOf(this as AutofillCallback) }
 
         setContent {
+            LockCompactScreenOrientation()
             viewModel =
                 koinViewModel(
                     parameters = { parametersOf(bundledAutofillUri) },

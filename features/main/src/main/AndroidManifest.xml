@@ -6,7 +6,6 @@
     <application>
         <activity
             android:name="com.passbolt.mobile.android.feature.main.mainscreen.MainActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.Passbolt"
             android:exported="false"
             tools:ignore="DiscouragedApi" />
