@@ -3,10 +3,12 @@ package com.passbolt.mobile.android.core.commonfolders.usecase
 import android.database.SQLException
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.GetFoldersPaginatedUseCase.Output.Failure
 import com.passbolt.mobile.android.core.commonfolders.usecase.GetFoldersPaginatedUseCase.Output.Success
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.RemoveLocalFoldersWithUpdateStateUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.SetLocalFoldersUpdateStateUseCase
+import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpdateLocalFoldersIsSharedUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpsertLocalFoldersUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
@@ -46,6 +48,8 @@ class FoldersInteractor(
     private val removeLocalFoldersWithUpdateStateUseCase: RemoveLocalFoldersWithUpdateStateUseCase,
     private val removeLocalFolderPermissionsUseCase: RemoveLocalFolderPermissionsUseCase,
     private val addLocalFolderPermissionsUseCase: AddLocalFolderPermissionsUseCase,
+    private val updateLocalFoldersIsSharedUseCase: UpdateLocalFoldersIsSharedUseCase,
+    private val getAccountDataUseCase: GetAccountDataUseCase,
 ) : SelectedAccountUseCase {
     @Suppress("ReturnCount")
     suspend fun fetchAndSaveFolders(): Output {
@@ -58,6 +62,7 @@ class FoldersInteractor(
             clearLocalFolderPermissions()
             fetchAndProcessAllPages()?.let { failure -> return failure }
             removeStaleLocalFolders()
+            updateFoldersIsShared()
             return Output.Success
         } catch (exception: SQLException) {
             Timber.e(exception)
@@ -104,6 +109,16 @@ class FoldersInteractor(
         )
         addLocalFolderPermissionsUseCase.execute(
             AddLocalFolderPermissionsUseCase.Input(foldersWithAttributes),
+        )
+    }
+
+    private suspend fun updateFoldersIsShared() {
+        val serverId =
+            requireNotNull(
+                getAccountDataUseCase.execute(UserIdInput(selectedAccountId)).serverId,
+            )
+        updateLocalFoldersIsSharedUseCase.execute(
+            UpdateLocalFoldersIsSharedUseCase.Input(serverId),
         )
     }
 
