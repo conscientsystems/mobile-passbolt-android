@@ -1,6 +1,9 @@
 apply plugin: "com.github.ben-manes.versions"
 
 tasks.named("dependencyUpdates").configure{
+    doFirst {
+        gradle.startParameter.setParallelProjectExecutionEnabled(false)
+    }
     resolutionStrategy {
         componentSelection { rules ->
             rules.all { ComponentSelection selection ->

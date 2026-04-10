@@ -24,33 +24,31 @@ def setupModule(isAndroid, isAndroidComponent) {
             }
 
             compileOptions {
-                coreLibraryDesugaringEnabled true
+                coreLibraryDesugaringEnabled = true
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
-            }
-
-            kotlinOptions {
-                jvmTarget = JavaVersion.VERSION_17.toString()
             }
 
             if (isAndroidComponent) {
                 buildTypes {
                     release {
                         minifyEnabled false
-                        consumerProguardFiles 'proguard-rules.pro'
+                        if (file('proguard-rules.pro').exists()) {
+                            consumerProguardFiles 'proguard-rules.pro'
+                        }
                     }
                 }
             }
 
-            lintOptions {
-                abortOnError true
-                checkReleaseBuilds false
-                checkAllWarnings true
-                warningsAsErrors false
+            lint {
+                abortOnError = true
+                checkReleaseBuilds = false
+                checkAllWarnings = true
+                warningsAsErrors = false
                 // MissingTranslation - it is accepted to have fallback to default locale if no translation found
                 // ExtraTranslation - translations are updated manually on demand - expected differences in code and
                 //                    language source files
-                disable = ["GoogleAppIndexingWarning", "GradleDependency", "NewerVersionAvailable", "UnusedIds",
+                disable += ["GoogleAppIndexingWarning", "GradleDependency", "NewerVersionAvailable", "UnusedIds",
                            "Autofill", "PermissionImpliesUnsupportedChromeOsHardware", "WrongConstant", "RequiredSize",
                            "Instantiatable", "InvalidPackage", "MissingTranslation", "ExtraTranslation"]
             }
@@ -58,7 +56,7 @@ def setupModule(isAndroid, isAndroidComponent) {
             testOptions {
                 managedDevices {
                     localDevices {
-                        create("pixel5@targetSdk") {
+                        register("pixel5@targetSdk") {
                             device = "Pixel 5"
                             apiLevel = projectTargetSdk
                             systemImageSource = "aosp"
@@ -66,7 +64,7 @@ def setupModule(isAndroid, isAndroidComponent) {
                     }
                 }
 
-                animationsDisabled true
+                animationsDisabled = true
 
                 unitTests.all {
                     def processors = Runtime.runtime.availableProcessors() - 1
@@ -99,13 +97,23 @@ def setupCommonDependencies(isAndroid) {
 }
 
 def setupCommonTasks(isAndroid) {
+    tasks.register("unitTest")
     if (isAndroid) {
-        tasks.register("unitTest") { task ->
-            task.dependsOn(testDebugUnitTest)
+        afterEvaluate {
+            tasks.named("unitTest").configure { task ->
+                // AGP 9 renamed unit tests to host tests (testDebugHostTest)
+                // Fall back to legacy name (testDebugUnitTest) for compatibility
+                def candidates = ["testDebugHostTest", "testDebugUnitTest"]
+                candidates.each { name ->
+                    if (tasks.names.contains(name)) {
+                        task.dependsOn(name)
+                    }
+                }
+            }
         }
     } else {
-        tasks.register("unitTest") { task ->
-            task.dependsOn(test)
+        tasks.named("unitTest").configure { task ->
+            task.dependsOn(tasks.named("test"))
         }
     }
 }

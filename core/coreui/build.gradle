@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
     alias libs.plugins.compose.compiler
     alias libs.plugins.kotlin.parcelize
 }
@@ -15,6 +14,7 @@ dependencies {
     implementation libs.appcompat
     implementation libs.navigation.fragment
     implementation libs.navigation.ui
+    implementation platform(libs.koin.bom)
     implementation libs.koin
     implementation libs.coil.compose
 
@@ -32,7 +32,7 @@ dependencies {
 android {
     namespace = "com.passbolt.mobile.android.core.ui"
     buildFeatures {
-        compose true
+        compose = true
     }
 }
 

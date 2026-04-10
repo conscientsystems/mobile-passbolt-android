@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
 }
 
 dependencies {
@@ -26,7 +25,7 @@ dependencies {
 
     testImplementation project(':commontest')
 
-    androidTestImplementation(name: "gopenpgp", ext: "aar")
+    androidTestImplementation(":gopenpgp@aar")
     androidTestImplementation platform(libs.koin.bom)
     androidTestImplementation libs.koin.test
     androidTestImplementation libs.koin.test.junit

@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
 }
 
 dependencies {
@@ -18,7 +17,7 @@ android {
     namespace = "com.passbolt.mobile.android.core.autofill"
 
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
 }
 

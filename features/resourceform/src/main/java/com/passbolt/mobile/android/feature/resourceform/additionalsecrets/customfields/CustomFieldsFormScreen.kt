@@ -37,7 +37,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -86,8 +85,6 @@ private fun CustomFieldsFormScreen(
     state: CustomFieldsFormState,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-
     Column(
         modifier =
             modifier
@@ -95,7 +92,7 @@ private fun CustomFieldsFormScreen(
                 .padding(16.dp),
     ) {
         TitleAppBar(
-            title = context.getString(LocalizationR.string.resource_form_create_resource_custom_fields),
+            title = stringResource(LocalizationR.string.resource_form_create_resource_custom_fields),
             navigationIcon = { BackNavigationIcon(onBackClick = { onIntent(GoBack) }) },
             modifier = Modifier.fillMaxWidth(),
         )

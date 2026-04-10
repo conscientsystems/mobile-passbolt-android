@@ -92,6 +92,7 @@ internal fun KeyInspectorBottomSheet(
         onDismissRequest = onDismissRequest,
     )
 
+    val exportKeyTitle = stringResource(LocalizationR.string.key_inspector_menu_export_key)
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
             is ShowErrorSnackbar ->
@@ -110,7 +111,7 @@ internal fun KeyInspectorBottomSheet(
                 navigator.startTextShareSheet(
                     context = context,
                     text = it.text,
-                    shareSheetTitle = context.getString(LocalizationR.string.key_inspector_menu_export_key),
+                    shareSheetTitle = exportKeyTitle,
                 )
         }
     }

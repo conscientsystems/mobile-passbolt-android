@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
     alias libs.plugins.compose.compiler
     alias libs.plugins.kotlin.serialization
 }
@@ -34,6 +33,7 @@ dependencies {
     implementation libs.koin
     implementation libs.koin.compose
     implementation libs.espresso.idling.resource
+    implementation platform(libs.compose.bom)
     implementation libs.compose.foundation
     implementation libs.compose.material3
     implementation libs.compose.lifecycle.viewmodel
@@ -53,7 +53,7 @@ dependencies {
 android {
     namespace = "com.passbolt.mobile.android.feature.resourceform"
     buildFeatures {
-        compose true
+        compose = true
     }
 }
 

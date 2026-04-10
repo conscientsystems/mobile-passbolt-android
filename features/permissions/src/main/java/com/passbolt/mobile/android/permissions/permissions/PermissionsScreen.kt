@@ -37,8 +37,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -94,6 +94,8 @@ fun PermissionsScreen(
     val state = viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val errorColor = colorResource(CoreUiR.color.red)
+    val successColor = colorResource(CoreUiR.color.green)
 
     PermissionsScreen(
         state = state.value,
@@ -142,7 +144,7 @@ fun PermissionsScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getErrorMessage(context, effect.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorColor,
                         ),
                     )
                 }
@@ -151,7 +153,7 @@ fun PermissionsScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSuccessMessage(context, effect.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.green)),
+                            backgroundColor = successColor,
                         ),
                     )
                 }

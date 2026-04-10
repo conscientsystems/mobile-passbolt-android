@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
 }
 
 dependencies {
@@ -13,7 +12,7 @@ dependencies {
 android {
     namespace = "com.passbolt.mobile.android.core.architecture"
     buildFeatures {
-        viewBinding true
+        viewBinding = true
     }
 }
 

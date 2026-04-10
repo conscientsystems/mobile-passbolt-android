@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
 }
 
 dependencies {
@@ -10,6 +9,7 @@ dependencies {
     implementation project(':preferences')
     implementation project(':accounts')
 
+    implementation platform(libs.koin.bom)
     implementation libs.koin
 }
 

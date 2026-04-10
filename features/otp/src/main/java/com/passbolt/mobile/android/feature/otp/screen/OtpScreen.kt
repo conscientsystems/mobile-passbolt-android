@@ -40,9 +40,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -115,6 +115,8 @@ internal fun OtpScreen(
     val state = viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val errorColor = colorResource(CoreUiR.color.red)
+    val successColor = colorResource(CoreUiR.color.green)
 
     OtpScreen(
         state = state.value,
@@ -138,7 +140,7 @@ internal fun OtpScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getErrorMessage(context, it.type, it.message),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorColor,
                         ),
                     )
                 }
@@ -147,7 +149,7 @@ internal fun OtpScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSuccessMessage(context, it.type, it.message),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.green)),
+                            backgroundColor = successColor,
                         ),
                     )
                 }

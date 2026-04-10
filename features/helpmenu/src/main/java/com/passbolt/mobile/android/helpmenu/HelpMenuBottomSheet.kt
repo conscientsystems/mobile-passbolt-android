@@ -108,13 +108,14 @@ fun HelpMenuBottomSheet(
         onDismiss = { viewModel.onIntent(DismissQrCodesDialog) },
     )
 
+    val helpWebsiteUrl = stringResource(LocalizationR.string.help_website)
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
             Dismiss -> onDismissRequest()
             OpenHelpWebsite ->
                 navigator.openExternalWebsite(
                     context = context,
-                    url = context.getString(LocalizationR.string.help_website),
+                    url = helpWebsiteUrl,
                 )
             NavigateToImportProfileManually -> onImportProfileManually()
             NavigateToImportAccountKit -> accountKitFileChosenResult.launch(arrayOf("*/*"))

@@ -33,8 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -105,6 +105,7 @@ internal fun ScanYubikeyScreen(
             }
         }
 
+    val errorSnackbarColor = colorResource(CoreUiR.color.red)
     SideEffectDispatcher(viewModel.sideEffect) { sideEffect ->
         when (sideEffect) {
             is NotifyVerificationSucceeded -> onMfaResult(Succeeded(sideEffect.mfaHeader))
@@ -118,7 +119,7 @@ internal fun ScanYubikeyScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSnackbarMessage(context, sideEffect.kind),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorSnackbarColor,
                         ),
                     )
                 }
