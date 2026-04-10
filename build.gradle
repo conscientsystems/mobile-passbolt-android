@@ -1,6 +1,10 @@
 buildscript {
     apply from: "gradle/versions.gradle"
 
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+
     dependencies {
         classpath libs.easylauncher
         classpath libs.licensee
@@ -18,6 +22,30 @@ plugins {
     alias libs.plugins.detekt
     alias libs.plugins.kotlin.ksp
     alias libs.plugins.ktlint
+}
+
+allprojects {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+
+    tasks.register('resolveAndLockAll') {
+        notCompatibleWithConfigurationCache("Filters configurations at execution time")
+        doFirst {
+            assert gradle.startParameter.writeDependencyLocks : "$path must be run from the command line with the `--write-locks` flag"
+        }
+        doLast {
+            configurations.matching {
+                it.canBeResolved
+            }.toList().each { config ->
+                try {
+                    config.resolve()
+                } catch (Exception ignored) {
+                    logger.info("Skipped unresolvable configuration '${config.name}'")
+                }
+            }
+        }
+    }
 }
 
 subprojects {

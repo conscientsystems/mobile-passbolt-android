@@ -40,12 +40,14 @@ Build docker image:
 Run verifications:
   stage: Build
   script:
+    - ./gradlew --no-daemon --build-cache resolveAndLockAll --write-locks
+    - git diff --exit-code '**/gradle.lockfile' || (echo "Lock files are out of date. Run ./gradlew resolveAndLockAll --write-locks and commit." && exit 1)
     - >
-      ./gradlew --no-daemon --build-cache 
-      detekt 
-      ktlintCheck 
+      ./gradlew --no-daemon --build-cache
+      detekt
+      ktlintCheck
       unitTest
-      lintRelease 
+      lintRelease
       licenseeRelease
       buildHealth
   rules:
