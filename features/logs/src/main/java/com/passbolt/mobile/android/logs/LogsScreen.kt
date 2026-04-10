@@ -81,6 +81,7 @@ internal fun LogsScreen(
         onIntent = viewModel::onIntent,
     )
 
+    val logsShareTitle = stringResource(LocalizationR.string.logs_share_title)
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
             NavigateUp -> navigator.navigateBack()
@@ -94,7 +95,7 @@ internal fun LogsScreen(
             is NavigateToLogsShareSheet -> {
                 navigator.startFileShareSheet(
                     context = context,
-                    shareSheetTitle = context.getString(LocalizationR.string.logs_share_title),
+                    shareSheetTitle = logsShareTitle,
                     authority = getLogsFileProviderAuthority(context),
                     fileMimeType = LOGS_MIME_TYPE,
                     filePath = it.logsFilePath,

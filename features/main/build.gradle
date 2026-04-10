@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
     alias libs.plugins.compose.compiler
 }
 
@@ -53,7 +52,7 @@ dependencies {
 android {
     namespace = "com.passbolt.mobile.android.feature.main"
     buildFeatures {
-        compose true
+        compose = true
     }
 }
 

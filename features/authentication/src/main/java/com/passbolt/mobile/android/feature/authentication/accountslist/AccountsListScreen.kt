@@ -53,7 +53,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -121,6 +120,7 @@ internal fun AccountsListScreen(
         snackbarHostState = snackbarHostState,
     )
 
+    val snackbarBackgroundColor = colorResource(CoreUiR.color.background_gray_dark)
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
             is NavigateToSignIn -> navigator.navigateToKey(Auth(it.account.userId))
@@ -135,7 +135,7 @@ internal fun AccountsListScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSnackBarMessage(context, it.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.background_gray_dark)),
+                            backgroundColor = snackbarBackgroundColor,
                         ),
                     )
                 }

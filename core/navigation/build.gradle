@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
     alias libs.plugins.compose.compiler
     alias libs.plugins.kotlin.parcelize
     alias libs.plugins.kotlin.serialization
@@ -9,7 +8,7 @@ plugins {
 android {
     namespace = "com.passbolt.mobile.android.core.navigation"
     buildFeatures {
-        compose true
+        compose = true
     }
 }
 

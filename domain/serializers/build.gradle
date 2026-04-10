@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
 }
 
 dependencies {
@@ -17,7 +16,7 @@ dependencies {
     implementation project(':entity')
     implementation project(':architecture')
 
-    implementation(name: "gopenpgp", ext: "aar")
+    implementation(":gopenpgp@aar")
     implementation platform(libs.koin.bom)
     implementation libs.koin
     implementation libs.gson

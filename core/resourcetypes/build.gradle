@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.android.library
-    alias libs.plugins.kotlin.gradle
 }
 
 dependencies {
@@ -16,6 +15,7 @@ dependencies {
     implementation project(':accounts')
     implementation project(':ui')
 
+    implementation platform(libs.koin.bom)
     implementation libs.koin
     implementation libs.room.core
     implementation(libs.sqlite.cipher) { artifact { type = "aar" } }

@@ -98,19 +98,21 @@ internal fun KeyInspectorScreen(
         onIntent = viewModel::onIntent,
     )
 
+    val fingerprintLabel = stringResource(LocalizationR.string.copy_label_fingerprint)
+    val uidLabel = stringResource(LocalizationR.string.copy_label_uid)
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
             is AddFingerprintToClipboard ->
                 clipboardAccess.setPrimaryClip(
                     context = context,
-                    label = context.getString(LocalizationR.string.copy_label_fingerprint),
+                    label = fingerprintLabel,
                     value = it.fingerprint,
                     isSensitive = true,
                 )
             is AddUidToClipboard ->
                 clipboardAccess.setPrimaryClip(
                     context = context,
-                    label = context.getString(LocalizationR.string.copy_label_uid),
+                    label = uidLabel,
                     value = it.uid,
                     isSensitive = true,
                 )
