@@ -31,7 +31,6 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgre
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.resourcepicker.model.ConfirmationType
@@ -57,13 +56,11 @@ import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELEC
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_UNSUPPORTED_RESOURCE_TYPE
 import com.passbolt.mobile.android.ui.selectedOnly
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 internal class ResourcePickerViewModel(
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val resourcePickerDataProvider: ResourcePickerDataProvider,
-    private val getResourceTypeIdToSlugMappingUseCase: GetResourceTypeIdToSlugMappingUseCase,
 ) : SideEffectViewModel<ResourcePickerState, ResourcePickerSideEffect>(ResourcePickerState()) {
     private var suggestionUri: String? = null
 
@@ -151,18 +148,12 @@ internal class ResourcePickerViewModel(
         val pickedResource = viewState.value.pickedResource ?: return
 
         viewModelScope.launch(coroutineLaunchContext.io) {
-            val selectableIdToSlugMapping =
-                getResourceTypeIdToSlugMappingUseCase
-                    .execute(Unit)
-                    .idToSlugMapping
-                    .filter { it.value in SELECTABLE_RESOURCE_TYPES_SLUGS }
+            val slug = pickedResource.resourceModel.slug
 
-            val pickedResourceResourceTypeId = UUID.fromString(pickedResource.resourceModel.resourceTypeId)
-
-            require(pickedResourceResourceTypeId in selectableIdToSlugMapping.keys)
+            require(slug in SELECTABLE_RESOURCE_TYPES_SLUGS)
 
             val (pickAction, confirmationType) =
-                when (val slug = selectableIdToSlugMapping[pickedResourceResourceTypeId]) {
+                when (slug) {
                     ContentType.PasswordAndDescription.slug, ContentType.V5Default.slug ->
                         PickResourceAction.TOTP_LINK to ConfirmationType.LINK_TOTP
                     ContentType.PasswordDescriptionTotp.slug, ContentType.V5DefaultWithTotp.slug ->
@@ -232,7 +223,7 @@ internal class ResourcePickerViewModel(
 
     internal companion object {
         internal val SELECTABLE_RESOURCE_TYPES_SLUGS =
-            listOf(
+            setOf(
                 ContentType.PasswordAndDescription.slug,
                 ContentType.V5Default.slug,
                 ContentType.PasswordDescriptionTotp.slug,

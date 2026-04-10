@@ -166,7 +166,7 @@ class CreateResourceInteractor(
             is NetworkResult.Success ->
                 Output.Success(
                     ResourceModelWithAttributes(
-                        resourceModelMapper.map(response.value.body),
+                        resourceModelMapper.map(response.value.body, slug = resourceInput.contentType.slug),
                         // cannot add tags during creation
                         emptyList(),
                         listOf(permissionsModelMapper.mapToUserPermission(response.value.body.permission)),

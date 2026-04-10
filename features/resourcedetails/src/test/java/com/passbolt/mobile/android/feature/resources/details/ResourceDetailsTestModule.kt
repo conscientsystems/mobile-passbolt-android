@@ -45,7 +45,6 @@ import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesAction
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsViewModel
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
@@ -58,7 +57,6 @@ import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.mappers.UsersModelMapper
 import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import org.koin.core.Koin
@@ -85,7 +83,6 @@ internal val testModule =
         single { mock<GetLocalFolderLocationUseCase>() }
         single { mock<TotpParametersProvider>() }
         single { mock<GetRbacRulesUseCase>() }
-        single { mock<ResourceTypeIdToSlugMappingProvider>() }
         single { mock<CanShareResourceUseCase>() }
         single { mock<ResourceDetailActionIdlingResource>() }
         single { mock<SecretPropertiesActionsInteractor>() }
@@ -164,12 +161,6 @@ private fun Koin.setupResourceMocks() {
     val getLocalFolderLocationUseCase: GetLocalFolderLocationUseCase = get()
     getLocalFolderLocationUseCase.stub {
         onBlocking { execute(any()) } doReturn GetLocalFolderLocationUseCase.Output(emptyList())
-    }
-
-    val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider = get()
-    resourceTypeIdToSlugMappingProvider.stub {
-        onBlocking { provideMappingForSelectedAccount() } doReturn
-            mapOf(RESOURCE_TYPE_ID to ContentType.PasswordAndDescription.slug)
     }
 
     val canShareResourceUseCase: CanShareResourceUseCase = get()

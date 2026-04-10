@@ -321,6 +321,7 @@ class AutofillResourcesViewModelTest : KoinTest {
             ResourceModel(
                 resourceId = TEST_RESOURCE_ID,
                 resourceTypeId = "resTypeId",
+                slug = "password-and-description",
                 folderId = null,
                 permission = ResourcePermission.READ,
                 favouriteId = null,

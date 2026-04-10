@@ -28,7 +28,6 @@ import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.spi.json.GsonJsonProvider
 import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
@@ -47,7 +46,6 @@ import org.mockito.kotlin.mock
 import java.util.EnumSet
 
 internal val mockJSFSchemaRepository = mock<JSFSchemaRepository>()
-internal val mockIdToSlugMappingProvider = mock<ResourceTypeIdToSlugMappingProvider>()
 
 val testParserModule =
     module {
@@ -66,7 +64,6 @@ val testParserModule =
         single {
             SecretParser(
                 secretValidationRunner = get(),
-                resourceTypeIdToSlugMappingProvider = mockIdToSlugMappingProvider,
             )
         }
         single(named(JSON_MODEL_GSON)) { GsonBuilder().serializeNulls().create() }

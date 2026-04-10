@@ -45,7 +45,6 @@ import com.passbolt.mobile.android.core.resources.actions.performResourceUpdateA
 import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
@@ -102,7 +101,6 @@ import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelper
 import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.RESOURCE
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.SECRET
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordDescriptionTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
@@ -115,6 +113,7 @@ import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.allReset
+import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.findVisible
 import com.passbolt.mobile.android.ui.isExpired
 import com.passbolt.mobile.android.ui.refreshingNone
@@ -127,7 +126,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.parameter.parametersOf
 import timber.log.Timber
-import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
 internal class OtpViewModel(
@@ -137,7 +135,6 @@ internal class OtpViewModel(
     private val totpParametersProvider: TotpParametersProvider,
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
     private val timerFactory: TimerFactory,
     private val canCreateResourceUse: CanCreateResourceUseCase,
@@ -298,11 +295,7 @@ internal class OtpViewModel(
     private fun deleteTotp(moreMenuResource: OtpItemWrapper?) {
         viewModelScope.launch(coroutineLaunchContext.io) {
             val otpResource = requireNotNull(moreMenuResource)
-            val slug =
-                idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                    UUID.fromString(otpResource.resource.resourceTypeId),
-                ]
-            when (val contentType = ContentType.fromSlug(slug!!)) {
+            when (val contentType = otpResource.resource.contentType()) {
                 is Totp, V5TotpStandalone ->
                     deleteStandaloneTotpResource(otpResource.resource)
                 is PasswordDescriptionTotp, V5DefaultWithTotp ->

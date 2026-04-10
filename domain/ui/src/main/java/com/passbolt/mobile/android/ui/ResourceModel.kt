@@ -41,6 +41,7 @@ import java.time.ZonedDateTime
 data class ResourceModel(
     val resourceId: String,
     val resourceTypeId: String,
+    val slug: String,
     val folderId: String?,
     val permission: ResourcePermission,
     val favouriteId: String?,
@@ -53,6 +54,8 @@ data class ResourceModel(
     val metadataJsonModel: MetadataJsonModel,
 ) : Parcelable,
     Searchable by metadataJsonModel
+
+fun ResourceModel.contentType(): ContentType = ContentType.fromSlug(slug)
 
 fun ResourceModel.isFavourite() = favouriteId != null
 

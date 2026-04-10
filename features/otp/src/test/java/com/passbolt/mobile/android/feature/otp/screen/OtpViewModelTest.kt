@@ -43,7 +43,6 @@ import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractorFactory
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
@@ -116,7 +115,6 @@ class OtpViewModelTest : KoinTest {
                         single { mock<GetSelectedAccountDataUseCase>() }
                         single { mock<GetLocalResourcesUseCase>() }
                         single { mock<TotpParametersProvider>() }
-                        single { mock<ResourceTypeIdToSlugMappingProvider>() }
                         single { mock<MetadataPrivateKeysHelperInteractor>() }
                         single { mock<CanCreateResourceUseCase>() }
                         single { mock<ResourceUpdateActionsInteractorFactory>() }
@@ -446,6 +444,7 @@ class OtpViewModelTest : KoinTest {
                 ResourceModel(
                     resourceId = "resId",
                     resourceTypeId = "resTypeId",
+                    slug = "password-and-description",
                     folderId = null,
                     permission = ResourcePermission.READ,
                     favouriteId = null,
@@ -468,6 +467,7 @@ class OtpViewModelTest : KoinTest {
                 ResourceModel(
                     resourceId = "resId2",
                     resourceTypeId = "resTypeId",
+                    slug = "password-and-description",
                     folderId = null,
                     permission = ResourcePermission.READ,
                     favouriteId = null,

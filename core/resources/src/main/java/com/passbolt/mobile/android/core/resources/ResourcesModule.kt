@@ -82,7 +82,6 @@ val resourcesModule =
         factory { (resource: ResourceModel) ->
             ResourcePropertiesActionsInteractor(
                 resource,
-                idToSlugMappingProvider = get(),
             )
         }
         factory { (resource: ResourceModel) ->
@@ -97,7 +96,6 @@ val resourcesModule =
                 resource,
                 secretParser = get(),
                 secretInteractor = get(),
-                idToSlugMappingProvider = get(),
             )
         }
         factory<SecretPropertiesActionsInteractorFactory> {
@@ -110,7 +108,6 @@ val resourcesModule =
                 updateResourceInteractor = get(),
                 resourceTypesUpdateGraph = get(),
                 updateLocalResourceUseCase = get(),
-                idToSlugMappingProvider = get(),
                 getLocalCurrentUserUseCase = get(),
                 metadataPrivateKeysInteractor = get(),
                 getLocalFolderPermissionsUseCase = get(),

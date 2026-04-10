@@ -114,6 +114,17 @@ sealed class ContentType(
                 V5PasswordString,
             )
 
+    fun hasUsername() =
+        this in
+            setOf(
+                PasswordString,
+                PasswordAndDescription,
+                PasswordDescriptionTotp,
+                V5Default,
+                V5DefaultWithTotp,
+                V5PasswordString,
+            )
+
     fun hasCustomFields() =
         this in
             setOf(

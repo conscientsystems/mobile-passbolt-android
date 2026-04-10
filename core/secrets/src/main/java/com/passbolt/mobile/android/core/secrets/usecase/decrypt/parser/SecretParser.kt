@@ -23,30 +23,23 @@
 
 package com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser
 
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.serializers.gson.validation.JsonSchemaValidationRunner
 import com.passbolt.mobile.android.serializers.validationwrapper.PlainSecretValidationWrapper
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.DecryptedSecretOrError
 import timber.log.Timber
-import java.util.UUID
 
 class SecretParser(
     private val secretValidationRunner: JsonSchemaValidationRunner,
-    private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) {
     suspend fun parseSecret(
-        resourceTypeId: String,
+        slug: String,
         decryptedSecret: String,
-    ): DecryptedSecretOrError<SecretJsonModel> {
-        val slug =
-            resourceTypeIdToSlugMappingProvider
-                .provideMappingForSelectedAccount()[UUID.fromString(resourceTypeId)]
-
-        return try {
+    ): DecryptedSecretOrError<SecretJsonModel> =
+        try {
             // in case of simple password the backend returns a string (not a json string)
             if (secretValidationRunner.isSecretValid(
-                    PlainSecretValidationWrapper(decryptedSecret, ContentType.fromSlug(slug!!)).validationPlainSecret,
+                    PlainSecretValidationWrapper(decryptedSecret, ContentType.fromSlug(slug)).validationPlainSecret,
                     slug,
                 )
             ) {
@@ -62,5 +55,4 @@ class SecretParser(
             Timber.e(exception, errorMessage)
             DecryptedSecretOrError.Error.ParsingError(errorMessage)
         }
-    }
 }

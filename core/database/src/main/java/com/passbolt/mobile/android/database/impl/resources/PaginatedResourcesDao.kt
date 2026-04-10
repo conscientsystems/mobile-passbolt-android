@@ -37,10 +37,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "WHERE r.resourceTypeId IN(" +
             "   SELECT resourceTypeId FROM ResourceType WHERE slug IN (:slugs)" +
             ") " +
@@ -69,10 +71,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "WHERE r.resourceTypeId IN(" +
             "   SELECT resourceTypeId FROM ResourceType WHERE slug IN (:slugs)" +
             ") " +
@@ -100,10 +104,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "WHERE r.favouriteId IS NOT NULL AND r.resourceTypeId IN(" +
             "   SELECT resourceTypeId FROM ResourceType WHERE slug IN (:slugs)" +
             ") " +
@@ -131,10 +137,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "WHERE r.resourcePermission IN (:permissions) AND r.resourceTypeId IN(" +
             "   SELECT resourceTypeId FROM ResourceType WHERE slug IN (:slugs)" +
             ")" +
@@ -163,10 +171,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "WHERE r.expiry IS NOT NULL AND r.expiry < :expiryTimestampMillis AND r.resourceTypeId IN(" +
             "   SELECT resourceTypeId FROM ResourceType WHERE slug IN (:slugs)" +
             ") " +
@@ -195,10 +205,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "INNER JOIN ResourceAndTagsCrossRef cr " +
             "ON r.resourceId=cr.resourceId " +
             "WHERE cr.tagId=:tagId AND r.resourceTypeId IN(" +
@@ -223,10 +235,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "INNER JOIN ResourceAndGroupsCrossRef cr " +
             "ON r.resourceId=cr.resourceId " +
             "WHERE cr.groupId=:groupId AND r.resourceTypeId IN(" +
@@ -251,10 +265,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "WHERE r.folderId IS :folderId AND r.resourceTypeId IN(" +
             "   SELECT resourceTypeId FROM ResourceType WHERE slug IN (:slugs)" +
             ") " +
@@ -282,10 +298,12 @@ interface PaginatedResourcesDao : BaseDao<Resource> {
     @Transaction
     @Query(
         "SELECT r.resourceId, r.folderId, r.expiry, r.favouriteId, r.modified, " +
-            "r.resourcePermission, r.resourceTypeId, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
+            "r.resourcePermission, r.resourceTypeId, rt.slug, r.metadataKeyId, r.metadataKeyType, rm.metadataJson " +
             "FROM Resource r " +
             "INNER JOIN ResourceMetadata rm " +
             "ON r.resourceId = rm.resourceId " +
+            "INNER JOIN ResourceType rt " +
+            "ON r.resourceTypeId = rt.resourceTypeId " +
             "WHERE r.folderId IN (:inOneOfFolders) " +
             "AND r.resourceTypeId IN (" +
             "   SELECT resourceTypeId FROM ResourceType WHERE slug IN (:slugs)" +

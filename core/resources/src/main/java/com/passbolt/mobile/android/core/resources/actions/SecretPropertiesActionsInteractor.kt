@@ -24,33 +24,30 @@
 package com.passbolt.mobile.android.core.resources.actions
 
 import androidx.annotation.VisibleForTesting
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.SecretInteractor
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretParser
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.jsonmodel.delegates.SecretCustomFieldsModel
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.DecryptedSecretOrError
 import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.transform
 import timber.log.Timber
-import java.util.UUID
 
 class SecretPropertiesActionsInteractor(
     private val resource: ResourceModel,
     private val secretParser: SecretParser,
     private val secretInteractor: SecretInteractor,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) {
     suspend fun provideDecryptedSecret(): Flow<SecretPropertyActionResult<SecretJsonModel>> =
         fetchAndDecrypt()
             .mapSuccess {
-                when (val secret = secretParser.parseSecret(resource.resourceTypeId, it.secret)) {
+                when (val secret = secretParser.parseSecret(resource.slug, it.secret)) {
                     is DecryptedSecretOrError.DecryptedSecret ->
                         SecretPropertyActionResult.Success(
                             JSON_SECRET_LABEL,
@@ -66,7 +63,7 @@ class SecretPropertiesActionsInteractor(
     suspend fun provideNote(): Flow<SecretPropertyActionResult<String>> =
         fetchAndDecrypt()
             .mapSuccess {
-                when (val description = secretParser.parseSecret(resource.resourceTypeId, it.secret)) {
+                when (val description = secretParser.parseSecret(resource.slug, it.secret)) {
                     is DecryptedSecretOrError.DecryptedSecret ->
                         SecretPropertyActionResult.Success(
                             NOTE_LABEL,
@@ -82,15 +79,12 @@ class SecretPropertiesActionsInteractor(
     suspend fun providePassword(): Flow<SecretPropertyActionResult<String?>> =
         fetchAndDecrypt()
             .mapSuccess {
-                val slug =
-                    idToSlugMappingProvider
-                        .provideMappingForSelectedAccount()[UUID.fromString(resource.resourceTypeId)]
-                when (val password = secretParser.parseSecret(resource.resourceTypeId, it.secret)) {
+                when (val password = secretParser.parseSecret(resource.slug, it.secret)) {
                     is DecryptedSecretOrError.DecryptedSecret ->
                         SecretPropertyActionResult.Success(
                             SECRET_LABEL,
                             isSecret = true,
-                            password.secret.getPassword(ContentType.fromSlug(slug!!)),
+                            password.secret.getPassword(resource.contentType()),
                         )
                     is DecryptedSecretOrError.Error ->
                         SecretPropertyActionResult.DecryptionFailure()
@@ -100,7 +94,7 @@ class SecretPropertiesActionsInteractor(
     suspend fun provideOtp(): Flow<SecretPropertyActionResult<TotpSecret>> =
         fetchAndDecrypt()
             .mapSuccess {
-                when (val totp = secretParser.parseSecret(resource.resourceTypeId, it.secret)) {
+                when (val totp = secretParser.parseSecret(resource.slug, it.secret)) {
                     is DecryptedSecretOrError.DecryptedSecret ->
                         SecretPropertyActionResult.Success(
                             OTP_LABEL,
@@ -115,7 +109,7 @@ class SecretPropertiesActionsInteractor(
     suspend fun provideCustomFields(): Flow<SecretPropertyActionResult<SecretCustomFieldsModel?>> =
         fetchAndDecrypt()
             .mapSuccess {
-                when (val secretModel = secretParser.parseSecret(resource.resourceTypeId, it.secret)) {
+                when (val secretModel = secretParser.parseSecret(resource.slug, it.secret)) {
                     is DecryptedSecretOrError.DecryptedSecret -> {
                         SecretPropertyActionResult.Success(
                             CUSTOM_FIELD_LABEL,

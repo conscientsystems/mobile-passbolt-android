@@ -19,7 +19,6 @@ import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsI
 import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
@@ -30,7 +29,6 @@ import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.Gro
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.MainButtonIntent
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.UserPermissionDeleted
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.UserPermissionModified
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
@@ -81,7 +79,6 @@ class PermissionsViewModelTest : KoinTest {
                     single { mock<GetLocalFolderDetailsUseCase>() }
                     single { mock<ResourceShareInteractor>() }
                     single { mock<HomeDataInteractor>() }
-                    single { mock<ResourceTypeIdToSlugMappingProvider>() }
                     single { mock<MetadataPrivateKeysHelperInteractor>() }
                     single { mock<ResourceUpdateActionsInteractorFactory>() }
                     single { mock<CanShareResourceUseCase>() }
@@ -111,7 +108,6 @@ class PermissionsViewModelTest : KoinTest {
                             permissionModelUiComparator = get(),
                             resourceShareInteractor = get(),
                             homeDataInteractor = get(),
-                            resourceTypeIdToSlugMappingProvider = get(),
                             metadataPrivateKeysHelperInteractor = get(),
                             canShareResourceUseCase = get(),
                             dataRefreshTrackingFlow = get(),
@@ -353,12 +349,6 @@ class PermissionsViewModelTest : KoinTest {
                 onBlocking { refreshAllHomeScreenData() }
                     .doReturn(HomeDataInteractor.Output.Success)
             }
-            get<ResourceTypeIdToSlugMappingProvider>().stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(RESOURCE_TYPE_ID to ContentType.PasswordAndDescription.slug),
-                )
-            }
-
             val viewModel =
                 get<PermissionsViewModel>(
                     parameters = { parametersOf(RESOURCE_ID, PermissionsMode.EDIT, PermissionsItem.RESOURCE) },
@@ -379,6 +369,7 @@ class PermissionsViewModelTest : KoinTest {
             ResourceModel(
                 resourceId = RESOURCE_ID,
                 resourceTypeId = RESOURCE_TYPE_ID.toString(),
+                slug = "password-and-description",
                 folderId = FOLDER_ID.toString(),
                 permission = ResourcePermission.READ,
                 favouriteId = null,

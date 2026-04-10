@@ -75,22 +75,22 @@ internal fun OtpItem(
 
     Row(
         modifier =
-            Modifier.Companion
+            Modifier
                 .fillMaxWidth()
                 .height(64.dp)
                 .clickable { onItemClick(otpItem) }
                 .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.Companion.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.Companion.size(46.dp, 52.dp)) {
+        Box(modifier = Modifier.size(46.dp, 52.dp)) {
             if (resourceIcon != null) {
                 Image(
                     painter = rememberDrawablePainter(resourceIcon),
                     contentDescription = null,
                     modifier =
-                        Modifier.Companion
+                        Modifier
                             .size(40.dp)
-                            .align(Alignment.Companion.CenterStart),
+                            .align(Alignment.CenterStart),
                 )
             }
 
@@ -99,29 +99,29 @@ internal fun OtpItem(
                     painter = painterResource(R.drawable.ic_excl_indicator),
                     contentDescription = null,
                     modifier =
-                        Modifier.Companion
+                        Modifier
                             .size(12.dp)
-                            .align(Alignment.Companion.BottomEnd),
+                            .align(Alignment.BottomEnd),
                 )
             }
         }
 
-        Spacer(modifier = Modifier.Companion.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-        Column(modifier = Modifier.Companion.weight(1f)) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text =
                     otpItem.resource.metadataJsonModel.name
                         .toSingleLine(),
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
-                overflow = TextOverflow.Companion.Ellipsis,
+                overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onBackground,
             )
 
             Row(
-                verticalAlignment = Alignment.Companion.CenterVertically,
-                modifier = Modifier.Companion.padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 4.dp),
             ) {
                 Text(
                     text =
@@ -137,11 +137,11 @@ internal fun OtpItem(
                     style = MaterialTheme.typography.headlineMedium.copy(fontSize = 24.sp),
                     fontFamily = Inconsolata,
                     maxLines = 1,
-                    overflow = TextOverflow.Companion.Ellipsis,
+                    overflow = TextOverflow.Ellipsis,
                     color = totpColors.otpTextColor,
                 )
 
-                Spacer(modifier = Modifier.Companion.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
                 when {
                     otpItem.isRefreshing -> {
@@ -149,7 +149,7 @@ internal fun OtpItem(
                             painter = painterResource(R.drawable.ic_refresh),
                             contentDescription = null,
                             modifier =
-                                Modifier.Companion
+                                Modifier
                                     .size(20.dp)
                                     .rotate(totpAnimations.rotationAngle),
                         )
@@ -157,28 +157,28 @@ internal fun OtpItem(
                     otpItem.isVisible && otpItem.remainingSecondsCounter != null -> {
                         CircularProgressIndicator(
                             progress = { totpAnimations.animatedProgress },
-                            modifier = Modifier.Companion.size(20.dp),
+                            modifier = Modifier.size(20.dp),
                             strokeWidth = 3.dp,
                             color = totpColors.progressIndicatorColor,
-                            trackColor = Color.Companion.Transparent,
+                            trackColor = Color.Transparent,
                         )
                     }
                     else -> {
                         Icon(
                             painter = painterResource(R.drawable.ic_eye_visible),
                             contentDescription = null,
-                            modifier = Modifier.Companion.size(24.dp, 20.dp),
+                            modifier = Modifier.size(24.dp, 20.dp),
                         )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.Companion.width(8.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         IconButton(
             onClick = { onMoreClick(otpItem) },
-            modifier = Modifier.Companion.size(40.dp),
+            modifier = Modifier.size(40.dp),
         ) {
             Icon(Icons.Default.MoreVert, contentDescription = null)
         }

@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.networking.MfaTypeProvider
 import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
@@ -40,15 +41,18 @@ class GetResourcesUseCase(
     private val resourceModelMapper: ResourceModelMapper,
     private val tagModelMapper: TagsModelMapper,
     private val permissionsModelMapper: PermissionsModelMapper,
+    private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) : AsyncUseCase<Unit, GetResourcesUseCase.Output> {
-    override suspend fun execute(input: Unit): Output =
-        when (val response = resourceRepository.getResources()) {
+    override suspend fun execute(input: Unit): Output {
+        val slugMapping = resourceTypeIdToSlugMappingProvider.provideMappingForSelectedAccount()
+        return when (val response = resourceRepository.getResources()) {
             is NetworkResult.Failure -> Output.Failure(response)
             is NetworkResult.Success ->
                 Output.Success(
                     response.value.body.map {
+                        val slug = requireNotNull(slugMapping[it.resourceTypeId])
                         ResourceModelWithAttributes(
-                            resourceModelMapper.map(it),
+                            resourceModelMapper.map(it, slug = slug),
                             it.tags?.map { tag -> tagModelMapper.map(tag) }.orEmpty(),
                             it.permissions?.map { permission -> permissionsModelMapper.map(permission) }.orEmpty(),
                             it.favorite?.id?.toString(),
@@ -56,6 +60,7 @@ class GetResourcesUseCase(
                     },
                 )
         }
+    }
 
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState

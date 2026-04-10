@@ -48,6 +48,7 @@ internal val DEFAULT_RESOURCE_MODEL by lazy {
     ResourceModel(
         resourceId = ID,
         resourceTypeId = RESOURCE_TYPE_ID.toString(),
+        slug = "password-and-description",
         folderId = FOLDER_ID,
         permission = ResourcePermission.OWNER,
         favouriteId = null,
