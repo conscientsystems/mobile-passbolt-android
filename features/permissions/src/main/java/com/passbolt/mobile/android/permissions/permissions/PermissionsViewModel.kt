@@ -38,7 +38,6 @@ import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteracto
 import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor.Output
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
 import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
@@ -83,7 +82,6 @@ import com.passbolt.mobile.android.permissions.permissions.validation.HasAtLeast
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.RESOURCE
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.SECRET
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.PermissionModelUi.GroupPermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi.UserPermissionModel
@@ -92,10 +90,10 @@ import com.passbolt.mobile.android.ui.PermissionsMode
 import com.passbolt.mobile.android.ui.PermissionsMode.EDIT
 import com.passbolt.mobile.android.ui.PermissionsMode.VIEW
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.UUID
 
 class PermissionsViewModel(
     permissionsItem: PermissionsItem,
@@ -108,7 +106,6 @@ class PermissionsViewModel(
     private val permissionModelUiComparator: PermissionModelUiComparator,
     private val resourceShareInteractor: ResourceShareInteractor,
     private val homeDataInteractor: HomeDataInteractor,
-    private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
     private val canShareResourceUseCase: CanShareResourceUseCase,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
@@ -285,15 +282,9 @@ class PermissionsViewModel(
         updateViewState { copy(showProgress = true) }
         viewModelScope.launch(coroutineLaunchContext.io) {
             val resource = getLocalResourceUseCase.execute(GetLocalResourceUseCase.Input(viewState.value.permissionItemId)).resource
-            val contentType =
-                ContentType.fromSlug(
-                    resourceTypeIdToSlugMappingProvider.provideMappingForSelectedAccount()[
-                        UUID.fromString(resource.resourceTypeId),
-                    ]!!,
-                )
             val resourceUpdateActionsInteractor = resourceUpdateActionsInteractorFactory.create(resource)
 
-            if (contentType.isV5()) {
+            if (resource.contentType().isV5()) {
                 performResourceUpdateAction(
                     action = { resourceUpdateActionsInteractor.reEncryptResourceMetadata() },
                     doOnFailure = { emitSideEffect(ShowErrorSnackbar(GENERIC_ERROR)) },

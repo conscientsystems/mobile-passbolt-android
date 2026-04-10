@@ -359,6 +359,7 @@ class LocationDetailsViewModelTest : KoinTest {
             ResourceModel(
                 resourceId = "resource-id-123",
                 resourceTypeId = "resource-type-id",
+                slug = "password-and-description",
                 folderId = "parent-folder-id",
                 permission = ResourcePermission.READ,
                 favouriteId = null,

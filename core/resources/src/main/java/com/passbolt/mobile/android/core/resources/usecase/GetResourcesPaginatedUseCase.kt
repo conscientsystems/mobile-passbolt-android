@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.networking.MfaTypeProvider
 import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
 import com.passbolt.mobile.android.dto.response.Pagination
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
@@ -40,16 +41,19 @@ class GetResourcesPaginatedUseCase(
     private val resourceModelMapper: ResourceModelMapper,
     private val tagModelMapper: TagsModelMapper,
     private val permissionsModelMapper: PermissionsModelMapper,
+    private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) : AsyncUseCase<GetResourcesPaginatedUseCase.Input, GetResourcesPaginatedUseCase.Output> {
-    override suspend fun execute(input: Input): Output =
-        when (val response = resourceRepository.getResourcesPaginated(input.limit, input.page)) {
+    override suspend fun execute(input: Input): Output {
+        val slugMapping = resourceTypeIdToSlugMappingProvider.provideMappingForSelectedAccount()
+        return when (val response = resourceRepository.getResourcesPaginated(input.limit, input.page)) {
             is NetworkResult.Failure -> Output.Failure(response)
             is NetworkResult.Success ->
                 Output.Success(
                     pagination = response.value.header.pagination,
                     response.value.body.map {
+                        val slug = requireNotNull(slugMapping[it.resourceTypeId])
                         ResourceModelWithAttributes(
-                            resourceModelMapper.map(it),
+                            resourceModelMapper.map(it, slug = slug),
                             it.tags?.map { tag -> tagModelMapper.map(tag) }.orEmpty(),
                             it.permissions?.map { permission -> permissionsModelMapper.map(permission) }.orEmpty(),
                             it.favorite?.id?.toString(),
@@ -57,6 +61,7 @@ class GetResourcesPaginatedUseCase(
                     },
                 )
         }
+    }
 
     data class Input(
         val page: Int,

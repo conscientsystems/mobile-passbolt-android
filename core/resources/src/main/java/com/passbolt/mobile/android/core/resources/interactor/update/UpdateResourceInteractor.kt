@@ -173,7 +173,10 @@ class UpdateResourceInteractor(
                     )
             ) {
                 is NetworkResult.Failure -> Output.Failure(response)
-                is NetworkResult.Success -> Output.Success(resourceModelMapper.map(response.value.body))
+                is NetworkResult.Success ->
+                    Output.Success(
+                        resourceModelMapper.map(response.value.body, slug = resourceInput.contentType.slug),
+                    )
             }
         }
     }

@@ -47,7 +47,6 @@ import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyA
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.CANNOT_PERFORM_ACTION
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.DECRYPTION_FAILURE
@@ -100,7 +99,6 @@ import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.CustomFieldModel.BooleanCustomField
 import com.passbolt.mobile.android.ui.CustomFieldModel.NumberCustomField
 import com.passbolt.mobile.android.ui.CustomFieldModel.PasswordCustomField
@@ -111,6 +109,7 @@ import com.passbolt.mobile.android.ui.RbacModel
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
+import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.isExpired
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
@@ -132,7 +131,6 @@ class ResourceDetailsViewModel(
     private val getLocalFolderLocation: GetLocalFolderLocationUseCase,
     private val totpParametersProvider: TotpParametersProvider,
     private val otpModelMapper: OtpModelMapper,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
     private val getRbacRulesUseCase: GetRbacRulesUseCase,
     private val resourceDetailActionIdlingResource: ResourceDetailActionIdlingResource,
     private val canShareResourceUseCase: CanShareResourceUseCase,
@@ -241,11 +239,7 @@ class ResourceDetailsViewModel(
         rbac: RbacModel,
         featureFlags: FeatureFlagsModel,
     ) {
-        val slug =
-            idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                UUID.fromString(resource.resourceTypeId),
-            ]
-        val contentType = ContentType.fromSlug(slug!!)
+        val contentType = resource.contentType()
 
         performResourcePropertyAction(
             action = { resourcePropertiesActionsInteractor.provideMainUri() },

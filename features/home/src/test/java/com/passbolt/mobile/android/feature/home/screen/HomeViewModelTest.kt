@@ -670,6 +670,7 @@ class HomeViewModelTest : KoinTest {
     ) = ResourceModel(
         resourceId = id,
         resourceTypeId = "resTypeId",
+        slug = "password-and-description",
         folderId = "folderId",
         permission = ResourcePermission.READ,
         favouriteId = null,

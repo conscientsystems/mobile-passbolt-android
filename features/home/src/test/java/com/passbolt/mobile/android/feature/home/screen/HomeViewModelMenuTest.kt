@@ -487,6 +487,7 @@ class HomeViewModelMenuTest : KoinTest {
         ResourceModel(
             resourceId = "id1",
             resourceTypeId = "resTypeId",
+            slug = "password-and-description",
             folderId = "folderId",
             permission = ResourcePermission.READ,
             favouriteId = null,

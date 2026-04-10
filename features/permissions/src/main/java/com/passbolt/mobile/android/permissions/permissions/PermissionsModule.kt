@@ -40,7 +40,6 @@ fun Module.permissionsModule() {
             permissionModelUiComparator = get(),
             resourceShareInteractor = get(),
             homeDataInteractor = get(),
-            resourceTypeIdToSlugMappingProvider = get(),
             metadataPrivateKeysHelperInteractor = get(),
             canShareResourceUseCase = get(),
             dataRefreshTrackingFlow = get(),

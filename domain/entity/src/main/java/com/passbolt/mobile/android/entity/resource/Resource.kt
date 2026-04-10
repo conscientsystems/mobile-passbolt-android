@@ -110,6 +110,7 @@ data class ResourceWithMetadata(
     val folderId: String?,
     val resourcePermission: Permission,
     val resourceTypeId: String,
+    val slug: String,
     val favouriteId: String?,
     val modified: ZonedDateTime,
     val expiry: ZonedDateTime?,

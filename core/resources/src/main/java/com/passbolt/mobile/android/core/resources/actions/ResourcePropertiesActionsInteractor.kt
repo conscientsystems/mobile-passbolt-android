@@ -1,13 +1,11 @@
 package com.passbolt.mobile.android.core.resources.actions
 
 import androidx.annotation.VisibleForTesting
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.single
-import java.util.UUID
 
 /**
  * Passbolt - Open source password manager for teams
@@ -33,34 +31,20 @@ import java.util.UUID
  */
 class ResourcePropertiesActionsInteractor(
     private val resource: ResourceModel,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) {
-    suspend fun provideMainUri(): Flow<ResourcePropertyActionResult<String>> {
-        val resourceContentType =
-            ContentType.fromSlug(
-                idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                    UUID.fromString(resource.resourceTypeId),
-                ]!!,
-            )
-        return flowOf(
+    fun provideMainUri(): Flow<ResourcePropertyActionResult<String>> =
+        flowOf(
             ResourcePropertyActionResult(
                 URL_LABEL,
                 isSecret = false,
-                resource.metadataJsonModel.getMainUri(resourceContentType),
+                resource.metadataJsonModel.getMainUri(resource.contentType()),
             ),
         )
-    }
 
-    suspend fun provideAdditionalUris(): Flow<ResourcePropertyActionResult<List<String>>> {
-        val resourceContentType =
-            ContentType.fromSlug(
-                idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                    UUID.fromString(resource.resourceTypeId),
-                ]!!,
-            )
-        val mainUri = resource.metadataJsonModel.getMainUri(resourceContentType)
+    fun provideAdditionalUris(): Flow<ResourcePropertyActionResult<List<String>>> {
+        val mainUri = resource.metadataJsonModel.getMainUri(resource.contentType())
         val additionalUris =
-            if (resourceContentType.isV5()) {
+            if (resource.contentType().isV5()) {
                 resource.metadataJsonModel.uris?.filter { it != mainUri } ?: emptyList()
             } else {
                 emptyList()
