@@ -36,6 +36,9 @@ import org.koin.dsl.module
 internal val testCoroutineLaunchContext = TestCoroutineLaunchContext()
 
 @ExperimentalCoroutinesApi
+internal var testIsAuthRequiredOnEveryEntry = true
+
+@ExperimentalCoroutinesApi
 internal val testPassphraseMemoryCacheModule =
     module {
         single {
@@ -43,6 +46,7 @@ internal val testPassphraseMemoryCacheModule =
                 coroutineLaunchContext = get(),
                 lifecycleOwner = get(named<ProcessLifecycleOwner>()),
                 dataRefreshTrackingFlow = get(),
+                authOnEveryEntryChecker = AuthOnEveryEntryChecker { testIsAuthRequiredOnEveryEntry },
             )
         }
         factory<CoroutineLaunchContext> {

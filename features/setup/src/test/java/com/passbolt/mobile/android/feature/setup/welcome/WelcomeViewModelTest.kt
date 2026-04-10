@@ -115,6 +115,7 @@ class WelcomeViewModelTest : KoinTest {
                 debugLogFileCreationDateTime = null,
                 isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = false,
+                isAuthRequiredOnEveryEntry = true,
                 debugLogLastAppVersion = null,
             )
     }
@@ -192,6 +193,7 @@ class WelcomeViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = true,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                 )
 

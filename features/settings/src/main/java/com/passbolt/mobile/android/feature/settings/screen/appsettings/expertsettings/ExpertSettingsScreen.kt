@@ -42,6 +42,7 @@ import com.passbolt.mobile.android.core.ui.menu.SwitchableSettingsItem
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoBack
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleAuthRequiredOnEveryEntry
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleHideRootWarning
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateUp
@@ -92,6 +93,13 @@ private fun ExpertSettingsScreen(
                         .padding(paddingValues)
                         .verticalScroll(rememberScrollState()),
             ) {
+                SwitchableSettingsItem(
+                    iconPainter = painterResource(R.drawable.ic_auth_setting),
+                    title = stringResource(LocalizationR.string.settings_app_settings_expert_settings_require_auth_on_every_entry),
+                    isChecked = state.isAuthRequiredOnEveryEntryChecked,
+                    onCheckedChange = { onIntent(ToggleAuthRequiredOnEveryEntry) },
+                )
+
                 SwitchableSettingsItem(
                     iconPainter = painterResource(R.drawable.ic_dev_mode),
                     title = stringResource(LocalizationR.string.settings_app_settings_expert_settings_dev_mode),

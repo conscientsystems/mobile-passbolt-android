@@ -41,12 +41,14 @@ class GetGlobalPreferencesUseCase(
         val debugLogLastAppVersion = sharedPreferences.getString(KEY_DEBUG_LOGS_LAST_APP_VERSION, null)
         val isDeveloperModeEnabled = sharedPreferences.getBoolean(KEY_IS_DEVELOPER_MODE_ENABLED, false)
         val isHideRootDialogEnabled = sharedPreferences.getBoolean(KEY_IS_HIDE_ROOT_DIALOG_ENABLED, false)
+        val isAuthRequiredOnEveryEntry = sharedPreferences.getBoolean(KEY_IS_AUTH_REQUIRED_ON_EVERY_ENTRY, true)
         return Output(
             areDebugLogsEnabled,
             debugLogsCreationDateTime,
             debugLogLastAppVersion,
             isDeveloperModeEnabled,
             isHideRootDialogEnabled,
+            isAuthRequiredOnEveryEntry,
         )
     }
 
@@ -56,5 +58,6 @@ class GetGlobalPreferencesUseCase(
         val debugLogLastAppVersion: String?,
         val isDeveloperModeEnabled: Boolean,
         val isHideRootDialogEnabled: Boolean,
+        val isAuthRequiredOnEveryEntry: Boolean,
     )
 }
