@@ -2,13 +2,20 @@ package com.passbolt.mobile.android.feature.authentication.mfa.totp
 
 import PassboltTheme
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -142,12 +149,14 @@ internal fun EnterTotpScreen(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun EnterTotpScreen(
     state: EnterTotpState,
     onIntent: (EnterTotpIntent) -> Unit,
     snackbarHostState: SnackbarHostState,
     pinInputState: PinInputState,
+    isImeVisible: Boolean = WindowInsets.isImeVisible,
 ) {
     val textColor =
         when (state.otpTextColor) {
@@ -156,6 +165,7 @@ private fun EnterTotpScreen(
         }
 
     Scaffold(
+        modifier = Modifier.imePadding(),
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -195,20 +205,29 @@ private fun EnterTotpScreen(
                 )
             }
 
-            Text(
-                text = stringResource(LocalizationR.string.dialog_mfa_mfa),
-                style = MaterialTheme.typography.titleSmall,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Image(
-                painter = painterResource(CoreUiR.drawable.totp_logo),
-                contentDescription = null,
-                modifier = Modifier.size(116.dp),
-            )
+            AnimatedVisibility(
+                visible = !isImeVisible,
+                enter = expandVertically(),
+                exit = shrinkVertically(),
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = stringResource(LocalizationR.string.dialog_mfa_mfa),
+                        style = MaterialTheme.typography.titleSmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Image(
+                        painter = painterResource(CoreUiR.drawable.totp_logo),
+                        contentDescription = null,
+                        modifier = Modifier.size(116.dp),
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -240,6 +259,7 @@ private fun EnterTotpScreen(
                 state = pinInputState,
                 textColor = textColor,
                 modifier = Modifier.padding(horizontal = 32.dp),
+                onLongPress = { onIntent(PasteFromClipboard) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -301,6 +321,25 @@ private fun EnterTotpScreenPreview() {
                     initialValue = "12",
                     sanitizer = DigitsOnlySanitizer(maxLength = OTP_LENGTH),
                 ),
+            isImeVisible = false,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EnterTotpScreenImeVisiblePreview() {
+    PassboltTheme {
+        EnterTotpScreen(
+            state = EnterTotpState(hasOtherProvider = true),
+            onIntent = {},
+            snackbarHostState = SnackbarHostState(),
+            pinInputState =
+                PinInputState(
+                    initialValue = "12",
+                    sanitizer = DigitsOnlySanitizer(maxLength = OTP_LENGTH),
+                ),
+            isImeVisible = true,
         )
     }
 }
