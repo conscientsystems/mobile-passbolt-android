@@ -41,6 +41,7 @@ class PassphraseMemoryCache(
     coroutineLaunchContext: CoroutineLaunchContext,
     private val lifecycleOwner: LifecycleOwner,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
+    private val authOnEveryEntryChecker: AuthOnEveryEntryChecker,
 ) : DefaultLifecycleObserver {
     private var value: PotentialPassphrase = PotentialPassphrase.PassphraseNotPresent()
 
@@ -97,17 +98,17 @@ class PassphraseMemoryCache(
         Timber.d("[Session] Passphrase cache cleared")
     }
 
-    fun scheduleClear() {
-        lifecycleObserverScope.launch {
-            Timber.d("[Session] Scheduling passphrase cache clear")
-            dataRefreshTrackingFlow.awaitIdle()
-            clear()
-        }
+    private suspend fun scheduleClear() {
+        Timber.d("[Session] Scheduling passphrase cache clear")
+        dataRefreshTrackingFlow.awaitIdle()
+        clear()
     }
 
     override fun onStop(owner: LifecycleOwner) {
         Timber.d("[Session] App went background")
-        scheduleClear()
+        if (authOnEveryEntryChecker.isRequired()) {
+            timerScope.launch { scheduleClear() }
+        }
     }
 
     companion object {

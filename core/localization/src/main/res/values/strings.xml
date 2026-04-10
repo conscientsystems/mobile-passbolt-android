@@ -407,6 +407,7 @@
     <string name="settings_app_settings_biometry_authentication_error">Biometry authentication error. %s</string>
     <string name="settings_app_settings_expert_settings">Expert settings</string>
 
+    <string name="settings_app_settings_expert_settings_require_auth_on_every_entry">Require auth on every entry</string>
     <string name="settings_app_settings_expert_settings_dev_mode">Developer mode</string>
     <string name="settings_app_settings_expert_settings_hide_root">Hide “device is rooted” dialog</string>
 

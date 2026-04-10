@@ -201,6 +201,11 @@ dependencies {
     implementation libs.json.path
 
     androidTestImplementation project(':commontest')
+    testImplementation libs.junit
+    testImplementation libs.truth
+    testImplementation libs.kotlin.coroutines.test
+    testImplementation project(':commontest')
+
     androidTestImplementation project(':testtags')
     androidTestImplementation platform(libs.koin.bom)
     androidTestImplementation libs.appcompat

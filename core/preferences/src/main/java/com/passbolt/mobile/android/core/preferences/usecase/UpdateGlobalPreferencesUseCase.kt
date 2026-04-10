@@ -49,6 +49,9 @@ class UpdateGlobalPreferencesUseCase(
             input.isHideRootDialogEnabled?.let {
                 putBoolean(KEY_IS_HIDE_ROOT_DIALOG_ENABLED, it)
             }
+            input.isAuthRequiredOnEveryEntry?.let {
+                putBoolean(KEY_IS_AUTH_REQUIRED_ON_EVERY_ENTRY, it)
+            }
             apply()
         }
     }
@@ -59,5 +62,6 @@ class UpdateGlobalPreferencesUseCase(
         val debugLogLastAppVersion: String? = null,
         val isDeveloperModeEnabled: Boolean? = null,
         val isHideRootDialogEnabled: Boolean? = null,
+        val isAuthRequiredOnEveryEntry: Boolean? = null,
     )
 }

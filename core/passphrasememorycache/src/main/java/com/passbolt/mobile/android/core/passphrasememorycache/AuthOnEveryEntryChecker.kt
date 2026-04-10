@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.core.preferences.usecase
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -23,13 +21,8 @@ package com.passbolt.mobile.android.core.preferences.usecase
  * @since v1.0
  */
 
-internal const val GLOBAL_PREFERENCES_FILE_NAME = "preferences"
-internal const val KEY_DEBUG_LOGS_ENABLED = "KEY_DEBUG_LOGS_ENABLED"
-internal const val KEY_DEBUG_LOGS_FILE_CREATION_DATE_TIME = "KEY_DEBUG_LOGS_FILE_CREATION_DATE_TIME"
-internal const val KEY_DEBUG_LOGS_LAST_APP_VERSION = "KEY_DEBUG_LOGS_LAST_APP_VERSION"
-internal const val KEY_LAST_USED_HOME_VIEW = "LAST_USED_HOME_VIEW"
-internal const val KEY_USER_SET_HOME_VIEW = "USER_SET_HOME_VIEW"
-internal const val KEY_IS_DEVELOPER_MODE_ENABLED = "IS_DEVELOPER_MODE_ENABLED"
-internal const val KEY_IS_HIDE_ROOT_DIALOG_ENABLED = "IS_HIDE_ROOT_DIALOG_ENABLED"
-internal const val KEY_IS_AUTH_REQUIRED_ON_EVERY_ENTRY = "IS_AUTH_REQUIRED_ON_EVERY_ENTRY"
-internal const val KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN = "CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN"
+package com.passbolt.mobile.android.core.passphrasememorycache
+
+fun interface AuthOnEveryEntryChecker {
+    fun isRequired(): Boolean
+}

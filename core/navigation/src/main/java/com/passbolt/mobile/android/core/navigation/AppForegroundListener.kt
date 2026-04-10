@@ -13,9 +13,18 @@ class AppForegroundListener : StartedStoppedCallback() {
             extraBufferCapacity = 1,
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
+    private var _appWentBackgroundFlow =
+        MutableSharedFlow<Unit>(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
 
     val appWentForegroundFlow =
         _appWentForegroundFlow
+            .asSharedFlow()
+
+    val appWentBackgroundFlow =
+        _appWentBackgroundFlow
             .asSharedFlow()
 
     fun isForeground(): Boolean = startedActivities > 0
@@ -31,6 +40,9 @@ class AppForegroundListener : StartedStoppedCallback() {
     }
 
     override fun onActivityStopped(activity: Activity) {
+        if (--startedActivities == 0) {
+            _appWentBackgroundFlow.tryEmit(Unit)
+        }
         if (activity.isChangingConfigurations) {
             isConfigurationChanging = true
         }

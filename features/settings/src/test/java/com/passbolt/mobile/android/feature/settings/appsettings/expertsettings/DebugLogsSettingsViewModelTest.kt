@@ -89,6 +89,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                 )
 
@@ -111,6 +112,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                 )
 
@@ -135,6 +137,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = true,
                     isHideRootDialogEnabled = true,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                 )
 
@@ -159,6 +162,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                 )
 

@@ -27,6 +27,7 @@ import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoBack
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleAuthRequiredOnEveryEntry
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleHideRootWarning
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateUp
@@ -42,6 +43,7 @@ internal class ExpertSettingsViewModel(
     fun onIntent(intent: ExpertSettingsIntent) {
         when (intent) {
             GoBack -> emitSideEffect(NavigateUp)
+            ToggleAuthRequiredOnEveryEntry -> toggleAuthRequiredOnEveryEntry()
             ToggleDeveloperMode -> toggleDeveloperMode()
             ToggleHideRootWarning -> toggleHideRootWarning()
         }
@@ -51,10 +53,21 @@ internal class ExpertSettingsViewModel(
         val globalPreferences = getGlobalPreferencesUseCase.execute(Unit)
         updateViewState {
             copy(
+                isAuthRequiredOnEveryEntryChecked = globalPreferences.isAuthRequiredOnEveryEntry,
                 isDeveloperModeChecked = globalPreferences.isDeveloperModeEnabled,
                 isHideRootWarningEnabled = globalPreferences.isDeveloperModeEnabled,
                 isHideRootWarningChecked = globalPreferences.isHideRootDialogEnabled,
             )
+        }
+    }
+
+    private fun toggleAuthRequiredOnEveryEntry() {
+        val isChecked = !viewState.value.isAuthRequiredOnEveryEntryChecked
+        updateGlobalPreferencesUseCase.execute(
+            UpdateGlobalPreferencesUseCase.Input(isAuthRequiredOnEveryEntry = isChecked),
+        )
+        updateViewState {
+            copy(isAuthRequiredOnEveryEntryChecked = isChecked)
         }
     }
 
