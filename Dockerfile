@@ -9,6 +9,10 @@ ENV ANDROID_HOME="/usr/local/android-sdk" \
 # the base image does not have fonts (needed for easy launcher plugin)
 RUN apk add --no-cache freetype fontconfig ttf-dejavu
 
+# install git (needed for gradle lockfiles verification)
+RUN apk add --no-cache git \
+    && git config --system --add safe.directory '*'
+
 # install required c libraries for aapt2
 RUN apk add --no-cache gcompat libstdc++
 
