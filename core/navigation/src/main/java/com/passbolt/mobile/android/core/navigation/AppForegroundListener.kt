@@ -40,12 +40,11 @@ class AppForegroundListener : StartedStoppedCallback() {
     }
 
     override fun onActivityStopped(activity: Activity) {
-        if (--startedActivities == 0) {
-            _appWentBackgroundFlow.tryEmit(Unit)
-        }
+        --startedActivities
         if (activity.isChangingConfigurations) {
             isConfigurationChanging = true
+        } else if (startedActivities == 0) {
+            _appWentBackgroundFlow.tryEmit(Unit)
         }
-        --startedActivities
     }
 }
