@@ -106,4 +106,8 @@ sealed interface ResourceFormIntent {
     data object DismissMetadataKeyDialog : ResourceFormIntent
 
     data object GoBack : ResourceFormIntent
+
+    data object ProceedWithPasswordWarning : ResourceFormIntent
+
+    data object DismissPasswordWarning : ResourceFormIntent
 }

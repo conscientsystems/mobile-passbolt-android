@@ -26,6 +26,8 @@ data class ResourceFormState(
     val noteData: NoteData = NoteData(),
     val metadataKeyModifiedDialog: NewMetadataKeyToTrustModel? = null,
     val metadataKeyDeletedDialog: TrustedKeyDeletedModel? = null,
+    val showPasswordWarningDialog: Boolean = false,
+    val passwordWarningType: PasswordWarningType? = null,
 )
 
 data class PasswordData(
@@ -47,3 +49,8 @@ data class NoteData(
     val note: String = "",
     val noteError: NoteValidationError? = null,
 )
+
+enum class PasswordWarningType {
+    DATA_BREACH,
+    LOW_ENTROPY,
+}

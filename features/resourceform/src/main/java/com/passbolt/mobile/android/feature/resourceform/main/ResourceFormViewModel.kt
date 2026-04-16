@@ -9,6 +9,7 @@ import com.passbolt.mobile.android.core.idlingresource.UpdateResourceIdlingResou
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
+import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
@@ -37,6 +38,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CustomFieldsResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DescriptionResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissMetadataKeyDialog
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoBack
@@ -52,6 +54,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordUsernameTextChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ProceedWithPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanOtpResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpAdvancedSettingsResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpResult
@@ -117,6 +120,7 @@ class ResourceFormViewModel(
     private val createResourceIdlingResource: CreateResourceIdlingResource,
     private val updateResourceIdlingResource: UpdateResourceIdlingResource,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
+    private val checkPasswordPropertiesUseCase: CheckPasswordPropertiesUseCase,
 ) : SideEffectViewModel<ResourceFormState, ResourceFormSideEffect>(ResourceFormState(mode = mode)),
     KoinComponent {
     private val uiModel: ResourceFormUiModel by lazy {
@@ -163,6 +167,8 @@ class ResourceFormViewModel(
             is TrustNewMetadataKey -> trustNewMetadataKey(intent.model)
             is TrustedMetadataKeyDeleted -> trustedMetadataKeyDeleted()
             DismissMetadataKeyDialog -> dismissMetadataKeyDialog()
+            ProceedWithPasswordWarning -> proceedWithPasswordWarning()
+            DismissPasswordWarning -> dismissPasswordWarning()
             GoBack -> goBack()
         }
     }
@@ -611,95 +617,143 @@ class ResourceFormViewModel(
 
     private fun createResource() {
         onValid {
-            launch {
-                createResourceIdlingResource.setIdle(false)
-                updateViewState { copy(shouldShowDialogProgress = true) }
-                val resourceCreateActionsInteractor = get<ResourceCreateActionsInteractor>()
-                performResourceCreateAction(
-                    action = {
-                        resourceCreateActionsInteractor.createGenericResource(
-                            resourceModelHandler.contentType,
-                            parentFolderId,
-                            resourceModelHandler.getResourceMetadataWithRequiredFields(),
-                            resourceModelHandler.getResourceSecretWithRequiredFields(),
-                        )
-                    },
-                    doOnFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.COMMON_FAILURE)) },
-                    doOnCryptoFailure = {
-                        emitSideEffect(ShowSnackbar(SnackbarMessage.ENCRYPTION_FAILURE))
-                    },
-                    doOnSchemaValidationFailure = ::handleSchemaValidationFailure,
-                    doOnSuccess = {
-                        emitSideEffect(NavigateBackWithCreateSuccess(it.resourceName, it.resourceId))
-                    },
-                    doOnCannotCreateWithCurrentConfig = {
-                        emitSideEffect(
-                            ShowSnackbar(SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG),
-                        )
-                    },
-                    doOnMetadataKeyModified = {
-                        updateViewState { copy(metadataKeyModifiedDialog = it) }
-                    },
-                    doOnMetadataKeyDeleted = {
-                        updateViewState { copy(metadataKeyDeletedDialog = it) }
-                    },
-                    doOnMetadataKeyVerificationFailure = {
-                        emitSideEffect(
-                            ShowSnackbar(SnackbarMessage.METADATA_KEY_VERIFICATION_FAILURE),
-                        )
-                    },
-                )
-                updateViewState { copy(shouldShowDialogProgress = false) }
-                createResourceIdlingResource.setIdle(true)
-            }
+            checkPasswordAndProceed { performCreate() }
         }
     }
 
     private fun updateResource() {
         onValid {
-            launch {
-                updateResourceIdlingResource.setIdle(false)
-                updateViewState { copy(shouldShowDialogProgress = true) }
-                val editedResource =
-                    getLocalResourceUseCase
-                        .execute(
-                            GetLocalResourceUseCase.Input((mode as Edit).resourceId),
-                        ).resource
-                val resourceUpdateActionsInteractor = resourceUpdateActionsInteractorFactory.create(editedResource)
-                performResourceUpdateAction(
-                    action = {
-                        resourceUpdateActionsInteractor.updateGenericResource(
-                            resourceModelHandler.contentType,
-                            { resourceModelHandler.getResourceMetadataWithRequiredFields() },
-                            { resourceModelHandler.getResourceSecretWithRequiredFields() },
-                        )
-                    },
-                    doOnFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.COMMON_FAILURE)) },
-                    doOnCryptoFailure = {
-                        emitSideEffect(ShowSnackbar(SnackbarMessage.ENCRYPTION_FAILURE))
-                    },
-                    doOnSchemaValidationFailure = ::handleSchemaValidationFailure,
-                    doOnSuccess = { emitSideEffect(NavigateBackWithEditSuccess(resourceModelHandler.resourceMetadata.name)) },
-                    doOnCannotEditWithCurrentConfig = {
-                        emitSideEffect(
-                            ShowSnackbar(SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG),
-                        )
-                    },
-                    doOnMetadataKeyModified = {
-                        updateViewState { copy(metadataKeyModifiedDialog = it) }
-                    },
-                    doOnMetadataKeyDeleted = {
-                        updateViewState { copy(metadataKeyDeletedDialog = it) }
-                    },
-                    doOnMetadataKeyVerificationFailure = {
-                        emitSideEffect(
-                            ShowSnackbar(SnackbarMessage.METADATA_KEY_VERIFICATION_FAILURE),
-                        )
-                    },
-                )
-                updateViewState { copy(shouldShowDialogProgress = false) }
-                updateResourceIdlingResource.setIdle(true)
+            checkPasswordAndProceed { performUpdate() }
+        }
+    }
+
+    private fun checkPasswordAndProceed(onProceed: () -> Unit) {
+        launch {
+            val password = viewState.value.passwordData.password
+            if (!resourceModelHandler.contentType.hasPassword() || password.isBlank()) {
+                onProceed()
+                return@launch
             }
+
+            val passwordPolicies = getPasswordPoliciesUseCase.execute(Unit)
+            if (!passwordPolicies.isExternalDictionaryCheckEnabled) {
+                onProceed()
+                return@launch
+            }
+
+            when (checkPasswordPropertiesUseCase.execute(CheckPasswordPropertiesUseCase.Input(password))) {
+                is CheckPasswordPropertiesUseCase.Output.Fine -> onProceed()
+                is CheckPasswordPropertiesUseCase.Output.Pwned ->
+                    updateViewState { copy(showPasswordWarningDialog = true, passwordWarningType = PasswordWarningType.DATA_BREACH) }
+                is CheckPasswordPropertiesUseCase.Output.Weak ->
+                    updateViewState { copy(showPasswordWarningDialog = true, passwordWarningType = PasswordWarningType.LOW_ENTROPY) }
+                is CheckPasswordPropertiesUseCase.Output.Failure<*> -> {
+                    Timber.d("Failed to check password status")
+                    onProceed()
+                }
+            }
+        }
+    }
+
+    private fun proceedWithPasswordWarning() {
+        updateViewState { copy(showPasswordWarningDialog = false, passwordWarningType = null) }
+        when (mode) {
+            is Create -> performCreate()
+            is Edit -> performUpdate()
+        }
+    }
+
+    private fun dismissPasswordWarning() {
+        updateViewState { copy(showPasswordWarningDialog = false, passwordWarningType = null) }
+    }
+
+    private fun performCreate() {
+        launch {
+            createResourceIdlingResource.setIdle(false)
+            updateViewState { copy(shouldShowDialogProgress = true) }
+            val resourceCreateActionsInteractor = get<ResourceCreateActionsInteractor>()
+            performResourceCreateAction(
+                action = {
+                    resourceCreateActionsInteractor.createGenericResource(
+                        resourceModelHandler.contentType,
+                        parentFolderId,
+                        resourceModelHandler.getResourceMetadataWithRequiredFields(),
+                        resourceModelHandler.getResourceSecretWithRequiredFields(),
+                    )
+                },
+                doOnFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.COMMON_FAILURE)) },
+                doOnCryptoFailure = {
+                    emitSideEffect(ShowSnackbar(SnackbarMessage.ENCRYPTION_FAILURE))
+                },
+                doOnSchemaValidationFailure = ::handleSchemaValidationFailure,
+                doOnSuccess = {
+                    emitSideEffect(NavigateBackWithCreateSuccess(it.resourceName, it.resourceId))
+                },
+                doOnCannotCreateWithCurrentConfig = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG),
+                    )
+                },
+                doOnMetadataKeyModified = {
+                    updateViewState { copy(metadataKeyModifiedDialog = it) }
+                },
+                doOnMetadataKeyDeleted = {
+                    updateViewState { copy(metadataKeyDeletedDialog = it) }
+                },
+                doOnMetadataKeyVerificationFailure = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.METADATA_KEY_VERIFICATION_FAILURE),
+                    )
+                },
+            )
+            updateViewState { copy(shouldShowDialogProgress = false) }
+            createResourceIdlingResource.setIdle(true)
+        }
+    }
+
+    private fun performUpdate() {
+        launch {
+            updateResourceIdlingResource.setIdle(false)
+            updateViewState { copy(shouldShowDialogProgress = true) }
+            val editedResource =
+                getLocalResourceUseCase
+                    .execute(
+                        GetLocalResourceUseCase.Input((mode as Edit).resourceId),
+                    ).resource
+            val resourceUpdateActionsInteractor = resourceUpdateActionsInteractorFactory.create(editedResource)
+            performResourceUpdateAction(
+                action = {
+                    resourceUpdateActionsInteractor.updateGenericResource(
+                        resourceModelHandler.contentType,
+                        { resourceModelHandler.getResourceMetadataWithRequiredFields() },
+                        { resourceModelHandler.getResourceSecretWithRequiredFields() },
+                    )
+                },
+                doOnFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.COMMON_FAILURE)) },
+                doOnCryptoFailure = {
+                    emitSideEffect(ShowSnackbar(SnackbarMessage.ENCRYPTION_FAILURE))
+                },
+                doOnSchemaValidationFailure = ::handleSchemaValidationFailure,
+                doOnSuccess = { emitSideEffect(NavigateBackWithEditSuccess(resourceModelHandler.resourceMetadata.name)) },
+                doOnCannotEditWithCurrentConfig = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG),
+                    )
+                },
+                doOnMetadataKeyModified = {
+                    updateViewState { copy(metadataKeyModifiedDialog = it) }
+                },
+                doOnMetadataKeyDeleted = {
+                    updateViewState { copy(metadataKeyDeletedDialog = it) }
+                },
+                doOnMetadataKeyVerificationFailure = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.METADATA_KEY_VERIFICATION_FAILURE),
+                    )
+                },
+            )
+            updateViewState { copy(shouldShowDialogProgress = false) }
+            updateResourceIdlingResource.setIdle(true)
         }
     }
 
