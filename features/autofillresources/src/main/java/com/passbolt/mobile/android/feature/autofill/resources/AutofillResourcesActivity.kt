@@ -9,7 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.remember
 import androidx.core.content.IntentCompat
-import com.passbolt.mobile.android.common.lifecycleawarelazy.lifecycleAwareLazy
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AutofillMode
 import com.passbolt.mobile.android.core.navigation.compose.APP_NAVIGATOR_SCOPE
@@ -42,10 +41,10 @@ class AutofillResourcesActivity :
 
     override lateinit var resourceHandlingStrategy: AutofillResourceHandlingStrategy
 
-    private val bundledAutofillUri by lifecycleAwareLazy {
+    private val bundledAutofillUri by lazy {
         intent.getStringExtra(ActivityIntents.EXTRA_AUTOFILL_URI)
     }
-    private val bundledAutofillMode by lifecycleAwareLazy {
+    private val bundledAutofillMode by lazy {
         intent.getStringExtra(ActivityIntents.EXTRA_AUTOFILL_MODE_NAME).let {
             AutofillMode.valueOf(requireNotNull(it))
         }

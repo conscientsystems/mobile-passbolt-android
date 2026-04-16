@@ -7,9 +7,9 @@ import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 sealed class TransferAccountStatus(
-    @DrawableRes val icon: Int,
-    @StringRes val title: Int,
-    @StringRes val buttonText: Int,
+    @param:DrawableRes val icon: Int,
+    @param:StringRes val title: Int,
+    @param:StringRes val buttonText: Int,
 ) : Serializable {
     class Success :
         TransferAccountStatus(

@@ -16,7 +16,6 @@ import com.passbolt.mobile.android.core.resources.usecase.AddToFavouritesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.DeleteResourceUseCase
 import com.passbolt.mobile.android.core.resources.usecase.FavouritesInteractor
 import com.passbolt.mobile.android.core.resources.usecase.GetResourcesPaginatedUseCase
-import com.passbolt.mobile.android.core.resources.usecase.GetResourcesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.RemoveFromFavouritesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.ResourceInteractor
 import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor
@@ -59,7 +58,6 @@ val resourcesModule =
     module {
         resourcesDbModule()
 
-        singleOf(::GetResourcesUseCase)
         singleOf(::GetResourcesPaginatedUseCase)
         singleOf(::ResourceInteractor)
         singleOf(::SearchableMatcher)

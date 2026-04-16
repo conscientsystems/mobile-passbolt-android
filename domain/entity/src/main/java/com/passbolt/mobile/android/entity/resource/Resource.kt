@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.SET_NULL
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.passbolt.mobile.android.entity.folder.Folder
 import com.passbolt.mobile.android.entity.metadata.MetadataKeyType
@@ -33,6 +34,7 @@ import java.time.ZonedDateTime
  */
 
 @Entity(
+    indices = [Index(value = ["folderId"]), Index(value = ["resourceTypeId"])],
     foreignKeys = [
         ForeignKey(
             entity = Folder::class,
@@ -88,6 +90,7 @@ data class ResourceMetadata(
 )
 
 @Entity(
+    indices = [Index(value = ["resourceId"])],
     foreignKeys = [
         ForeignKey(
             entity = Resource::class,
