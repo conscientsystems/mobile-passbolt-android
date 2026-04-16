@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,9 +56,11 @@ import com.passbolt.mobile.android.feature.metadatakeytrust.NewMetadataKeyTrustD
 import com.passbolt.mobile.android.feature.metadatakeytrust.TrustedMetadataKeyDeletedDialog
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissMetadataKeyDialog
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ProceedWithPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TrustNewMetadataKey
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TrustedMetadataKeyDeleted
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.UpdateResource
@@ -166,6 +170,7 @@ internal fun ResourceFormScreen(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun ResourceFormScreen(
     state: ResourceFormState,
@@ -288,6 +293,35 @@ private fun ResourceFormScreen(
                 trustedKeyDeletedModel = model,
                 onTrustClick = { onIntent(TrustedMetadataKeyDeleted) },
                 onDismiss = { onIntent(DismissMetadataKeyDialog) },
+            )
+        }
+
+        if (state.showPasswordWarningDialog && state.passwordWarningType != null) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text(stringResource(LocalizationR.string.dialog_confirm_password_title)) },
+                text = {
+                    Text(
+                        stringResource(
+                            when (state.passwordWarningType) {
+                                PasswordWarningType.DATA_BREACH ->
+                                    LocalizationR.string.dialog_confirm_password_message_data_breach
+                                PasswordWarningType.LOW_ENTROPY ->
+                                    LocalizationR.string.dialog_confirm_password_message_low_entropy
+                            },
+                        ),
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { onIntent(DismissPasswordWarning) }) {
+                        Text(stringResource(LocalizationR.string.edit_password))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { onIntent(ProceedWithPasswordWarning) }) {
+                        Text(stringResource(LocalizationR.string.proceed))
+                    }
+                },
             )
         }
     }
