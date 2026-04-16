@@ -2,9 +2,11 @@ package com.passbolt.mobile.android.entity.resource
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 
 @Entity(
     primaryKeys = ["tagId", "resourceId"],
+    indices = [Index(value = ["resourceId"])],
     foreignKeys = [
         ForeignKey(
             entity = Tag::class,

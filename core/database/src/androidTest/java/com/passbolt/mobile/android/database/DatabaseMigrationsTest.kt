@@ -42,6 +42,7 @@ import com.passbolt.mobile.android.database.migrations.Migration1to2
 import com.passbolt.mobile.android.database.migrations.Migration20to21
 import com.passbolt.mobile.android.database.migrations.Migration21to22
 import com.passbolt.mobile.android.database.migrations.Migration22to23
+import com.passbolt.mobile.android.database.migrations.Migration23to24
 import com.passbolt.mobile.android.database.migrations.Migration2to3
 import com.passbolt.mobile.android.database.migrations.Migration3to4
 import com.passbolt.mobile.android.database.migrations.Migration4to5
@@ -625,6 +626,44 @@ class DatabaseMigrationsTest {
     }
 
     @Test
+    fun migrate23To24() {
+        helper
+            .createDatabase(TEST_DB, 23)
+            .apply {
+                close()
+            }
+
+        helper
+            .runMigrationsAndValidate(TEST_DB, 24, true, Migration23to24)
+            .apply {
+                val cursor =
+                    query(
+                        "SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'index_%'",
+                    )
+                val indexNames = mutableListOf<String>()
+                while (cursor.moveToNext()) {
+                    indexNames.add(cursor.getString(0))
+                }
+                cursor.close()
+
+                assertThat(indexNames).containsAtLeast(
+                    "index_Resource_folderId",
+                    "index_Resource_resourceTypeId",
+                    "index_ResourceAndTagsCrossRef_resourceId",
+                    "index_ResourceAndGroupsCrossRef_groupId",
+                    "index_UsersAndGroupCrossRef_groupId",
+                    "index_ResourceAndUsersCrossRef_userId",
+                    "index_FolderAndUsersCrossRef_folderId",
+                    "index_FolderAndGroupsCrossRef_groupId",
+                    "index_ResourceUri_resourceId",
+                    "index_MetadataPrivateKey_metadataKeyId",
+                )
+
+                close()
+            }
+    }
+
+    @Test
     fun migrateAll() {
         helper.createDatabase(TEST_DB, 1).apply {
             close()
@@ -658,6 +697,7 @@ class DatabaseMigrationsTest {
                 Migration20to21,
                 Migration21to22,
                 Migration22to23,
+                Migration23to24,
             ).build()
             .apply {
                 openHelper.writableDatabase

@@ -2,11 +2,13 @@ package com.passbolt.mobile.android.entity.user
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import com.passbolt.mobile.android.entity.resource.Permission
 import com.passbolt.mobile.android.entity.resource.Resource
 
 @Entity(
     primaryKeys = ["resourceId", "userId"],
+    indices = [Index(value = ["userId"])],
     foreignKeys = [
         ForeignKey(
             entity = Resource::class,
