@@ -21,16 +21,7 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings
+package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize
 
-internal sealed interface ExpertSettingsIntent {
-    data object GoBack : ExpertSettingsIntent
-
-    data object ToggleAuthRequiredOnEveryEntry : ExpertSettingsIntent
-
-    data object ToggleDeveloperMode : ExpertSettingsIntent
-
-    data object ToggleHideRootWarning : ExpertSettingsIntent
-
-    data object GoToPageSize : ExpertSettingsIntent
-}
+@Suppress("MagicNumber")
+internal val ALLOWED_PAGE_SIZES = listOf(50, 100, 250, 500, 1_000, 2_000, 5_000, 10_000, 25_000, 50_000, 100_000)

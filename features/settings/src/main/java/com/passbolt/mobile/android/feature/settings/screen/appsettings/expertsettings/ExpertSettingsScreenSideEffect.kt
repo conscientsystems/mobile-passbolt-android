@@ -24,4 +24,6 @@ package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertse
  */
 internal sealed interface ExpertSettingsScreenSideEffect {
     data object NavigateUp : ExpertSettingsScreenSideEffect
+
+    data object NavigateToPageSize : ExpertSettingsScreenSideEffect
 }

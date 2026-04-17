@@ -153,6 +153,7 @@ class AuthViewModelTest : KoinTest {
                 isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = true,
                 isAuthRequiredOnEveryEntry = true,
+                apiFetchPageSize = 2000,
             )
 
         val getAccountDataUseCase: GetAccountDataUseCase = get()

@@ -117,6 +117,7 @@ class WelcomeViewModelTest : KoinTest {
                 isHideRootDialogEnabled = false,
                 isAuthRequiredOnEveryEntry = true,
                 debugLogLastAppVersion = null,
+                apiFetchPageSize = 2000,
             )
     }
 
@@ -195,6 +196,7 @@ class WelcomeViewModelTest : KoinTest {
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = 2000,
                 )
 
             viewModel = get()

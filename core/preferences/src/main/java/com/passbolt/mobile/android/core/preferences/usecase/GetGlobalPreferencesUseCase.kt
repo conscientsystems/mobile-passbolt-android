@@ -42,6 +42,7 @@ class GetGlobalPreferencesUseCase(
         val isDeveloperModeEnabled = sharedPreferences.getBoolean(KEY_IS_DEVELOPER_MODE_ENABLED, false)
         val isHideRootDialogEnabled = sharedPreferences.getBoolean(KEY_IS_HIDE_ROOT_DIALOG_ENABLED, false)
         val isAuthRequiredOnEveryEntry = sharedPreferences.getBoolean(KEY_IS_AUTH_REQUIRED_ON_EVERY_ENTRY, true)
+        val apiFetchPageSize = sharedPreferences.getInt(KEY_API_FETCH_PAGE_SIZE, DEFAULT_API_FETCH_PAGE_SIZE)
         return Output(
             areDebugLogsEnabled,
             debugLogsCreationDateTime,
@@ -49,6 +50,7 @@ class GetGlobalPreferencesUseCase(
             isDeveloperModeEnabled,
             isHideRootDialogEnabled,
             isAuthRequiredOnEveryEntry,
+            apiFetchPageSize,
         )
     }
 
@@ -59,5 +61,6 @@ class GetGlobalPreferencesUseCase(
         val isDeveloperModeEnabled: Boolean,
         val isHideRootDialogEnabled: Boolean,
         val isAuthRequiredOnEveryEntry: Boolean,
+        val apiFetchPageSize: Int,
     )
 }
