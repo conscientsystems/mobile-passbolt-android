@@ -21,16 +21,12 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings
+package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize
 
-internal sealed interface ExpertSettingsIntent {
-    data object GoBack : ExpertSettingsIntent
+internal sealed interface PageSizeIntent {
+    data object GoBack : PageSizeIntent
 
-    data object ToggleAuthRequiredOnEveryEntry : ExpertSettingsIntent
-
-    data object ToggleDeveloperMode : ExpertSettingsIntent
-
-    data object ToggleHideRootWarning : ExpertSettingsIntent
-
-    data object GoToPageSize : ExpertSettingsIntent
+    data class PageSizeChanged(
+        val sliderIndex: Int,
+    ) : PageSizeIntent
 }

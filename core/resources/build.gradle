@@ -24,6 +24,7 @@ dependencies {
     implementation project(':supportedresourcetypes')
     implementation project(':folders')
     implementation project(':accounts')
+    implementation project(':preferences')
     implementation project(':passphrasememorycache')
     implementation project(':metadata')
     implementation project(':jsonmodel')

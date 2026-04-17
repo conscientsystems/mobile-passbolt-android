@@ -12,6 +12,7 @@ import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpdateLocalFold
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpsertLocalFoldersUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.entity.folder.FolderUpdateState.PENDING
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.ui.FolderModelWithAttributes
@@ -50,6 +51,7 @@ class FoldersInteractor(
     private val addLocalFolderPermissionsUseCase: AddLocalFolderPermissionsUseCase,
     private val updateLocalFoldersIsSharedUseCase: UpdateLocalFoldersIsSharedUseCase,
     private val getAccountDataUseCase: GetAccountDataUseCase,
+    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
 ) : SelectedAccountUseCase {
     @Suppress("ReturnCount")
     suspend fun fetchAndSaveFolders(): Output {
@@ -58,9 +60,10 @@ class FoldersInteractor(
         }
 
         try {
+            val pageSize = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
             markAllLocalFoldersAsPending()
             clearLocalFolderPermissions()
-            fetchAndProcessAllPages()?.let { failure -> return failure }
+            fetchAndProcessAllPages(pageSize)?.let { failure -> return failure }
             removeStaleLocalFolders()
             updateFoldersIsShared()
             return Output.Success
@@ -80,15 +83,15 @@ class FoldersInteractor(
         removeLocalFolderPermissionsUseCase.execute(UserIdInput(selectedAccountId))
     }
 
-    private suspend fun fetchAndProcessAllPages(): Output.Failure? {
-        when (val firstPageResult = fetchFoldersPage(FIRST_PAGE)) {
+    private suspend fun fetchAndProcessAllPages(pageSize: Int): Output.Failure? {
+        when (val firstPageResult = fetchFoldersPage(FIRST_PAGE, pageSize)) {
             is Failure<*> -> return Output.Failure(firstPageResult.authenticationState)
             is Success -> {
                 processFolders(firstPageResult.folders)
 
-                val totalPages = ceil(firstPageResult.pagination.count.toDouble() / FOLDERS_PAGE_SIZE).toInt()
+                val totalPages = ceil(firstPageResult.pagination.count.toDouble() / pageSize).toInt()
                 for (page in SECOND_PAGE..totalPages) {
-                    when (val pageResult = fetchFoldersPage(page)) {
+                    when (val pageResult = fetchFoldersPage(page, pageSize)) {
                         is Failure<*> -> return Output.Failure(pageResult.authenticationState)
                         is Success -> processFolders(pageResult.folders)
                     }
@@ -98,10 +101,12 @@ class FoldersInteractor(
         return null
     }
 
-    private suspend fun fetchFoldersPage(page: Int) =
-        getFoldersPaginatedUseCase.execute(
-            GetFoldersPaginatedUseCase.Input(page = page, limit = FOLDERS_PAGE_SIZE),
-        )
+    private suspend fun fetchFoldersPage(
+        page: Int,
+        pageSize: Int,
+    ) = getFoldersPaginatedUseCase.execute(
+        GetFoldersPaginatedUseCase.Input(page = page, limit = pageSize),
+    )
 
     private suspend fun processFolders(foldersWithAttributes: List<FolderModelWithAttributes>) {
         upsertLocalFoldersUseCase.execute(
@@ -140,7 +145,6 @@ class FoldersInteractor(
     }
 
     private companion object {
-        private const val FOLDERS_PAGE_SIZE = 2_000
         private const val FIRST_PAGE = 1
         private const val SECOND_PAGE = 2
     }

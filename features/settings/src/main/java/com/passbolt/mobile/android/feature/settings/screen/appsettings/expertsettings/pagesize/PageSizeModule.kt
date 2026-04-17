@@ -21,16 +21,11 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings
+package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize
 
-internal sealed interface ExpertSettingsIntent {
-    data object GoBack : ExpertSettingsIntent
+import org.koin.core.module.Module
+import org.koin.core.module.dsl.viewModelOf
 
-    data object ToggleAuthRequiredOnEveryEntry : ExpertSettingsIntent
-
-    data object ToggleDeveloperMode : ExpertSettingsIntent
-
-    data object ToggleHideRootWarning : ExpertSettingsIntent
-
-    data object GoToPageSize : ExpertSettingsIntent
+internal fun Module.pageSizeModule() {
+    viewModelOf(::PageSizeViewModel)
 }

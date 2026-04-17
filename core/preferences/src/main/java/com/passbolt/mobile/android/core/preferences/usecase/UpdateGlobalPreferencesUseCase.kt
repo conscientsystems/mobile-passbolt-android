@@ -52,6 +52,9 @@ class UpdateGlobalPreferencesUseCase(
             input.isAuthRequiredOnEveryEntry?.let {
                 putBoolean(KEY_IS_AUTH_REQUIRED_ON_EVERY_ENTRY, it)
             }
+            input.apiFetchPageSize?.let {
+                putInt(KEY_API_FETCH_PAGE_SIZE, it)
+            }
             apply()
         }
     }
@@ -63,5 +66,6 @@ class UpdateGlobalPreferencesUseCase(
         val isDeveloperModeEnabled: Boolean? = null,
         val isHideRootDialogEnabled: Boolean? = null,
         val isAuthRequiredOnEveryEntry: Boolean? = null,
+        val apiFetchPageSize: Int? = null,
     )
 }

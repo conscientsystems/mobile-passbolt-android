@@ -37,14 +37,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
+import com.passbolt.mobile.android.core.navigation.compose.keys.SettingsNavigationKey
 import com.passbolt.mobile.android.core.ui.R
+import com.passbolt.mobile.android.core.ui.menu.OpenableSettingsItem
 import com.passbolt.mobile.android.core.ui.menu.SwitchableSettingsItem
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoBack
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoToPageSize
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleAuthRequiredOnEveryEntry
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleHideRootWarning
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateToPageSize
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateUp
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -67,6 +71,7 @@ internal fun ExpertSettingsScreen(
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
             NavigateUp -> navigator.navigateBack()
+            NavigateToPageSize -> navigator.navigateToKey(SettingsNavigationKey.PageSize)
         }
     }
 }
@@ -113,6 +118,12 @@ private fun ExpertSettingsScreen(
                     isChecked = state.isHideRootWarningChecked,
                     isEnabled = state.isHideRootWarningEnabled,
                     onCheckedChange = { onIntent(ToggleHideRootWarning) },
+                )
+
+                OpenableSettingsItem(
+                    iconPainter = painterResource(R.drawable.ic_file_sliders),
+                    title = stringResource(LocalizationR.string.settings_app_settings_expert_settings_fetch_page_size),
+                    onClick = { onIntent(GoToPageSize) },
                 )
             }
         },

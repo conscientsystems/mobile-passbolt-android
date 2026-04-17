@@ -91,6 +91,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = 2000,
                 )
 
             viewModel = get()
@@ -114,6 +115,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = 2000,
                 )
 
             viewModel = get()
@@ -139,6 +141,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = 2000,
                 )
 
             viewModel = get()
@@ -164,6 +167,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = 2000,
                 )
 
             viewModel = get()
