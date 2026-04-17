@@ -16,6 +16,7 @@ fun Module.autofillResourcesModule() {
             getAccountsUseCase = get(),
             uri = params.getOrNull(),
             getLocalResourceUseCase = get(),
+            totpParametersProvider = get(),
             coroutineLaunchContext = get(),
         )
     }

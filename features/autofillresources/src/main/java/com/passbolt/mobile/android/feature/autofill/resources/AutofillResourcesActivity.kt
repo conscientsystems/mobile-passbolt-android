@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.core.content.IntentCompat
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AutofillMode
+import com.passbolt.mobile.android.core.navigation.AutofillType
 import com.passbolt.mobile.android.core.navigation.compose.APP_NAVIGATOR_SCOPE
 import com.passbolt.mobile.android.core.ui.orientation.LockCompactScreenOrientation
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.NewResourceCreated
@@ -49,6 +50,12 @@ class AutofillResourcesActivity :
             AutofillMode.valueOf(requireNotNull(it))
         }
     }
+    private val bundledAutofillType by lifecycleAwareLazy {
+        intent
+            .getStringExtra(ActivityIntents.EXTRA_AUTOFILL_TYPE_NAME)
+            ?.let { AutofillType.valueOf(it) }
+            ?: AutofillType.CREDENTIALS
+    }
 
     private lateinit var returnAutofillDatasetStrategy: ReturnAutofillDatasetStrategy
 
@@ -81,6 +88,7 @@ class AutofillResourcesActivity :
             ) {
                 AutofillResourcesScreen(
                     autofillUri = bundledAutofillUri,
+                    autofillType = bundledAutofillType,
                     returnAutofillDatasetStrategy = returnAutofillDatasetStrategy,
                     viewModel = viewModel,
                 )

@@ -22,6 +22,7 @@ import com.passbolt.mobile.android.core.extension.visible
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AutofillMode
+import com.passbolt.mobile.android.core.navigation.AutofillType
 import com.passbolt.mobile.android.core.notifications.accessibilityautofill.AccessibilityServiceNotificationFactory
 import com.passbolt.mobile.android.core.notifications.accessibilityautofill.AccessibilityServiceNotificationFactory.Companion.ACCESSIBILITY_SERVICE_NOTIFICATION_ID
 import com.passbolt.mobile.android.feature.autofill.databinding.ViewAutofillLabelBinding
@@ -68,12 +69,14 @@ class AccessibilityService :
     private var overlayView: ViewAutofillLabelBinding? = null
     private val powerManager: PowerManager by inject()
     private var uri: String? = null
+    private var pendingAutofillType: AutofillType = AutofillType.CREDENTIALS
     private val accessibilityServiceNotificationFactory: AccessibilityServiceNotificationFactory by inject()
     private var overlayViewHeight: Int = 0
     private var anchorNode: AccessibilityNodeInfo? = null
     private var isOverlayAboveAnchor: Boolean = false
     private var overlayAnchorObserverRunning = false
     private var overlayAnchorObserverRunnable: Job? = null
+    private var clearLastFillJob: Job? = null
     private var lastAnchorX = 0
     private var lastAnchorY = 0
     private var lastPosition: OverlayPosition? = null
@@ -128,8 +131,8 @@ class AccessibilityService :
 
     private fun stateChanged(event: AccessibilityEvent) {
         val root = rootInActiveWindow
-        if (AccessibilityCommunicator.lastCredentials == null) {
-            Timber.d("Last credentials are null - ignoring event")
+        if (AccessibilityCommunicator.lastFill == null) {
+            Timber.d("Last fill payload is null - ignoring event")
         } else if (event.source == null ||
             (event.packageName != null && event.packageName.contains(PASSBOLT_PACKAGE))
         ) {
@@ -138,7 +141,7 @@ class AccessibilityService :
         } else if (root == null || root.packageName != event.packageName) {
             Timber.d("Root is null or root package name is different than event - ignoring")
         } else if (scanAndAutofill(root, event)) {
-            Timber.d("Scanning return false - hiding overlay")
+            Timber.d("Scanning returned true - hiding overlay")
             hideOverlay()
         }
     }
@@ -154,16 +157,24 @@ class AccessibilityService :
         } else if (root == null || root.packageName != event.packageName) {
             Timber.d("Root is null or root package name is different than event - ignoring")
         } else if (event.source?.isPassword != true &&
-            !accessibilityOperationsProvider.isUsernameEditText(root, event)
+            !accessibilityOperationsProvider.isUsernameEditText(root, event) &&
+            !accessibilityOperationsProvider.isTotpEditText(root, event)
         ) {
-            Timber.d("Field is not a password or username - hiding overlay")
+            Timber.d("Field is not a password, username or totp - hiding overlay")
             hideOverlay()
         } else if (scanAndAutofill(root, event)) {
-            Timber.d("Scanning return false - hiding overlay")
+            Timber.d("Scanning returned true - hiding overlay")
             hideOverlay()
         } else {
-            Timber.d("View clicked else - displaying overlay")
+            val classifiedType = classifyAutofillType(root, event)
+            if (classifiedType == null) {
+                Timber.d("No autofillable fields classified - hiding overlay")
+                hideOverlay()
+                return
+            }
+            Timber.d("View clicked else - displaying overlay for $classifiedType")
             uri = accessibilityOperationsProvider.getUri(root)
+            pendingAutofillType = classifiedType
             if (Settings.canDrawOverlays(this)) {
                 displayOverlay(event)
             } else {
@@ -174,6 +185,11 @@ class AccessibilityService :
             }
         }
     }
+
+    private fun classifyAutofillType(
+        root: AccessibilityNodeInfo,
+        event: AccessibilityEvent,
+    ): AutofillType? = accessibilityOperationsProvider.classifyAutofillType(root, event)
 
     private fun scanAndAutofill(
         root: AccessibilityNodeInfo,
@@ -187,47 +203,73 @@ class AccessibilityService :
                 allEditTexts,
                 passwordEditText?.viewIdResourceName,
             )
-        val uri = accessibilityOperationsProvider.getUri(root)
+        val totpEditText = accessibilityOperationsProvider.getTotpNode(allEditTexts)
+        val currentUri = accessibilityOperationsProvider.getUri(root)
 
-        if (uri != null &&
-            usernameEditText != null &&
-            passwordEditText != null &&
-            accessibilityOperationsProvider.needToAutofill(AccessibilityCommunicator.lastCredentials, uri)
+        val pendingFill = AccessibilityCommunicator.lastFill
+        if (currentUri != null &&
+            pendingFill != null &&
+            accessibilityOperationsProvider.needToAutofill(pendingFill, currentUri)
         ) {
-            fillUsernameField(usernameEditText)
-            fillPasswordField(passwordEditText)
-            filled = true
-            AccessibilityCommunicator.lastCredentials = null
+            filled = fillAvailable(pendingFill, usernameEditText, passwordEditText, totpEditText)
+            if (filled) {
+                AccessibilityCommunicator.lastFill = null
+                clearLastFillJob?.cancel()
+                clearLastFillJob = null
+            }
         }
 
-        if (AccessibilityCommunicator.lastCredentials != null) {
-            scope.launch {
-                delay(CLEAR_CREDENTIALS_DELAY)
-                AccessibilityCommunicator.lastCredentials = null
-            }
+        if (AccessibilityCommunicator.lastFill != null) {
+            clearLastFillJob?.cancel()
+            clearLastFillJob =
+                scope.launch {
+                    delay(CLEAR_CREDENTIALS_DELAY)
+                    AccessibilityCommunicator.lastFill = null
+                    clearLastFillJob = null
+                }
         }
         return filled
     }
 
-    private fun fillUsernameField(usernameEditText: AccessibilityNodeInfo) {
-        accessibilityOperationsProvider.fillNode(
-            usernameEditText,
-            AccessibilityCommunicator.lastCredentials!!.username,
-        )
-    }
-
-    private fun fillPasswordField(passwordEditText: AccessibilityNodeInfo) {
-        accessibilityOperationsProvider.fillNode(
-            passwordEditText,
-            AccessibilityCommunicator.lastCredentials!!.password,
-        )
+    private fun fillAvailable(
+        payload: AccessibilityCommunicator.LastFill,
+        usernameNode: AccessibilityNodeInfo?,
+        passwordNode: AccessibilityNodeInfo?,
+        totpNode: AccessibilityNodeInfo?,
+    ): Boolean {
+        var anyFilled = false
+        payload.username?.let { value ->
+            usernameNode?.let { node ->
+                accessibilityOperationsProvider.fillNode(node, value)
+                anyFilled = true
+            }
+        }
+        payload.password?.let { value ->
+            passwordNode?.let { node ->
+                accessibilityOperationsProvider.fillNode(node, value)
+                anyFilled = true
+            }
+        }
+        payload.totpCode?.let { value ->
+            totpNode?.let { node ->
+                accessibilityOperationsProvider.fillNode(node, value)
+                anyFilled = true
+            }
+        }
+        return anyFilled
     }
 
     private fun openResourcesActivity() {
         startActivity(
-            ActivityIntents.autofill(applicationContext, AutofillMode.ACCESSIBILITY.name, uri).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
+            ActivityIntents
+                .autofill(
+                    context = applicationContext,
+                    autofillModeName = AutofillMode.ACCESSIBILITY.name,
+                    uri = uri,
+                    autofillTypeName = pendingAutofillType.name,
+                ).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                },
         )
     }
 

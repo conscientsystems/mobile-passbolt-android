@@ -1,6 +1,4 @@
-package com.passbolt.mobile.android.core.autofill.accessibility
-
-import java.util.concurrent.atomic.AtomicReference
+package com.passbolt.mobile.android.core.navigation
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,19 +22,8 @@ import java.util.concurrent.atomic.AtomicReference
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-object AccessibilityCommunicator {
-    private val _lastFill = AtomicReference<LastFill?>(null)
-
-    var lastFill: LastFill?
-        get() = _lastFill.get()
-        set(value) {
-            _lastFill.set(value)
-        }
-
-    data class LastFill(
-        val username: String?,
-        val password: String?,
-        val totpCode: String?,
-        val uri: String?,
-    )
+enum class AutofillType {
+    CREDENTIALS,
+    CREDENTIALS_AND_TOTP,
+    TOTP,
 }

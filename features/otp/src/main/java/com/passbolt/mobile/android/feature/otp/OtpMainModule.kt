@@ -31,14 +31,30 @@ import com.passbolt.mobile.android.core.ui.controller.TotpComposeController
 import com.passbolt.mobile.android.feature.otp.navigation.OtpFeatureNavigation
 import com.passbolt.mobile.android.feature.otp.screen.OtpViewModel
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val otpModule =
     module {
-        viewModelOf(::OtpViewModel)
+        viewModel { params ->
+            OtpViewModel(
+                showSuggestedModel = params.get(),
+                getSelectedAccountDataUseCase = get(),
+                getLocalResourcesUseCase = get(),
+                otpModelMapper = get(),
+                totpParametersProvider = get(),
+                coroutineLaunchContext = get(),
+                dataRefreshTrackingFlow = get(),
+                metadataPrivateKeysHelperInteractor = get(),
+                timerFactory = get(),
+                canCreateResourceUse = get(),
+                resourceUpdateActionsInteractorFactory = get(),
+                secretPropertiesActionsInteractorFactory = get(),
+                autofillUriMatcher = get(),
+            )
+        }
         singleOf(::TotpComposeController)
         singleOf(::CoroutineTimerFactory) bind TimerFactory::class
         single<FeatureModuleNavigation>(named(Feature.OTP)) { OtpFeatureNavigation() }

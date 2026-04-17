@@ -37,6 +37,7 @@ object ActivityIntents {
     const val EXTRA_USER_ID = "USER_ID"
     const val EXTRA_AUTOFILL_URI = "URI"
     const val EXTRA_AUTOFILL_MODE_NAME = "AUTOFILL_MODE"
+    const val EXTRA_AUTOFILL_TYPE_NAME = "AUTOFILL_TYPE"
     const val EXTRA_ACCOUNT_SETUP_DATA = "ACCOUNT_SETUP_DATA"
 
     fun setup(
@@ -51,12 +52,6 @@ object ActivityIntents {
         Intent().apply {
             setClassName(context, Main.MAIN_ACTIVITY)
             flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-
-    fun bringHome(context: Context) =
-        Intent().apply {
-            setClassName(context, Main.MAIN_ACTIVITY)
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
     fun start(context: Context) =
@@ -84,9 +79,11 @@ object ActivityIntents {
         context: Context,
         autofillModeName: String,
         uri: String? = null,
+        autofillTypeName: String = AutofillType.CREDENTIALS.name,
     ) = Intent().apply {
         setClassName(context, Autofillresources.AUTOFILL_RESOURCES_ACTIVITY)
         putExtra(EXTRA_AUTOFILL_MODE_NAME, autofillModeName)
+        putExtra(EXTRA_AUTOFILL_TYPE_NAME, autofillTypeName)
         uri?.let { putExtra(EXTRA_AUTOFILL_URI, uri) }
     }
 

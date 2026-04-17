@@ -31,6 +31,7 @@ import com.passbolt.mobile.android.ui.TrustedKeyDeletedModel
 data class OtpState(
     val otps: List<OtpItemWrapper> = emptyList(),
     val filteredOtps: List<OtpItemWrapper> = emptyList(),
+    val suggestedOtps: List<OtpItemWrapper> = emptyList(),
     val isRefreshing: Boolean = false,
     val searchQuery: String = "",
     val showProgress: Boolean = false,

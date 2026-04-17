@@ -30,6 +30,7 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.NotCompleted
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
+import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
@@ -49,6 +50,7 @@ import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
+import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
@@ -129,6 +131,7 @@ import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
 internal class OtpViewModel(
+    private val showSuggestedModel: ShowSuggestedModel,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
     private val getLocalResourcesUseCase: GetLocalResourcesUseCase,
     private val otpModelMapper: OtpModelMapper,
@@ -140,6 +143,7 @@ internal class OtpViewModel(
     private val canCreateResourceUse: CanCreateResourceUseCase,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
     private val secretPropertiesActionsInteractorFactory: SecretPropertiesActionsInteractorFactory,
+    private val autofillUriMatcher: AutofillUriMatcher,
 ) : SideEffectViewModel<OtpState, OtpSideEffect>(OtpState()),
     KoinComponent {
     init {
@@ -149,7 +153,7 @@ internal class OtpViewModel(
         }
         viewModelScope.launch(coroutineLaunchContext.io) {
             val otps = getOtpResources()
-            updateViewState { copy(otps = otps) }
+            updateViewState { copy(otps = otps, suggestedOtps = getSuggestedOtps(otps)) }
             updateOtpsCounterTime()
         }
     }
@@ -173,7 +177,7 @@ internal class OtpViewModel(
             is Search -> searchQueryChanged(intent.searchQuery)
             is RevealOtp -> {
                 updateViewState { copy(showOtpMoreBottomSheet = false) }
-                otpClick(intent.otpItemWrapper)
+                otpClick(intent.resource)
             }
             is OpenOtpMoreMenu -> updateViewState { copy(showOtpMoreBottomSheet = true, moreMenuResource = intent.otpItemWrapper) }
             is CloseOtpMoreMenu -> updateViewState { copy(showOtpMoreBottomSheet = false) }
@@ -358,7 +362,7 @@ internal class OtpViewModel(
     }
 
     private fun copyTotp(otpItemWrapper: OtpItemWrapper) {
-        fetchTotp(otpItemWrapper) { totp ->
+        fetchTotp(otpItemWrapper.resource) { totp ->
             val otpParameters =
                 totpParametersProvider.provideOtpParameters(
                     secretKey = totp.result.key,
@@ -417,23 +421,23 @@ internal class OtpViewModel(
         }
     }
 
-    private fun otpClick(otpItemWrapper: OtpItemWrapper) {
+    private fun otpClick(resource: ResourceModel) {
         updateViewState { copy(showOtpMoreBottomSheet = false) }
-        fetchTotp(otpItemWrapper) {
-            showTotp(it, otpItemWrapper.resource.resourceId)
+        fetchTotp(resource) {
+            showTotp(it, resource.resourceId)
         }
     }
 
     private fun fetchTotp(
-        otpItemWrapper: OtpItemWrapper,
+        resource: ResourceModel,
         afterFetchAction: (SecretPropertyActionResult.Success<TotpSecret>) -> Unit,
     ) {
         viewModelScope.launch(coroutineLaunchContext.io) {
             updateViewState {
-                copy(otps = otps.refreshingOnly(otpItemWrapper.resource.resourceId))
+                copy(otps = otps.refreshingOnly(resource.resourceId))
             }
 
-            val secretPropertiesActionsInteractor = secretPropertiesActionsInteractorFactory.create(otpItemWrapper.resource)
+            val secretPropertiesActionsInteractor = secretPropertiesActionsInteractorFactory.create(resource)
 
             performSecretPropertyAction(
                 action = { secretPropertiesActionsInteractor.provideOtp() },
@@ -502,7 +506,7 @@ internal class OtpViewModel(
 
                 if (updated.isExpired()) {
                     updateViewState { copy(otps = otps.allReset()) }
-                    fetchTotp(updated) {
+                    fetchTotp(updated.resource) {
                         showTotp(it, updated.resource.resourceId)
                     }
                 } else {
@@ -522,7 +526,7 @@ internal class OtpViewModel(
                 }
                 FinishedWithSuccess -> {
                     val otps = getOtpResources()
-                    updateViewState { copy(otps = otps, isRefreshing = false) }
+                    updateViewState { copy(otps = otps, suggestedOtps = getSuggestedOtps(otps), isRefreshing = false) }
                 }
                 NotCompleted -> {
                     // do nothing
@@ -539,6 +543,19 @@ internal class OtpViewModel(
 
         updateViewState { copy(userAvatar = avatarUrl) }
     }
+
+    private fun getSuggestedOtps(otps: List<OtpItemWrapper>): List<OtpItemWrapper> =
+        when (showSuggestedModel) {
+            is ShowSuggestedModel.DoNotShow -> emptyList()
+            is ShowSuggestedModel.Show ->
+                otps.filter { otpItem ->
+                    val resourceUris =
+                        otpItem.resource.metadataJsonModel.uris
+                            .orEmpty() +
+                            listOfNotNull(otpItem.resource.metadataJsonModel.uri)
+                    autofillUriMatcher.isMatching(showSuggestedModel.suggestedUri, resourceUris)
+                }
+        }
 
     private suspend fun getOtpResources(searchQuery: String? = null): List<OtpItemWrapper> =
         getLocalResourcesUseCase

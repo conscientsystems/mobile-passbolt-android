@@ -10,11 +10,10 @@ import android.service.autofill.FillResponse
 import android.service.autofill.SaveCallback
 import android.service.autofill.SaveRequest
 import com.passbolt.mobile.android.core.autofill.system.AssistStructureParser
-import com.passbolt.mobile.android.core.autofill.system.AutofillField
-import com.passbolt.mobile.android.core.autofill.system.FillableInputsFinder
+import com.passbolt.mobile.android.core.autofill.system.classification.AutofillFieldClassifier
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AutofillMode
-import com.passbolt.mobile.android.ui.ParsedStructure
+import com.passbolt.mobile.android.core.navigation.AutofillType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import timber.log.Timber
@@ -47,7 +46,7 @@ class PassboltAutofillService :
     AutofillService(),
     KoinComponent {
     private val assistStructureParser: AssistStructureParser by inject()
-    private val fillableInputsFinder: FillableInputsFinder by inject()
+    private val autofillFieldClassifier: AutofillFieldClassifier by inject()
     private val remoteViewsFactory: RemoteViewsFactory by inject()
 
     override fun onFillRequest(
@@ -63,28 +62,22 @@ class PassboltAutofillService :
                         request.fillContexts.last().structure,
                     )
 
-            val autofillableViews =
-                arrayOf(
-                    findAutofillableView(AutofillField.USERNAME, parsedAutofillStructures.structures),
-                    findAutofillableView(AutofillField.PASSWORD, parsedAutofillStructures.structures),
-                ).filterNotNull()
-                    .let { structures ->
-                        // enforce same domain for all fields
-                        val domains = structures.map { it.domain }.toSet()
-                        if (domains.size == 1) structures else emptyList()
-                    }
+            val classification = autofillFieldClassifier.classifyFill(parsedAutofillStructures.structures)
 
             // autofillable views not found
-            if (parsedAutofillStructures.hasDifferentDomains || autofillableViews.isEmpty()) {
+            if (parsedAutofillStructures.hasDifferentDomains || classification == null) {
                 Timber.d("Did not find any autofillable views or views have different web domains")
                 null
             } else {
-                Timber.d("Showing authentication prompt")
+                Timber.d("Showing authentication prompt for ${classification.type}")
                 FillResponse
                     .Builder()
                     .setAuthentication(
-                        autofillableViews.map { it.id }.toTypedArray(),
-                        autofillResourcesPendingIntent(autofillableViews.first().domain).intentSender,
+                        classification.anchorFields.map { it.id }.toTypedArray(),
+                        autofillResourcesPendingIntent(
+                            uri = classification.anchorFields.first().domain,
+                            type = classification.type,
+                        ).intentSender,
                         remoteViewsFactory.getAutofillSelectDropdown(packageName),
                     ).build()
             }
@@ -103,16 +96,19 @@ class PassboltAutofillService :
         // save is currently not supported
     }
 
-    private fun findAutofillableView(
-        field: AutofillField,
-        autofillStructure: Set<ParsedStructure>,
-    ) = fillableInputsFinder.findStructureForAutofillFields(field, autofillStructure)
-
-    private fun autofillResourcesPendingIntent(uri: String?): PendingIntent =
+    private fun autofillResourcesPendingIntent(
+        uri: String?,
+        type: AutofillType,
+    ): PendingIntent =
         PendingIntent.getActivity(
             applicationContext,
             AUTOFILL_RESOURCES_REQUEST_CODE,
-            ActivityIntents.autofill(this, AutofillMode.AUTOFILL.name, uri),
+            ActivityIntents.autofill(
+                context = this,
+                autofillModeName = AutofillMode.AUTOFILL.name,
+                uri = uri,
+                autofillTypeName = type.name,
+            ),
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE,
         )
 

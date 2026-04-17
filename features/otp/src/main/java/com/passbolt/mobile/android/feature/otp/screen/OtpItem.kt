@@ -52,6 +52,8 @@ internal fun OtpItem(
     resourceIconProvider: ResourceIconProvider,
     onItemClick: (OtpItemWrapper) -> Unit,
     onMoreClick: (OtpItemWrapper) -> Unit,
+    showMoreMenu: Boolean = true,
+    showEyeIcon: Boolean = true,
     otpFormatter: OtpFormatter = koinInject(),
     totpController: TotpComposeController = koinInject(),
 ) {
@@ -163,7 +165,7 @@ internal fun OtpItem(
                             trackColor = Color.Transparent,
                         )
                     }
-                    else -> {
+                    showEyeIcon -> {
                         Icon(
                             painter = painterResource(R.drawable.ic_eye_visible),
                             contentDescription = null,
@@ -174,13 +176,15 @@ internal fun OtpItem(
             }
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        if (showMoreMenu) {
+            Spacer(modifier = Modifier.width(8.dp))
 
-        IconButton(
-            onClick = { onMoreClick(otpItem) },
-            modifier = Modifier.size(40.dp),
-        ) {
-            Icon(Icons.Default.MoreVert, contentDescription = null)
+            IconButton(
+                onClick = { onMoreClick(otpItem) },
+                modifier = Modifier.size(40.dp),
+            ) {
+                Icon(Icons.Default.MoreVert, contentDescription = null)
+            }
         }
     }
 }
