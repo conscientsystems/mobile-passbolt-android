@@ -21,6 +21,8 @@ class AutofillHintsFactory(
             AutofillField.PASSWORD ->
                 getLocalizedOrEnglishValues(LocalizationR.array.password_hint_values) +
                     View.AUTOFILL_HINT_PASSWORD
+            AutofillField.TOTP ->
+                getLocalizedOrEnglishValues(LocalizationR.array.totp_hint_values)
         }
 
     private fun getLocalizedOrEnglishValues(

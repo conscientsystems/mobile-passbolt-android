@@ -1,5 +1,7 @@
 package com.passbolt.mobile.android.feature.autofill.resources
 
+import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.AutofillPayload
+
 sealed interface AutofillResourcesSideEffect {
     data object NavigateToAuth : AutofillResourcesSideEffect
 
@@ -10,9 +12,7 @@ sealed interface AutofillResourcesSideEffect {
     ) : AutofillResourcesSideEffect
 
     data class AutofillReturn(
-        val username: String,
-        val password: String,
-        val uri: String?,
+        val payload: AutofillPayload,
     ) : AutofillResourcesSideEffect
 }
 

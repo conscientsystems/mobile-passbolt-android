@@ -675,6 +675,25 @@
         <item>passphrase</item>
     </string-array>
 
+    <!--
+      arrays can be inconsistent when in other languages
+      index / size is not used in code
+    -->
+    <string-array name="totp_hint_values"
+        tools:ignore="InconsistentArrays">
+        <item>otp</item>
+        <item>totp</item>
+        <item>one-time</item>
+        <item>one-time-code</item>
+        <item>verification</item>
+        <item>verification code</item>
+        <item>auth code</item>
+        <item>authentication code</item>
+        <item>2fa</item>
+        <item>mfa</item>
+        <item>security code</item>
+    </string-array>
+
     <string-array name="dialog_encourage_autofill_setup_steps">
         <item>&lt;b>Turn on Autofill&lt;/b> settings</item>
         <item>Choose &lt;b>Passbolt!&lt;/b></item>

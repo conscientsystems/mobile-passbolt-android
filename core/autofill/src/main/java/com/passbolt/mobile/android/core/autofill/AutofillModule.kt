@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityOper
 import com.passbolt.mobile.android.core.autofill.conflict.DetectSystemAutofillConflict
 import com.passbolt.mobile.android.core.autofill.system.AutofillHintsFactory
 import com.passbolt.mobile.android.core.autofill.system.FillableInputsFinder
+import com.passbolt.mobile.android.core.autofill.system.classification.AutofillFieldClassifier
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -37,6 +38,7 @@ import org.koin.dsl.module
 val autofillModule =
     module {
         factoryOf(::FillableInputsFinder)
+        factoryOf(::AutofillFieldClassifier)
         singleOf(::AccessibilityOperationsProvider)
         factory {
             AutofillHintsFactory(

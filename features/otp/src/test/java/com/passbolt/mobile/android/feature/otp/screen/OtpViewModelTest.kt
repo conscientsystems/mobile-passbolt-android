@@ -34,6 +34,7 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.common.search.SearchableMatcher
+import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.commontest.coroutinetimer.TestCoroutineTimerFactory
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
@@ -45,6 +46,7 @@ import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesAction
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
+import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
@@ -88,6 +90,7 @@ import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.test.KoinTest
@@ -119,9 +122,26 @@ class OtpViewModelTest : KoinTest {
                         single { mock<CanCreateResourceUseCase>() }
                         single { mock<ResourceUpdateActionsInteractorFactory>() }
                         single { mock<SecretPropertiesActionsInteractorFactory>() }
+                        single { mock<AutofillUriMatcher>() }
                         singleOf(::TestCoroutineTimerFactory) bind TimerFactory::class
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
-                        factoryOf(::OtpViewModel)
+                        factory { (showSuggestedModel: ShowSuggestedModel) ->
+                            OtpViewModel(
+                                showSuggestedModel = showSuggestedModel,
+                                getSelectedAccountDataUseCase = get(),
+                                getLocalResourcesUseCase = get(),
+                                otpModelMapper = get(),
+                                totpParametersProvider = get(),
+                                coroutineLaunchContext = get(),
+                                dataRefreshTrackingFlow = get(),
+                                metadataPrivateKeysHelperInteractor = get(),
+                                timerFactory = get(),
+                                canCreateResourceUse = get(),
+                                resourceUpdateActionsInteractorFactory = get(),
+                                secretPropertiesActionsInteractorFactory = get(),
+                                autofillUriMatcher = get(),
+                            )
+                        }
                         singleOf(::JsonPathJsonPathOps) bind JsonPathsOps::class
                         single {
                             Configuration
@@ -170,7 +190,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should be able to open and close create resource`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.onIntent(OpenCreateResourceMenu)
 
@@ -185,7 +205,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should be able to open and close switch account`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.onIntent(SearchEndIconAction)
 
@@ -200,7 +220,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should be able to open and close otp menu`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.onIntent(OpenOtpMoreMenu(clickedOtp))
 
@@ -218,7 +238,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `avatar should change to clear after search query entered and come back when cleared`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.onIntent(Search("abc"))
 
@@ -235,7 +255,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should enter filtering mode on search query`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.onIntent(Search("resource 2"))
 
@@ -250,7 +270,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should show refresh while resources are loading`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.viewState.drop(1).test {
                 val dataRefreshStatusFlow = get<DataRefreshTrackingFlow>()
@@ -268,7 +288,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should initialize with avatar URL`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.viewState.test {
                 val state = awaitItem()
@@ -280,7 +300,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should navigate to create resource form when create password intent is received`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(CreatePassword)
@@ -294,7 +314,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should navigate to create totp screen when create totp intent is received`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(CreateTotp)
@@ -307,7 +327,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should process otp scan result with successful creation`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.onIntent(OtpQRScanReturned(otpCreated = true, otpManualCreationChosen = false))
 
@@ -319,7 +339,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should process otp scan result with manual creation chosen`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(OtpQRScanReturned(otpCreated = false, otpManualCreationChosen = true))
@@ -333,7 +353,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should process resource form result with created resource`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(
@@ -356,7 +376,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should process resource form result with edited resource`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(
@@ -378,7 +398,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should navigate to edit resource form when edit otp intent is received`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(EditOtp(clickedOtp))
@@ -393,7 +413,7 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should show delete confirmation dialog when delete otp intent is received`() =
         runTest {
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.onIntent(OtpIntent.DeleteOtp(clickedOtp))
 
@@ -411,7 +431,7 @@ class OtpViewModelTest : KoinTest {
             whenever(canCreateResourceUseCase.execute(any())) doReturn
                 CanCreateResourceUseCase.Output(canCreateResource = false)
 
-            viewModel = get()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(CreatePassword)

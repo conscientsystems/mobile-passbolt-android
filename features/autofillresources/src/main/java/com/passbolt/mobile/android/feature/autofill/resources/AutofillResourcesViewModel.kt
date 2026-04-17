@@ -4,6 +4,9 @@ import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAccountsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
+import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.InvalidTotpInput
+import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
@@ -16,7 +19,10 @@ import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesS
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesSideEffect.ShowToast
 import com.passbolt.mobile.android.feature.autofill.resources.ToastType.DECRYPTION_FAILURE
 import com.passbolt.mobile.android.feature.autofill.resources.ToastType.FETCH_FAILURE
+import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.AutofillPayload
+import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -26,6 +32,7 @@ class AutofillResourcesViewModel(
     getAccountsUseCase: GetAccountsUseCase,
     private val uri: String?,
     private val getLocalResourceUseCase: GetLocalResourceUseCase,
+    private val totpParametersProvider: TotpParametersProvider,
     private val coroutineLaunchContext: CoroutineLaunchContext,
 ) : SideEffectViewModel<AutofillResourcesState, AutofillResourcesSideEffect>(AutofillResourcesState()),
     KoinComponent {
@@ -49,26 +56,71 @@ class AutofillResourcesViewModel(
         updateViewState { copy(showHome = true) }
     }
 
-    private fun selectAutofillItem(resourceModel: ResourceModel) {
+    private fun selectAutofillItem(resource: ResourceModel) {
         updateViewState { copy(showProgress = true) }
-        val secretPropertiesActionsInteractor: SecretPropertiesActionsInteractor =
-            get { parametersOf(resourceModel) }
         viewModelScope.launch(coroutineLaunchContext.io) {
-            performSecretPropertyAction(
-                action = { secretPropertiesActionsInteractor.providePassword() },
-                doOnFetchFailure = { emitSideEffect(ShowToast(FETCH_FAILURE)) },
-                doOnDecryptionFailure = { emitSideEffect(ShowToast(DECRYPTION_FAILURE)) },
-                doOnSuccess = {
-                    emitSideEffect(
-                        AutofillReturn(
-                            username = resourceModel.metadataJsonModel.username.orEmpty(),
-                            password = it.result.orEmpty(),
-                            uri = uri,
-                        ),
-                    )
-                },
-            )
+            val payload = buildPayload(resource)
+            if (payload != null) {
+                emitSideEffect(AutofillReturn(payload))
+            }
             updateViewState { copy(showProgress = false) }
+        }
+    }
+
+    // TODO add refresh session handling + refactor (next PR)
+    private suspend fun buildPayload(resource: ResourceModel): AutofillPayload? {
+        val contentType = resource.contentType()
+
+        val password = if (contentType.hasPassword()) fetchPassword(resource) else null
+        val totpCode = if (contentType.hasTotp()) fetchTotpCode(resource) else null
+        val username = if (contentType.hasUsername()) resource.metadataJsonModel.username.orEmpty() else null
+
+        if (username == null && password == null && totpCode == null) return null
+        return AutofillPayload(
+            username = username,
+            password = password,
+            totpCode = totpCode,
+            uri = uri,
+        )
+    }
+
+    private suspend fun fetchPassword(resource: ResourceModel): String? {
+        val interactor: SecretPropertiesActionsInteractor = get { parametersOf(resource) }
+        var password: String? = null
+        performSecretPropertyAction(
+            action = { interactor.providePassword() },
+            doOnFetchFailure = { emitSideEffect(ShowToast(FETCH_FAILURE)) },
+            doOnDecryptionFailure = { emitSideEffect(ShowToast(DECRYPTION_FAILURE)) },
+            doOnSuccess = { password = it.result.orEmpty() },
+        )
+        return password
+    }
+
+    private suspend fun fetchTotpCode(resource: ResourceModel): String? {
+        val interactor: SecretPropertiesActionsInteractor = get { parametersOf(resource) }
+        var totpSecret: TotpSecret? = null
+        performSecretPropertyAction(
+            action = { interactor.provideOtp() },
+            doOnFetchFailure = { emitSideEffect(ShowToast(FETCH_FAILURE)) },
+            doOnDecryptionFailure = { emitSideEffect(ShowToast(DECRYPTION_FAILURE)) },
+            doOnSuccess = { totpSecret = it.result },
+        )
+        val secret = totpSecret ?: return null
+
+        return when (
+            val parameters =
+                totpParametersProvider.provideOtpParameters(
+                    secretKey = secret.key,
+                    digits = secret.digits,
+                    period = secret.period,
+                    algorithm = secret.algorithm,
+                )
+        ) {
+            is OtpParameters -> parameters.otpValue
+            InvalidTotpInput -> {
+                emitSideEffect(ShowToast(DECRYPTION_FAILURE))
+                null
+            }
         }
     }
 
