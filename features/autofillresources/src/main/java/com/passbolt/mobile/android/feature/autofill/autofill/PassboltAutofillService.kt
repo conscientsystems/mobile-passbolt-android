@@ -78,7 +78,7 @@ class PassboltAutofillService :
                             uri = classification.anchorFields.first().domain,
                             type = classification.type,
                         ).intentSender,
-                        remoteViewsFactory.getAutofillSelectDropdown(packageName),
+                        remoteViewsFactory.getAutofillSelectDropdown(),
                     ).build()
             }
         }.onFailure {

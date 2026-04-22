@@ -1,7 +1,6 @@
 package com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.service.autofill.Dataset
 import android.service.autofill.FillResponse
@@ -17,7 +16,6 @@ import com.passbolt.mobile.android.ui.ParsedStructure
 
 class ReturnAutofillDataset(
     private val autofillCallback: AutofillCallback,
-    private val appContext: Context,
     private val assistStructureParser: AssistStructureParser,
     private val fillableInputsFinder: FillableInputsFinder,
     private val remoteViewsFactory: RemoteViewsFactory,
@@ -45,7 +43,7 @@ class ReturnAutofillDataset(
         payload: AutofillPayload,
         ids: FieldIds,
     ): FillResponse.Builder {
-        val label = remoteViewsFactory.getAutofillFillDropdown(appContext.packageName)
+        val label = remoteViewsFactory.getAutofillFillDropdown()
         val dataset =
             Dataset
                 .Builder()

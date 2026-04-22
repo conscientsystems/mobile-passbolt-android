@@ -26,6 +26,8 @@ dependencies {
     implementation libs.compose.material3.windowsizeclass
     implementation libs.compose.ui.tooling
     implementation libs.compose.icons
+    implementation libs.glance.appwidget
+    implementation libs.glance.material3
     debugImplementation libs.compose.ui.tooling.preview
 }
 

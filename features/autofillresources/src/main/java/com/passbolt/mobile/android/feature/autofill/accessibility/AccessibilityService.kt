@@ -4,7 +4,6 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.os.PowerManager
 import android.provider.Settings
-import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
@@ -17,7 +16,6 @@ import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityOper
 import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityOperationsProvider.OverlayPosition.InBoundsTopAnchor
 import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityOperationsProvider.OverlayPosition.OutBoundsHide
 import com.passbolt.mobile.android.core.extension.gone
-import com.passbolt.mobile.android.core.extension.setDebouncingOnClick
 import com.passbolt.mobile.android.core.extension.visible
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
@@ -25,7 +23,6 @@ import com.passbolt.mobile.android.core.navigation.AutofillMode
 import com.passbolt.mobile.android.core.navigation.AutofillType
 import com.passbolt.mobile.android.core.notifications.accessibilityautofill.AccessibilityServiceNotificationFactory
 import com.passbolt.mobile.android.core.notifications.accessibilityautofill.AccessibilityServiceNotificationFactory.Companion.ACCESSIBILITY_SERVICE_NOTIFICATION_ID
-import com.passbolt.mobile.android.feature.autofill.databinding.ViewAutofillLabelBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -66,7 +63,7 @@ class AccessibilityService :
     private val job = SupervisorJob()
     private val scope = CoroutineScope(job + coroutineLaunchContext.ui)
     private var overlayDisplayed = false
-    private var overlayView: ViewAutofillLabelBinding? = null
+    private var overlayView: View? = null
     private val powerManager: PowerManager by inject()
     private var uri: String? = null
     private var pendingAutofillType: AutofillType = AutofillType.CREDENTIALS
@@ -91,19 +88,7 @@ class AccessibilityService :
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        createOverlayView()
         Timber.d("AccessibilityService connected")
-    }
-
-    private fun createOverlayView() {
-        overlayView = ViewAutofillLabelBinding.inflate(LayoutInflater.from(applicationContext))
-        overlayView?.root?.setDebouncingOnClick {
-            hideOverlay()
-            openResourcesActivity()
-        }
-        overlayView?.close?.setDebouncingOnClick {
-            hideOverlay()
-        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -276,23 +261,39 @@ class AccessibilityService :
     private fun displayOverlay(event: AccessibilityEvent) {
         if (!overlayDisplayed) {
             overlayDisplayed = true
-            createOverlayView()
-            val params = accessibilityOperationsProvider.createOverlayParams()
-            overlayView?.root?.measure(View.MeasureSpec.makeMeasureSpec(0, 0), View.MeasureSpec.makeMeasureSpec(0, 0))
-            overlayViewHeight = overlayView?.root?.measuredHeight ?: 0
+            scope.launch {
+                val view =
+                    composeAutofillLabelView(
+                        context = applicationContext,
+                        onClick = {
+                            hideOverlay()
+                            openResourcesActivity()
+                        },
+                        onClose = ::hideOverlay,
+                    )
+                if (!overlayDisplayed) return@launch
+                overlayView = view
 
-            val anchorPosition =
-                accessibilityOperationsProvider.getOverlayAnchorPosition(
-                    event.source,
-                    overlayViewHeight,
-                    isOverlayAboveAnchor,
+                val params = accessibilityOperationsProvider.createOverlayParams()
+                view.measure(
+                    View.MeasureSpec.makeMeasureSpec(0, 0),
+                    View.MeasureSpec.makeMeasureSpec(0, 0),
                 )
-            anchorNode = event.source
+                overlayViewHeight = view.measuredHeight
 
-            params.x = anchorPosition.x
-            params.y = anchorPosition.y
-            windowManager.addView(overlayView?.root, params)
-            startOverlayAnchorObserver()
+                val anchorPosition =
+                    accessibilityOperationsProvider.getOverlayAnchorPosition(
+                        event.source,
+                        overlayViewHeight,
+                        isOverlayAboveAnchor,
+                    )
+                anchorNode = event.source
+
+                params.x = anchorPosition.x
+                params.y = anchorPosition.y
+                windowManager.addView(view, params)
+                startOverlayAnchorObserver()
+            }
         }
     }
 
@@ -327,16 +328,16 @@ class AccessibilityService :
         if (anchorPosition == null) {
             hideOverlay()
         } else if (anchorPosition is OutBoundsHide) {
-            if (overlayView?.root?.visibility != View.GONE) {
-                overlayView?.root?.gone()
+            if (overlayView?.visibility != View.GONE) {
+                overlayView?.gone()
             }
         } else if (anchorPosition is InBoundsBottomAnchor || anchorPosition is ForceBottom) {
             isOverlayAboveAnchor = false
         } else if (anchorPosition is InBoundsTopAnchor) {
             isOverlayAboveAnchor = true
         } else if (currentLastPosition != null && anchorPosition::class == currentLastPosition::class) {
-            if (overlayView?.root?.visibility != View.VISIBLE) {
-                overlayView?.root?.visibility = View.VISIBLE
+            if (overlayView?.visibility != View.VISIBLE) {
+                overlayView?.visibility = View.VISIBLE
             }
         } else if (anchorPosition is OverlayPosition.Position) {
             updateOverlay(anchorPosition)
@@ -350,16 +351,16 @@ class AccessibilityService :
 
         lastPosition = anchorPosition
 
-        windowManager.updateViewLayout(overlayView?.root, layoutParams)
+        windowManager.updateViewLayout(overlayView, layoutParams)
 
-        if (overlayView?.root?.visibility != View.VISIBLE) {
-            overlayView?.root?.visible()
+        if (overlayView?.visibility != View.VISIBLE) {
+            overlayView?.visible()
         }
     }
 
     private fun hideOverlay() {
         if (overlayDisplayed) {
-            windowManager.removeViewImmediate(overlayView?.root)
+            overlayView?.let { windowManager.removeViewImmediate(it) }
             overlayView = null
             overlayDisplayed = false
             lastAnchorX = 0
