@@ -277,7 +277,7 @@ fun OtpScreen(
                         }
                     }
                 }
-                if (!isAutofillMode && state.showCreateResourceBottomSheet) {
+                if (state.showCreateResourceBottomSheet) {
                     CreateResourceMenuBottomSheet(
                         onCreatePassword = { onIntent(CreatePassword) },
                         onCreateTotp = { onIntent(CreateTotp) },
@@ -286,7 +286,7 @@ fun OtpScreen(
                     )
                 }
 
-                if (!isAutofillMode && state.showOtpMoreBottomSheet) {
+                if (state.showOtpMoreBottomSheet) {
                     val moreMenuResource = requireNotNull(state.moreMenuResource)
                     OtpMoreMenuBottomSheet(
                         resourceId = moreMenuResource.resource.resourceId,
@@ -299,13 +299,11 @@ fun OtpScreen(
                     )
                 }
 
-                if (!isAutofillMode) {
-                    ConfirmResourceDeleteAlertDialog(
-                        isVisible = state.showDeleteTotpConfirmationDialog,
-                        onConfirm = { onIntent(ConfirmDeleteTotp) },
-                        onDismiss = { onIntent(CloseDeleteConfirmationDialog) },
-                    )
-                }
+                ConfirmResourceDeleteAlertDialog(
+                    isVisible = state.showDeleteTotpConfirmationDialog,
+                    onConfirm = { onIntent(ConfirmDeleteTotp) },
+                    onDismiss = { onIntent(CloseDeleteConfirmationDialog) },
+                )
 
                 if (state.showMetadataTrustedKeyDeletedDialog && state.metadataDeletedKeyModel != null) {
                     TrustedMetadataKeyDeletedDialog(
@@ -323,7 +321,7 @@ fun OtpScreen(
                     )
                 }
 
-                if (!isAutofillMode && state.showAccountSwitchBottomSheet) {
+                if (state.showAccountSwitchBottomSheet) {
                     SwitchAccountBottomSheet(
                         onDismissRequest = { onIntent(CloseSwitchAccount) },
                         appContext = AppContext.APP,

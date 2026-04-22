@@ -50,7 +50,7 @@ class AutofillResourcesActivity :
             AutofillMode.valueOf(requireNotNull(it))
         }
     }
-    private val bundledAutofillType by lifecycleAwareLazy {
+    private val bundledAutofillType by lazy {
         intent
             .getStringExtra(ActivityIntents.EXTRA_AUTOFILL_TYPE_NAME)
             ?.let { AutofillType.valueOf(it) }
