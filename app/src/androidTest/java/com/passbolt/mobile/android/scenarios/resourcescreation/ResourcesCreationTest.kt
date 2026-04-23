@@ -52,6 +52,7 @@ import com.passbolt.mobile.android.feature.authentication.AuthenticationMainActi
 import com.passbolt.mobile.android.helpers.chooseFilter
 import com.passbolt.mobile.android.helpers.getString
 import com.passbolt.mobile.android.helpers.signIn
+import com.passbolt.mobile.android.helpers.waitForResourceForm
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
 import com.passbolt.mobile.android.rules.IdlingResourceRule
@@ -163,6 +164,7 @@ class ResourcesCreationTest : KoinTest {
         composeTestRule.apply {
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
+            waitForResourceForm()
 
             onNodeWithText(getString(LocalizationR.string.resource_form_create_password)).assertIsDisplayed()
             onNode(hasTestTag(ICON), useUnmergedTree = true).assertExists() // Back icon
@@ -190,6 +192,7 @@ class ResourcesCreationTest : KoinTest {
         composeTestRule.apply {
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
+            waitForResourceForm()
 
             onNodeWithTag(ResourceForm.NAME_INPUT).performTextReplacement("PasswordNameTest")
             onNodeWithTag(ResourceForm.PASSWORD_INPUT).performTextReplacement("TestPassword123!")
@@ -209,6 +212,7 @@ class ResourcesCreationTest : KoinTest {
         composeTestRule.apply {
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
+            waitForResourceForm()
 
             onNodeWithTag(ResourceForm.GENERATE_PASSWORD_BUTTON).performClick()
             // after generation the password field should exist and be filled
@@ -228,6 +232,7 @@ class ResourcesCreationTest : KoinTest {
         composeTestRule.apply {
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
+            waitForResourceForm()
 
             onNodeWithTag(ResourceForm.PASSWORD_INPUT).performTextReplacement("TestPassword")
             onNodeWithTag(PasswordField.VISIBILITY_TOGGLE, useUnmergedTree = true).performClick()

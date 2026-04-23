@@ -44,7 +44,11 @@ internal fun getSuccessMessage(
                 additionalSuccessMessage.orEmpty().toSingleLine(),
             )
         RESOURCE_CREATED -> context.getString(LocalizationR.string.resource_form_create_success)
-        RESOURCE_DELETED -> context.getString(LocalizationR.string.otp_deleted)
+        RESOURCE_DELETED ->
+            context.getString(
+                LocalizationR.string.common_message_resource_deleted,
+                additionalSuccessMessage.orEmpty().toSingleLine(),
+            )
         METADATA_KEY_IS_TRUSTED -> context.getString(LocalizationR.string.common_metadata_key_is_trusted)
         RESOURCE_SHARED -> context.getString(LocalizationR.string.common_message_resource_shared)
         FOLDER_CREATED ->
