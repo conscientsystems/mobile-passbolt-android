@@ -98,8 +98,12 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.NavigateToEd
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowSuccessSnackbar
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowToast
+import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource
+import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource.RevealedOtp
+import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource.UniversalAutofillCountdown
 import com.passbolt.mobile.android.otpmoremenu.OtpMoreMenuBottomSheet
 import com.passbolt.mobile.android.testtags.composetags.Otp
+import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.ResourceFormMode
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -251,6 +255,12 @@ fun OtpScreen(
                                         onMoreClick = {},
                                         showMoreMenu = false,
                                         showEyeIcon = false,
+                                        progressSource =
+                                            resolveProgressSource(
+                                                otpItem = otpItem,
+                                                isAutofillMode = true,
+                                                universalCountdownSeconds = state.universalCountdownSeconds,
+                                            ),
                                     )
                                 }
                                 item {
@@ -272,6 +282,12 @@ fun OtpScreen(
                                     onMoreClick = { onIntent(OpenOtpMoreMenu(otpItem)) },
                                     showMoreMenu = showMoreMenu,
                                     showEyeIcon = !isAutofillMode,
+                                    progressSource =
+                                        resolveProgressSource(
+                                            otpItem = otpItem,
+                                            isAutofillMode = isAutofillMode,
+                                            universalCountdownSeconds = state.universalCountdownSeconds,
+                                        ),
                                 )
                             }
                         }
@@ -331,4 +347,23 @@ fun OtpScreen(
                 ProgressDialog(state.showProgress)
             },
     )
+}
+
+private fun resolveProgressSource(
+    otpItem: OtpItemWrapper,
+    isAutofillMode: Boolean,
+    universalCountdownSeconds: Long,
+): ProgressSource? {
+    val remainingSeconds = otpItem.remainingSecondsCounter
+    val expirySeconds = otpItem.otpExpirySeconds
+    return when {
+        otpItem.isVisible && remainingSeconds != null && expirySeconds != null ->
+            RevealedOtp(remainingSeconds = remainingSeconds, expirySeconds = expirySeconds)
+        isAutofillMode ->
+            UniversalAutofillCountdown(
+                remainingSeconds = universalCountdownSeconds,
+                expirySeconds = DEFAULT_TOTP_PERIOD,
+            )
+        else -> null
+    }
 }

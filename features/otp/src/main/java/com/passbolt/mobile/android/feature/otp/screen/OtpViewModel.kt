@@ -30,6 +30,7 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.NotCompleted
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
+import com.passbolt.mobile.android.common.time.TimeProvider
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
@@ -122,6 +123,7 @@ import com.passbolt.mobile.android.ui.refreshingNone
 import com.passbolt.mobile.android.ui.refreshingOnly
 import com.passbolt.mobile.android.ui.replaceOnId
 import com.passbolt.mobile.android.ui.revealed
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -144,18 +146,43 @@ internal class OtpViewModel(
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
     private val secretPropertiesActionsInteractorFactory: SecretPropertiesActionsInteractorFactory,
     private val autofillUriMatcher: AutofillUriMatcher,
+    private val timeProvider: TimeProvider,
 ) : SideEffectViewModel<OtpState, OtpSideEffect>(OtpState()),
     KoinComponent {
+    private var dataRefreshJob: Job? = null
+    private var otpsCounterJob: Job? = null
+    private var universalCountdownJob: Job? = null
+
     init {
         loadUserAvatar()
-        viewModelScope.launch(coroutineLaunchContext.io) {
-            synchronizeWithDataRefresh()
-        }
-        viewModelScope.launch(coroutineLaunchContext.io) {
-            val otps = getOtpResources()
-            updateViewState { copy(otps = otps, suggestedOtps = getSuggestedOtps(otps)) }
-            updateOtpsCounterTime()
-        }
+        updateViewState { copy(universalCountdownSeconds = currentRemainingCountdownSeconds()) }
+        dataRefreshJob?.cancel()
+        dataRefreshJob =
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                synchronizeWithDataRefresh()
+            }
+        otpsCounterJob?.cancel()
+        otpsCounterJob =
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                val otps = getOtpResources()
+                updateViewState { copy(otps = otps, suggestedOtps = getSuggestedOtps(otps)) }
+                updateOtpsCounterTime()
+            }
+        universalCountdownJob?.cancel()
+        universalCountdownJob =
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                updateUniversalCountdown()
+            }
+    }
+
+    private fun currentRemainingCountdownSeconds(): Long =
+        DEFAULT_TOTP_PERIOD - (timeProvider.getCurrentEpochSeconds() % DEFAULT_TOTP_PERIOD)
+
+    override fun onCleared() {
+        dataRefreshJob?.cancel()
+        otpsCounterJob?.cancel()
+        universalCountdownJob?.cancel()
+        super.onCleared()
     }
 
     private fun onCanCreateResource(function: () -> Unit) {
@@ -495,6 +522,12 @@ internal class OtpViewModel(
                     ),
                 )
             }
+        }
+    }
+
+    private suspend fun updateUniversalCountdown() {
+        timerFactory.createInfiniteTimer(tickDuration = 1.seconds).collectLatest {
+            updateViewState { copy(universalCountdownSeconds = currentRemainingCountdownSeconds()) }
         }
     }
 
