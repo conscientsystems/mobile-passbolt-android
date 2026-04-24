@@ -34,6 +34,7 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.common.search.SearchableMatcher
+import com.passbolt.mobile.android.common.time.TimeProvider
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.commontest.coroutinetimer.TestCoroutineTimerFactory
@@ -123,6 +124,7 @@ class OtpViewModelTest : KoinTest {
                         single { mock<ResourceUpdateActionsInteractorFactory>() }
                         single { mock<SecretPropertiesActionsInteractorFactory>() }
                         single { mock<AutofillUriMatcher>() }
+                        single { mock<TimeProvider>() }
                         singleOf(::TestCoroutineTimerFactory) bind TimerFactory::class
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factory { (showSuggestedModel: ShowSuggestedModel) ->
@@ -140,6 +142,7 @@ class OtpViewModelTest : KoinTest {
                                 resourceUpdateActionsInteractorFactory = get(),
                                 secretPropertiesActionsInteractorFactory = get(),
                                 autofillUriMatcher = get(),
+                                timeProvider = get(),
                             )
                         }
                         singleOf(::JsonPathJsonPathOps) bind JsonPathsOps::class

@@ -53,6 +53,7 @@ val otpModule =
                 resourceUpdateActionsInteractorFactory = get(),
                 secretPropertiesActionsInteractorFactory = get(),
                 autofillUriMatcher = get(),
+                timeProvider = get(),
             )
         }
         singleOf(::TotpComposeController)

@@ -42,6 +42,7 @@ import com.passbolt.mobile.android.core.formatter.OtpFormatter
 import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.R
 import com.passbolt.mobile.android.core.ui.controller.TotpComposeController
+import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource
 import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.isExpired
 import org.koin.compose.koinInject
@@ -54,20 +55,22 @@ internal fun OtpItem(
     onMoreClick: (OtpItemWrapper) -> Unit,
     showMoreMenu: Boolean = true,
     showEyeIcon: Boolean = true,
+    progressSource: ProgressSource? = null,
     otpFormatter: OtpFormatter = koinInject(),
     totpController: TotpComposeController = koinInject(),
 ) {
     val context = LocalContext.current
+
     val totpColors =
         totpController.calculateTotpColors(
-            remainingSeconds = otpItem.remainingSecondsCounter,
-            expirySeconds = otpItem.otpExpirySeconds,
-            isOtpVisible = otpItem.isVisible,
+            remainingSeconds = progressSource?.remainingSeconds,
+            expirySeconds = progressSource?.expirySeconds,
+            isOtpVisible = progressSource != null,
         )
     val totpAnimations =
         totpController.calculateTotpAnimations(
-            remainingSeconds = otpItem.remainingSecondsCounter,
-            expirySeconds = otpItem.otpExpirySeconds,
+            remainingSeconds = progressSource?.remainingSeconds,
+            expirySeconds = progressSource?.expirySeconds,
         )
 
     var resourceIcon by remember { mutableStateOf<Drawable?>(null) }
@@ -156,7 +159,7 @@ internal fun OtpItem(
                                     .rotate(totpAnimations.rotationAngle),
                         )
                     }
-                    otpItem.isVisible && otpItem.remainingSecondsCounter != null -> {
+                    progressSource != null -> {
                         CircularProgressIndicator(
                             progress = { totpAnimations.animatedProgress },
                             modifier = Modifier.size(20.dp),
