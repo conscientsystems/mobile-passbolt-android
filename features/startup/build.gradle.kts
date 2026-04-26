@@ -1,0 +1,31 @@
+plugins {
+    id("passbolt.android.library")
+    id(libs.plugins.compose.compiler.get().pluginId)
+}
+
+dependencies {
+    implementation(project(":coreui"))
+    implementation(project(":navigation"))
+    implementation(project(":accounts"))
+    implementation(project(":common"))
+
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin)
+    implementation(libs.koin.compose)
+    implementation(libs.splashscreen)
+
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.activity)
+    implementation(libs.compose.lifecycle.viewmodel)
+
+    testImplementation(project(":commontest"))
+}
+
+android {
+    namespace = "com.passbolt.mobile.android.feature.startup"
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
+}
