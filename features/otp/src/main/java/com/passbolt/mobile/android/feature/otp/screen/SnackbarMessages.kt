@@ -12,6 +12,7 @@ import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_T
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_TO_TRUST_METADATA_KEY
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_TO_VERIFY_METADATA_KEYS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FETCH_FAILURE
+import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.INVALID_TOTP_PARAMETERS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.RESOURCE_SCHEMA_INVALID
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.SECRET_SCHEMA_INVALID
@@ -70,4 +71,5 @@ internal fun getErrorMessage(
         FAILED_TO_TRUST_METADATA_KEY -> context.getString(LocalizationR.string.common_metadata_key_trust_failed)
         FAILED_TO_REFRESH_DATA -> context.getString(LocalizationR.string.common_data_refresh_error)
         NO_SHARED_KEY_ACCESS -> context.getString(LocalizationR.string.common_lack_shared_key_access)
+        INVALID_TOTP_PARAMETERS -> context.getString(LocalizationR.string.common_invalid_totp_parameters)
     }

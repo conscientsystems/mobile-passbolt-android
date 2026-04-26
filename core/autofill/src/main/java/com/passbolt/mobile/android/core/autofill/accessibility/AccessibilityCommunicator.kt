@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-object AccessibilityCommunicator {
+class AccessibilityCommunicator {
     private val _lastFill = AtomicReference<LastFill?>(null)
 
     var lastFill: LastFill?

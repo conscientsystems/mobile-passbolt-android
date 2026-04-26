@@ -73,9 +73,9 @@ class PassboltAutofillService :
                 FillResponse
                     .Builder()
                     .setAuthentication(
-                        classification.anchorFields.map { it.id }.toTypedArray(),
+                        classification.allFields.map { it.id }.toTypedArray(),
                         autofillResourcesPendingIntent(
-                            uri = classification.anchorFields.first().domain,
+                            uri = classification.anchorDomain,
                             type = classification.type,
                         ).intentSender,
                         remoteViewsFactory.getAutofillSelectDropdown(),

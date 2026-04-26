@@ -10,6 +10,7 @@ import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParame
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.NewResourceCreated
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.SelectAutofillItem
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.UserAuthenticated
@@ -19,6 +20,7 @@ import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesS
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesSideEffect.ShowToast
 import com.passbolt.mobile.android.feature.autofill.resources.ToastType.DECRYPTION_FAILURE
 import com.passbolt.mobile.android.feature.autofill.resources.ToastType.FETCH_FAILURE
+import com.passbolt.mobile.android.feature.autofill.resources.ToastType.INVALID_TOTP_PARAMETERS
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.AutofillPayload
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.ui.ResourceModel
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.parameter.parametersOf
+import timber.log.Timber
 
 class AutofillResourcesViewModel(
     getAccountsUseCase: GetAccountsUseCase,
@@ -67,62 +70,55 @@ class AutofillResourcesViewModel(
         }
     }
 
-    // TODO add refresh session handling + refactor (next PR)
     private suspend fun buildPayload(resource: ResourceModel): AutofillPayload? {
         val contentType = resource.contentType()
+        val username = resource.metadataJsonModel.username
+        val secret = fetchDecryptedSecret(resource)
 
-        val password = if (contentType.hasPassword()) fetchPassword(resource) else null
-        val totpCode = if (contentType.hasTotp()) fetchTotpCode(resource) else null
-        val username = if (contentType.hasUsername()) resource.metadataJsonModel.username.orEmpty() else null
+        val password = secret?.getPassword(contentType)
+        val totpCode = secret?.totp?.let { totpCode(it) }
 
-        if (username == null && password == null && totpCode == null) return null
-        return AutofillPayload(
-            username = username,
-            password = password,
-            totpCode = totpCode,
-            uri = uri,
-        )
+        return if (username == null && password == null && totpCode == null) {
+            null
+        } else {
+            AutofillPayload(
+                username = username,
+                password = password,
+                totpCode = totpCode,
+                uri = uri,
+            )
+        }
     }
 
-    private suspend fun fetchPassword(resource: ResourceModel): String? {
+    private suspend fun fetchDecryptedSecret(resource: ResourceModel): SecretJsonModel? {
         val interactor: SecretPropertiesActionsInteractor = get { parametersOf(resource) }
-        var password: String? = null
+        var secret: SecretJsonModel? = null
         performSecretPropertyAction(
-            action = { interactor.providePassword() },
+            action = { interactor.provideDecryptedSecret() },
             doOnFetchFailure = { emitSideEffect(ShowToast(FETCH_FAILURE)) },
             doOnDecryptionFailure = { emitSideEffect(ShowToast(DECRYPTION_FAILURE)) },
-            doOnSuccess = { password = it.result.orEmpty() },
+            doOnSuccess = { secret = it.result },
         )
-        return password
+        return secret
     }
 
-    private suspend fun fetchTotpCode(resource: ResourceModel): String? {
-        val interactor: SecretPropertiesActionsInteractor = get { parametersOf(resource) }
-        var totpSecret: TotpSecret? = null
-        performSecretPropertyAction(
-            action = { interactor.provideOtp() },
-            doOnFetchFailure = { emitSideEffect(ShowToast(FETCH_FAILURE)) },
-            doOnDecryptionFailure = { emitSideEffect(ShowToast(DECRYPTION_FAILURE)) },
-            doOnSuccess = { totpSecret = it.result },
-        )
-        val secret = totpSecret ?: return null
-
-        return when (
+    private fun totpCode(totp: TotpSecret): String? =
+        when (
             val parameters =
                 totpParametersProvider.provideOtpParameters(
-                    secretKey = secret.key,
-                    digits = secret.digits,
-                    period = secret.period,
-                    algorithm = secret.algorithm,
+                    secretKey = totp.key,
+                    digits = totp.digits,
+                    period = totp.period,
+                    algorithm = totp.algorithm,
                 )
         ) {
             is OtpParameters -> parameters.otpValue
             InvalidTotpInput -> {
-                emitSideEffect(ShowToast(DECRYPTION_FAILURE))
+                Timber.e("Invalid TOTP parameters")
+                emitSideEffect(ShowToast(INVALID_TOTP_PARAMETERS))
                 null
             }
         }
-    }
 
     private fun newResourceCreated(resourceId: String) {
         viewModelScope.launch(coroutineLaunchContext.io) {

@@ -25,25 +25,14 @@ package com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityCommunicator
-import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
 class ReturnAccessibilityDatasetTest {
     private val autofillCallback = mock<AutofillCallback>()
-    private val strategy = ReturnAccessibilityDataset(autofillCallback)
-
-    @Before
-    fun setUp() {
-        AccessibilityCommunicator.lastFill = null
-    }
-
-    @After
-    fun tearDown() {
-        AccessibilityCommunicator.lastFill = null
-    }
+    private val accessibilityCommunicator = AccessibilityCommunicator()
+    private val strategy = ReturnAccessibilityDataset(autofillCallback, accessibilityCommunicator)
 
     @Test
     fun `stashes credentials-only payload and finishes`() {
@@ -57,7 +46,7 @@ class ReturnAccessibilityDatasetTest {
 
         strategy.returnDataset(payload)
 
-        val lastFill = AccessibilityCommunicator.lastFill
+        val lastFill = accessibilityCommunicator.lastFill
         assertThat(lastFill).isNotNull()
         assertThat(lastFill!!.username).isEqualTo("alice")
         assertThat(lastFill.password).isEqualTo("s3cret")
@@ -78,7 +67,7 @@ class ReturnAccessibilityDatasetTest {
 
         strategy.returnDataset(payload)
 
-        val lastFill = AccessibilityCommunicator.lastFill
+        val lastFill = accessibilityCommunicator.lastFill
         assertThat(lastFill).isNotNull()
         assertThat(lastFill!!.username).isNull()
         assertThat(lastFill.password).isNull()
@@ -99,7 +88,7 @@ class ReturnAccessibilityDatasetTest {
 
         strategy.returnDataset(payload)
 
-        val lastFill = AccessibilityCommunicator.lastFill
+        val lastFill = accessibilityCommunicator.lastFill
         assertThat(lastFill).isNotNull()
         assertThat(lastFill!!.username).isEqualTo("alice")
         assertThat(lastFill.password).isEqualTo("s3cret")
@@ -120,7 +109,7 @@ class ReturnAccessibilityDatasetTest {
 
         strategy.returnDataset(payload)
 
-        val lastFill = AccessibilityCommunicator.lastFill
+        val lastFill = accessibilityCommunicator.lastFill
         assertThat(lastFill?.uri).isNull()
     }
 }

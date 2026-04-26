@@ -34,7 +34,10 @@ fun Module.autofillResourcesModule() {
         scoped<ReturnAutofillDatasetStrategy>(
             named(AutofillMode.ACCESSIBILITY),
         ) { (callback: AutofillCallback) ->
-            ReturnAccessibilityDataset(callback)
+            ReturnAccessibilityDataset(
+                autofillCallback = callback,
+                accessibilityCommunicator = get(),
+            )
         }
     }
 }

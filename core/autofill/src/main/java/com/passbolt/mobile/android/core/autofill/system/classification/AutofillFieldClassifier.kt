@@ -25,37 +25,60 @@ package com.passbolt.mobile.android.core.autofill.system.classification
 
 import com.passbolt.mobile.android.core.autofill.system.AutofillField
 import com.passbolt.mobile.android.core.autofill.system.FillableInputsFinder
-import com.passbolt.mobile.android.core.navigation.AutofillType
+import com.passbolt.mobile.android.core.autofill.system.classification.FillClassification.Credentials
+import com.passbolt.mobile.android.core.autofill.system.classification.FillClassification.CredentialsAndTotp
+import com.passbolt.mobile.android.core.autofill.system.classification.FillClassification.Totp
 import com.passbolt.mobile.android.ui.ParsedStructure
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 class AutofillFieldClassifier(
     private val fillableInputsFinder: FillableInputsFinder,
 ) {
     fun classifyFill(structures: Set<ParsedStructure>): FillClassification? {
-        val usernameView = findAutofillableView(AutofillField.USERNAME, structures)
-        val passwordView = findAutofillableView(AutofillField.PASSWORD, structures)
-        val totpView = findAutofillableView(AutofillField.TOTP, structures)
-
-        val credentialsViews = listOfNotNull(usernameView, passwordView)
-        val allViews = credentialsViews + listOfNotNull(totpView)
-
-        val hasCredentials = credentialsViews.size == 2
-        val hasTotp = totpView != null
-        val credentialsShareDomain = credentialsViews.map { it.domain }.toSet().size == 1
-        val allViewsShareDomain = allViews.map { it.domain }.toSet().size == 1
-
-        val canFillCredentials = hasCredentials && credentialsShareDomain
-        val canAddTotpWithCredentials = canFillCredentials && hasTotp && allViewsShareDomain
+        val username = findAutofillableView(AutofillField.USERNAME, structures)
+        val password = findAutofillableView(AutofillField.PASSWORD, structures)
+        val totp = findAutofillableView(AutofillField.TOTP, structures)
 
         return when {
-            canAddTotpWithCredentials ->
-                FillClassification(AutofillType.CREDENTIALS_AND_TOTP, credentialsViews + totpView)
-            canFillCredentials ->
-                FillClassification(AutofillType.CREDENTIALS, credentialsViews)
-            hasTotp ->
-                FillClassification(AutofillType.TOTP, listOf(totpView))
+            canFillCredentialsAndTotp(username, password, totp) ->
+                CredentialsAndTotp(username, password, totp)
+            canFillCredentials(username, password) ->
+                Credentials(username, password)
+            totp != null ->
+                Totp(totp)
             else -> null
         }
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    private fun canFillCredentials(
+        username: ParsedStructure?,
+        password: ParsedStructure?,
+    ): Boolean {
+        contract {
+            returns(true) implies (username != null)
+            returns(true) implies (password != null)
+        }
+        return username != null &&
+            password != null &&
+            username.domain == password.domain
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    private fun canFillCredentialsAndTotp(
+        username: ParsedStructure?,
+        password: ParsedStructure?,
+        totp: ParsedStructure?,
+    ): Boolean {
+        contract {
+            returns(true) implies (username != null)
+            returns(true) implies (password != null)
+            returns(true) implies (totp != null)
+        }
+        return canFillCredentials(username, password) &&
+            totp != null &&
+            password.domain == totp.domain
     }
 
     private fun findAutofillableView(

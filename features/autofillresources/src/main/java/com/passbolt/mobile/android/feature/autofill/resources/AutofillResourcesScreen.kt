@@ -55,6 +55,7 @@ fun AutofillResourcesScreen(
             if (result.resultCode == Activity.RESULT_OK) {
                 viewModel.onIntent(UserAuthenticated)
             } else {
+                activity?.setResult(Activity.RESULT_CANCELED)
                 activity?.finish()
             }
         }
