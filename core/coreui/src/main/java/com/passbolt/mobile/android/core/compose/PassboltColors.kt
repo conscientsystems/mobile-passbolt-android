@@ -15,6 +15,7 @@ object PassboltColors {
             surfaceVariant = Color(0xFFFFFFFF),
             onBackground = Color(0xFF333333),
             outline = Color(0xFFDDDDDD),
+            outlineVariant = Color(0xFFE4E4E4),
         )
 
     val DarkColorScheme: ColorScheme =
@@ -25,5 +26,6 @@ object PassboltColors {
             surfaceVariant = Color(0xFF333333),
             onBackground = Color(0xFFDDDDDD),
             outline = Color(0xFF0f0f0f),
+            outlineVariant = Color(0xFF333333),
         )
 }
