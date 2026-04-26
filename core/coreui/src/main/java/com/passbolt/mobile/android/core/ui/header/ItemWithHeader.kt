@@ -24,7 +24,6 @@
 package com.passbolt.mobile.android.core.ui.header
 
 import PassboltTheme
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,9 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.Font
@@ -50,8 +47,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.passbolt.mobile.android.core.compose.Obfuscation
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
+
+private const val OBFUSCATION_TEXT =
+    "Never gonna give you up. Never gonna let you down. Never gonna run around and desert you. " +
+        "Never gonna make you cry. Never gonna say goodbye. Never gonna tell a lie and hurt you."
 
 @Composable
 fun ItemWithHeader(
@@ -126,12 +128,18 @@ private fun HeaderText(text: String) {
 
 @Composable
 private fun ConcealedContent(modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(CoreUiR.drawable.image_concealed),
-        contentDescription = null,
-        contentScale = ContentScale.FillBounds,
+    Text(
+        text = OBFUSCATION_TEXT,
+        style =
+            MaterialTheme.typography.bodyLarge.copy(
+                fontFamily = Obfuscation,
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+            ),
         modifier =
             modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
                 .heightIn(min = 64.dp)
                 .background(colorResource(CoreUiR.color.section_background)),
     )
