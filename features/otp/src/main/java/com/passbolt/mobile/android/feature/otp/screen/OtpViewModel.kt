@@ -90,6 +90,7 @@ import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_T
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_TO_TRUST_METADATA_KEY
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_TO_VERIFY_METADATA_KEYS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FETCH_FAILURE
+import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.INVALID_TOTP_PARAMETERS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.RESOURCE_SCHEMA_INVALID
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.SECRET_SCHEMA_INVALID
@@ -399,7 +400,7 @@ internal class OtpViewModel(
                 )
 
             when (otpParameters) {
-                InvalidTotpInput -> stopRefreshingAndShowError("Failed to generate totp parameters")
+                InvalidTotpInput -> stopRefreshingAndShowInvalidTotpError()
                 is OtpParameters -> {
                     emitSideEffect(
                         CopyToClipboard(
@@ -599,6 +600,12 @@ internal class OtpViewModel(
     private fun stopRefreshingAndShowError(message: String) {
         Timber.e(message)
         emitSideEffect(ShowErrorSnackbar(ERROR, message))
+        updateViewState { copy(otps = otps.refreshingNone()) }
+    }
+
+    private fun stopRefreshingAndShowInvalidTotpError() {
+        Timber.e("Invalid TOTP parameters")
+        emitSideEffect(ShowErrorSnackbar(INVALID_TOTP_PARAMETERS))
         updateViewState { copy(otps = otps.refreshingNone()) }
     }
 }

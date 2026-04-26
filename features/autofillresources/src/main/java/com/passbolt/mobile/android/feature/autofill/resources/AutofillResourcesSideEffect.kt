@@ -19,4 +19,5 @@ sealed interface AutofillResourcesSideEffect {
 enum class ToastType {
     DECRYPTION_FAILURE,
     FETCH_FAILURE,
+    INVALID_TOTP_PARAMETERS,
 }

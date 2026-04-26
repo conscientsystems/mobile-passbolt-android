@@ -26,7 +26,7 @@ package com.passbolt.mobile.android.core.autofill.system
 import android.view.autofill.AutofillId
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.autofill.system.classification.AutofillFieldClassifier
-import com.passbolt.mobile.android.core.navigation.AutofillType
+import com.passbolt.mobile.android.core.autofill.system.classification.FillClassification
 import com.passbolt.mobile.android.ui.ParsedStructure
 import org.junit.Before
 import org.junit.Test
@@ -45,7 +45,7 @@ class AutofillFieldClassifierTest {
     }
 
     @Test
-    fun `classifies as CREDENTIALS when only username and password found`() {
+    fun `classifies as Credentials when only username and password found`() {
         val usernameStructure = createParsedStructure(domain = "example.com")
         val passwordStructure = createParsedStructure(domain = "example.com")
 
@@ -61,61 +61,62 @@ class AutofillFieldClassifierTest {
 
         val result = classifier.classifyFill(emptySet())
 
-        assertThat(result).isNotNull()
-        assertThat(result!!.type).isEqualTo(AutofillType.CREDENTIALS)
-        assertThat(result.anchorFields).containsExactly(usernameStructure, passwordStructure)
-    }
-
-    @Test
-    fun `classifies as TOTP when only totp found`() {
-        val totpStructure = createParsedStructure(domain = "example.com")
-
-        whenever(
-            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.USERNAME), any()),
-        ).thenReturn(null)
-        whenever(
-            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.PASSWORD), any()),
-        ).thenReturn(null)
-        whenever(
-            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.TOTP), any()),
-        ).thenReturn(totpStructure)
-
-        val result = classifier.classifyFill(emptySet())
-
-        assertThat(result).isNotNull()
-        assertThat(result!!.type).isEqualTo(AutofillType.TOTP)
-        assertThat(result.anchorFields).containsExactly(totpStructure)
-    }
-
-    @Test
-    fun `classifies as CREDENTIALS_AND_TOTP when username + password + TOTP found on same domain`() {
-        val usernameStructure = createParsedStructure(domain = "example.com")
-        val passwordStructure = createParsedStructure(domain = "example.com")
-        val totpStructure = createParsedStructure(domain = "example.com")
-
-        whenever(
-            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.USERNAME), any()),
-        ).thenReturn(usernameStructure)
-        whenever(
-            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.PASSWORD), any()),
-        ).thenReturn(passwordStructure)
-        whenever(
-            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.TOTP), any()),
-        ).thenReturn(totpStructure)
-
-        val result = classifier.classifyFill(emptySet())
-
-        assertThat(result).isNotNull()
-        assertThat(result!!.type).isEqualTo(AutofillType.CREDENTIALS_AND_TOTP)
-        assertThat(result.anchorFields).containsExactly(
-            usernameStructure,
-            passwordStructure,
-            totpStructure,
+        assertThat(result).isEqualTo(
+            FillClassification.Credentials(
+                username = usernameStructure,
+                password = passwordStructure,
+            ),
         )
     }
 
     @Test
-    fun `falls back to CREDENTIALS when totp on different domain`() {
+    fun `classifies as Totp when only totp found`() {
+        val totpStructure = createParsedStructure(domain = "example.com")
+
+        whenever(
+            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.USERNAME), any()),
+        ).thenReturn(null)
+        whenever(
+            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.PASSWORD), any()),
+        ).thenReturn(null)
+        whenever(
+            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.TOTP), any()),
+        ).thenReturn(totpStructure)
+
+        val result = classifier.classifyFill(emptySet())
+
+        assertThat(result).isEqualTo(FillClassification.Totp(totp = totpStructure))
+    }
+
+    @Test
+    fun `classifies as CredentialsAndTotp when username + password + TOTP found on same domain`() {
+        val usernameStructure = createParsedStructure(domain = "example.com")
+        val passwordStructure = createParsedStructure(domain = "example.com")
+        val totpStructure = createParsedStructure(domain = "example.com")
+
+        whenever(
+            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.USERNAME), any()),
+        ).thenReturn(usernameStructure)
+        whenever(
+            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.PASSWORD), any()),
+        ).thenReturn(passwordStructure)
+        whenever(
+            fillableInputsFinder.findStructureForAutofillFields(eq(AutofillField.TOTP), any()),
+        ).thenReturn(totpStructure)
+
+        val result = classifier.classifyFill(emptySet())
+
+        assertThat(result).isEqualTo(
+            FillClassification.CredentialsAndTotp(
+                username = usernameStructure,
+                password = passwordStructure,
+                totp = totpStructure,
+            ),
+        )
+    }
+
+    @Test
+    fun `falls back to Credentials when totp on different domain`() {
         val usernameStructure = createParsedStructure(domain = "example.com")
         val passwordStructure = createParsedStructure(domain = "example.com")
         val totpStructure = createParsedStructure(domain = "other.com")
@@ -132,9 +133,12 @@ class AutofillFieldClassifierTest {
 
         val result = classifier.classifyFill(emptySet())
 
-        assertThat(result).isNotNull()
-        assertThat(result!!.type).isEqualTo(AutofillType.CREDENTIALS)
-        assertThat(result.anchorFields).containsExactly(usernameStructure, passwordStructure)
+        assertThat(result).isEqualTo(
+            FillClassification.Credentials(
+                username = usernameStructure,
+                password = passwordStructure,
+            ),
+        )
     }
 
     @Test

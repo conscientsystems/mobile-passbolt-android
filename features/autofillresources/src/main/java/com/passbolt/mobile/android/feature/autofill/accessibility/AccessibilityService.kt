@@ -58,6 +58,7 @@ class AccessibilityService :
     AccessibilityService(),
     KoinComponent {
     private val accessibilityOperationsProvider: AccessibilityOperationsProvider by inject()
+    private val accessibilityCommunicator: AccessibilityCommunicator by inject()
     private val coroutineLaunchContext: CoroutineLaunchContext by inject()
     private val windowManager: WindowManager by inject()
     private val job = SupervisorJob()
@@ -116,7 +117,7 @@ class AccessibilityService :
 
     private fun stateChanged(event: AccessibilityEvent) {
         val root = rootInActiveWindow
-        if (AccessibilityCommunicator.lastFill == null) {
+        if (accessibilityCommunicator.lastFill == null) {
             Timber.d("Last fill payload is null - ignoring event")
         } else if (event.source == null ||
             (event.packageName != null && event.packageName.contains(PASSBOLT_PACKAGE))
@@ -191,25 +192,25 @@ class AccessibilityService :
         val totpEditText = accessibilityOperationsProvider.getTotpNode(allEditTexts)
         val currentUri = accessibilityOperationsProvider.getUri(root)
 
-        val pendingFill = AccessibilityCommunicator.lastFill
+        val pendingFill = accessibilityCommunicator.lastFill
         if (currentUri != null &&
             pendingFill != null &&
             accessibilityOperationsProvider.needToAutofill(pendingFill, currentUri)
         ) {
             filled = fillAvailable(pendingFill, usernameEditText, passwordEditText, totpEditText)
             if (filled) {
-                AccessibilityCommunicator.lastFill = null
+                accessibilityCommunicator.lastFill = null
                 clearLastFillJob?.cancel()
                 clearLastFillJob = null
             }
         }
 
-        if (AccessibilityCommunicator.lastFill != null) {
+        if (accessibilityCommunicator.lastFill != null) {
             clearLastFillJob?.cancel()
             clearLastFillJob =
                 scope.launch {
                     delay(CLEAR_CREDENTIALS_DELAY)
-                    AccessibilityCommunicator.lastFill = null
+                    accessibilityCommunicator.lastFill = null
                     clearLastFillJob = null
                 }
         }

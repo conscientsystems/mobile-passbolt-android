@@ -1,6 +1,7 @@
 package com.passbolt.mobile.android.core.autofill
 
 import com.passbolt.mobile.android.common.autofill.DetectAutofillConflict
+import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityCommunicator
 import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityOperationsProvider
 import com.passbolt.mobile.android.core.autofill.conflict.DetectSystemAutofillConflict
 import com.passbolt.mobile.android.core.autofill.system.AutofillHintsFactory
@@ -40,7 +41,8 @@ val autofillModule =
         factoryOf(::FillableInputsFinder)
         factoryOf(::AutofillFieldClassifier)
         singleOf(::AccessibilityOperationsProvider)
-        factory {
+        singleOf(::AccessibilityCommunicator)
+        single {
             AutofillHintsFactory(
                 resources = get(),
                 appContext = androidContext(),

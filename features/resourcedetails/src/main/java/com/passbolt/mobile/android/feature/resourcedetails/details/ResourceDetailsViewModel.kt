@@ -52,6 +52,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbar
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.DECRYPTION_FAILURE
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.FETCH_FAILURE
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.GENERAL_ERROR
+import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.INVALID_TOTP_PARAMETERS
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.TOGGLE_FAVOURITE_FAILURE
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseMoreMenu
@@ -791,9 +792,8 @@ class ResourceDetailsViewModel(
                         when (otpParametersResult) {
                             is OtpParameters -> action(it.label, it.result, otpParametersResult)
                             is TotpParametersProvider.OtpParametersResult.InvalidTotpInput -> {
-                                val error = "Invalid TOTP input"
-                                Timber.e(error)
-                                emitSideEffect(ShowErrorSnackbar(GENERAL_ERROR))
+                                Timber.e("Invalid TOTP parameters")
+                                emitSideEffect(ShowErrorSnackbar(INVALID_TOTP_PARAMETERS))
                             }
                         }
                     } else {

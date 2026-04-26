@@ -71,6 +71,7 @@ internal enum class SnackbarErrorType {
     FAILED_TO_TRUST_METADATA_KEY,
     FAILED_TO_REFRESH_DATA,
     NO_SHARED_KEY_ACCESS,
+    INVALID_TOTP_PARAMETERS,
     ERROR,
 }
 
