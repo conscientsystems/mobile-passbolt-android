@@ -1,4 +1,4 @@
-extra["projectVersionName"] = "3.0.1"
+extra["projectVersionName"] = "3.1.0"
 extra["projectVersionCode"] = 52
 
 extra["projectCompileSdk"] = 36
