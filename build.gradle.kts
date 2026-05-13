@@ -46,8 +46,10 @@ allprojects {
     extensions.add("qualityConfig", qualityConfig)
     extensions.add("qualityDependencies", qualityDependencies)
 
-    dependencyLocking {
-        lockAllConfigurations()
+    configurations.configureEach {
+        if (name.endsWith("ReleaseRuntimeClasspath", ignoreCase = true)) {
+            resolutionStrategy.activateDependencyLocking()
+        }
     }
 
     tasks.register("resolveAndLockAll") {
