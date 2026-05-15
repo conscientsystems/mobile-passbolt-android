@@ -30,7 +30,6 @@ import com.passbolt.mobile.android.common.validation.validation
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.core.resources.actions.performResourceUpdateAction
@@ -55,6 +54,7 @@ import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.Tru
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.UserPermissionDeleted
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.UserPermissionModified
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.CloseWithShareSuccess
+import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.InitiateDataRefresh
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateBack
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToGroupPermissionDetails
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToHome
@@ -105,7 +105,6 @@ class PermissionsViewModel(
     private val getLocalFolderUseCase: GetLocalFolderDetailsUseCase,
     private val permissionModelUiComparator: PermissionModelUiComparator,
     private val resourceShareInteractor: ResourceShareInteractor,
-    private val homeDataInteractor: HomeDataInteractor,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
     private val canShareResourceUseCase: CanShareResourceUseCase,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
@@ -343,14 +342,8 @@ class PermissionsViewModel(
         }
     }
 
-    private suspend fun shareSuccess() {
-        updateViewState { copy(showProgress = true) }
-
-        // TODO change to service refresh?
-        runAuthenticatedOperation {
-            homeDataInteractor.refreshAllHomeScreenData()
-        }
-        updateViewState { copy(showProgress = false) }
+    private fun shareSuccess() {
+        emitSideEffect(InitiateDataRefresh)
         emitSideEffect(CloseWithShareSuccess)
     }
 
