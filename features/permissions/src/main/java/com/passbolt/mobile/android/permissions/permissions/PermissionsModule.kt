@@ -39,7 +39,6 @@ fun Module.permissionsModule() {
             getLocalFolderUseCase = get(),
             permissionModelUiComparator = get(),
             resourceShareInteractor = get(),
-            homeDataInteractor = get(),
             metadataPrivateKeysHelperInteractor = get(),
             canShareResourceUseCase = get(),
             dataRefreshTrackingFlow = get(),
