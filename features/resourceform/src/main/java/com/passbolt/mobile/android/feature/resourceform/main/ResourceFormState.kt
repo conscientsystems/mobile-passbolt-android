@@ -1,10 +1,12 @@
 package com.passbolt.mobile.android.feature.resourceform.main
 
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.PasswordStrength
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
 import com.passbolt.mobile.android.ui.ResourceFormUiModel
 import com.passbolt.mobile.android.ui.TotpUiModel
@@ -24,6 +26,7 @@ data class ResourceFormState(
     val passwordData: PasswordData = PasswordData(),
     val totpData: TotpData = TotpData(),
     val noteData: NoteData = NoteData(),
+    val pinCodeData: PinCodeData = PinCodeData(),
     val metadataKeyModifiedDialog: NewMetadataKeyToTrustModel? = null,
     val metadataKeyDeletedDialog: TrustedKeyDeletedModel? = null,
     val showPasswordWarningDialog: Boolean = false,
@@ -48,6 +51,12 @@ data class TotpData(
 data class NoteData(
     val note: String = "",
     val noteError: NoteValidationError? = null,
+)
+
+data class PinCodeData(
+    val pinCode: String = "",
+    val length: Int = PinCodeUiModel.DEFAULT_LENGTH,
+    val pinCodeError: PinCodeValidationError? = null,
 )
 
 enum class PasswordWarningType {

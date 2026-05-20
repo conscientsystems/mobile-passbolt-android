@@ -6,6 +6,7 @@ import com.passbolt.mobile.android.common.validation.StringMaxLength
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.CreateResourceIdlingResource
 import com.passbolt.mobile.android.core.idlingresource.UpdateResourceIdlingResource
+import com.passbolt.mobile.android.core.passwordgenerator.PinCodeGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
@@ -19,6 +20,7 @@ import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUse
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_NOTE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_PASSWORD
+import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_PIN_CODE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_TOTP
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.EDIT_ADDITIONAL_URIS
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.EDIT_APPEARANCE
@@ -26,10 +28,12 @@ import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAct
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_NOTE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_PASSWORD
+import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_PIN_CODE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_TOTP
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteFormViewModel
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError.MaxLengthExceeded
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustBeBase32
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustNotBeEmpty
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdditionalUrisResult
@@ -41,19 +45,25 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalUris
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAppearance
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToMetadataDescription
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordUsernameTextChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeAdvancedGenerationResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ProceedWithPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanOtpResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpAdvancedSettingsResult
@@ -72,6 +82,8 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCode
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
@@ -87,12 +99,14 @@ import com.passbolt.mobile.android.ui.Entropy
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.LeadingContentType.CUSTOM_FIELDS
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
+import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataIconModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpParseResult
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.DEFAULT_BACKGROUND_COLOR_HEX_STRING
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_KEEPASS
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_PASSBOLT
@@ -110,6 +124,7 @@ class ResourceFormViewModel(
     private val mode: ResourceFormMode,
     private val getPasswordPoliciesUseCase: GetPasswordPoliciesUseCase,
     private val secretGenerator: SecretGenerator,
+    private val pinCodeGenerator: PinCodeGenerator,
     private val entropyViewMapper: EntropyViewMapper,
     private val entropyCalculator: EntropyCalculator,
     private val resourceFormMapper: ResourceFormMapper,
@@ -148,8 +163,13 @@ class ResourceFormViewModel(
             is ResourceFormIntent.GoToTotpMoreSettings -> goToTotpMoreSettings()
             is ResourceFormIntent.ScanTotp -> scanTotp()
             is ResourceFormIntent.NoteChanged -> noteChanged(intent.note)
+            is PinCodeChanged -> pinCodeChanged(intent.pinCode)
+            GeneratePinCode -> generatePinCode(viewState.value.pinCodeData.length)
+            GoToPinCodeAdvancedGeneration -> goToPinCodeAdvancedGeneration()
+            is PinCodeAdvancedGenerationResult -> generatePinCode(intent.pinCodeUiModel.length)
             GoToAdditionalNote -> goToAdditionalNote()
             GoToAdditionalPassword -> goToAdditionalPassword()
+            GoToAdditionalPinCode -> goToAdditionalPinCode()
             is ResourceFormIntent.GoToAdditionalTotp -> goToAdditionalTotp()
             GoToCustomFields -> goToCustomFields()
             GoToMetadataDescription -> goToMetadataDescription()
@@ -159,6 +179,7 @@ class ResourceFormViewModel(
             is TotpResult -> totpResult(intent.totpUiModel)
             is TotpAdvancedSettingsResult -> totpAdvancedSettingsResult(intent.totpAdvancedSettings)
             is NoteResult -> noteResult(intent.note)
+            is PinCodeResult -> pinCodeResult(intent.pinCodeUiModel)
             is DescriptionResult -> descriptionResult(intent.metadataDescription)
             is AppearanceResult -> appearanceResult(intent.model)
             is AdditionalUrisResult -> additionalUrisResult(intent.urisUiModel)
@@ -245,6 +266,7 @@ class ResourceFormViewModel(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun setupLeadingContentType(leadingContentType: LeadingContentType) {
         val resourceMetadata = resourceModelHandler.resourceMetadata
         val resourceSecret = resourceModelHandler.resourceSecret
@@ -291,6 +313,17 @@ class ResourceFormViewModel(
             STANDALONE_NOTE -> {
                 updateViewState {
                     copy(noteData = noteData.copy(note = resourceSecret.description.orEmpty()))
+                }
+            }
+            PIN_CODE -> {
+                updateViewState {
+                    copy(
+                        pinCodeData =
+                            pinCodeData.copy(
+                                pinCode = resourceSecret.pinCode.orEmpty(),
+                                length = pinCodeData.length,
+                            ),
+                    )
                 }
             }
         }
@@ -423,6 +456,35 @@ class ResourceFormViewModel(
         updateViewState { copy(noteData = noteData.copy(note = note, noteError = null)) }
     }
 
+    private fun pinCodeChanged(pinCode: String) {
+        val sanitized = pinCode.take(PinCodeUiModel.MAX_LENGTH).filter(Char::isDigit)
+        resourceModelHandler.applyModelChange(
+            if (sanitized.isBlank()) REMOVE_PIN_CODE else ADD_PIN_CODE,
+        ) { _, secret ->
+            secret.pinCode = sanitized
+        }
+        updateViewState {
+            copy(pinCodeData = pinCodeData.copy(pinCode = sanitized, pinCodeError = null))
+        }
+    }
+
+    private fun generatePinCode(length: Int) {
+        Timber.d("Generating PIN code (length=$length)")
+        val generated = pinCodeGenerator.generate(length)
+        resourceModelHandler.applyModelChange(ADD_PIN_CODE) { _, secret ->
+            secret.pinCode = generated
+        }
+        updateViewState {
+            copy(pinCodeData = pinCodeData.copy(pinCode = generated, length = length, pinCodeError = null))
+        }
+    }
+
+    private fun goToPinCodeAdvancedGeneration() {
+        val pinCode = resourceModelHandler.resourceSecret.pinCode.orEmpty()
+        val length = viewState.value.pinCodeData.length
+        emitSideEffect(NavigateToPinCodeAdvancedGeneration(mode, PinCodeUiModel(pinCode = pinCode, length = length)))
+    }
+
     private fun goToAdditionalNote() {
         emitSideEffect(NavigateToNote(mode, resourceModelHandler.resourceSecret.description.orEmpty()))
     }
@@ -452,6 +514,12 @@ class ResourceFormViewModel(
                 ),
             ),
         )
+    }
+
+    private fun goToAdditionalPinCode() {
+        val pinCode = resourceModelHandler.resourceSecret.pinCode.orEmpty()
+        val length = viewState.value.pinCodeData.length
+        emitSideEffect(NavigateToPinCode(mode, PinCodeUiModel(pinCode = pinCode, length = length)))
     }
 
     private fun goToCustomFields() {
@@ -535,6 +603,23 @@ class ResourceFormViewModel(
             if (note.isNullOrBlank()) REMOVE_NOTE else ADD_NOTE,
         ) { _, secret ->
             secret.description = note
+        }
+    }
+
+    private fun pinCodeResult(pinCodeUiModel: PinCodeUiModel?) {
+        val action = if (pinCodeUiModel == null || pinCodeUiModel.pinCode.isBlank()) REMOVE_PIN_CODE else ADD_PIN_CODE
+        resourceModelHandler.applyModelChange(action) { _, secret ->
+            secret.pinCode = pinCodeUiModel?.pinCode
+        }
+        updateViewState {
+            copy(
+                pinCodeData =
+                    pinCodeData.copy(
+                        pinCode = pinCodeUiModel?.pinCode.orEmpty(),
+                        length = pinCodeUiModel?.length ?: pinCodeData.length,
+                        pinCodeError = null,
+                    ),
+            )
         }
     }
 
@@ -766,6 +851,7 @@ class ResourceFormViewModel(
         }
     }
 
+    @Suppress("ReturnCount")
     private fun onValid(action: () -> Unit) {
         val resourceSecret = resourceModelHandler.resourceSecret
         when (uiModel.leadingContentType) {
@@ -788,6 +874,23 @@ class ResourceFormViewModel(
                     updateViewState {
                         copy(noteData = noteData.copy(noteError = MaxLengthExceeded(NoteFormViewModel.NOTE_MAX_LENGTH)))
                     }
+                    return
+                }
+                action()
+            }
+            PIN_CODE -> {
+                val pinCode = resourceSecret.pinCode.orEmpty()
+                val error =
+                    when {
+                        pinCode.length < PinCodeUiModel.MIN_LENGTH ->
+                            PinCodeValidationError.TooShort(PinCodeUiModel.MIN_LENGTH)
+                        pinCode.length > PinCodeUiModel.MAX_LENGTH ->
+                            PinCodeValidationError.TooLong(PinCodeUiModel.MAX_LENGTH)
+                        else -> null
+                    }
+                if (error != null) {
+                    Timber.w("PIN code validation failed: ${error::class.simpleName} (actualLength=${pinCode.length})")
+                    updateViewState { copy(pinCodeData = pinCodeData.copy(pinCodeError = error)) }
                     return
                 }
                 action()

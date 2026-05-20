@@ -4,11 +4,13 @@ import android.content.Context
 import com.passbolt.mobile.android.common.extension.toSingleLine
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError.MaxLengthExceeded
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustBeBase32
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustNotBeEmpty
 import com.passbolt.mobile.android.ui.LeadingContentType.CUSTOM_FIELDS
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
+import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.ResourceFormMode
@@ -27,6 +29,7 @@ internal fun getScreenTitle(
                 PASSWORD -> context.getString(LocalizationR.string.resource_form_create_password)
                 CUSTOM_FIELDS -> context.getString(LocalizationR.string.resource_form_create_custom_fields)
                 STANDALONE_NOTE -> context.getString(LocalizationR.string.resource_form_create_note)
+                PIN_CODE -> context.getString(LocalizationR.string.resource_form_create_pin_code)
                 null -> ""
             }
         is Edit -> context.getString(LocalizationR.string.resource_form_edit_resource, mode.resourceName.toSingleLine())
@@ -58,4 +61,15 @@ internal fun getNoteErrorMessage(
 ): String =
     when (error) {
         is MaxLengthExceeded -> context.getString(LocalizationR.string.validation_max_length, error.maxLength)
+    }
+
+internal fun getPinCodeErrorMessage(
+    context: Context,
+    error: PinCodeValidationError,
+): String =
+    when (error) {
+        is PinCodeValidationError.TooShort ->
+            context.getString(LocalizationR.string.resource_form_pin_code_validation_too_short, error.minLength)
+        is PinCodeValidationError.TooLong ->
+            context.getString(LocalizationR.string.resource_form_pin_code_validation_too_long, error.maxLength)
     }

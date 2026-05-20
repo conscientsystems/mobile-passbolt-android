@@ -14,20 +14,24 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalUris
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAppearance
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToMetadataDescription
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordUsernameTextChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeAdvancedGenerationResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ProceedWithPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanOtpResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanTotp
@@ -39,6 +43,8 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCode
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
@@ -49,6 +55,7 @@ import com.passbolt.mobile.android.ui.MetadataTypeModel
 import com.passbolt.mobile.android.ui.OtpParseResult
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
 import com.passbolt.mobile.android.ui.PasswordStrength
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.ADDITIONAL_URIS
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.APPEARANCE
@@ -78,6 +85,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.whenever
 import kotlin.test.assertIs
 
 /**
@@ -229,6 +237,35 @@ class ResourceFormViewModelTest : KoinTest {
             assertThat(state.leadingContentType).isEqualTo(LeadingContentType.STANDALONE_NOTE)
             assertThat(state.isPrimaryButtonVisible).isTrue()
             assertThat(state.noteData.note).isEqualTo("")
+        }
+
+    @Test
+    fun `view should show correct ui for create pin code`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.shouldShowScreenProgress).isFalse()
+            assertThat(state.leadingContentType).isEqualTo(LeadingContentType.PIN_CODE)
+            assertThat(state.isPrimaryButtonVisible).isTrue()
+            assertThat(state.pinCodeData.pinCode).isEqualTo("")
+            assertThat(state.pinCodeData.length).isEqualTo(PinCodeUiModel.DEFAULT_LENGTH)
         }
 
     @Test
@@ -1023,6 +1060,123 @@ class ResourceFormViewModelTest : KoinTest {
                 assertIs<NavigateToTotp>(sideEffect)
                 assertIs<ResourceFormMode.Create>(sideEffect.mode)
             }
+        }
+
+    @Test
+    fun `go to additional pin code should emit navigate to pin code side effect`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Note,
+                    ),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.STANDALONE_NOTE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(GoToAdditionalPinCode)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<NavigateToPinCode>(sideEffect)
+                assertIs<ResourceFormMode.Create>(sideEffect.mode)
+            }
+        }
+
+    @Test
+    fun `go to pin code advanced generation should emit navigate side effect`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(GoToPinCodeAdvancedGeneration)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<NavigateToPinCodeAdvancedGeneration>(sideEffect)
+            }
+        }
+
+    @Test
+    fun `generate pin code should update state with generated pin`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+            whenever(mockPinCodeGenerator.generate(PinCodeUiModel.DEFAULT_LENGTH)).thenReturn("4242")
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+            viewModel.onIntent(GeneratePinCode)
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.pinCodeData.pinCode).isEqualTo("4242")
+            assertThat(state.pinCodeData.length).isEqualTo(PinCodeUiModel.DEFAULT_LENGTH)
+        }
+
+    @Test
+    fun `pin code advanced generation result should regenerate with new length`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+            whenever(mockPinCodeGenerator.generate(8)).thenReturn("12345678")
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+            viewModel.onIntent(PinCodeAdvancedGenerationResult(PinCodeUiModel(pinCode = "0000", length = 8)))
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.pinCodeData.pinCode).isEqualTo("12345678")
+            assertThat(state.pinCodeData.length).isEqualTo(8)
         }
 
     @Test

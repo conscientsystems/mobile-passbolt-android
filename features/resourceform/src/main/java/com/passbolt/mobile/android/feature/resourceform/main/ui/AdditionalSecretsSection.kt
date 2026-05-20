@@ -13,12 +13,14 @@ import com.passbolt.mobile.android.core.ui.section.Section
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToCustomFields
 import com.passbolt.mobile.android.ui.ResourceFormUiModel
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.CUSTOM_FIELDS
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.NOTE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PASSWORD
+import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PIN_CODE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.TOTP
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
@@ -83,6 +85,12 @@ private fun secretToSettingRowItem(
                 iconResId = CoreUiR.drawable.ic_custom_fields,
                 onClick = { onIntent(GoToCustomFields) },
             )
+        PIN_CODE ->
+            SettingRowItem(
+                text = context.getString(LocalizationR.string.resource_form_pin_code),
+                iconResId = CoreUiR.drawable.passbolt_pin,
+                onClick = { onIntent(GoToAdditionalPinCode) },
+            )
     }
 
 @Preview(showBackground = true)
@@ -96,6 +104,7 @@ private fun AdditionalSecretsSectionPreview() {
                     NOTE,
                     TOTP,
                     CUSTOM_FIELDS,
+                    PIN_CODE,
                 ),
             onIntent = {},
         )

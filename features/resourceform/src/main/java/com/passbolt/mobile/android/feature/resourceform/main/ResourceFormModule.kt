@@ -35,6 +35,7 @@ fun Module.resourceFormModule() {
             mode = params.get(),
             getPasswordPoliciesUseCase = get(),
             secretGenerator = get(),
+            pinCodeGenerator = get(),
             entropyViewMapper = get(),
             entropyCalculator = get(),
             resourceFormMapper = get(),

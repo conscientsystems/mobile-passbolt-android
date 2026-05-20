@@ -109,6 +109,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ui.CustomFiel
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.MetadataSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.NoteSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.PasswordSection
+import com.passbolt.mobile.android.feature.resourcedetails.details.ui.PinCodeSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.ResourceHeader
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.SharedWithSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.TotpSection
@@ -392,6 +393,15 @@ private fun ResourceDetailsContent(
         if (state.totpData.showTotpSection) {
             TotpSection(
                 otpModel = state.totpData.totpModel,
+                onIntent = onIntent,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+        }
+
+        if (state.pinCodeData.showPinCodeSection) {
+            PinCodeSection(
+                pinCode = state.pinCodeData.pinCode,
+                isPinCodeVisible = state.pinCodeData.isPinCodeVisible,
                 onIntent = onIntent,
                 modifier = Modifier.padding(top = 16.dp),
             )

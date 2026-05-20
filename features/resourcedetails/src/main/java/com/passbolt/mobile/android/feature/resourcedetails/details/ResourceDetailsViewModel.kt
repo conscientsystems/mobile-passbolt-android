@@ -61,6 +61,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetai
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyMetadataDescription
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyNote
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyPassword
+import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyPinCode
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyTotp
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyUrl
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyUsername
@@ -80,6 +81,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetai
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleFavourite
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleNoteVisibility
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.TogglePasswordVisibility
+import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.TogglePinCodeVisibility
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleTotpVisibility
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ViewPermissions
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsSideEffect.AddToClipboard
@@ -123,7 +125,7 @@ import timber.log.Timber
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
-@Suppress("LargeClass")
+@Suppress("LargeClass", "TooManyFunctions")
 class ResourceDetailsViewModel(
     private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
     private val getLocalResourceUseCase: GetLocalResourceUseCase,
@@ -174,10 +176,12 @@ class ResourceDetailsViewModel(
             CopyMetadataDescription -> copyMetadataDescription()
             CopyNote -> copyNote()
             CopyTotp -> copyTotp()
+            CopyPinCode -> copyPinCode()
             is CopyCustomField -> copyCustomField(intent.key)
             TogglePasswordVisibility -> togglePasswordVisibility()
             ToggleNoteVisibility -> toggleNoteVisibility()
             ToggleTotpVisibility -> toggleTotpVisibility()
+            TogglePinCodeVisibility -> togglePinCodeVisibility()
             is ToggleCustomField -> toggleCustomFieldVisibility(intent.key)
             GoToTags -> goToTags()
             GoToLocation -> goToLocation()
@@ -283,6 +287,10 @@ class ResourceDetailsViewModel(
                 noteData =
                     noteData.copy(
                         showNoteSection = contentType.hasNote(),
+                    ),
+                pinCodeData =
+                    pinCodeData.copy(
+                        showPinCodeSection = contentType.hasPinCode(),
                     ),
             )
         }
@@ -504,6 +512,19 @@ class ResourceDetailsViewModel(
         }
     }
 
+    private fun copyPinCode() {
+        resourceDetailActionIdlingResource.setIdle(false)
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            performSecretPropertyAction(
+                action = { secretPropertiesActionsInteractor.providePinCode() },
+                doOnFetchFailure = { emitSideEffect(ShowErrorSnackbar(FETCH_FAILURE)) },
+                doOnDecryptionFailure = { emitSideEffect(ShowErrorSnackbar(DECRYPTION_FAILURE)) },
+                doOnSuccess = { emitSideEffect(AddToClipboard(it.label, it.result, it.isSecret)) },
+            )
+            resourceDetailActionIdlingResource.setIdle(true)
+        }
+    }
+
     private fun copyCustomField(key: UUID) {
         resourceDetailActionIdlingResource.setIdle(false)
         viewModelScope.launch(coroutineLaunchContext.io) {
@@ -601,6 +622,42 @@ class ResourceDetailsViewModel(
                                     noteData.copy(
                                         isNoteVisible = true,
                                         note = it.result,
+                                    ),
+                            )
+                        }
+                    },
+                )
+                resourceDetailActionIdlingResource.setIdle(true)
+            }
+        }
+    }
+
+    private fun togglePinCodeVisibility() {
+        val isCurrentlyVisible = viewState.value.pinCodeData.isPinCodeVisible
+        if (isCurrentlyVisible) {
+            updateViewState {
+                copy(
+                    pinCodeData =
+                        pinCodeData.copy(
+                            isPinCodeVisible = false,
+                            pinCode = "",
+                        ),
+                )
+            }
+        } else {
+            resourceDetailActionIdlingResource.setIdle(false)
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                performSecretPropertyAction(
+                    action = { secretPropertiesActionsInteractor.providePinCode() },
+                    doOnDecryptionFailure = { emitSideEffect(ShowErrorSnackbar(DECRYPTION_FAILURE)) },
+                    doOnFetchFailure = { emitSideEffect(ShowErrorSnackbar(FETCH_FAILURE)) },
+                    doOnSuccess = {
+                        updateViewState {
+                            copy(
+                                pinCodeData =
+                                    pinCodeData.copy(
+                                        isPinCodeVisible = true,
+                                        pinCode = it.result,
                                     ),
                             )
                         }
@@ -769,6 +826,7 @@ class ResourceDetailsViewModel(
             copy(
                 passwordData = passwordData.copy(isPasswordVisible = false, password = ""),
                 noteData = noteData.copy(isNoteVisible = false, note = ""),
+                pinCodeData = pinCodeData.copy(isPinCodeVisible = false, pinCode = ""),
                 customFieldsData = customFieldsData.copy(visibleCustomFields = emptyMap()),
             )
         }

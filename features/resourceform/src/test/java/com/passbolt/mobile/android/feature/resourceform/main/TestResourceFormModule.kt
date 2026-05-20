@@ -11,6 +11,7 @@ import com.passbolt.mobile.android.core.idlingresource.CreateResourceIdlingResou
 import com.passbolt.mobile.android.core.idlingresource.UpdateResourceIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.passwordgenerator.PinCodeGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
@@ -63,6 +64,7 @@ import java.util.EnumSet
 
 internal val mockGetPasswordPoliciesUseCase = mock<GetPasswordPoliciesUseCase>()
 internal val mockSecretGenerator = mock<SecretGenerator>()
+internal val mockPinCodeGenerator = mock<PinCodeGenerator>()
 internal val mockEntropyCalculator = mock<EntropyCalculator>()
 internal val mockGetDefaultCreateContentTypeUseCase = mock<GetDefaultCreateContentTypeUseCase>()
 internal val mockGetEditContentTypeUseCase = mock<GetEditContentTypeUseCase>()
@@ -102,6 +104,7 @@ internal val testResourceFormModule =
                 mode = params.get(),
                 getPasswordPoliciesUseCase = mockGetPasswordPoliciesUseCase,
                 secretGenerator = mockSecretGenerator,
+                pinCodeGenerator = mockPinCodeGenerator,
                 entropyCalculator = mockEntropyCalculator,
                 metadataPrivateKeysHelperInteractor = mockMetadataPrivateKeysHelperInteractor,
                 getLocalResourceUseCase = get(),

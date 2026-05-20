@@ -122,6 +122,21 @@ class SecretPropertiesActionsInteractor(
                 }
             }
 
+    suspend fun providePinCode(): Flow<SecretPropertyActionResult<String>> =
+        fetchAndDecrypt()
+            .mapSuccess {
+                when (val secret = secretParser.parseSecret(resource.slug, it.secret)) {
+                    is DecryptedSecretOrError.DecryptedSecret ->
+                        SecretPropertyActionResult.Success(
+                            PIN_CODE_LABEL,
+                            isSecret = true,
+                            secret.secret.pinCode.orEmpty(),
+                        )
+                    is DecryptedSecretOrError.Error ->
+                        SecretPropertyActionResult.DecryptionFailure()
+                }
+            }
+
     private suspend fun fetchAndDecrypt(): Flow<SecretFetchAndDecryptResult> =
         flowOf(
             when (
@@ -187,6 +202,9 @@ class SecretPropertiesActionsInteractor(
 
         @VisibleForTesting
         const val CUSTOM_FIELD_LABEL = "Custom Field"
+
+        @VisibleForTesting
+        const val PIN_CODE_LABEL = "PIN Code"
     }
 }
 

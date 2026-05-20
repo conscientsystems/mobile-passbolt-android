@@ -51,6 +51,8 @@ sealed class ResourceDetailsIntent {
 
     data object CopyTotp : ResourceDetailsIntent()
 
+    data object CopyPinCode : ResourceDetailsIntent()
+
     data class CopyCustomField(
         val key: UUID,
     ) : ResourceDetailsIntent()
@@ -61,6 +63,8 @@ sealed class ResourceDetailsIntent {
     data object ToggleNoteVisibility : ResourceDetailsIntent()
 
     data object ToggleTotpVisibility : ResourceDetailsIntent()
+
+    data object TogglePinCodeVisibility : ResourceDetailsIntent()
 
     data class ToggleCustomField(
         val key: UUID,
