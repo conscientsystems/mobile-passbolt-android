@@ -4,6 +4,7 @@ import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpParseResult
 import com.passbolt.mobile.android.ui.PasswordUiModel
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
 import com.passbolt.mobile.android.ui.TotpUiModel
 
@@ -48,11 +49,25 @@ sealed interface ResourceFormIntent {
         val note: String,
     ) : ResourceFormIntent
 
+    data class PinCodeChanged(
+        val pinCode: String,
+    ) : ResourceFormIntent
+
+    data object GeneratePinCode : ResourceFormIntent
+
+    data object GoToPinCodeAdvancedGeneration : ResourceFormIntent
+
+    data class PinCodeAdvancedGenerationResult(
+        val pinCodeUiModel: PinCodeUiModel,
+    ) : ResourceFormIntent
+
     data object GoToAdditionalNote : ResourceFormIntent
 
     data object GoToAdditionalTotp : ResourceFormIntent
 
     data object GoToAdditionalPassword : ResourceFormIntent
+
+    data object GoToAdditionalPinCode : ResourceFormIntent
 
     data object GoToCustomFields : ResourceFormIntent
 
@@ -76,6 +91,10 @@ sealed interface ResourceFormIntent {
 
     data class NoteResult(
         val note: String?,
+    ) : ResourceFormIntent
+
+    data class PinCodeResult(
+        val pinCodeUiModel: PinCodeUiModel?,
     ) : ResourceFormIntent
 
     data class DescriptionResult(

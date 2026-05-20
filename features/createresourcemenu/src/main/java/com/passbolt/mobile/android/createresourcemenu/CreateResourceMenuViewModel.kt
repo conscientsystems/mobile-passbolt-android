@@ -2,10 +2,12 @@ package com.passbolt.mobile.android.createresourcemenu
 
 import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.Close
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreateFolder
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreateNote
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreatePassword
+import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreatePinCode
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreateTotp
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.Initialize
 import com.passbolt.mobile.android.createresourcemenu.usecase.CreateCreateResourceMenuModelUseCase
@@ -45,15 +47,19 @@ class CreateResourceMenuViewModel(
             CreateTotp -> emitSideEffect(CreateResourceMenuSideEffect.InvokeCreateTotp)
             CreateFolder -> emitSideEffect(CreateResourceMenuSideEffect.InvokeCreateFolder)
             CreateNote -> emitSideEffect(CreateResourceMenuSideEffect.InvokeCreateNote)
-            is Initialize -> initialize(intent.homeDisplayViewModel)
+            CreatePinCode -> emitSideEffect(CreateResourceMenuSideEffect.InvokeCreatePinCode)
+            is Initialize -> initialize(intent.homeDisplayViewModel, intent.appContext)
         }
     }
 
-    private fun initialize(homeDisplayViewModel: HomeDisplayViewModel?) {
+    private fun initialize(
+        homeDisplayViewModel: HomeDisplayViewModel?,
+        appContext: AppContext,
+    ) {
         viewModelScope.launch {
             createCreateResourceMoreMenuModelUseCase
                 .execute(
-                    CreateCreateResourceMenuModelUseCase.Input(homeDisplayViewModel),
+                    CreateCreateResourceMenuModelUseCase.Input(homeDisplayViewModel, appContext),
                 ).model
                 .apply {
                     updateViewState {
@@ -62,6 +68,7 @@ class CreateResourceMenuViewModel(
                             showTotpButton = isTotpEnabled,
                             showNoteButton = isNoteEnabled,
                             showFoldersButton = isFolderEnabled,
+                            showPinCodeButton = isPinCodeEnabled,
                         )
                     }
                 }

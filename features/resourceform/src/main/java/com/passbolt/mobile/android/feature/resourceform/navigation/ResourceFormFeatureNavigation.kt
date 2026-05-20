@@ -10,6 +10,8 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavi
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.MainResourceForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.NoteForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.PasswordForm
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.PinCodeAdvancedGenerationForm
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.PinCodeForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.TotpAdvancedSettingsForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.TotpForm
 import com.passbolt.mobile.android.core.navigation.compose.results.ResultEffect
@@ -17,6 +19,8 @@ import com.passbolt.mobile.android.core.navigation.compose.results.ScanOtpResult
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.customfields.CustomFieldsFormScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteFormScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormScreen
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeFormScreen
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.advanced.PinCodeAdvancedGenerationFormScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpFormScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.advanced.TotpAdvancedSettingsFormScreen
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdditionalUrisResult
@@ -25,6 +29,8 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DescriptionResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeAdvancedGenerationResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanOtpResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpAdvancedSettingsResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpResult
@@ -59,6 +65,12 @@ class ResourceFormFeatureNavigation : FeatureModuleNavigation {
                 }
                 ResultEffect<NoteFormResult> { result ->
                     viewModel.onIntent(NoteResult(result.note))
+                }
+                ResultEffect<PinCodeFormResult> { result ->
+                    viewModel.onIntent(PinCodeResult(result.pinCodeUiModel))
+                }
+                ResultEffect<PinCodeAdvancedGenerationFormResult> { result ->
+                    viewModel.onIntent(PinCodeAdvancedGenerationResult(result.pinCodeUiModel))
                 }
                 ResultEffect<DescriptionFormResult> { result ->
                     viewModel.onIntent(DescriptionResult(result.metadataDescription))
@@ -149,6 +161,24 @@ class ResourceFormFeatureNavigation : FeatureModuleNavigation {
             entry<CustomFieldsForm> { key ->
                 PassboltTheme {
                     CustomFieldsFormScreen(customFieldsUiModel = key.customFieldsUiModel)
+                }
+            }
+
+            entry<PinCodeForm> { key ->
+                PassboltTheme {
+                    PinCodeFormScreen(
+                        mode = key.mode,
+                        pinCodeUiModel = key.pinCodeUiModel,
+                    )
+                }
+            }
+
+            entry<PinCodeAdvancedGenerationForm> { key ->
+                PassboltTheme {
+                    PinCodeAdvancedGenerationFormScreen(
+                        mode = key.mode,
+                        pinCodeUiModel = key.pinCodeUiModel,
+                    )
                 }
             }
         }

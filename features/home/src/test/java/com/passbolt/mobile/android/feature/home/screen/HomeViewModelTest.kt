@@ -194,6 +194,7 @@ class HomeViewModelTest : KoinTest {
                     any(),
                     any(),
                     any(),
+                    any(),
                 )
             }.doReturn(HomeData())
         }
@@ -238,7 +239,7 @@ class HomeViewModelTest : KoinTest {
     fun `should update search state when search query changes`() =
         runTest {
             val mockHomeData = mockResourcesData()
-            whenever(get<HomeDataProvider>().provideData(any(), any(), any())).thenReturn(mockHomeData)
+            whenever(get<HomeDataProvider>().provideData(any(), any(), any(), any())).thenReturn(mockHomeData)
 
             viewModel = get()
             viewModel.onIntent(Search("test query"))
@@ -618,7 +619,7 @@ class HomeViewModelTest : KoinTest {
             )
 
             val newHomeData = mockResourcesData()
-            whenever(get<HomeDataProvider>().provideData(any(), any(), any())).thenReturn(newHomeData)
+            whenever(get<HomeDataProvider>().provideData(any(), any(), any(), any())).thenReturn(newHomeData)
 
             val accountSwitchFlow: AccountSwitchFlow = get()
             accountSwitchFlow.notifyAccountSwitch("id2")
@@ -643,6 +644,7 @@ class HomeViewModelTest : KoinTest {
         get<HomeDataProvider>().stub {
             onBlocking {
                 provideData(
+                    any(),
                     any(),
                     any(),
                     any(),

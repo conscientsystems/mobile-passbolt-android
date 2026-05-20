@@ -303,6 +303,8 @@
     <string name="resource_details_description_header">Description</string>
     <string name="resource_details_note_header">Note</string>
     <string name="resource_details_note_content">Content</string>
+    <string name="resource_details_pin_code_header">Pin code</string>
+    <string name="resource_details_pin_code_code">Code</string>
     <string name="resource_details_tags_header">Tags</string>
     <string name="hidden_secret"
         translatable="false">••••••••••••••••••</string>
@@ -364,6 +366,17 @@
     <string name="resource_form_create_init_error">Failed to initialize resource creation</string>
     <string name="resource_form_remove_totp">Remove TOTP</string>
     <string name="resource_form_remove_note">Remove Note</string>
+    <string name="resource_form_remove_pin_code">Remove pin code</string>
+    <string name="resource_form_pin_code">Pin code</string>
+    <string name="resource_form_create_pin_code">Create a pin code</string>
+    <string name="resource_form_pin_code_code">Code</string>
+    <string name="resource_form_enter_pin_code">Enter pin code</string>
+    <string name="resource_form_pin_code_advanced">Advanced pin code generation</string>
+    <string name="resource_form_pin_code_length">Length</string>
+    <string name="resource_form_pin_code_save_preferences">Save preferences</string>
+    <string name="resource_form_pin_code_additional_information">Additional information</string>
+    <string name="resource_form_pin_code_validation_too_short">Pin code must be at least %d digits</string>
+    <string name="resource_form_pin_code_validation_too_long">Pin code can be at most %d digits</string>
     <string name="resource_form_no_name">no name</string>
     <string name="resource_form_max_additional_uris_limit">You can add a maximum of %d additional URIs</string>
     <string name="resource_form_appearance">Appearance</string>
@@ -641,6 +654,9 @@
     <string name="create_resource_menu_create_password">Password</string>
     <string name="create_resource_menu_create_note">Note</string>
     <string name="create_resource_menu_create_folder">Folder</string>
+    <string name="create_resource_menu_other">Other</string>
+    <string name="create_resource_menu_other_title">Other resource types</string>
+    <string name="create_resource_menu_create_pin_code">Pin code</string>
 
     <string name="dialog_new_metadata_key_trust_changed">The metadata key has changed.</string>
     <string name="dialog_new_metadata_key_trust_modified_by_user">The encryption key used to share metadata between users has been updated by %s.</string>

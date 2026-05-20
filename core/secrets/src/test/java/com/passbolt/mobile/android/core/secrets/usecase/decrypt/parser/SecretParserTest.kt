@@ -35,6 +35,7 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordSt
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5CustomFields
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.ui.DecryptedSecretOrError
 import kotlinx.coroutines.test.runTest
 import net.jimblackler.jsonschemafriend.SchemaStore
@@ -84,6 +85,10 @@ class SecretParserTest : KoinTest {
             on { schemaForSecret(V5Note.slug) } doReturn
                 SchemaStore().loadSchema(
                     this::class.java.getResource("/v5-note-secret-schema.json"),
+                )
+            on { schemaForSecret(V5PinCodeStandalone.slug) } doReturn
+                SchemaStore().loadSchema(
+                    this::class.java.getResource("/v5-pin-code-secret-schema.json"),
                 )
         }
     }
@@ -247,6 +252,26 @@ class SecretParserTest : KoinTest {
 
             assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
             val parsedSecret = (secretResult as DecryptedSecretOrError.DecryptedSecret).secret
+            assertThat(parsedSecret.description).isEqualTo("desc")
+        }
+
+    @Test
+    fun `pin code should parse correct for v5 pin code secret`() =
+        runTest {
+            val secret =
+                """
+                {
+                    "object_type": "PASSBOLT_SECRET_DATA",
+                    "pin_code": "12345",
+                    "description": "desc"
+                }
+                """.trimIndent()
+
+            val secretResult = secretParser.parseSecret(V5PinCodeStandalone.slug, secret)
+
+            assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
+            val parsedSecret = (secretResult as DecryptedSecretOrError.DecryptedSecret).secret
+            assertThat(parsedSecret.pinCode).isEqualTo("12345")
             assertThat(parsedSecret.description).isEqualTo("desc")
         }
 }

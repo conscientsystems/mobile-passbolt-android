@@ -43,6 +43,8 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavi
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.DescriptionForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.NoteForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.PasswordForm
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.PinCodeAdvancedGenerationForm
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.PinCodeForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.TotpAdvancedSettingsForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.TotpForm
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
@@ -73,6 +75,8 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCode
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
@@ -120,6 +124,10 @@ internal fun ResourceFormScreen(
                 navigator.navigateToKey(TotpAdvancedSettingsForm(sideEffect.mode, sideEffect.totpUiModel))
             is NavigateToNote ->
                 navigator.navigateToKey(NoteForm(sideEffect.mode, sideEffect.note))
+            is NavigateToPinCode ->
+                navigator.navigateToKey(PinCodeForm(sideEffect.mode, sideEffect.pinCodeUiModel))
+            is NavigateToPinCodeAdvancedGeneration ->
+                navigator.navigateToKey(PinCodeAdvancedGenerationForm(sideEffect.mode, sideEffect.pinCodeUiModel))
             is NavigateToDescription ->
                 navigator.navigateToKey(DescriptionForm(sideEffect.mode, sideEffect.metadataDescription))
             is NavigateToAdditionalUris ->
@@ -243,6 +251,7 @@ private fun ResourceFormScreen(
                     passwordData = state.passwordData,
                     totpData = state.totpData,
                     noteData = state.noteData,
+                    pinCodeData = state.pinCodeData,
                     onIntent = onIntent,
                 )
 

@@ -32,6 +32,7 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PasswordString
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 
 private const val PASSWORD_STRING_SLUG = "password-string"
@@ -44,6 +45,7 @@ private const val V5_DEFAULT_WITH_TOTP = "v5-default-with-totp"
 private const val V5_PASSWORD_STRING_SLUG = "v5-password-string"
 private const val V5_CUSTOM_FIELDS = "v5-custom-fields"
 private const val V5_NOTE = "v5-note"
+private const val V5_PIN_CODE_SLUG = "v5-pin-code"
 
 sealed class ContentType(
     val slug: String,
@@ -68,7 +70,11 @@ sealed class ContentType(
 
     data object V5Note : ContentType(V5_NOTE)
 
+    data object V5PinCodeStandalone : ContentType(V5_PIN_CODE_SLUG)
+
     fun isSimplePassword() = this == PasswordString || this == V5PasswordString
+
+    fun isStandalonePinCode() = this == V5PinCodeStandalone
 
     fun isV5() = this.slug in SupportedContentTypes.v5Slugs
 
@@ -89,6 +95,7 @@ sealed class ContentType(
                 V5Default,
                 V5DefaultWithTotp,
                 V5Note,
+                V5PinCodeStandalone,
             )
 
     fun hasMetadataDescription() =
@@ -101,7 +108,10 @@ sealed class ContentType(
                 V5TotpStandalone,
                 V5CustomFields,
                 V5Note,
+                V5PinCodeStandalone,
             )
+
+    fun hasPinCode() = this == V5PinCodeStandalone
 
     fun hasPassword() =
         this in
@@ -146,6 +156,7 @@ sealed class ContentType(
                 V5_PASSWORD_STRING_SLUG -> V5PasswordString
                 V5_CUSTOM_FIELDS -> V5CustomFields
                 V5_NOTE -> V5Note
+                V5_PIN_CODE_SLUG -> V5PinCodeStandalone
                 else -> throw IllegalArgumentException("Unsupported content type slug: $slug")
             }
     }
@@ -166,7 +177,10 @@ object SupportedContentTypes {
             V5DefaultWithTotp,
             V5CustomFields,
             V5Note,
+            V5PinCodeStandalone,
         ).map { it.slug }.toSet()
+
+    val autofillSlugs = homeSlugs - V5PinCodeStandalone.slug
 
     val totpSlugs =
         setOf(
@@ -194,6 +208,7 @@ object SupportedContentTypes {
             V5TotpStandalone,
             V5CustomFields,
             V5Note,
+            V5PinCodeStandalone,
         ).map { it.slug }.toSet()
 
     val resourcesSlugsSupportingExpiry =
@@ -206,5 +221,6 @@ object SupportedContentTypes {
             V5DefaultWithTotp,
             V5CustomFields,
             V5Note,
+            V5PinCodeStandalone,
         )
 }

@@ -13,10 +13,12 @@ import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAct
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_NOTE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_PASSWORD
+import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_PIN_CODE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_TOTP
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_NOTE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_PASSWORD
+import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_PIN_CODE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_TOTP
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.jsonmodel.delegates.SecretCustomFieldsModel
@@ -31,6 +33,7 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PasswordString
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.MetadataJsonModel
@@ -44,6 +47,7 @@ import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.DESCRIPTION
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.CUSTOM_FIELDS
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.NOTE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PASSWORD
+import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PIN_CODE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.TOTP
 import kotlinx.coroutines.flow.single
 import timber.log.Timber
@@ -101,6 +105,7 @@ class ResourceModelHandler(
                         LeadingContentType.PASSWORD -> SecretJsonModel.emptyPassword()
                         LeadingContentType.CUSTOM_FIELDS -> SecretJsonModel.emptyCustomFields()
                         LeadingContentType.STANDALONE_NOTE -> SecretJsonModel.emptyDescription()
+                        LeadingContentType.PIN_CODE -> SecretJsonModel.emptyPinCode()
                     }
 
                 Timber.d("Initialized creation model with content type: $contentType and metadata type: $metadataType")
@@ -173,6 +178,9 @@ class ResourceModelHandler(
         if (contentType.hasCustomFields() && resourceSecret.customFields == null) {
             resourceSecret.customFields = SecretCustomFieldsModel()
         }
+        if (contentType.hasPinCode() && resourceSecret.pinCode == null) {
+            resourceSecret.pinCode = ""
+        }
     }
 
     private fun ensureNoAdditionalFields() {
@@ -187,6 +195,9 @@ class ResourceModelHandler(
         }
         if (!contentType.hasCustomFields() && resourceSecret.customFields != null) {
             resourceSecret.customFields = null
+        }
+        if (!contentType.hasPinCode() && resourceSecret.pinCode != null) {
+            resourceSecret.pinCode = null
         }
     }
 
@@ -244,6 +255,7 @@ class ResourceModelHandler(
 
     private fun resourceHasNoNote(): Boolean = resourceSecret.description.isNullOrBlank()
 
+    @Suppress("CyclomaticComplexMethod")
     fun getResourceSecretWithRequiredFields(): SecretJsonModel =
         SecretJsonModel(resourceSecret.json).apply {
             when (contentType) {
@@ -273,6 +285,11 @@ class ResourceModelHandler(
                         description = ""
                     }
                 }
+                V5PinCodeStandalone -> {
+                    if (pinCode.isNullOrBlank()) {
+                        Timber.e("Attempt to create or edit pin code resource with empty pin code")
+                    }
+                }
             }
         }
 
@@ -294,6 +311,7 @@ class ResourceModelHandler(
                 in setOf(Totp, V5TotpStandalone) -> LeadingContentType.TOTP
                 is V5CustomFields -> LeadingContentType.CUSTOM_FIELDS
                 is V5Note -> LeadingContentType.STANDALONE_NOTE
+                is V5PinCodeStandalone -> LeadingContentType.PIN_CODE
                 else -> LeadingContentType.PASSWORD
             }
 
@@ -319,6 +337,11 @@ class ResourceModelHandler(
                     }
                     if (it.contains(ADD_CUSTOM_FIELDS) && mode !is ResourceFormMode.Create) {
                         additionalSecrets.add(CUSTOM_FIELDS)
+                    }
+                    if (leadingContentType != LeadingContentType.PIN_CODE &&
+                        (it.contains(ADD_PIN_CODE) || it.contains(REMOVE_PIN_CODE))
+                    ) {
+                        additionalSecrets.add(PIN_CODE)
                     }
                     additionalSecrets
                 },

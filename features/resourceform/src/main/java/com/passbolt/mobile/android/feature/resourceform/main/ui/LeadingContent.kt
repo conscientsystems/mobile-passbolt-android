@@ -17,31 +17,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.passbolt.mobile.android.core.ui.button.SecondaryIconButton
 import com.passbolt.mobile.android.core.ui.section.Section
+import com.passbolt.mobile.android.core.ui.text.PasswordInput
 import com.passbolt.mobile.android.core.ui.text.TextInput
 import com.passbolt.mobile.android.core.ui.textinputfield.StatefulInput.State.Default
 import com.passbolt.mobile.android.core.ui.textinputfield.StatefulInput.State.Error
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.ui.PasswordGenerationInput
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
 import com.passbolt.mobile.android.feature.resourceform.main.NoteData
 import com.passbolt.mobile.android.feature.resourceform.main.PasswordData
+import com.passbolt.mobile.android.feature.resourceform.main.PinCodeData
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePinCode
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordUsernameTextChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpSecretChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpUrlChanged
 import com.passbolt.mobile.android.feature.resourceform.main.TotpData
 import com.passbolt.mobile.android.feature.resourceform.main.getNoteErrorMessage
+import com.passbolt.mobile.android.feature.resourceform.main.getPinCodeErrorMessage
 import com.passbolt.mobile.android.feature.resourceform.main.getTotpSecretErrorMessage
 import com.passbolt.mobile.android.testtags.composetags.ResourceForm
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.LeadingContentType.CUSTOM_FIELDS
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
+import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.PasswordStrength
@@ -54,6 +62,7 @@ internal fun LeadingContent(
     passwordData: PasswordData,
     totpData: TotpData,
     noteData: NoteData,
+    pinCodeData: PinCodeData,
     onIntent: (ResourceFormIntent) -> Unit,
 ) {
     when (leadingContentType) {
@@ -77,6 +86,12 @@ internal fun LeadingContent(
             StandaloneNoteSection(
                 note = noteData.note,
                 noteError = noteData.noteError,
+                onIntent = onIntent,
+            )
+        PIN_CODE ->
+            PinCodeLeadingSection(
+                pinCode = pinCodeData.pinCode,
+                pinCodeError = pinCodeData.pinCodeError,
                 onIntent = onIntent,
             )
         CUSTOM_FIELDS, null -> {
@@ -169,6 +184,45 @@ private fun TotpSection(
 }
 
 @Composable
+private fun PinCodeLeadingSection(
+    pinCode: String,
+    pinCodeError: PinCodeValidationError?,
+    onIntent: (ResourceFormIntent) -> Unit,
+) {
+    Section(title = stringResource(LocalizationR.string.resource_form_pin_code)) {
+        Column {
+            Row(verticalAlignment = Alignment.Bottom) {
+                PasswordInput(
+                    title = stringResource(LocalizationR.string.resource_form_pin_code_code),
+                    hint = stringResource(LocalizationR.string.resource_form_enter_pin_code),
+                    text = pinCode,
+                    onTextChange = { onIntent(PinCodeChanged(it)) },
+                    state =
+                        if (pinCodeError == null) {
+                            Default
+                        } else {
+                            Error(getPinCodeErrorMessage(LocalContext.current, pinCodeError))
+                        },
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                SecondaryIconButton(
+                    modifier = Modifier.size(56.dp),
+                    onClick = { onIntent(GeneratePinCode) },
+                    icon = painterResource(CoreUiR.drawable.ic_password_generate),
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            SettingRow(
+                leadingIconResId = CoreUiR.drawable.ic_cog,
+                text = stringResource(LocalizationR.string.resource_form_pin_code_advanced),
+                onClick = { onIntent(GoToPinCodeAdvancedGeneration) },
+            )
+        }
+    }
+}
+
+@Composable
 private fun StandaloneNoteSection(
     note: String,
     noteError: NoteValidationError?,
@@ -207,6 +261,7 @@ private fun LeadingContentPasswordPreview() {
                 ),
             totpData = TotpData(),
             noteData = NoteData(),
+            pinCodeData = PinCodeData(),
             onIntent = {},
         )
     }
@@ -225,6 +280,7 @@ private fun LeadingContentTotpPreview() {
                     totpIssuer = "passbolt.com",
                 ),
             noteData = NoteData(),
+            pinCodeData = PinCodeData(),
             onIntent = {},
         )
     }
@@ -241,6 +297,41 @@ private fun LeadingContentNotePreview() {
             noteData =
                 NoteData(
                     note = "This is a secret note",
+                ),
+            pinCodeData = PinCodeData(),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LeadingContentPinCodePreview() {
+    PassboltTheme {
+        LeadingContent(
+            leadingContentType = PIN_CODE,
+            passwordData = PasswordData(),
+            totpData = TotpData(),
+            noteData = NoteData(),
+            pinCodeData = PinCodeData(pinCode = "1234"),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LeadingContentPinCodeErrorPreview() {
+    PassboltTheme {
+        LeadingContent(
+            leadingContentType = PIN_CODE,
+            passwordData = PasswordData(),
+            totpData = TotpData(),
+            noteData = NoteData(),
+            pinCodeData =
+                PinCodeData(
+                    pinCode = "12",
+                    pinCodeError = PinCodeValidationError.TooShort(minLength = 4),
                 ),
             onIntent = {},
         )

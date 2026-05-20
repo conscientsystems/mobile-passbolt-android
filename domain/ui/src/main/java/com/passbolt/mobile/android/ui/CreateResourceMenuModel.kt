@@ -5,4 +5,5 @@ data class CreateResourceMenuModel(
     val isTotpEnabled: Boolean,
     val isFolderEnabled: Boolean,
     val isNoteEnabled: Boolean,
+    val isPinCodeEnabled: Boolean,
 )

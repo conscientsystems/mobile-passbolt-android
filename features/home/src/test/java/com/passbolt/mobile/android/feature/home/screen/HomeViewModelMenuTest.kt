@@ -180,6 +180,7 @@ class HomeViewModelMenuTest : KoinTest {
                     any(),
                     any(),
                     any(),
+                    any(),
                 )
             }.doReturn(HomeData())
         }

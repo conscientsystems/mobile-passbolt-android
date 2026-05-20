@@ -298,6 +298,7 @@ fun OtpScreen(
                         onCreatePassword = { onIntent(CreatePassword) },
                         onCreateTotp = { onIntent(CreateTotp) },
                         onCreateNote = { onIntent(CreateNote) },
+                        onCreatePinCode = {},
                         onDismissRequest = { onIntent(CloseCreateResourceMenu) },
                     )
                 }

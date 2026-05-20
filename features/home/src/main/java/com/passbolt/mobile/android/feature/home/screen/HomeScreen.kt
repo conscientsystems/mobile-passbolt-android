@@ -83,6 +83,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyResourceUs
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateFolder
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePassword
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateTotp
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.DeleteResource
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.EditResource
@@ -158,6 +159,7 @@ internal fun HomeScreen(
             Initialize(
                 homeView = homeView,
                 showSuggestedModel = showSuggestedModel,
+                appContext = resourceHandlingStrategy.appContext,
             ),
         )
     }
@@ -306,9 +308,11 @@ private fun HomeScreen(
     if (state.showCreateResourceBottomSheet) {
         CreateResourceMenuBottomSheet(
             homeDisplayViewModel = state.homeView,
+            appContext = state.appContext,
             onCreatePassword = { onIntent(CreatePassword) },
             onCreateTotp = { onIntent(CreateTotp) },
             onCreateNote = { onIntent(CreateNote) },
+            onCreatePinCode = { onIntent(CreatePinCode) },
             onCreateFolder = { onIntent(CreateFolder) },
             onDismissRequest = { onIntent(CloseCreateResourceMenu) },
         )

@@ -1,5 +1,6 @@
 package com.passbolt.mobile.android.createresourcemenu
 
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 
 /**
@@ -28,6 +29,7 @@ import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 sealed interface CreateResourceMenuIntent {
     data class Initialize(
         val homeDisplayViewModel: HomeDisplayViewModel?,
+        val appContext: AppContext = AppContext.APP,
     ) : CreateResourceMenuIntent
 
     data object CreatePassword : CreateResourceMenuIntent
@@ -37,6 +39,8 @@ sealed interface CreateResourceMenuIntent {
     data object CreateNote : CreateResourceMenuIntent
 
     data object CreateFolder : CreateResourceMenuIntent
+
+    data object CreatePinCode : CreateResourceMenuIntent
 
     data object Close : CreateResourceMenuIntent
 }

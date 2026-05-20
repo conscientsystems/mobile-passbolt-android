@@ -38,5 +38,6 @@ data class ResourceFormUiModel(
         NOTE,
         TOTP,
         CUSTOM_FIELDS,
+        PIN_CODE,
     }
 }

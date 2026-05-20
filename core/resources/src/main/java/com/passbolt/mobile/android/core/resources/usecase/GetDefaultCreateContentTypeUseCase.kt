@@ -7,10 +7,12 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAn
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.LeadingContentType.CUSTOM_FIELDS
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
+import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataTypeModel
@@ -61,6 +63,7 @@ class GetDefaultCreateContentTypeUseCase(
                                 PASSWORD -> PasswordAndDescription
                                 CUSTOM_FIELDS -> error("Custom fields creation not supported for v4")
                                 STANDALONE_NOTE -> error("Standalone note creation not supported for v4")
+                                PIN_CODE -> error("Pin code creation not supported for v4")
                             }
                         V5 ->
                             when (input.leadingContentType) {
@@ -68,6 +71,7 @@ class GetDefaultCreateContentTypeUseCase(
                                 PASSWORD -> V5Default
                                 CUSTOM_FIELDS -> error("Custom fields creation not supported")
                                 STANDALONE_NOTE -> V5Note
+                                PIN_CODE -> V5PinCodeStandalone
                             }
                     },
             )

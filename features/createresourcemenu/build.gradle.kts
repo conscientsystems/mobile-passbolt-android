@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":metadata"))
+    implementation(project(":navigation"))
 
     implementation(libs.androidx.core)
     implementation(libs.appcompat)

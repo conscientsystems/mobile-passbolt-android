@@ -21,6 +21,7 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PasswordString
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.DEFAULT_BACKGROUND_COLOR_HEX_STRING
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_KEEPASS
@@ -98,6 +99,7 @@ class ResourceIconProvider(
                 Totp, V5TotpStandalone -> CoreUiR.drawable.passbolt_totp
                 V5CustomFields -> CoreUiR.drawable.passbolt_key_value
                 V5Note -> CoreUiR.drawable.passbolt_note
+                V5PinCodeStandalone -> CoreUiR.drawable.passbolt_pin
             }
 
         return createCircleDrawableWithIcon(
