@@ -70,6 +70,8 @@ class SecretJsonModel(
     }
 
     companion object {
+        const val OBJECT_TYPE = "PASSBOLT_SECRET_DATA"
+
         fun emptyPassword(): SecretJsonModel =
             SecretJsonModel(
                 """

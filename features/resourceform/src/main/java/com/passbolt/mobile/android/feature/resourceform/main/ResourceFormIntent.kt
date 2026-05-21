@@ -129,4 +129,8 @@ sealed interface ResourceFormIntent {
     data object ProceedWithPasswordWarning : ResourceFormIntent
 
     data object DismissPasswordWarning : ResourceFormIntent
+
+    data object UpgradeResource : ResourceFormIntent
+
+    data object LearnMoreAboutUpgrade : ResourceFormIntent
 }

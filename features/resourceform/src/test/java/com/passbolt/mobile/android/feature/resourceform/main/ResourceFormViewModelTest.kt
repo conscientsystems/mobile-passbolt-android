@@ -6,7 +6,16 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
+import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult
+import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
+import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.Failure
+import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractor
+import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
+import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
@@ -26,6 +35,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToMetadataDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.LearnMoreAboutUpgrade
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
@@ -37,6 +47,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpSecretChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpUrlChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.UpgradeResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdditionalUris
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAppearance
@@ -48,21 +59,40 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.OpenWebsite
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowSnackbar
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowToast
+import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG
+import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.COMMON_FAILURE
+import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.RESOURCE_UPGRADED
+import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
+import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseCase
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
+import com.passbolt.mobile.android.ui.CaseTypeModel.LOWERCASE
 import com.passbolt.mobile.android.ui.LeadingContentType
+import com.passbolt.mobile.android.ui.MetadataJsonModel
+import com.passbolt.mobile.android.ui.MetadataKeyTypeModel.PERSONAL
 import com.passbolt.mobile.android.ui.MetadataTypeModel
+import com.passbolt.mobile.android.ui.MetadataTypeModel.V4
 import com.passbolt.mobile.android.ui.OtpParseResult
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PasswordPolicies
 import com.passbolt.mobile.android.ui.PasswordStrength
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
+import com.passbolt.mobile.android.ui.ResourceFormMode.Edit
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.ADDITIONAL_URIS
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.APPEARANCE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.DESCRIPTION
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.NOTE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PASSWORD
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.TOTP
+import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourcePermission.OWNER
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -86,6 +116,7 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
+import java.time.ZonedDateTime
 import kotlin.test.assertIs
 
 /**
@@ -1774,12 +1805,231 @@ class ResourceFormViewModelTest : KoinTest {
             }
         }
 
+    @Test
+    fun `upgrade panel should be shown when feature flag, settings and v4 resource all allow it`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isTrue()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when v5 metadata feature flag is off`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = false, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when v4 to v5 upgrade is not allowed`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = false, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when v5 resource creation is not allowed`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = false)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when resource is already v5`() =
+        runTest {
+            stubEditModeFor(slug = V5Default.slug, contentType = V5Default)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade resource should emit resource upgraded snackbar on success`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+            stubUpgradeResult(ResourceUpdateActionResult.Success(resourceId = "id", resourceName = "name"))
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(UpgradeResource)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(RESOURCE_UPGRADED)
+            }
+        }
+
+    @Test
+    fun `upgrade resource should emit common failure snackbar when update fails`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+            stubUpgradeResult(Failure())
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(UpgradeResource)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(COMMON_FAILURE)
+            }
+        }
+
+    @Test
+    fun `upgrade resource should emit cannot create snackbar when config disallows update`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+            stubUpgradeResult(CannotUpdateWithCurrentConfig)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(UpgradeResource)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG)
+            }
+        }
+
+    @Test
+    fun `learn more about upgrade should emit open website side effect`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(LearnMoreAboutUpgrade)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<OpenWebsite>(sideEffect)
+                assertThat(sideEffect.url).isNotEmpty()
+            }
+        }
+
+    private fun stubEditModeFor(
+        slug: String,
+        contentType: ContentType,
+    ) {
+        val resource = createResourceModel(slug = slug)
+        mockGetLocalResourceUseCase.stub {
+            onBlocking { execute(any()) }.thenReturn(GetLocalResourceUseCase.Output(resource))
+        }
+        mockGetEditContentTypeUseCase.stub {
+            onBlocking { execute(any()) }.thenReturn(
+                GetEditContentTypeUseCase.Output(contentType = contentType, metadataType = V4),
+            )
+        }
+        mockEntropyCalculator.stub {
+            onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+        }
+        val secretInteractorMock = mock<SecretPropertiesActionsInteractor>()
+        secretInteractorMock.stub {
+            onBlocking { provideDecryptedSecret() }.thenReturn(
+                flowOf(
+                    SecretPropertyActionResult.Success(
+                        label = "secret",
+                        isSecret = true,
+                        result = SecretJsonModel("""{"password": ""}"""),
+                    ),
+                ),
+            )
+        }
+        mockSecretPropertiesActionsInteractorSecretPropertiesActionsInteractorFactory.stub {
+            on { create(any()) }.thenReturn(secretInteractorMock)
+        }
+    }
+
+    private fun stubFeatureFlagsAndSettings(
+        isV5MetadataAvailable: Boolean,
+        allowV4V5Upgrade: Boolean,
+        allowCreationOfV5Resources: Boolean,
+    ) {
+        mockGetFeatureFlagsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(
+                GetFeatureFlagsUseCase.Output(
+                    DEFAULT_FEATURE_FLAGS.copy(isV5MetadataAvailable = isV5MetadataAvailable),
+                ),
+            )
+        }
+        mockGetMetadataTypesSettingsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(
+                GetMetadataTypesSettingsUseCase.Output(
+                    DEFAULT_METADATA_TYPES_SETTINGS.copy(
+                        allowV4V5Upgrade = allowV4V5Upgrade,
+                        allowCreationOfV5Resources = allowCreationOfV5Resources,
+                    ),
+                ),
+            )
+        }
+    }
+
+    private fun stubUpgradeResult(result: ResourceUpdateActionResult) {
+        val upgradeInteractor = mock<ResourceUpdateActionsInteractor>()
+        upgradeInteractor.stub {
+            onBlocking { upgradeToV5() }.thenReturn(flowOf(result))
+        }
+        mockResourceUpdateActionsInteractorFactory.stub {
+            on { create(any()) }.thenReturn(upgradeInteractor)
+        }
+    }
+
+    private fun createResourceModel(slug: String): ResourceModel =
+        ResourceModel(
+            resourceId = "resourceId",
+            resourceTypeId = "resourceTypeId",
+            slug = slug,
+            folderId = null,
+            permission = OWNER,
+            favouriteId = null,
+            modified = ZonedDateTime.now(),
+            expiry = null,
+            metadataKeyId = null,
+            metadataKeyType = PERSONAL,
+            metadataJsonModel = MetadataJsonModel("""{"name": "Test"}"""),
+        )
+
     private companion object {
+        val EDIT_MODE = Edit(resourceId = "resourceId", resourceName = "Test")
+
         val MOCK_PASSWORD_POLICIES =
-            com.passbolt.mobile.android.ui.PasswordPolicies(
+            PasswordPolicies(
                 defaultGenerator = PasswordGeneratorTypeModel.PASSWORD,
                 passwordGeneratorSettings =
-                    com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel(
+                    PasswordGeneratorSettingsModel(
                         length = 18,
                         maskUpper = true,
                         maskLower = true,
@@ -1794,10 +2044,10 @@ class ResourceFormViewModelTest : KoinTest {
                         excludeLookAlikeChars = true,
                     ),
                 passphraseGeneratorSettings =
-                    com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel(
+                    PassphraseGeneratorSettingsModel(
                         words = 9,
                         wordSeparator = " ",
-                        wordCase = com.passbolt.mobile.android.ui.CaseTypeModel.LOWERCASE,
+                        wordCase = LOWERCASE,
                     ),
                 isExternalDictionaryCheckEnabled = true,
             )

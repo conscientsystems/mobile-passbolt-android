@@ -80,6 +80,10 @@ sealed interface ResourceFormSideEffect {
         val type: ToastMessage,
         val args: List<Any> = emptyList(),
     ) : ResourceFormSideEffect
+
+    data class OpenWebsite(
+        val url: String,
+    ) : ResourceFormSideEffect
 }
 
 enum class SnackbarMessage {
@@ -91,6 +95,8 @@ enum class SnackbarMessage {
     METADATA_KEY_TRUST_FAILED,
     ENCRYPTION_FAILURE,
     METADATA_KEY_IS_TRUSTED,
+    RESOURCE_UPGRADED,
+    UPGRADE_FAILURE,
 }
 
 enum class ToastMessage {

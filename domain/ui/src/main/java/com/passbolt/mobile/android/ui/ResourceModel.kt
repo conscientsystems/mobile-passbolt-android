@@ -167,6 +167,8 @@ data class MetadataJsonModel(
     }
 
     companion object {
+        const val OBJECT_TYPE = "PASSBOLT_RESOURCE_METADATA"
+
         fun empty(): MetadataJsonModel =
             MetadataJsonModel(
                 """

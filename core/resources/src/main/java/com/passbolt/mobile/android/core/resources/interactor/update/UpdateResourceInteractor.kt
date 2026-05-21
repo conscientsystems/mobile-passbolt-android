@@ -53,6 +53,7 @@ import com.passbolt.mobile.android.serializers.validationwrapper.PlainSecretVali
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes
 import com.passbolt.mobile.android.ui.EncryptedSecretOrError
+import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.UpdateResourceModel
 import com.passbolt.mobile.android.ui.UserModel
@@ -137,7 +138,7 @@ class UpdateResourceInteractor(
                     )
                 } else {
                     resourceInput.apply {
-                        this.metadataJsonModel.objectType = "PASSBOLT_RESOURCE_METADATA"
+                        this.metadataJsonModel.objectType = MetadataJsonModel.OBJECT_TYPE
                         this.metadataJsonModel.resourceTypeId = getResourceTypeIdForSlug(contentType.slug)
                     }
 

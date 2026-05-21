@@ -55,6 +55,7 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes
 import com.passbolt.mobile.android.ui.CreateResourceModel
 import com.passbolt.mobile.android.ui.EncryptedSecretOrError
+import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.ResourceModelWithAttributes
 import java.time.ZonedDateTime
 
@@ -86,11 +87,11 @@ class CreateResourceInteractor(
         if (resourceInput.contentType.slug in SupportedContentTypes.v5Slugs) {
             val resourceTypeId = getResourceTypeIdForSlug(resourceInput.contentType.slug)
             secretInput.apply {
-                this.objectType = "PASSBOLT_SECRET_DATA"
+                this.objectType = SecretJsonModel.OBJECT_TYPE
                 this.resourceTypeId = resourceTypeId
             }
             resourceInput.apply {
-                this.metadataJsonModel.objectType = "PASSBOLT_RESOURCE_METADATA"
+                this.metadataJsonModel.objectType = MetadataJsonModel.OBJECT_TYPE
                 this.metadataJsonModel.resourceTypeId = resourceTypeId
             }
         }

@@ -27,6 +27,8 @@ dependencies {
     implementation(project(":metadatakeytrust"))
     implementation(project(":idlingresource"))
     implementation(project(":testtags"))
+    implementation(project(":featureflags"))
+    implementation(project(":entity"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

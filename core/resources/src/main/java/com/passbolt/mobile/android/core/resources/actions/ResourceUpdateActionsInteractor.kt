@@ -41,6 +41,14 @@ import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeysUseCa
 import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeysUseCase.MetadataKeyPurpose.ENCRYPT
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordDescriptionTotp
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordString
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PasswordString
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.MetadataKeyParamsModel
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
@@ -118,6 +126,66 @@ class ResourceUpdateActionsInteractor(
                     )
                 }
             }
+        }
+
+    suspend fun upgradeToV5(): Flow<ResourceUpdateActionResult> {
+        val currentContentType = existingResource.contentType()
+        val targetContentType =
+            v5TargetFor(currentContentType)
+                ?: return flowOf(ResourceUpdateActionResult.CannotUpdateWithCurrentConfig)
+        val targetTypeId =
+            findResourceTypeId(targetContentType)
+                ?: return flowOf(ResourceUpdateActionResult.CannotUpdateWithCurrentConfig)
+
+        return updateGenericResource(
+            newContentType = targetContentType,
+            metadataModification = upgradeMetadata(currentContentType, targetContentType, targetTypeId),
+            secretModification = upgradeSecret(targetContentType, targetTypeId),
+        )
+    }
+
+    private fun v5TargetFor(contentType: ContentType): ContentType? =
+        when (contentType) {
+            PasswordString -> V5PasswordString
+            PasswordAndDescription -> V5Default
+            PasswordDescriptionTotp -> V5DefaultWithTotp
+            Totp -> V5TotpStandalone
+            else -> null
+        }
+
+    private suspend fun findResourceTypeId(contentType: ContentType): String? =
+        resourceTypeIdToSlugMappingProvider
+            .provideMappingForSelectedAccount()
+            .entries
+            .firstOrNull { it.value == contentType.slug }
+            ?.key
+            ?.toString()
+
+    private fun upgradeMetadata(
+        currentContentType: ContentType,
+        targetContentType: ContentType,
+        targetTypeId: String,
+    ): (MetadataJsonModel) -> MetadataJsonModel =
+        { metadata ->
+            metadata.objectType = MetadataJsonModel.OBJECT_TYPE
+            metadata.resourceTypeId = targetTypeId
+            val mainUri = metadata.getMainUri(currentContentType)
+            if (mainUri.isNotBlank()) {
+                metadata.setMainUri(targetContentType, mainUri)
+            }
+            metadata
+        }
+
+    private fun upgradeSecret(
+        targetContentType: ContentType,
+        targetTypeId: String,
+    ): (SecretJsonModel) -> SecretJsonModel =
+        { secret ->
+            if (targetContentType != V5PasswordString) {
+                secret.objectType = SecretJsonModel.OBJECT_TYPE
+                secret.resourceTypeId = targetTypeId
+            }
+            secret
         }
 
     suspend fun updateGenericResource(
