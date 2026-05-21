@@ -180,7 +180,7 @@ object SupportedContentTypes {
             V5PinCodeStandalone,
         ).map { it.slug }.toSet()
 
-    val autofillSlugs = homeSlugs - V5PinCodeStandalone.slug
+    val autofillSlugs = homeSlugs - setOf(V5PinCodeStandalone.slug, V5CustomFields.slug, V5Note.slug)
 
     val totpSlugs =
         setOf(
