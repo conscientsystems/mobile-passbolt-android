@@ -65,11 +65,13 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG
 import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.COMMON_FAILURE
 import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.RESOURCE_UPGRADED
+import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseCase
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
+import com.passbolt.mobile.android.ui.CaseTypeModel
 import com.passbolt.mobile.android.ui.CaseTypeModel.LOWERCASE
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.MetadataJsonModel
@@ -111,10 +113,12 @@ import org.koin.core.parameter.parametersOf
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
+import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.time.ZonedDateTime
 import kotlin.test.assertIs
@@ -1373,6 +1377,143 @@ class ResourceFormViewModelTest : KoinTest {
         }
 
     @Test
+    fun `open advanced secret generation loads policies and emits navigate side effect`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(ResourceFormIntent.OpenAdvancedSecretGeneration)
+                advanceUntilIdle()
+
+                val sideEffect = awaitItem()
+                assertIs<ResourceFormSideEffect.NavigateToAdvancedSecretGeneration>(sideEffect)
+                assertThat(sideEffect.selectedTab).isEqualTo(MOCK_PASSWORD_POLICIES.defaultGenerator)
+                assertThat(sideEffect.passwordSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passwordGeneratorSettings)
+                assertThat(sideEffect.passphraseSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passphraseGeneratorSettings)
+            }
+
+            val state = viewModel.viewState.value
+            assertThat(state.generatorType).isEqualTo(MOCK_PASSWORD_POLICIES.defaultGenerator)
+            assertThat(state.passwordGeneratorSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passwordGeneratorSettings)
+            assertThat(state.passphraseGeneratorSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passphraseGeneratorSettings)
+        }
+
+    @Test
+    fun `open advanced secret generation reuses cached settings when present`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(75.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            val result =
+                AdvancedSecretGenerationFormResult(
+                    passwordSettings = CUSTOM_PASSWORD_SETTINGS,
+                    passphraseSettings = CUSTOM_PASSPHRASE_SETTINGS,
+                    selectedTab = PasswordGeneratorTypeModel.PASSPHRASE,
+                    generatedSecret = "cached secret",
+                )
+            viewModel.onIntent(ResourceFormIntent.AdvancedSecretGenerationResult(result))
+            advanceUntilIdle()
+            reset(mockGetPasswordPoliciesUseCase)
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(ResourceFormIntent.OpenAdvancedSecretGeneration)
+                advanceUntilIdle()
+
+                val sideEffect = awaitItem()
+                assertIs<ResourceFormSideEffect.NavigateToAdvancedSecretGeneration>(sideEffect)
+                assertThat(sideEffect.selectedTab).isEqualTo(PasswordGeneratorTypeModel.PASSPHRASE)
+                assertThat(sideEffect.passwordSettings).isEqualTo(CUSTOM_PASSWORD_SETTINGS)
+                assertThat(sideEffect.passphraseSettings).isEqualTo(CUSTOM_PASSPHRASE_SETTINGS)
+            }
+
+            verifyNoInteractions(mockGetPasswordPoliciesUseCase)
+        }
+
+    @Test
+    fun `advanced secret generation result stores settings and applies generated password`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+                onBlocking { getSecretEntropy("generated secret") }.thenReturn(150.0)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            val result =
+                AdvancedSecretGenerationFormResult(
+                    passwordSettings = CUSTOM_PASSWORD_SETTINGS,
+                    passphraseSettings = CUSTOM_PASSPHRASE_SETTINGS,
+                    selectedTab = PasswordGeneratorTypeModel.PASSWORD,
+                    generatedSecret = "generated secret",
+                )
+            viewModel.onIntent(ResourceFormIntent.AdvancedSecretGenerationResult(result))
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.generatorType).isEqualTo(PasswordGeneratorTypeModel.PASSWORD)
+            assertThat(state.passwordGeneratorSettings).isEqualTo(CUSTOM_PASSWORD_SETTINGS)
+            assertThat(state.passphraseGeneratorSettings).isEqualTo(CUSTOM_PASSPHRASE_SETTINGS)
+            assertThat(state.passwordData.password).isEqualTo("generated secret")
+            assertThat(state.passwordData.passwordEntropyBits).isEqualTo(150.0)
+            assertThat(state.passwordData.passwordStrength).isEqualTo(PasswordStrength.VeryStrong)
+        }
+
+    @Test
     fun `scan otp result should update state with scanned totp data`() =
         runTest {
             mockGetDefaultCreateContentTypeUseCase.stub {
@@ -2054,5 +2195,28 @@ class ResourceFormViewModelTest : KoinTest {
 
         val MOCK_PASSWORD_POLICIES_DICTIONARY_CHECK_DISABLED =
             MOCK_PASSWORD_POLICIES.copy(isExternalDictionaryCheckEnabled = false)
+
+        val CUSTOM_PASSWORD_SETTINGS =
+            PasswordGeneratorSettingsModel(
+                length = 24,
+                maskUpper = true,
+                maskLower = true,
+                maskDigit = true,
+                maskParenthesis = false,
+                maskEmoji = false,
+                maskChar1 = false,
+                maskChar2 = false,
+                maskChar3 = false,
+                maskChar4 = false,
+                maskChar5 = false,
+                excludeLookAlikeChars = false,
+            )
+
+        val CUSTOM_PASSPHRASE_SETTINGS =
+            PassphraseGeneratorSettingsModel(
+                words = 7,
+                wordSeparator = "-",
+                wordCase = CaseTypeModel.UPPERCASE,
+            )
     }
 }

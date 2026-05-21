@@ -9,6 +9,7 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.n
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.passwordFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.advanced.pinCodeAdvancedGenerationFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.pinCodeFormModule
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.advancedSecretGenerationModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.advanced.totpAdvancedSettingsFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.totpFormModule
 import com.passbolt.mobile.android.feature.resourceform.main.resourceFormModule
@@ -51,6 +52,7 @@ val resourceFormModule =
         totpAdvancedSettingsFormModule()
         noteFormModule()
         passwordFormModule()
+        advancedSecretGenerationModule()
         additionalUrisFormModule()
         appearanceFormModule()
         customFieldsFormModule()

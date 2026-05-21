@@ -2,6 +2,9 @@ package com.passbolt.mobile.android.feature.resourceform.main
 
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.CustomFieldsUiModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
 import com.passbolt.mobile.android.ui.PasswordUiModel
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
@@ -22,6 +25,12 @@ sealed interface ResourceFormSideEffect {
     data class NavigateToTotpAdvancedSettings(
         val mode: ResourceFormMode,
         val totpUiModel: TotpUiModel,
+    ) : ResourceFormSideEffect
+
+    data class NavigateToAdvancedSecretGeneration(
+        val selectedTab: PasswordGeneratorTypeModel,
+        val passwordSettings: PasswordGeneratorSettingsModel,
+        val passphraseSettings: PassphraseGeneratorSettingsModel,
     ) : ResourceFormSideEffect
 
     data class NavigateToNote(

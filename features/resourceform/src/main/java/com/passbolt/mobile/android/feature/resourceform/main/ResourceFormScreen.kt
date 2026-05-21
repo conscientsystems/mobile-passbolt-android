@@ -38,6 +38,7 @@ import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtp
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtpMode
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AdditionalUrisForm
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AdvancedSecretGenerationForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AppearanceForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.CustomFieldsForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.DescriptionForm
@@ -70,6 +71,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithCreateSuccess
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithEditSuccess
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdditionalUris
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAppearance
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToDescription
@@ -124,6 +126,14 @@ internal fun ResourceFormScreen(
                 navigator.navigateToKey(TotpForm(sideEffect.mode, sideEffect.totpUiModel))
             is NavigateToTotpAdvancedSettings ->
                 navigator.navigateToKey(TotpAdvancedSettingsForm(sideEffect.mode, sideEffect.totpUiModel))
+            is NavigateToAdvancedSecretGeneration ->
+                navigator.navigateToKey(
+                    AdvancedSecretGenerationForm(
+                        selectedTab = sideEffect.selectedTab,
+                        passwordSettings = sideEffect.passwordSettings,
+                        passphraseSettings = sideEffect.passphraseSettings,
+                    ),
+                )
             is NavigateToNote ->
                 navigator.navigateToKey(NoteForm(sideEffect.mode, sideEffect.note))
             is NavigateToPinCode ->

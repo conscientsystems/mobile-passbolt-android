@@ -1,5 +1,6 @@
 package com.passbolt.mobile.android.feature.resourceform.main
 
+import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpParseResult
@@ -24,6 +25,12 @@ sealed interface ResourceFormIntent {
     ) : ResourceFormIntent
 
     data object GeneratePassword : ResourceFormIntent
+
+    data object OpenAdvancedSecretGeneration : ResourceFormIntent
+
+    data class AdvancedSecretGenerationResult(
+        val result: AdvancedSecretGenerationFormResult,
+    ) : ResourceFormIntent
 
     data class PasswordMainUriTextChanged(
         val mainUri: String,

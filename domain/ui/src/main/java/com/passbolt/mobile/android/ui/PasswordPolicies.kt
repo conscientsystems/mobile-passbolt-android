@@ -23,6 +23,8 @@
 
 package com.passbolt.mobile.android.ui
 
+import kotlinx.serialization.Serializable
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -53,6 +55,7 @@ data class PasswordPolicies(
     val isExternalDictionaryCheckEnabled: Boolean,
 )
 
+@Serializable
 data class PasswordGeneratorSettingsModel(
     val length: Int,
     val maskUpper: Boolean,
@@ -68,17 +71,20 @@ data class PasswordGeneratorSettingsModel(
     val excludeLookAlikeChars: Boolean,
 )
 
+@Serializable
 data class PassphraseGeneratorSettingsModel(
     val words: Int,
     val wordSeparator: String,
     val wordCase: CaseTypeModel,
 )
 
+@Serializable
 enum class PasswordGeneratorTypeModel {
     PASSWORD,
     PASSPHRASE,
 }
 
+@Serializable
 enum class CaseTypeModel {
     LOWERCASE,
     UPPERCASE,
