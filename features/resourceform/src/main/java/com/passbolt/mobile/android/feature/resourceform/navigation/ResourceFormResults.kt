@@ -2,6 +2,9 @@ package com.passbolt.mobile.android.feature.resourceform.navigation
 
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.CustomFieldsUiModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
 import com.passbolt.mobile.android.ui.PasswordUiModel
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
@@ -45,4 +48,11 @@ data class PinCodeFormResult(
 
 data class PinCodeAdvancedGenerationFormResult(
     val pinCodeUiModel: PinCodeUiModel,
+)
+
+data class AdvancedSecretGenerationFormResult(
+    val passwordSettings: PasswordGeneratorSettingsModel,
+    val passphraseSettings: PassphraseGeneratorSettingsModel,
+    val selectedTab: PasswordGeneratorTypeModel,
+    val generatedSecret: String,
 )

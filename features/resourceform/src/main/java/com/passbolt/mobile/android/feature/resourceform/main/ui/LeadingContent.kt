@@ -34,6 +34,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.OpenAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordUsernameTextChanged
@@ -131,6 +132,12 @@ private fun PasswordSection(
                 entropy = passwordEntropyBits,
                 onPasswordChange = { onIntent(PasswordTextChanged(it)) },
                 onGenerateClick = { onIntent(GeneratePassword) },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            SettingRow(
+                leadingIconResId = CoreUiR.drawable.ic_cog,
+                text = stringResource(LocalizationR.string.resource_form_advanced_password_generation),
+                onClick = { onIntent(OpenAdvancedSecretGeneration) },
             )
         }
     }

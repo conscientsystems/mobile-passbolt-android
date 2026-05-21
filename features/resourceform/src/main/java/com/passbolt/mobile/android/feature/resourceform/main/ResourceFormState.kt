@@ -5,6 +5,9 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincod
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
 import com.passbolt.mobile.android.ui.PasswordStrength
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
@@ -32,6 +35,9 @@ data class ResourceFormState(
     val metadataKeyDeletedDialog: TrustedKeyDeletedModel? = null,
     val showPasswordWarningDialog: Boolean = false,
     val passwordWarningType: PasswordWarningType? = null,
+    val generatorType: PasswordGeneratorTypeModel? = null,
+    val passwordGeneratorSettings: PasswordGeneratorSettingsModel? = null,
+    val passphraseGeneratorSettings: PassphraseGeneratorSettingsModel? = null,
 )
 
 data class PasswordData(
