@@ -55,6 +55,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToMetadataDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.LearnMoreAboutUpgrade
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
@@ -73,6 +74,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TrustNewMetadataKey
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TrustedMetadataKeyDeleted
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.UpdateResource
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.UpgradeResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithCreateSuccess
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithEditSuccess
@@ -87,12 +89,15 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.OpenWebsite
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowSnackbar
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowToast
+import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseCase
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.Entropy
@@ -106,7 +111,9 @@ import com.passbolt.mobile.android.ui.MetadataIconModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpParseResult
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PasswordUiModel
 import com.passbolt.mobile.android.ui.PinCodeUiModel
+import com.passbolt.mobile.android.ui.ResourceAppearanceModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.DEFAULT_BACKGROUND_COLOR_HEX_STRING
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_KEEPASS
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_PASSBOLT
@@ -115,6 +122,7 @@ import com.passbolt.mobile.android.ui.ResourceFormMode.Create
 import com.passbolt.mobile.android.ui.ResourceFormMode.Edit
 import com.passbolt.mobile.android.ui.ResourceFormUiModel
 import com.passbolt.mobile.android.ui.TotpUiModel
+import com.passbolt.mobile.android.ui.contentType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import timber.log.Timber
@@ -136,6 +144,8 @@ class ResourceFormViewModel(
     private val updateResourceIdlingResource: UpdateResourceIdlingResource,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
     private val checkPasswordPropertiesUseCase: CheckPasswordPropertiesUseCase,
+    private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
+    private val getMetadataTypesSettingsUseCase: GetMetadataTypesSettingsUseCase,
 ) : SideEffectViewModel<ResourceFormState, ResourceFormSideEffect>(ResourceFormState(mode = mode)),
     KoinComponent {
     private val uiModel: ResourceFormUiModel by lazy {
@@ -190,6 +200,8 @@ class ResourceFormViewModel(
             DismissMetadataKeyDialog -> dismissMetadataKeyDialog()
             ProceedWithPasswordWarning -> proceedWithPasswordWarning()
             DismissPasswordWarning -> dismissPasswordWarning()
+            UpgradeResource -> upgradeResource()
+            LearnMoreAboutUpgrade -> emitSideEffect(OpenWebsite(LEARN_MORE_UPGRADE_URL))
             GoBack -> goBack()
         }
     }
@@ -244,12 +256,14 @@ class ResourceFormViewModel(
     private suspend fun setupState() {
         val leadingContentType = uiModel.leadingContentType
         val areAdvancedSettingsExpanded = viewState.value.areAdvancedSettingsExpanded
+        val showUpgradePanel = computeShowUpgradePanel()
 
         updateViewState {
             copy(
                 name = resourceModelHandler.resourceMetadata.name,
                 leadingContentType = leadingContentType,
                 isPrimaryButtonVisible = true,
+                showUpgradePanel = showUpgradePanel,
             )
         }
 
@@ -557,7 +571,7 @@ class ResourceFormViewModel(
         )
     }
 
-    private fun passwordResult(passwordUiModel: com.passbolt.mobile.android.ui.PasswordUiModel?) {
+    private fun passwordResult(passwordUiModel: PasswordUiModel?) {
         val contentType = resourceModelHandler.contentType
         passwordUiModel?.let {
             val passwordEvent = if (passwordUiModel.password.isBlank()) REMOVE_PASSWORD else ADD_PASSWORD
@@ -631,7 +645,7 @@ class ResourceFormViewModel(
         }
     }
 
-    private fun appearanceResult(model: com.passbolt.mobile.android.ui.ResourceAppearanceModel?) {
+    private fun appearanceResult(model: ResourceAppearanceModel?) {
         resourceModelHandler.applyModelChange(EDIT_APPEARANCE) { metadata, _ ->
             val iconType = model?.iconType ?: ICON_TYPE_PASSBOLT
             val iconValue =
@@ -923,5 +937,73 @@ class ResourceFormViewModel(
             }
             updateViewState { copy(shouldShowDialogProgress = false) }
         }
+    }
+
+    private suspend fun computeShowUpgradePanel(): Boolean {
+        if (mode !is Edit) {
+            return false
+        }
+
+        val resource =
+            getLocalResourceUseCase
+                .execute(GetLocalResourceUseCase.Input(mode.resourceId))
+                .resource
+        val featureFlags = getFeatureFlagsUseCase.execute(Unit).featureFlags
+        val metadataTypesSettings = getMetadataTypesSettingsUseCase.execute(Unit).metadataTypesSettingsModel
+
+        return featureFlags.isV5MetadataAvailable &&
+            metadataTypesSettings.allowV4V5Upgrade &&
+            metadataTypesSettings.allowCreationOfV5Resources &&
+            !resource.contentType().isV5()
+    }
+
+    private fun upgradeResource() {
+        if (mode !is Edit) return
+        launch {
+            updateViewState { copy(shouldShowDialogProgress = true) }
+            val resource =
+                getLocalResourceUseCase
+                    .execute(GetLocalResourceUseCase.Input(mode.resourceId))
+                    .resource
+            val resourceUpdateActionsInteractor = resourceUpdateActionsInteractorFactory.create(resource)
+            val onUpgradeFailure: () -> Unit = { emitSideEffect(ShowSnackbar(SnackbarMessage.UPGRADE_FAILURE)) }
+            performResourceUpdateAction(
+                action = { resourceUpdateActionsInteractor.upgradeToV5() },
+                doOnSuccess = {
+                    launch {
+                        resourceModelHandler.initializeModelForEdition(mode.resourceId)
+                        setupState()
+                        emitSideEffect(ShowSnackbar(SnackbarMessage.RESOURCE_UPGRADED))
+                    }
+                },
+                doOnFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.COMMON_FAILURE)) },
+                doOnCryptoFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.ENCRYPTION_FAILURE)) },
+                doOnFetchFailure = onUpgradeFailure,
+                doOnUnauthorized = onUpgradeFailure,
+                doOnSchemaValidationFailure = ::handleSchemaValidationFailure,
+                doOnCannotEditWithCurrentConfig = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG),
+                    )
+                },
+                doOnMetadataKeyModified = {
+                    updateViewState { copy(metadataKeyModifiedDialog = it) }
+                },
+                doOnMetadataKeyDeleted = {
+                    updateViewState { copy(metadataKeyDeletedDialog = it) }
+                },
+                doOnMetadataKeyVerificationFailure = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.METADATA_KEY_VERIFICATION_FAILURE),
+                    )
+                },
+            )
+            updateViewState { copy(shouldShowDialogProgress = false) }
+        }
+    }
+
+    companion object {
+        private const val LEARN_MORE_UPGRADE_URL =
+            "https://www.passbolt.com/blog/the-road-to-passbolt-v5-encrypted-metadata-and-other-core-security-changes-2"
     }
 }

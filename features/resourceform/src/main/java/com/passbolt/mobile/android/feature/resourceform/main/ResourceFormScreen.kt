@@ -80,11 +80,13 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.OpenWebsite
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowSnackbar
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowToast
 import com.passbolt.mobile.android.feature.resourceform.main.ui.AdditionalSecretsSection
 import com.passbolt.mobile.android.feature.resourceform.main.ui.LeadingContent
 import com.passbolt.mobile.android.feature.resourceform.main.ui.MetadataSection
+import com.passbolt.mobile.android.feature.resourceform.main.ui.UpgradeAvailableSection
 import com.passbolt.mobile.android.testtags.composetags.ResourceForm
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.PasswordStrength
@@ -163,6 +165,7 @@ internal fun ResourceFormScreen(
                 navigator.navigateBack()
             }
             NavigateBack -> navigator.navigateBack()
+            is OpenWebsite -> navigator.openExternalWebsite(context, sideEffect.url)
             is ShowSnackbar ->
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(getSnackbarMessage(context, sideEffect.type))
@@ -243,6 +246,11 @@ private fun ResourceFormScreen(
                     onTextChange = { onIntent(NameTextChanged(it)) },
                     testTag = ResourceForm.NAME_INPUT,
                 )
+
+                if (state.showUpgradePanel) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    UpgradeAvailableSection(onIntent = onIntent)
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -433,6 +441,8 @@ private fun getSnackbarMessage(
             SnackbarMessage.METADATA_KEY_TRUST_FAILED -> LocalizationR.string.common_metadata_key_trust_failed
             SnackbarMessage.ENCRYPTION_FAILURE -> LocalizationR.string.common_encryption_failure
             SnackbarMessage.METADATA_KEY_IS_TRUSTED -> LocalizationR.string.common_metadata_key_is_trusted
+            SnackbarMessage.RESOURCE_UPGRADED -> LocalizationR.string.resource_details_upgrade_success
+            SnackbarMessage.UPGRADE_FAILURE -> LocalizationR.string.resource_details_upgrade_failure
         },
     )
 

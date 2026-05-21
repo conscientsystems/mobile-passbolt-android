@@ -27,6 +27,7 @@ data class ResourceFormState(
     val totpData: TotpData = TotpData(),
     val noteData: NoteData = NoteData(),
     val pinCodeData: PinCodeData = PinCodeData(),
+    val showUpgradePanel: Boolean = false,
     val metadataKeyModifiedDialog: NewMetadataKeyToTrustModel? = null,
     val metadataKeyDeletedDialog: TrustedKeyDeletedModel? = null,
     val showPasswordWarningDialog: Boolean = false,

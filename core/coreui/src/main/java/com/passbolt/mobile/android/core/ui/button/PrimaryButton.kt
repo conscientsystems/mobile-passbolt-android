@@ -41,7 +41,7 @@ fun PrimaryButton(
                 .fillMaxWidth()
                 .height(56.dp),
     ) {
-        Text(text = text, color = Color.White)
+        Text(text = text)
     }
 }
 

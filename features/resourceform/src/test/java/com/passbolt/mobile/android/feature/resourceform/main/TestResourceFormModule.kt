@@ -23,12 +23,17 @@ import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateConten
 import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.ResourceTypesUpdatesAdjacencyGraph
+import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
+import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseCase
+import com.passbolt.mobile.android.ui.MetadataTypeModel.V4
+import com.passbolt.mobile.android.ui.MetadataTypesSettingsModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -75,6 +80,38 @@ internal val mockSecretPropertiesActionsInteractorSecretPropertiesActionsInterac
 internal val mockResourceUpdateActionsInteractorFactory = mock<ResourceUpdateActionsInteractorFactory>()
 internal val mockResourceCreateActionsInteractor = mock<ResourceCreateActionsInteractor>()
 internal val mockCheckPasswordPropertiesUseCase = mock<CheckPasswordPropertiesUseCase>()
+internal val mockGetFeatureFlagsUseCase = mock<GetFeatureFlagsUseCase>()
+internal val mockGetMetadataTypesSettingsUseCase = mock<GetMetadataTypesSettingsUseCase>()
+
+internal val DEFAULT_FEATURE_FLAGS =
+    FeatureFlagsModel(
+        privacyPolicyUrl = null,
+        termsAndConditionsUrl = null,
+        isPreviewPasswordAvailable = false,
+        areFoldersAvailable = false,
+        areTagsAvailable = false,
+        isTotpAvailable = false,
+        isRbacAvailable = false,
+        isPasswordExpiryAvailable = false,
+        arePasswordPoliciesAvailable = false,
+        canUpdatePasswordPolicies = false,
+        isV5MetadataAvailable = false,
+    )
+
+internal val DEFAULT_METADATA_TYPES_SETTINGS =
+    MetadataTypesSettingsModel(
+        defaultMetadataType = V4,
+        defaultFolderType = V4,
+        defaultTagType = V4,
+        allowCreationOfV5Resources = false,
+        allowCreationOfV5Folders = false,
+        allowCreationOfV5Tags = false,
+        allowCreationOfV4Resources = true,
+        allowCreationOfV4Folders = true,
+        allowCreationOfV4Tags = true,
+        allowV4V5Upgrade = false,
+        allowV5V4Downgrade = false,
+    )
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal val testResourceFormModule =
@@ -116,6 +153,8 @@ internal val testResourceFormModule =
                 updateResourceIdlingResource = get(),
                 resourceUpdateActionsInteractorFactory = get(),
                 checkPasswordPropertiesUseCase = mockCheckPasswordPropertiesUseCase,
+                getFeatureFlagsUseCase = mockGetFeatureFlagsUseCase,
+                getMetadataTypesSettingsUseCase = mockGetMetadataTypesSettingsUseCase,
             )
         }
 

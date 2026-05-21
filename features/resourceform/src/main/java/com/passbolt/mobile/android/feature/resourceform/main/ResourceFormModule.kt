@@ -47,6 +47,8 @@ fun Module.resourceFormModule() {
             updateResourceIdlingResource = get(),
             resourceUpdateActionsInteractorFactory = get(),
             checkPasswordPropertiesUseCase = get(),
+            getFeatureFlagsUseCase = get(),
+            getMetadataTypesSettingsUseCase = get(),
         )
     }
     factoryOf(::ResourceModelHandler)
