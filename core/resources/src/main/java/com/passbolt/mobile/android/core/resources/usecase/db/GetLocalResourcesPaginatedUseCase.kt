@@ -15,7 +15,6 @@ import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.HasPermi
 import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.IsFavourite
 import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
-import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import com.passbolt.mobile.android.ui.ResourceModel
 import kotlinx.coroutines.flow.Flow
@@ -61,7 +60,7 @@ class GetLocalResourcesPaginatedUseCase(
 
                     when (val viewType = homeDisplayViewMapper.map(input.homeDisplayView)) {
                         is ByModifiedDateDescending -> resourceDao.getAllOrderedByModifiedDatePaginated(input.slugs, ftsQuery)
-                        is ByNameAscending -> resourceDao.getAllOrderedByNamePaginated(homeSlugs, ftsQuery)
+                        is ByNameAscending -> resourceDao.getAllOrderedByNamePaginated(input.slugs, ftsQuery)
                         is IsFavourite -> resourceDao.getFavouritesPaginated(input.slugs, ftsQuery)
                         is HasPermissions ->
                             resourceDao.getWithPermissionsPaginated(
