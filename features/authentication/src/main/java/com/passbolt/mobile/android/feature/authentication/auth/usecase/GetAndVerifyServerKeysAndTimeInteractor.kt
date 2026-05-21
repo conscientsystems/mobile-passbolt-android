@@ -3,6 +3,8 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.IsServerFingerprintCorrectUseCase
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
 import kotlin.time.measureTimedValue
 
@@ -42,8 +44,13 @@ class GetAndVerifyServerKeysAndTimeInteractor(
         onSuccess: suspend (Success) -> Unit,
     ) {
         Timber.d("Getting server pgp and rsa keys")
-        val (pgpKey, getTimeRequestDuration) = measureTimedValue { fetchServerPublicPgpKeyUseCase.execute(Unit) }
-        val rsaKey = fetchServerPublicRsaKeyUseCase.execute(Unit)
+        val (timedPgpResult, rsaKey) =
+            coroutineScope {
+                val pgpDeferred = async { measureTimedValue { fetchServerPublicPgpKeyUseCase.execute(Unit) } }
+                val rsaDeferred = async { fetchServerPublicRsaKeyUseCase.execute(Unit) }
+                pgpDeferred.await() to rsaDeferred.await()
+            }
+        val (pgpKey, getTimeRequestDuration) = timedPgpResult
 
         if (pgpKey is FetchServerPublicPgpKeyUseCase.Output.Success &&
             rsaKey is FetchServerPublicRsaKeyUseCase.Output.Success
