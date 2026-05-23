@@ -7,7 +7,6 @@ dependencies {
     implementation(libs.koin)
     implementation(libs.qr.scan)
     implementation(libs.camerax)
-    implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
     implementation(libs.camerax.mlvision)
 }

@@ -25,8 +25,6 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.koin.compose)
-    implementation(libs.fragment)
-    implementation(libs.activity)
     implementation(libs.gson)
     implementation(libs.kotlin.serializationjson)
     implementation(libs.qr.generation)

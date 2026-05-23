@@ -45,7 +45,6 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.camerax.view)
     implementation(libs.camerax)
-    implementation(libs.camerax.lifecycle)
     implementation(libs.retrofit)
     implementation(libs.accompanist.drawablepainter)
 

@@ -1,9 +1,9 @@
 package com.passbolt.mobile.android.feature.authentication.auth
 
 import android.security.keystore.KeyPermanentlyInvalidatedException
-import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.fragment.app.FragmentActivity
 import com.passbolt.mobile.android.ui.BiometricAuthError
 import timber.log.Timber
 import java.util.concurrent.Executor
@@ -12,7 +12,7 @@ import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
 @Suppress("LongParameterList")
 fun showBiometricPrompt(
-    activity: AppCompatActivity,
+    activity: FragmentActivity,
     executor: Executor,
     biometricPromptBuilder: BiometricPrompt.PromptInfo.Builder,
     biometricEncryptionCipher: Cipher,

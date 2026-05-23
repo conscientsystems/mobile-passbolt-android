@@ -32,12 +32,9 @@ dependencies {
     implementation(project(":main"))
     implementation(project(":testtags"))
 
-    implementation(libs.fragment)
-    implementation(libs.activity)
     implementation(libs.biometric)
     implementation(libs.camerax.view)
     implementation(libs.camerax)
-    implementation(libs.camerax.lifecycle)
     implementation(libs.gson)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

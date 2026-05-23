@@ -7,6 +7,7 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.Secret
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
 import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.ApplyChanges
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.GeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.MainUriTextChanged
@@ -14,7 +15,6 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.passwo
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.UsernameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateBack
-import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ShowUnableToGeneratePassword
 import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.ui.Entropy
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSPHRASE
@@ -58,6 +58,8 @@ internal class PasswordFormViewModel(
             GeneratePassword -> generatePassword()
             ApplyChanges -> applyChanges()
             GoBack -> emitSideEffect(NavigateBack)
+            DismissUnableToGeneratePassword ->
+                updateViewState { copy(isUnableToGeneratePasswordDialogVisible = false) }
         }
     }
 
@@ -85,7 +87,12 @@ internal class PasswordFormViewModel(
 
             when (result) {
                 is FailedToGenerateLowEntropy ->
-                    emitSideEffect(ShowUnableToGeneratePassword(result.minimumEntropyBits))
+                    updateViewState {
+                        copy(
+                            isUnableToGeneratePasswordDialogVisible = true,
+                            minimumEntropyBits = result.minimumEntropyBits,
+                        )
+                    }
                 is Success -> {
                     val passwordString =
                         buildString {

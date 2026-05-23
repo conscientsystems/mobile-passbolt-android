@@ -18,4 +18,6 @@ internal sealed interface PasswordFormIntent {
     data object ApplyChanges : PasswordFormIntent
 
     data object GoBack : PasswordFormIntent
+
+    data object DismissUnableToGeneratePassword : PasswordFormIntent
 }

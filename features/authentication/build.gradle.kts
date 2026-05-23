@@ -36,10 +36,8 @@ dependencies {
     implementation(project(":preferences"))
     implementation(project(":clipboard"))
 
-    implementation(libs.activity)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.core)
-    implementation(libs.appcompat)
     implementation(libs.biometric)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

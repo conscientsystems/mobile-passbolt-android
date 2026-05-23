@@ -4,9 +4,9 @@ import android.app.assist.AssistStructure
 import android.content.Intent
 import android.os.Bundle
 import android.view.autofill.AutofillManager.EXTRA_ASSIST_STRUCTURE
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.remember
 import androidx.core.content.IntentCompat
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
@@ -31,7 +31,7 @@ import java.util.UUID
 
 // NOTE: When changing name or package read core/navigation/README.md
 class AutofillResourcesActivity :
-    AppCompatActivity(),
+    ComponentActivity(),
     AndroidScopeComponent,
     AutofillCallback,
     ResourceHandlingStrategyProvider {

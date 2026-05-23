@@ -26,8 +26,8 @@ package com.passbolt.mobile.android.feature.setup
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.IntentCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation3.runtime.NavKey
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
@@ -50,7 +50,7 @@ import java.util.UUID
 
 // NOTE: When changing name or package read core/navigation/README.md
 class SetUpActivity :
-    AppCompatActivity(),
+    FragmentActivity(),
     PartiallyAuthenticated,
     AccountSetupDataHolder {
     private val setupNavigatorScopeId = "setup_navigator_${UUID.randomUUID()}"
