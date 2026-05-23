@@ -11,9 +11,6 @@ dependencies {
     implementation(project(":testtags"))
 
     implementation(libs.androidx.core)
-    implementation(libs.appcompat)
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.coil.compose)

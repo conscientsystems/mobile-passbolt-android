@@ -10,4 +10,6 @@ internal data class PasswordFormState(
     val entropy: Double = 0.0,
     val mainUri: String = "",
     val username: String = "",
+    val isUnableToGeneratePasswordDialogVisible: Boolean = false,
+    val minimumEntropyBits: Int = 0,
 )

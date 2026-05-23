@@ -224,7 +224,6 @@ dependencies {
 
     androidTestImplementation(project(":testtags"))
     androidTestImplementation(platform(libs.koin.bom))
-    androidTestImplementation(libs.appcompat)
     androidTestImplementation(libs.android.tests.runner)
     androidTestImplementation(libs.android.test.rules)
     androidTestImplementation(libs.android.test.ktx)

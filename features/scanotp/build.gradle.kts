@@ -30,7 +30,6 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.camerax.view)
     implementation(libs.camerax)
-    implementation(libs.camerax.lifecycle)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.foundation)

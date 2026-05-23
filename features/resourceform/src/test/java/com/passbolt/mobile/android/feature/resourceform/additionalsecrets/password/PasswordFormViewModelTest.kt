@@ -6,7 +6,6 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateBack
-import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ShowUnableToGeneratePassword
 import com.passbolt.mobile.android.ui.CaseTypeModel
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
@@ -235,7 +234,7 @@ class PasswordFormViewModelTest : KoinTest {
         }
 
     @Test
-    fun `generate password failure should emit ShowUnableToGeneratePassword side effect`() =
+    fun `generate password failure should show unable to generate password dialog`() =
         runTest {
             mockEntropyCalculator.stub {
                 onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
@@ -254,14 +253,43 @@ class PasswordFormViewModelTest : KoinTest {
                     },
                 )
 
-            viewModel.viewState.drop(1).test { }
-            viewModel.sideEffect.test {
+            viewModel.viewState.drop(1).test {
                 viewModel.onIntent(PasswordFormIntent.GeneratePassword)
                 testScheduler.advanceUntilIdle()
 
-                val sideEffect = awaitItem()
-                assertIs<ShowUnableToGeneratePassword>(sideEffect)
-                assertThat(sideEffect.minimumEntropyBits).isEqualTo(80)
+                val state = awaitItem()
+                assertThat(state.isUnableToGeneratePasswordDialogVisible).isTrue()
+                assertThat(state.minimumEntropyBits).isEqualTo(80)
+            }
+        }
+
+    @Test
+    fun `dismiss unable to generate password should hide the dialog`() =
+        runTest {
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            whenever(mockGetPasswordPoliciesUseCase.execute(any())).thenReturn(
+                defaultPasswordPolicies,
+            )
+            whenever(mockSecretGenerator.generatePassword(any())).thenReturn(
+                SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy(80),
+            )
+
+            viewModel =
+                get(
+                    parameters = {
+                        parametersOf(resourceFormMode, password)
+                    },
+                )
+
+            viewModel.onIntent(PasswordFormIntent.GeneratePassword)
+            testScheduler.advanceUntilIdle()
+            viewModel.onIntent(PasswordFormIntent.DismissUnableToGeneratePassword)
+
+            viewModel.viewState.test {
+                val state = awaitItem()
+                assertThat(state.isUnableToGeneratePasswordDialogVisible).isFalse()
             }
         }
 

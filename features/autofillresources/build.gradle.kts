@@ -30,8 +30,6 @@ dependencies {
     implementation(project(":otp"))
     implementation(project(":supportedresourcetypes"))
 
-    implementation(libs.activity)
-    implementation(libs.material)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.koin.compose)

@@ -1,9 +1,11 @@
-package com.passbolt.mobile.android.core.security.runtimeauth
+package com.passbolt.mobile.android.core.ui.dialogs
 
-import android.app.Activity
-import android.widget.Toast
-import com.passbolt.mobile.android.core.navigation.ActivityIntents
-import timber.log.Timber
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.DialogProperties
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
 /**
@@ -29,20 +31,25 @@ import com.passbolt.mobile.android.core.localization.R as LocalizationR
  * @since v1.0
  */
 
-class RuntimeAuthenticatedFlag(
-    var isAuthenticated: Boolean = false,
+@Composable
+fun UnableToGeneratePasswordAlertDialog(
+    isVisible: Boolean,
+    requiredEntropy: Int,
+    onDismiss: () -> Unit,
 ) {
-    fun require(activity: Activity) {
-        if (!isAuthenticated) {
-            with(activity) {
-                val message = "Started ${this.javaClass.name} without authenticating first"
-                Timber.e(NoRuntimeAuthException(message))
-                Toast
-                    .makeText(this, this.getString(LocalizationR.string.authentication_required), Toast.LENGTH_SHORT)
-                    .show()
-                startActivity(ActivityIntents.start(this))
-                finish()
-            }
-        }
+    if (isVisible) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(LocalizationR.string.dialog_unable_to_generate_password_title)) },
+            text = {
+                Text(stringResource(LocalizationR.string.dialog_unable_to_generate_password_message, requiredEntropy))
+            },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(LocalizationR.string.got_it))
+                }
+            },
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
+        )
     }
 }

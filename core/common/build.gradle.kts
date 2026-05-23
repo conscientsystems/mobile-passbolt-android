@@ -7,7 +7,6 @@ dependencies {
     implementation(project(":architecture"))
 
     implementation(libs.androidx.core)
-    implementation(libs.appcompat)
     implementation(libs.biometric)
     implementation(libs.retrofit)
     implementation(libs.okhttp)

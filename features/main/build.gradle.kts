@@ -29,6 +29,8 @@ dependencies {
     implementation(project(":autofill"))
     implementation(project(":testtags"))
 
+    implementation(libs.fragment)
+
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.koin.compose)

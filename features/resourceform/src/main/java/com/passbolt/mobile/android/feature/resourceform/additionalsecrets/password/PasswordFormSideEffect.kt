@@ -8,8 +8,4 @@ internal sealed interface PasswordFormSideEffect {
     data class ApplyAndGoBack(
         val model: PasswordUiModel,
     ) : PasswordFormSideEffect
-
-    data class ShowUnableToGeneratePassword(
-        val minimumEntropyBits: Int,
-    ) : PasswordFormSideEffect
 }
