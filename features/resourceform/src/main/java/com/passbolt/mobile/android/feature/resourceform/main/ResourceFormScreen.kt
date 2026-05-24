@@ -453,6 +453,8 @@ private fun getSnackbarMessage(
             SnackbarMessage.METADATA_KEY_IS_TRUSTED -> LocalizationR.string.common_metadata_key_is_trusted
             SnackbarMessage.RESOURCE_UPGRADED -> LocalizationR.string.resource_details_upgrade_success
             SnackbarMessage.UPGRADE_FAILURE -> LocalizationR.string.resource_details_upgrade_failure
+            SnackbarMessage.PASSWORD_POLICIES_FETCH_FAILED ->
+                LocalizationR.string.common_password_policies_fetch_failed
         },
     )
 

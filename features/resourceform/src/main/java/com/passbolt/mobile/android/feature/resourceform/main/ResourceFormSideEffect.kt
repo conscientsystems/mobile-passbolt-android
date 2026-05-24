@@ -106,6 +106,7 @@ enum class SnackbarMessage {
     METADATA_KEY_IS_TRUSTED,
     RESOURCE_UPGRADED,
     UPGRADE_FAILURE,
+    PASSWORD_POLICIES_FETCH_FAILED,
 }
 
 enum class ToastMessage {

@@ -1,7 +1,6 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.core.policies.usecase.PasswordExpiryPoliciesInteractor
-import com.passbolt.mobile.android.core.policies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.core.rbac.usecase.RbacInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
@@ -20,7 +19,6 @@ class PostSignInActionsInteractor(
     private val rbacInteractor: RbacInteractor,
     private val userProfileInteractor: UserProfileInteractor,
     private val passwordExpiryPoliciesInteractor: PasswordExpiryPoliciesInteractor,
-    private val passwordPoliciesInteractor: PasswordPoliciesInteractor,
     private val metadataTypesSettingsInteractor: MetadataTypesSettingsInteractor,
     private val metadataKeysSettingsInteractor: MetadataKeysSettingsInteractor,
 ) {
@@ -46,9 +44,6 @@ class PostSignInActionsInteractor(
                             },
                             async {
                                 processPasswordExpirySettings(featureFlagsResult.featureFlags, onError)
-                            },
-                            async {
-                                processPasswordPoliciesSettings(featureFlagsResult.featureFlags, onError)
                             },
                             async {
                                 processMetadataSettings(featureFlagsResult.featureFlags, onError)
@@ -134,25 +129,6 @@ class PostSignInActionsInteractor(
             }
         } else {
             Timber.d("RBAC not available")
-            true
-        }
-
-    private suspend fun processPasswordPoliciesSettings(
-        featureFlagsModel: FeatureFlagsModel,
-        onError: (Error) -> Unit,
-    ): IsSuccess =
-        if (featureFlagsModel.arePasswordPoliciesAvailable) {
-            Timber.d("Password policies available, fetching password policies settings")
-            when (passwordPoliciesInteractor.fetchAndSavePasswordPolicies()) {
-                is PasswordPoliciesInteractor.Output.Failure -> {
-                    Timber.e("Failed to fetch password policies")
-                    onError(Error.ConfigurationFetchError)
-                    false
-                }
-                is PasswordPoliciesInteractor.Output.Success -> true
-            }
-        } else {
-            Timber.d("Password policies not available")
             true
         }
 

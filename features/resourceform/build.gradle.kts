@@ -12,6 +12,8 @@ dependencies {
     implementation(project(":ui"))
     implementation(project(":localization"))
     implementation(project(":policies"))
+    implementation(project(":featureflags"))
+    implementation(project(":entity"))
     implementation(project(":passwordgenerator"))
     implementation(project(":common"))
     implementation(project(":accounts"))
@@ -46,6 +48,7 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling.preview)
 
     testImplementation(project(":commontest"))
+    testImplementation(project(":passphrasememorycache"))
     testImplementation(libs.gson)
     testImplementation(libs.json.path)
     testImplementation(libs.json.assert)
