@@ -14,6 +14,7 @@ import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoint
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.core.policies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.core.resources.actions.performResourceCreateAction
@@ -141,6 +142,8 @@ import timber.log.Timber
 class ResourceFormViewModel(
     private val mode: ResourceFormMode,
     private val getPasswordPoliciesUseCase: GetPasswordPoliciesUseCase,
+    private val passwordPoliciesInteractor: PasswordPoliciesInteractor,
+    private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
     private val secretGenerator: SecretGenerator,
     private val pinCodeGenerator: PinCodeGenerator,
     private val entropyViewMapper: EntropyViewMapper,
@@ -154,7 +157,6 @@ class ResourceFormViewModel(
     private val updateResourceIdlingResource: UpdateResourceIdlingResource,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
     private val checkPasswordPropertiesUseCase: CheckPasswordPropertiesUseCase,
-    private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
     private val getMetadataTypesSettingsUseCase: GetMetadataTypesSettingsUseCase,
 ) : SideEffectViewModel<ResourceFormState, ResourceFormSideEffect>(ResourceFormState(mode = mode)),
     KoinComponent {
@@ -236,6 +238,7 @@ class ResourceFormViewModel(
     private fun initialize() {
         launch {
             updateViewState { copy(shouldShowScreenProgress = true) }
+            fetchPasswordPolicies()
             dataRefreshTrackingFlow.awaitIdle()
             when (mode) {
                 is Create -> {
@@ -263,6 +266,22 @@ class ResourceFormViewModel(
 
             setupState()
             updateViewState { copy(shouldShowScreenProgress = false) }
+        }
+    }
+
+    private suspend fun fetchPasswordPolicies() {
+        if (getFeatureFlagsUseCase.execute(Unit).featureFlags.arePasswordPoliciesAvailable) {
+            Timber.d("Password policies available, fetching password policies settings")
+            when (val output = runAuthenticatedOperation { passwordPoliciesInteractor.fetchAndSavePasswordPolicies() }) {
+                is PasswordPoliciesInteractor.Output.Success ->
+                    Timber.d("Password policies fetched")
+                is PasswordPoliciesInteractor.Output.Failure -> {
+                    Timber.e("Failed to fetch password policies, using default values")
+                    emitSideEffect(ShowSnackbar(SnackbarMessage.PASSWORD_POLICIES_FETCH_FAILED))
+                }
+            }
+        } else {
+            Timber.d("Password policies not available")
         }
     }
 

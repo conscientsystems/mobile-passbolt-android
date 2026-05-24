@@ -2,9 +2,11 @@ package com.passbolt.mobile.android.feature.resourceform.main
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
+import com.passbolt.mobile.android.core.policies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
@@ -16,6 +18,7 @@ import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateConten
 import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
@@ -116,8 +119,11 @@ import org.koin.test.get
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.time.ZonedDateTime
@@ -161,11 +167,27 @@ class ResourceFormViewModelTest : KoinTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+
+        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor)
+        mockGetFeatureFlagsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS))
+        }
+
+        val passphraseMemoryCache: PassphraseMemoryCache = get()
+        whenever(passphraseMemoryCache.getSessionDurationSeconds()) doReturn 5 * 60
+
+        val getSessionExpiryUseCase: GetSessionExpiryUseCase = get()
+        whenever(getSessionExpiryUseCase.execute(Unit)) doReturn
+            GetSessionExpiryUseCase.Output.JwtWillExpire(ZonedDateTime.now().plusMinutes(5))
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor)
+        mockGetFeatureFlagsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS))
+        }
     }
 
     @Test
@@ -1947,6 +1969,88 @@ class ResourceFormViewModelTest : KoinTest {
         }
 
     @Test
+    fun `password policies are not fetched when feature flag is off`() =
+        runTest {
+            stubCreatePasswordMode()
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordPoliciesInteractor, never()).fetchAndSavePasswordPolicies()
+        }
+
+    @Test
+    fun `password policies are fetched when feature flag is on and fetch succeeds`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_POLICIES))
+            }
+            mockPasswordPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordPolicies() }
+                    .thenReturn(PasswordPoliciesInteractor.Output.Success(MOCK_PASSWORD_POLICIES))
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordPoliciesInteractor).fetchAndSavePasswordPolicies()
+        }
+
+    @Test
+    fun `snackbar is emitted when password policies fetch fails`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_POLICIES))
+            }
+            mockPasswordPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordPolicies() }
+                    .thenReturn(PasswordPoliciesInteractor.Output.Failure.ValidationFailure)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            viewModel.sideEffect.test {
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(SnackbarMessage.PASSWORD_POLICIES_FETCH_FAILED)
+            }
+        }
+
+    private fun stubCreatePasswordMode() {
+        mockGetDefaultCreateContentTypeUseCase.stub {
+            onBlocking { execute(any()) }.thenReturn(
+                GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                    metadataType = MetadataTypeModel.V5,
+                    contentType = ContentType.V5Default,
+                ),
+            )
+        }
+        mockEntropyCalculator.stub {
+            onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+        }
+    }
+
+    @Test
     fun `upgrade panel should be shown when feature flag, settings and v4 resource all allow it`() =
         runTest {
             stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
@@ -2164,6 +2268,9 @@ class ResourceFormViewModelTest : KoinTest {
         )
 
     private companion object {
+        val FEATURE_FLAGS_WITH_PASSWORD_POLICIES =
+            DEFAULT_TEST_FEATURE_FLAGS.copy(arePasswordPoliciesAvailable = true)
+
         val EDIT_MODE = Edit(resourceId = "resourceId", resourceName = "Test")
 
         val MOCK_PASSWORD_POLICIES =

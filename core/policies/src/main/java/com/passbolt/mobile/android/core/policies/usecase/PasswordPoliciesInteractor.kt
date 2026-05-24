@@ -23,6 +23,10 @@
 
 package com.passbolt.mobile.android.core.policies.usecase
 
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.networking.MfaTypeProvider
+import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.policies.validation.PasswordPoliciesValidator
 import com.passbolt.mobile.android.ui.PasswordPolicies
 
@@ -33,7 +37,7 @@ class PasswordPoliciesInteractor(
 ) {
     suspend fun fetchAndSavePasswordPolicies(): Output =
         when (val response = fetchPasswordPoliciesUseCase.execute(Unit)) {
-            is FetchPasswordPoliciesUseCase.Output.Failure<*> -> Output.Failure.FetchFailure
+            is FetchPasswordPoliciesUseCase.Output.Failure<*> -> Output.Failure.FetchFailure(response.response)
             is FetchPasswordPoliciesUseCase.Output.Success ->
                 validatePasswordPolicies(response.passwordPolicies)
         }
@@ -52,13 +56,29 @@ class PasswordPoliciesInteractor(
         return Output.Success(passwordPolicies)
     }
 
-    sealed class Output {
+    sealed class Output : AuthenticatedUseCaseOutput {
+        override val authenticationState: AuthenticationState
+            get() =
+                when {
+                    this is Failure.FetchFailure<*> && this.response.isUnauthorized ->
+                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
+                    this is Failure.FetchFailure<*> && this.response.isMfaRequired -> {
+                        val providers = MfaTypeProvider.get(this.response)
+                        AuthenticationState.Unauthenticated(
+                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
+                        )
+                    }
+                    else -> AuthenticationState.Authenticated
+                }
+
         data class Success(
             val passwordPolicies: PasswordPolicies,
         ) : Output()
 
         sealed class Failure : Output() {
-            data object FetchFailure : Failure()
+            data class FetchFailure<T : Any>(
+                val response: NetworkResult.Failure<T>,
+            ) : Failure()
 
             data object ValidationFailure : Failure()
         }

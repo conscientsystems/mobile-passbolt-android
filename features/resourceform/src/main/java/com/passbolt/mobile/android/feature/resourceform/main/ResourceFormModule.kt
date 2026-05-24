@@ -34,6 +34,8 @@ fun Module.resourceFormModule() {
         ResourceFormViewModel(
             mode = params.get(),
             getPasswordPoliciesUseCase = get(),
+            passwordPoliciesInteractor = get(),
+            getFeatureFlagsUseCase = get(),
             secretGenerator = get(),
             pinCodeGenerator = get(),
             entropyViewMapper = get(),
@@ -47,7 +49,6 @@ fun Module.resourceFormModule() {
             updateResourceIdlingResource = get(),
             resourceUpdateActionsInteractorFactory = get(),
             checkPasswordPropertiesUseCase = get(),
-            getFeatureFlagsUseCase = get(),
             getMetadataTypesSettingsUseCase = get(),
         )
     }
