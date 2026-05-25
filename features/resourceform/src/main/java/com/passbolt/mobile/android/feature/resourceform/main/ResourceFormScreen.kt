@@ -455,6 +455,8 @@ private fun getSnackbarMessage(
             SnackbarMessage.UPGRADE_FAILURE -> LocalizationR.string.resource_details_upgrade_failure
             SnackbarMessage.PASSWORD_POLICIES_FETCH_FAILED ->
                 LocalizationR.string.common_password_policies_fetch_failed
+            SnackbarMessage.PASSWORD_EXPIRY_FETCH_FAILED ->
+                LocalizationR.string.common_password_expiry_fetch_failed
         },
     )
 

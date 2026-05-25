@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
-import com.passbolt.mobile.android.core.policies.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.core.rbac.usecase.RbacInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
@@ -18,7 +17,6 @@ class PostSignInActionsInteractor(
     private val featureFlagsInteractor: FeatureFlagsInteractor,
     private val rbacInteractor: RbacInteractor,
     private val userProfileInteractor: UserProfileInteractor,
-    private val passwordExpiryPoliciesInteractor: PasswordExpiryPoliciesInteractor,
     private val metadataTypesSettingsInteractor: MetadataTypesSettingsInteractor,
     private val metadataKeysSettingsInteractor: MetadataKeysSettingsInteractor,
 ) {
@@ -41,9 +39,6 @@ class PostSignInActionsInteractor(
                     if (awaitAll(
                             async {
                                 processRbac(featureFlagsResult.featureFlags, onError)
-                            },
-                            async {
-                                processPasswordExpirySettings(featureFlagsResult.featureFlags, onError)
                             },
                             async {
                                 processMetadataSettings(featureFlagsResult.featureFlags, onError)
@@ -92,25 +87,6 @@ class PostSignInActionsInteractor(
                 Timber.d("V5 metadata not available")
                 true
             }
-        }
-
-    private suspend fun processPasswordExpirySettings(
-        featureFlagsModel: FeatureFlagsModel,
-        onError: (Error) -> Unit,
-    ): IsSuccess =
-        if (featureFlagsModel.isPasswordExpiryAvailable) {
-            Timber.d("Password expiry available, fetching expiry settings")
-            when (passwordExpiryPoliciesInteractor.fetchAndSavePasswordExpiryPolicies()) {
-                is PasswordExpiryPoliciesInteractor.Output.Failure -> {
-                    Timber.e("Failed to fetch password expiry policies")
-                    onError(Error.ConfigurationFetchError)
-                    false
-                }
-                is PasswordExpiryPoliciesInteractor.Output.Success -> true
-            }
-        } else {
-            Timber.d("Password expiry not available")
-            true
         }
 
     private suspend fun processRbac(

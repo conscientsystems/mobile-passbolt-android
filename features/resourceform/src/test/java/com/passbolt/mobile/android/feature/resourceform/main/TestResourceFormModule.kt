@@ -17,6 +17,7 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.core.policies.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.core.policies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
@@ -89,6 +90,7 @@ internal val DEFAULT_TEST_FEATURE_FLAGS =
 
 internal val mockGetPasswordPoliciesUseCase = mock<GetPasswordPoliciesUseCase>()
 internal val mockPasswordPoliciesInteractor = mock<PasswordPoliciesInteractor>()
+internal val mockPasswordExpiryPoliciesInteractor = mock<PasswordExpiryPoliciesInteractor>()
 internal val mockGetFeatureFlagsUseCase =
     mock<GetFeatureFlagsUseCase>().apply {
         stub { onBlocking { execute(Unit) } doReturn GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS) }
@@ -168,7 +170,9 @@ internal val testResourceFormModule =
                 mode = params.get(),
                 getPasswordPoliciesUseCase = mockGetPasswordPoliciesUseCase,
                 passwordPoliciesInteractor = mockPasswordPoliciesInteractor,
+                passwordExpiryPoliciesInteractor = mockPasswordExpiryPoliciesInteractor,
                 getFeatureFlagsUseCase = mockGetFeatureFlagsUseCase,
+                coroutineLaunchContext = get(),
                 secretGenerator = mockSecretGenerator,
                 pinCodeGenerator = mockPinCodeGenerator,
                 entropyCalculator = mockEntropyCalculator,

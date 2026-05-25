@@ -107,6 +107,7 @@ enum class SnackbarMessage {
     RESOURCE_UPGRADED,
     UPGRADE_FAILURE,
     PASSWORD_POLICIES_FETCH_FAILED,
+    PASSWORD_EXPIRY_FETCH_FAILED,
 }
 
 enum class ToastMessage {

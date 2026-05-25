@@ -29,8 +29,6 @@ dependencies {
     implementation(project(":metadatakeytrust"))
     implementation(project(":idlingresource"))
     implementation(project(":testtags"))
-    implementation(project(":featureflags"))
-    implementation(project(":entity"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
@@ -49,6 +47,7 @@ dependencies {
 
     testImplementation(project(":commontest"))
     testImplementation(project(":passphrasememorycache"))
+    testImplementation(project(":networking"))
     testImplementation(libs.gson)
     testImplementation(libs.json.path)
     testImplementation(libs.json.assert)
