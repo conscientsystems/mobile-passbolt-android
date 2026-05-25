@@ -18,6 +18,8 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSe
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RemoveAllAccountDataUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RemoveServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SaveServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmup
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmupCache
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
@@ -26,6 +28,7 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.bind
 
 @Suppress("LongMethod")
 fun Module.authModule() {
@@ -56,6 +59,7 @@ fun Module.authModule() {
             postSignInActionsInteractor = get(),
             refreshSessionUseCase = get(),
             mfaProvidersHandler = get(),
+            serverKeysWarmup = get(),
         )
     }
 
@@ -69,6 +73,7 @@ fun Module.authModule() {
     singleOf(::ChallengeDecryptor)
     singleOf(::ChallengeVerifier)
     singleOf(::VerifyPassphraseUseCase)
+    singleOf(::ServerKeysWarmupCache) bind ServerKeysWarmup::class
     singleOf(::GetAndVerifyServerKeysAndTimeInteractor)
     singleOf(::SignInVerifyInteractor)
     singleOf(::GopenPgpTimeUpdater)

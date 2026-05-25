@@ -3,10 +3,7 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.IsServerFingerprintCorrectUseCase
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
-import kotlin.time.measureTimedValue
 
 /**
  * Passbolt - Open source password manager for teams
@@ -31,8 +28,7 @@ import kotlin.time.measureTimedValue
  * @since v1.0
  */
 class GetAndVerifyServerKeysAndTimeInteractor(
-    private val fetchServerPublicPgpKeyUseCase: FetchServerPublicPgpKeyUseCase,
-    private val fetchServerPublicRsaKeyUseCase: FetchServerPublicRsaKeyUseCase,
+    private val serverKeysWarmup: ServerKeysWarmup,
     private val saveServerPublicRsaKeyUseCase: SaveServerPublicRsaKeyUseCase,
     private val isServerFingerprintCorrectUseCase: IsServerFingerprintCorrectUseCase,
     private val getAccountDataUseCase: GetAccountDataUseCase,
@@ -44,12 +40,7 @@ class GetAndVerifyServerKeysAndTimeInteractor(
         onSuccess: suspend (Success) -> Unit,
     ) {
         Timber.d("Getting server pgp and rsa keys")
-        val (timedPgpResult, rsaKey) =
-            coroutineScope {
-                val pgpDeferred = async { measureTimedValue { fetchServerPublicPgpKeyUseCase.execute(Unit) } }
-                val rsaDeferred = async { fetchServerPublicRsaKeyUseCase.execute(Unit) }
-                pgpDeferred.await() to rsaDeferred.await()
-            }
+        val (timedPgpResult, rsaKey) = serverKeysWarmup.fetchOrAwait(userId)
         val (pgpKey, getTimeRequestDuration) = timedPgpResult
 
         if (pgpKey is FetchServerPublicPgpKeyUseCase.Output.Success &&

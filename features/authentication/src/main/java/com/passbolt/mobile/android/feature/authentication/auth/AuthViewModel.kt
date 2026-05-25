@@ -19,6 +19,8 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.U
 import com.passbolt.mobile.android.core.mvp.authentication.MfaProvidersHandler
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.ManageAccount
+import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Mfa
+import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.RefreshPassphrase
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Setup
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Startup
 import com.passbolt.mobile.android.core.navigation.AppContext
@@ -84,6 +86,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignI
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor.Error.ConfigurationFetchError
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor.Error.UserProfileFetchError
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmup
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.AccountDoesNotExist
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ChallengeDecryptionError
@@ -131,6 +134,7 @@ class AuthViewModel(
     private val postSignInActionsInteractor: PostSignInActionsInteractor,
     private val refreshSessionUseCase: RefreshSessionUseCase,
     private val mfaProvidersHandler: MfaProvidersHandler,
+    private val serverKeysWarmup: ServerKeysWarmup,
 ) : SideEffectViewModel<AuthState, AuthSideEffect>(
         AuthState(
             authReason = mapAuthReason(authConfig),
@@ -150,6 +154,14 @@ class AuthViewModel(
     init {
         loadAccountData()
         checkRootAndBiometry()
+        warmUpServerKeysIfNeeded()
+    }
+
+    private fun warmUpServerKeysIfNeeded() {
+        when (authConfig) {
+            is RefreshPassphrase, is Mfa -> Unit
+            else -> serverKeysWarmup.warmUp(userId)
+        }
     }
 
     override fun onCleared() {
