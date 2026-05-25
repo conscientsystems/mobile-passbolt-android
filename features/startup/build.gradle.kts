@@ -8,6 +8,8 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":accounts"))
     implementation(project(":common"))
+    implementation(project(":preferences"))
+    implementation(project(":localization"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
@@ -18,6 +20,8 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.activity)
     implementation(libs.compose.lifecycle.viewmodel)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.ui.tooling.preview)
 
     testImplementation(project(":commontest"))
 }
