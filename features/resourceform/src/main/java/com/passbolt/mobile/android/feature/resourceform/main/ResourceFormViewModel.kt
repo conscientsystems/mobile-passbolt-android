@@ -6,6 +6,7 @@ import com.passbolt.mobile.android.common.validation.StringMaxLength
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.CreateResourceIdlingResource
 import com.passbolt.mobile.android.core.idlingresource.UpdateResourceIdlingResource
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.passwordgenerator.PinCodeGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy
@@ -14,6 +15,7 @@ import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoint
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.core.policies.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.core.policies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
@@ -134,6 +136,8 @@ import com.passbolt.mobile.android.ui.ResourceFormMode.Edit
 import com.passbolt.mobile.android.ui.ResourceFormUiModel
 import com.passbolt.mobile.android.ui.TotpUiModel
 import com.passbolt.mobile.android.ui.contentType
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import timber.log.Timber
@@ -144,6 +148,8 @@ class ResourceFormViewModel(
     private val getPasswordPoliciesUseCase: GetPasswordPoliciesUseCase,
     private val passwordPoliciesInteractor: PasswordPoliciesInteractor,
     private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
+    private val passwordExpiryPoliciesInteractor: PasswordExpiryPoliciesInteractor,
+    private val coroutineLaunchContext: CoroutineLaunchContext,
     private val secretGenerator: SecretGenerator,
     private val pinCodeGenerator: PinCodeGenerator,
     private val entropyViewMapper: EntropyViewMapper,
@@ -238,7 +244,10 @@ class ResourceFormViewModel(
     private fun initialize() {
         launch {
             updateViewState { copy(shouldShowScreenProgress = true) }
-            fetchPasswordPolicies()
+            awaitAll(
+                async(coroutineLaunchContext.io) { fetchPasswordPolicies() },
+                async(coroutineLaunchContext.io) { fetchPasswordExpiry() },
+            )
             dataRefreshTrackingFlow.awaitIdle()
             when (mode) {
                 is Create -> {
@@ -282,6 +291,22 @@ class ResourceFormViewModel(
             }
         } else {
             Timber.d("Password policies not available")
+        }
+    }
+
+    private suspend fun fetchPasswordExpiry() {
+        if (getFeatureFlagsUseCase.execute(Unit).featureFlags.isPasswordExpiryAvailable) {
+            Timber.d("Password expiry available, fetching password expiry settings")
+            when (val output = runAuthenticatedOperation { passwordExpiryPoliciesInteractor.fetchAndSavePasswordExpiryPolicies() }) {
+                is PasswordExpiryPoliciesInteractor.Output.Success ->
+                    Timber.d("Password expiry fetched")
+                is PasswordExpiryPoliciesInteractor.Output.Failure -> {
+                    Timber.e("Failed to fetch password expiry, using default values")
+                    emitSideEffect(ShowSnackbar(SnackbarMessage.PASSWORD_EXPIRY_FETCH_FAILED))
+                }
+            }
+        } else {
+            Timber.d("Password expiry not available")
         }
     }
 

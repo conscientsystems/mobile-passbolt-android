@@ -2,10 +2,12 @@ package com.passbolt.mobile.android.feature.resourceform.main
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
+import com.passbolt.mobile.android.core.policies.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.core.policies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult
@@ -67,7 +69,6 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowToast
 import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG
 import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.COMMON_FAILURE
-import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.RESOURCE_UPGRADED
 import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseCase
@@ -89,7 +90,6 @@ import com.passbolt.mobile.android.ui.PasswordPolicies
 import com.passbolt.mobile.android.ui.PasswordStrength
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
-import com.passbolt.mobile.android.ui.ResourceFormMode.Edit
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.ADDITIONAL_URIS
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.APPEARANCE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.DESCRIPTION
@@ -116,14 +116,14 @@ import org.koin.core.parameter.parametersOf
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
-import org.mockito.Mockito.reset
+import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.stub
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.time.ZonedDateTime
@@ -168,7 +168,7 @@ class ResourceFormViewModelTest : KoinTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
 
-        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor)
+        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor, mockPasswordExpiryPoliciesInteractor)
         mockGetFeatureFlagsUseCase.stub {
             onBlocking { execute(Unit) }.thenReturn(GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS))
         }
@@ -184,7 +184,7 @@ class ResourceFormViewModelTest : KoinTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
-        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor)
+        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor, mockPasswordExpiryPoliciesInteractor)
         mockGetFeatureFlagsUseCase.stub {
             onBlocking { execute(Unit) }.thenReturn(GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS))
         }
@@ -239,7 +239,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -332,7 +332,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -386,7 +386,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -447,7 +447,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -479,7 +479,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -524,7 +524,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -559,7 +559,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -589,7 +589,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -619,7 +619,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -662,7 +662,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -704,7 +704,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -971,7 +971,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1030,7 +1030,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1093,7 +1093,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1273,7 +1273,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1306,7 +1306,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1339,7 +1339,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1372,7 +1372,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1405,7 +1405,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1448,7 +1448,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1499,7 +1499,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1621,7 +1621,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1653,7 +1653,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1695,7 +1695,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1737,7 +1737,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1784,7 +1784,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1831,7 +1831,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1878,7 +1878,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1929,7 +1929,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1965,6 +1965,81 @@ class ResourceFormViewModelTest : KoinTest {
                 val state = expectMostRecentItem()
                 assertThat(state.showPasswordWarningDialog).isFalse()
                 assertThat(state.passwordWarningType).isNull()
+            }
+        }
+
+    @Test
+    fun `password expiry is not fetched when feature flag is off`() =
+        runTest {
+            stubCreatePasswordMode()
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordExpiryPoliciesInteractor, never()).fetchAndSavePasswordExpiryPolicies()
+        }
+
+    @Test
+    fun `password expiry is fetched when feature flag is on and fetch succeeds`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_EXPIRY))
+            }
+            mockPasswordExpiryPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordExpiryPolicies() }
+                    .thenReturn(PasswordExpiryPoliciesInteractor.Output.Success(MOCK_PASSWORD_EXPIRY_SETTINGS))
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordExpiryPoliciesInteractor).fetchAndSavePasswordExpiryPolicies()
+        }
+
+    @Test
+    fun `snackbar is emitted when password expiry fetch fails`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_EXPIRY))
+            }
+            mockPasswordExpiryPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordExpiryPolicies() }
+                    .thenReturn(
+                        PasswordExpiryPoliciesInteractor.Output.Failure.FetchFailure(
+                            NetworkResult.Failure.NetworkError<Unit>(
+                                exception = RuntimeException("boom"),
+                                headerMessage = "",
+                            ),
+                        ),
+                    )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            viewModel.sideEffect.test {
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(SnackbarMessage.PASSWORD_EXPIRY_FETCH_FAILED)
             }
         }
 
@@ -2041,7 +2116,7 @@ class ResourceFormViewModelTest : KoinTest {
             onBlocking { execute(any()) }.thenReturn(
                 GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                     metadataType = MetadataTypeModel.V5,
-                    contentType = ContentType.V5Default,
+                    contentType = V5Default,
                 ),
             )
         }
@@ -2125,7 +2200,7 @@ class ResourceFormViewModelTest : KoinTest {
                 advanceUntilIdle()
                 val sideEffect = awaitItem()
                 assertIs<ShowSnackbar>(sideEffect)
-                assertThat(sideEffect.type).isEqualTo(RESOURCE_UPGRADED)
+                assertThat(sideEffect.type).isEqualTo(SnackbarMessage.RESOURCE_UPGRADED)
             }
         }
 
@@ -2271,7 +2346,7 @@ class ResourceFormViewModelTest : KoinTest {
         val FEATURE_FLAGS_WITH_PASSWORD_POLICIES =
             DEFAULT_TEST_FEATURE_FLAGS.copy(arePasswordPoliciesAvailable = true)
 
-        val EDIT_MODE = Edit(resourceId = "resourceId", resourceName = "Test")
+        val EDIT_MODE = ResourceFormMode.Edit(resourceId = "resourceId", resourceName = "Test")
 
         val MOCK_PASSWORD_POLICIES =
             PasswordPolicies(
@@ -2324,6 +2399,16 @@ class ResourceFormViewModelTest : KoinTest {
                 words = 7,
                 wordSeparator = "-",
                 wordCase = CaseTypeModel.UPPERCASE,
+            )
+
+        val FEATURE_FLAGS_WITH_PASSWORD_EXPIRY =
+            DEFAULT_TEST_FEATURE_FLAGS.copy(isPasswordExpiryAvailable = true)
+
+        val MOCK_PASSWORD_EXPIRY_SETTINGS =
+            com.passbolt.mobile.android.ui.PasswordExpirySettings(
+                automaticExpiry = true,
+                automaticUpdate = true,
+                defaultExpiryPeriodDays = 90,
             )
     }
 }
