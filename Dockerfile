@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 amazoncorretto:17-alpine
+FROM --platform=linux/amd64 amazoncorretto:21-alpine
 
 ENV ANDROID_HOME="/usr/local/android-sdk" \
     ANDROID_SDK_ROOT="/usr/local/android-sdk" \
@@ -15,6 +15,9 @@ RUN apk add --no-cache git \
 
 # install required c libraries for aapt2
 RUN apk add --no-cache gcompat libstdc++
+
+# install jdk 17 for the gradle compile toolchain; daemon runs on corretto 21 from the base image
+RUN apk add --no-cache openjdk17
 
 # setup android home path for moving the downloaded sdk into it
 RUN install -d $ANDROID_HOME

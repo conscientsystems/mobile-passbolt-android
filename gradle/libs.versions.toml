@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "9.2.0"
+androidGradlePlugin = "9.2.1"
 commonsValidator = "1.10.0"
 dexmakerMockitoInlineExtended = "2.28.6"
 gradleVersionsPlugin = "0.53.0"

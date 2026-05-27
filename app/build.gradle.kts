@@ -53,8 +53,8 @@ android {
             isDebuggable = true
             isMinifyEnabled = false
             firebaseDistribution(project, appId = "1:660923335137:android:08eec6c125f36ba9b092a0")
-            enableUnitTestCoverage = false
-            enableAndroidTestCoverage = false
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
         }
         create("qa") {
             initWith(getByName("debug"))

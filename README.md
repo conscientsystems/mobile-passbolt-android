@@ -86,6 +86,7 @@ You can also run each check individually if needed:
 * `licenseeRelease` - check if all dependencies have appropriate licenses
 * `dependencyUpdates` - check if any dependencies have updates in the release channel
 * `buildHealth` - produce a report about unused dependencies or incorrect dependency declaration
+* `createAggregatedCoverageReport` - generate aggregated unit test and instrumented test coverage report
 
 To execute Android instrumented tests connect your device and execute:
 `./gradlew connectedAndroidTest`
