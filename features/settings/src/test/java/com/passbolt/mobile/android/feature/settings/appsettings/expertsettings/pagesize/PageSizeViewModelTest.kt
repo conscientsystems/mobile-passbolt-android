@@ -24,6 +24,7 @@ package com.passbolt.mobile.android.feature.settings.appsettings.expertsettings.
  */
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.GoBack
@@ -90,11 +91,12 @@ class PageSizeViewModelTest : KoinTest {
             GetGlobalPreferencesUseCase.Output(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
-                isDeveloperModeEnabled = false,
-                isHideRootDialogEnabled = false,
-                isAuthRequiredOnEveryEntry = false,
+                isDeveloperModeEnabled = true,
+                isHideRootDialogEnabled = true,
+                isAuthRequiredOnEveryEntry = true,
                 debugLogLastAppVersion = null,
-                apiFetchPageSize = DEFAULT_PAGE_SIZE,
+                apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                accessibilityPoliciesConsentGiven = true,
             )
     }
 
@@ -148,8 +150,4 @@ class PageSizeViewModelTest : KoinTest {
                 assertThat(awaitItem()).isEqualTo(NavigateBack)
             }
         }
-
-    companion object {
-        private const val DEFAULT_PAGE_SIZE = 2000
-    }
 }

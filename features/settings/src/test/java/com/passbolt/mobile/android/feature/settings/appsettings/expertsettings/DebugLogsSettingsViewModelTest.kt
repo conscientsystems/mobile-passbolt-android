@@ -23,6 +23,7 @@ package com.passbolt.mobile.android.feature.settings.appsettings.expertsettings
  * @since v1.0
  */
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
@@ -91,7 +92,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = 2000,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    accessibilityPoliciesConsentGiven = true,
                 )
 
             viewModel = get()
@@ -115,7 +117,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = 2000,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    accessibilityPoliciesConsentGiven = true,
                 )
 
             viewModel = get()
@@ -141,7 +144,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = 2000,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    accessibilityPoliciesConsentGiven = true,
                 )
 
             viewModel = get()
@@ -167,7 +171,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = 2000,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    accessibilityPoliciesConsentGiven = true,
                 )
 
             viewModel = get()

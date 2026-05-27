@@ -126,6 +126,7 @@ class ResourceInteractorTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = false,
                     apiFetchPageSize = RESOURCES_PAGE_SIZE,
+                    accessibilityPoliciesConsentGiven = true,
                 ),
             )
     }

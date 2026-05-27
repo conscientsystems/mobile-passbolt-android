@@ -114,6 +114,7 @@ featureModule("otpmoremenu")
 featureModule("createresourcemenu")
 featureModule("resourceform")
 featureModule("metadatakeytrust")
+featureModule("accessibilitypolicies")
 
 serviceModule("passboltapi")
 serviceModule("linksapi")

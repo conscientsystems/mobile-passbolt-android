@@ -55,6 +55,9 @@ class UpdateGlobalPreferencesUseCase(
             input.apiFetchPageSize?.let {
                 putInt(KEY_API_FETCH_PAGE_SIZE, it)
             }
+            input.accessibilityPoliciesConsentGiven?.let {
+                putBoolean(KEY_ACCESSIBILITY_POLICIES_CONSENT_GIVEN, it)
+            }
             apply()
         }
     }
@@ -67,5 +70,6 @@ class UpdateGlobalPreferencesUseCase(
         val isHideRootDialogEnabled: Boolean? = null,
         val isAuthRequiredOnEveryEntry: Boolean? = null,
         val apiFetchPageSize: Int? = null,
+        val accessibilityPoliciesConsentGiven: Boolean? = null,
     )
 }
