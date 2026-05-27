@@ -91,6 +91,7 @@ class FoldersInteractorTest : KoinTest {
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = false,
                     apiFetchPageSize = FOLDERS_PAGE_SIZE,
+                    accessibilityPoliciesConsentGiven = true,
                 ),
             )
     }

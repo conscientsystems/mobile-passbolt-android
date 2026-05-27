@@ -75,4 +75,7 @@ sealed interface SettingsNavigationKey : NavKey {
 
     @Serializable
     data object EncourageAccessibilityAutofill : SettingsNavigationKey
+
+    @Serializable
+    data object AccessibilityPoliciesConsent : SettingsNavigationKey
 }

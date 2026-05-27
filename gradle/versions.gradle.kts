@@ -1,5 +1,5 @@
 extra["projectVersionName"] = "3.1.0"
-extra["projectVersionCode"] = 54
+extra["projectVersionCode"] = 55
 
 extra["projectCompileSdk"] = 36
 extra["projectMinSdk"] = 29

@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":preferences"))
     implementation(project(":main"))
     implementation(project(":testtags"))
+    implementation(project(":accessibilitypolicies"))
 
     implementation(libs.fragment)
     implementation(libs.activity)

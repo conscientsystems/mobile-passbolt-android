@@ -1,8 +1,0 @@
-ext {
-    projectVersionName = "3.0.0"
-    projectVersionCode = 53
-
-    projectCompileSdk = 36
-    projectMinSdk = 29
-    projectTargetSdk = 35
-}
