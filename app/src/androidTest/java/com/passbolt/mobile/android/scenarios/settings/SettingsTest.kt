@@ -209,8 +209,8 @@ class SettingsTest : KoinTest {
                 hasTestTag(BackNavigation.ICON),
                 useUnmergedTree = true,
             ).assertIsDisplayed()
-            //    And 	    I see a Developer mode with an nodes icon and a switch on the right
-            //    And 	    I see a Hide "device is rooted" dialog with an hash icon and a switch on the right
+            //    And 	    I see a Developer mode with nodes icon and a switch on the right
+            //    And 	    I see a Hide "device is rooted" dialog with hash icon and a switch on the right
 
             ExpertSettingsItemModel.entries.forEach { item ->
                 val matcher =
@@ -226,6 +226,26 @@ class SettingsTest : KoinTest {
     }
 
     @Test
+    fun asAnAndroidUserICanSeeApiFetchPageSizeEntryInExpertSettings() {
+        //    Given     that I am #MOBILE_USER_ON_SETTINGS_PAGE
+        composeTestRule.apply {
+            //    And       I'm on the "Expert settings" screen
+            onNodeWithText(getString(LocalizationR.string.settings_app_settings)).performClick()
+            onNodeWithText(getString(LocalizationR.string.settings_app_settings_expert_settings)).performClick()
+
+            //    Then      I see an "API fetch page size" openable row with a chevron on the right
+            val pageSizeTitle = getString(LocalizationR.string.settings_app_settings_expert_settings_fetch_page_size)
+            val pageSizeRow =
+                hasTestTag(OpenableSetting.ITEM)
+                    .and(hasAnyDescendant(hasText(pageSizeTitle)))
+                    .and(hasAnyDescendant(hasContentDescription(pageSizeTitle)))
+                    .and(hasAnyDescendant(hasTestTag(OpenableSetting.ARROW)))
+
+            onNode(pageSizeRow, useUnmergedTree = true).assertExists()
+        }
+    }
+
+    @Test
     fun asAnAndroidUserICanEnableDeveloperMode() {
         //    Given     that I am #MOBILE_USER_ON_SETTINGS_PAGE
         composeTestRule.apply {
@@ -233,11 +253,11 @@ class SettingsTest : KoinTest {
             onNodeWithText(getString(LocalizationR.string.settings_app_settings)).performClick()
             onNodeWithText(getString(LocalizationR.string.settings_app_settings_expert_settings)).performClick()
             //    When 	    I enable the "Developer mode" switch
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[0].performClick()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
             //    Then      I see that switch is enabled
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[0].assertIsOn()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsOn()
             //    And 	    I see that "Hide "device is rooted" dialog" switch is available
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsEnabled()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsEnabled()
         }
     }
 
@@ -249,11 +269,11 @@ class SettingsTest : KoinTest {
             onNodeWithText(getString(LocalizationR.string.settings_app_settings)).performClick()
             onNodeWithText(getString(LocalizationR.string.settings_app_settings_expert_settings)).performClick()
             //    When 	    I disable the "Developer mode" switch
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[0].performClick()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[0].performClick()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
             //    And 	    I see that every subsequent position is unavailable
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[0].assertIsOff()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsNotEnabled()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsOff()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsNotEnabled()
         }
     }
 
@@ -265,10 +285,10 @@ class SettingsTest : KoinTest {
             onNodeWithText(getString(LocalizationR.string.settings_app_settings)).performClick()
             onNodeWithText(getString(LocalizationR.string.settings_app_settings_expert_settings)).performClick()
             //    When 	    I enable the "Hide "device is rooted" dialog" switch
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[0].performClick()
             onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsOn()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsOn()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].performClick()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsOn()
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsOn()
         }
     }
 

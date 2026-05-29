@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,6 +52,7 @@ import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.PageSizeChanged
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeSideEffect.NavigateBack
+import com.passbolt.mobile.android.testtags.composetags.PageSize
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.text.NumberFormat
@@ -135,7 +137,10 @@ private fun PageSizeSlider(
             text = numberFormat.format(allowedPageSizes[selectedIndex]),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            modifier =
+                Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .testTag(PageSize.HEADLINE),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -145,6 +150,7 @@ private fun PageSizeSlider(
             onValueChange = { onSliderIndexChange(it.roundToInt()) },
             valueRange = 0f..allowedPageSizes.lastIndex.toFloat(),
             steps = allowedPageSizes.size - 2,
+            modifier = Modifier.testTag(PageSize.SLIDER),
         )
 
         Row(
