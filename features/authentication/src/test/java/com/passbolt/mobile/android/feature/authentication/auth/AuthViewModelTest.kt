@@ -44,6 +44,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryI
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmup
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyPassphraseUseCase
@@ -71,6 +72,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -104,6 +106,7 @@ class AuthViewModelTest : KoinTest {
                     single { mock<InAppReviewInteractor>() }
                     single { mock<PostSignInActionsInteractor>() }
                     single { mock<RefreshSessionUseCase>() }
+                    single { mock<ServerKeysWarmup>() }
                     single { RuntimeAuthenticatedFlag() }
                     singleOf(::SignInIdlingResource)
                     factoryOf(::MfaProvidersHandler)
@@ -134,6 +137,7 @@ class AuthViewModelTest : KoinTest {
                             postSignInActionsInteractor = get(),
                             refreshSessionUseCase = get(),
                             mfaProvidersHandler = get(),
+                            serverKeysWarmup = get(),
                         )
                     }
                 },
@@ -484,6 +488,43 @@ class AuthViewModelTest : KoinTest {
                 val state = awaitItem()
                 assertThat(state.passphrase).isEqualTo(TYPED_PASSPHRASE)
                 assertThat(state.isAuthButtonEnabled).isTrue()
+            }
+        }
+
+    @Test
+    fun `server keys warm-up is triggered on init for every full sign-in config`() =
+        runTest {
+            val warmup: ServerKeysWarmup = get()
+            val configsThatWarmUp =
+                listOf(
+                    AuthConfig.Startup,
+                    AuthConfig.Setup,
+                    AuthConfig.ManageAccount,
+                    AuthConfig.SignIn,
+                    AuthConfig.RefreshSession,
+                )
+
+            configsThatWarmUp.forEach { config ->
+                reset(warmup)
+                viewModel = get(parameters = { parametersOf(config, USER_ID, AppContext.APP) })
+                verify(warmup).warmUp(USER_ID)
+            }
+        }
+
+    @Test
+    fun `server keys warm-up is skipped on init for passphrase-only and MFA configs`() =
+        runTest {
+            val warmup: ServerKeysWarmup = get()
+            val configsThatSkip =
+                listOf(
+                    AuthConfig.RefreshPassphrase,
+                    AuthConfig.Mfa("totp"),
+                )
+
+            configsThatSkip.forEach { config ->
+                reset(warmup)
+                viewModel = get(parameters = { parametersOf(config, USER_ID, AppContext.APP) })
+                verify(warmup, never()).warmUp(any())
             }
         }
 
