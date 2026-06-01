@@ -35,8 +35,12 @@ import com.passbolt.mobile.android.core.users.UsersInteractor
 import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.metadata.interactor.MetadataKeysInteractor
+import com.passbolt.mobile.android.metadata.interactor.MetadataKeysSettingsInteractor
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysInteractor
 import com.passbolt.mobile.android.metadata.interactor.MetadataSessionKeysInteractor
+import com.passbolt.mobile.android.metadata.interactor.MetadataTypesSettingsInteractor
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
 
 /**
@@ -52,16 +56,31 @@ class HomeDataInteractor(
     private val metadataKeysInteractor: MetadataKeysInteractor,
     private val metadataPrivateKeysInteractor: MetadataPrivateKeysInteractor,
     private val metadataSessionKeysInteractor: MetadataSessionKeysInteractor,
+    private val metadataTypesSettingsInteractor: MetadataTypesSettingsInteractor,
+    private val metadataKeysSettingsInteractor: MetadataKeysSettingsInteractor,
     private val featureFlagsUseCase: GetFeatureFlagsUseCase,
     private val resourcesFullRefreshIdlingResource: ResourcesFullRefreshIdlingResource,
     private val resourcesSnapshot: ResourcesSnapshot,
 ) {
     // TODO start multiple async where possible
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     suspend fun refreshAllHomeScreenData(): Output {
         resourcesFullRefreshIdlingResource.setIdle(false)
         resourcesSnapshot.populateForCurrentAccount()
 
         val featureFlagsOutput = featureFlagsUseCase.execute(Unit).featureFlags
+        val (metadataTypesSettingsOutput, metadataKeysSettingsOutput) =
+            if (featureFlagsOutput.isV5MetadataAvailable) {
+                coroutineScope {
+                    val typesDeferred =
+                        async { metadataTypesSettingsInteractor.fetchAndSaveMetadataTypesSettings() }
+                    val keysDeferred =
+                        async { metadataKeysSettingsInteractor.fetchAndSaveMetadataKeysSettings() }
+                    typesDeferred.await() to keysDeferred.await()
+                }
+            } else {
+                MetadataTypesSettingsInteractor.Output.Success to MetadataKeysSettingsInteractor.Output.Success
+            }
         val metadataKeysOutput =
             if (featureFlagsOutput.isV5MetadataAvailable) {
                 metadataKeysInteractor.fetchAndSaveMetadataKeys()
@@ -97,7 +116,9 @@ class HomeDataInteractor(
         resourcesFullRefreshIdlingResource.setIdle(true)
 
         @Suppress("ComplexCondition")
-        return if (metadataKeysOutput is MetadataKeysInteractor.Output.Success &&
+        return if (metadataTypesSettingsOutput is MetadataTypesSettingsInteractor.Output.Success &&
+            metadataKeysSettingsOutput is MetadataKeysSettingsInteractor.Output.Success &&
+            metadataKeysOutput is MetadataKeysInteractor.Output.Success &&
             metadataSessionKeysOutput is MetadataSessionKeysInteractor.Output.Success &&
             resourceTypesOutput is ResourceTypesInteractor.Output.Success &&
             userInteractorOutput is UsersInteractor.Output.Success &&
@@ -109,7 +130,9 @@ class HomeDataInteractor(
             Output.Success
         } else {
             Output.Failure(
-                metadataKeysOutput.authenticationState +
+                metadataTypesSettingsOutput.authenticationState +
+                    metadataKeysSettingsOutput.authenticationState +
+                    metadataKeysOutput.authenticationState +
                     metadataSessionKeysOutput.authenticationState +
                     resourceTypesOutput.authenticationState +
                     userInteractorOutput.authenticationState +
