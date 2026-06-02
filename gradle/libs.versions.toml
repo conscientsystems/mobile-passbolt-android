@@ -63,6 +63,7 @@ nav3Core = "1.0.1"
 nav3ViewModel = "2.10.0"
 paging-compose = "3.4.2"
 glance = "1.1.1"
+screenshot = "0.0.1-alpha14"
 
 [libraries]
 # kotlin
@@ -163,6 +164,7 @@ espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-re
 json-assert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonAssert" }
 compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "screenshot" }
 
 # quality and security
 rootbeer = { module = "com.scottyab:rootbeer-lib", version.ref = "rootbeer" }
@@ -208,3 +210,4 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 easylauncher = { id = "com.starter.easylauncher", version.ref = "easylauncher" }
 licensee = { id = "app.cash.licensee", version.ref = "licensee" }
+screenshot = { id = "com.android.compose.screenshot", version.ref = "screenshot" }
