@@ -530,6 +530,7 @@ class CreateFolderViewModelTest : KoinTest {
                 name = "Parent Folder",
                 isShared = false,
                 permission = ResourcePermission.OWNER,
+                modified = ZonedDateTime.now(),
             )
 
         private val mockNewFolderModel =
@@ -539,6 +540,7 @@ class CreateFolderViewModelTest : KoinTest {
                 name = "Test Folder",
                 isShared = false,
                 permission = ResourcePermission.OWNER,
+                modified = ZonedDateTime.now(),
             )
 
         private val mockFolderWithAttributes =

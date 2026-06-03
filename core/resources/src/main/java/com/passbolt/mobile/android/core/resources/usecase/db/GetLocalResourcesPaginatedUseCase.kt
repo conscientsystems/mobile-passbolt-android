@@ -52,15 +52,15 @@ class GetLocalResourcesPaginatedUseCase(
     override suspend fun execute(input: Input): Output =
         Output(
             Pager(
-                config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = false),
+                config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = input.enablePlaceholders),
                 pagingSourceFactory = {
                     val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
                     val resourceDao = databaseProvider.get(selectedAccount).paginatedResourcesDao()
                     val ftsQuery = querySanitizer.sanitize(input.searchQuery)
 
                     when (val viewType = homeDisplayViewMapper.map(input.homeDisplayView)) {
-                        is ByModifiedDateDescending -> resourceDao.getAllOrderedByModifiedDatePaginated(input.slugs, ftsQuery)
-                        is ByNameAscending -> resourceDao.getAllOrderedByNamePaginated(input.slugs, ftsQuery)
+                        is ByModifiedDateDescending, is ByNameAscending ->
+                            resourceDao.getAllOrderedByModifiedDatePaginated(input.slugs, ftsQuery)
                         is IsFavourite -> resourceDao.getFavouritesPaginated(input.slugs, ftsQuery)
                         is HasPermissions ->
                             resourceDao.getWithPermissionsPaginated(
@@ -83,6 +83,7 @@ class GetLocalResourcesPaginatedUseCase(
         val homeDisplayView: HomeDisplayViewModel = HomeDisplayViewModel.AllItems,
         val searchQuery: String? = null,
         val pageSize: Int = DEFAULT_PAGE_SIZE,
+        val enablePlaceholders: Boolean = false,
     )
 
     data class Output(

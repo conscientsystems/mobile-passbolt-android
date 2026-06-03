@@ -1,11 +1,11 @@
-package com.passbolt.mobile.android.dto.response
+package com.passbolt.mobile.android.database.migrations
 
-import com.google.gson.annotations.SerializedName
-import java.util.UUID
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  * Passbolt - Open source password manager for teams
- * Copyright (c) 2021 Passbolt SA
+ * Copyright (c) 2026 Passbolt SA
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
  * Public License (AGPL) as published by the Free Software Foundation version 3.
@@ -25,12 +25,15 @@ import java.util.UUID
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-data class CreateFolderResponseDto(
-    val id: UUID,
-    @SerializedName("folder_parent_id")
-    val parentFolderId: UUID?,
-    val modified: String?,
-    val name: String,
-    val personal: Boolean,
-    val permission: PermissionDto,
-)
+
+@Suppress("MagicNumber")
+object Migration24to25 : Migration(24, 25) {
+    // modified is stored as epoch millis (see Converters); existing rows default to 0 (epoch)
+    // and are overwritten with the real value on the next folders sync
+    private const val ADD_FOLDER_MODIFIED_COLUMN =
+        "ALTER TABLE Folder ADD COLUMN modified INTEGER NOT NULL DEFAULT 0"
+
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(ADD_FOLDER_MODIFIED_COLUMN)
+    }
+}

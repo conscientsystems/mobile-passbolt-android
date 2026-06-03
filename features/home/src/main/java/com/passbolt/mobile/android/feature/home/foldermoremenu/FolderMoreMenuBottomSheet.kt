@@ -1,9 +1,15 @@
 package com.passbolt.mobile.android.feature.home.foldermoremenu
 
 import PassboltTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,20 +49,33 @@ internal fun FolderMoreMenuBottomSheet(
     onDismissRequest: () -> Unit,
     onSeeDetails: () -> Unit,
 ) {
+    val sheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+        )
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         containerColor = colorResource(CoreUiR.color.elevated_background),
+        sheetState = sheetState,
     ) {
-        BottomSheetHeader(
-            title = folderName ?: stringResource(LocalizationR.string.folder_root),
-            onClose = onDismissRequest,
-        )
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+        ) {
+            BottomSheetHeader(
+                title = folderName ?: stringResource(LocalizationR.string.folder_root),
+                onClose = onDismissRequest,
+            )
 
-        OpenableSettingsItem(
-            title = stringResource(LocalizationR.string.folder_more_see_details),
-            iconPainter = painterResource(CoreUiR.drawable.ic_zoom),
-            onClick = onSeeDetails,
-        )
+            OpenableSettingsItem(
+                title = stringResource(LocalizationR.string.folder_more_see_details),
+                iconPainter = painterResource(CoreUiR.drawable.ic_zoom),
+                onClick = onSeeDetails,
+            )
+        }
     }
 }
 

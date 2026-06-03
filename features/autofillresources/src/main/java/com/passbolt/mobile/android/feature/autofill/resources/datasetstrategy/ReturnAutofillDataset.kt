@@ -13,6 +13,7 @@ import com.passbolt.mobile.android.core.autofill.system.AutofillField
 import com.passbolt.mobile.android.core.autofill.system.FillableInputsFinder
 import com.passbolt.mobile.android.feature.autofill.autofill.RemoteViewsFactory
 import com.passbolt.mobile.android.ui.ParsedStructure
+import timber.log.Timber
 
 class ReturnAutofillDataset(
     private val autofillCallback: AutofillCallback,
@@ -23,6 +24,13 @@ class ReturnAutofillDataset(
     override fun returnDataset(payload: AutofillPayload) {
         val parsedStructures = assistStructureParser.parse(autofillCallback.getAutofillStructure())
         val fieldIds = resolveFieldIds(parsedStructures.structures)
+
+        if (!hasAnyFillablePair(payload, fieldIds)) {
+            Timber.d("Selected resource has no values matching the the autofill target")
+            autofillCallback.setResultAndFinish(Activity.RESULT_CANCELED, Intent())
+            return
+        }
+
         val responseBuilder = buildFillResponse(payload, fieldIds)
 
         val replyIntent =
@@ -31,6 +39,14 @@ class ReturnAutofillDataset(
             }
         autofillCallback.setResultAndFinish(Activity.RESULT_OK, replyIntent)
     }
+
+    private fun hasAnyFillablePair(
+        payload: AutofillPayload,
+        ids: FieldIds,
+    ): Boolean =
+        (ids.usernameId != null && payload.username != null) ||
+            (ids.passwordId != null && payload.password != null) ||
+            (ids.totpId != null && payload.totpCode != null)
 
     private fun resolveFieldIds(structures: Set<ParsedStructure>) =
         FieldIds(
