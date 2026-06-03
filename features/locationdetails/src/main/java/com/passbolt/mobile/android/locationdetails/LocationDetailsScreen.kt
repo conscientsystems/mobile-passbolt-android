@@ -84,6 +84,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import java.time.ZonedDateTime
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
@@ -258,6 +259,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                         name = "Projects",
                         isShared = false,
                         permission = ResourcePermission.OWNER,
+                        modified = ZonedDateTime.now(),
                     ),
                     FolderModel(
                         folderId = "2",
@@ -265,6 +267,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                         name = "Mobile Apps",
                         isShared = true,
                         permission = ResourcePermission.OWNER,
+                        modified = ZonedDateTime.now(),
                     ),
                 ),
             )
@@ -283,6 +286,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                                 name = "Projects",
                                 isShared = false,
                                 permission = ResourcePermission.OWNER,
+                                modified = ZonedDateTime.now(),
                             ),
                             FolderModel(
                                 folderId = "2",
@@ -290,6 +294,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                                 name = "Mobile Apps",
                                 isShared = true,
                                 permission = ResourcePermission.OWNER,
+                                modified = ZonedDateTime.now(),
                             ),
                         ),
                     folderTree = folderTree,

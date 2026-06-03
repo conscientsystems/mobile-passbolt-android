@@ -52,7 +52,7 @@ class GetLocalResourcesAndFoldersPaginatedUseCase(
             Output.Success(
                 folders =
                     Pager(
-                        config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = false),
+                        config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = input.enablePlaceholders),
                         pagingSourceFactory = {
                             databaseProvider
                                 .get(requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount))
@@ -66,7 +66,7 @@ class GetLocalResourcesAndFoldersPaginatedUseCase(
                     },
                 resources =
                     Pager(
-                        config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = false),
+                        config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = input.enablePlaceholders),
                         pagingSourceFactory = {
                             databaseProvider
                                 .get(requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount))
@@ -86,6 +86,7 @@ class GetLocalResourcesAndFoldersPaginatedUseCase(
         val slugs: Set<String>,
         val searchQuery: String? = null,
         val pageSize: Int = DEFAULT_PAGE_SIZE,
+        val enablePlaceholders: Boolean = false,
     )
 
     sealed class Output {

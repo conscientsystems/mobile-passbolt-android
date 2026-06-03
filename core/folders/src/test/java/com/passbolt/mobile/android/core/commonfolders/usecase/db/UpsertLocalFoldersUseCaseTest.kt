@@ -29,6 +29,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.time.ZonedDateTime
 
 @ExperimentalCoroutinesApi
 class UpsertLocalFoldersUseCaseTest : KoinTest {
@@ -70,6 +71,7 @@ class UpsertLocalFoldersUseCaseTest : KoinTest {
                     name = "Test Folder",
                     isShared = false,
                     permission = ResourcePermission.READ,
+                    modified = ZonedDateTime.now(),
                 )
             val mappedFolder =
                 Folder(
@@ -78,6 +80,7 @@ class UpsertLocalFoldersUseCaseTest : KoinTest {
                     permission = Permission.READ,
                     parentId = null,
                     isShared = false,
+                    modified = ZonedDateTime.now(),
                     updateState = FolderUpdateState.UPDATED,
                 )
             get<FolderModelMapper>().stub {

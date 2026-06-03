@@ -153,6 +153,7 @@ internal class HomeViewModel(
 
     private var dataRefreshJob: Job? = null
     private var accountSwitchJob: Job? = null
+    private var lastInitializeIntent: Initialize? = null
 
     init {
         loadUserAvatar()
@@ -455,6 +456,10 @@ internal class HomeViewModel(
     }
 
     private fun initialize(intent: Initialize) {
+        if (intent == lastInitializeIntent) {
+            return
+        }
+        lastInitializeIntent = intent
         val filterPreferences = getHomeDisplayViewPrefsUseCase.execute(Unit)
 
         viewModelScope.launch {
@@ -478,7 +483,7 @@ internal class HomeViewModel(
             dataRefreshJob?.cancel()
             dataRefreshJob =
                 viewModelScope.launch(coroutineLaunchContext.io) {
-                    synchronizeWithDataRefresh(intent.showSuggestedModel)
+                    synchronizeWithDataRefresh()
                 }
             accountSwitchJob?.cancel()
             accountSwitchJob =
@@ -558,7 +563,7 @@ internal class HomeViewModel(
             resultIfActionFails
         }
 
-    private suspend fun synchronizeWithDataRefresh(showSuggestedModel: ShowSuggestedModel) {
+    private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
                 InProgress -> updateViewState { copy(isRefreshing = true, canCreateResource = false) }
@@ -568,10 +573,8 @@ internal class HomeViewModel(
                 }
                 FinishedWithSuccess -> {
                     val showCreateResourceButton = shouldShowCreateButton()
-                    val homeData = getHomeData(viewState.value.homeView, viewState.value.searchQuery, showSuggestedModel)
                     updateViewState {
                         copy(
-                            homeData = homeData,
                             isRefreshing = false,
                             canCreateResource = showCreateResourceButton,
                         )

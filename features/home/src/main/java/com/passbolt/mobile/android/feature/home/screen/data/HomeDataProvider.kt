@@ -105,6 +105,7 @@ class HomeDataProvider(
                     foldersView.activeFolder,
                     slugs,
                     searchQuery,
+                    enablePlaceholders = true,
                 ),
             ) as GetLocalResourcesAndFoldersPaginatedUseCase.Output.Success
 
@@ -191,12 +192,23 @@ class HomeDataProvider(
                         slugs,
                         homeView,
                         searchQuery,
+                        enablePlaceholders = true,
+                    ),
+                ).pagedResourcesFlow
+
+        val suggestedSource =
+            getLocalResourcesPaginatedUseCase
+                .execute(
+                    GetLocalResourcesPaginatedUseCase.Input(
+                        slugs,
+                        homeView,
+                        searchQuery,
                     ),
                 ).pagedResourcesFlow
 
         return HomeData(
             resourceList = resourceList,
-            suggestedResourceList = getSuggestedList(resourceList, searchQuery, homeView, showSuggestedModel),
+            suggestedResourceList = getSuggestedList(suggestedSource, searchQuery, homeView, showSuggestedModel),
         )
     }
 
@@ -206,11 +218,13 @@ class HomeDataProvider(
         homeView: HomeDisplayViewModel,
         showSuggestedModel: ShowSuggestedModel,
     ): Flow<PagingData<ResourceModel>> =
-        if (shouldShowSuggested(homeView, searchQuery)) {
+        if (showSuggestedModel is ShowSuggestedModel.Show && shouldShowSuggested(homeView, searchQuery)) {
             resourceList.map { pagingData ->
                 pagingData.filter {
-                    val autofillUrl = (showSuggestedModel as? ShowSuggestedModel.Show)?.suggestedUri
-                    autofillMatcher.isMatching(autofillUrl, it.metadataJsonModel.uris.orEmpty() + it.metadataJsonModel.uri.orEmpty())
+                    autofillMatcher.isMatching(
+                        showSuggestedModel.suggestedUri,
+                        it.metadataJsonModel.uris.orEmpty() + it.metadataJsonModel.uri.orEmpty(),
+                    )
                 }
             }
         } else {

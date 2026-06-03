@@ -7,6 +7,9 @@ import com.passbolt.mobile.android.entity.folder.FolderWithChildItemsCountAndPat
 import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.FolderModelWithAttributes
 import com.passbolt.mobile.android.ui.FolderWithCountAndPath
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 /**
  * Passbolt - Open source password manager for teams
@@ -42,6 +45,7 @@ class FolderModelMapper(
                 // updated in batch after folders and permissions are inserted
                 isShared = false,
                 permission = permissionsModelMapper.map(folder.permission.type),
+                modified = folder.modified?.let(ZonedDateTime::parse) ?: EPOCH,
             ),
             folder.permissions.map(permissionsModelMapper::map),
         )
@@ -58,6 +62,7 @@ class FolderModelMapper(
             permission = permissionsModelMapper.map(folderModel.permission),
             parentId = folderModel.parentFolderId,
             isShared = folderModel.isShared,
+            modified = folderModel.modified,
             updateState = folderUpdateState,
         )
 
@@ -68,6 +73,7 @@ class FolderModelMapper(
             parentFolderId = folderEntity.parentId,
             isShared = folderEntity.isShared,
             permission = permissionsModelMapper.map(folderEntity.permission),
+            modified = folderEntity.modified,
         )
 
     fun map(folderWithChildItemsCountAndPath: FolderWithChildItemsCountAndPath) =
@@ -80,4 +86,8 @@ class FolderModelMapper(
             subItemsCount = folderWithChildItemsCountAndPath.childItemsCount,
             path = folderWithChildItemsCountAndPath.path,
         )
+
+    private companion object {
+        private val EPOCH: ZonedDateTime = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+    }
 }
