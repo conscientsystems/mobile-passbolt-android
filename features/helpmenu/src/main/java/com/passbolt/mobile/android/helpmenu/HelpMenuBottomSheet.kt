@@ -26,6 +26,8 @@ package com.passbolt.mobile.android.helpmenu
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -141,7 +144,9 @@ private fun HelpMenuBottomSheet(
         containerColor = colorResource(R.color.elevated_background),
         sheetState = sheetState,
     ) {
-        Column {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+        ) {
             BottomSheetHeader(
                 title = stringResource(LocalizationR.string.help_menu_help),
                 onClose = { onIntent(Close) },
