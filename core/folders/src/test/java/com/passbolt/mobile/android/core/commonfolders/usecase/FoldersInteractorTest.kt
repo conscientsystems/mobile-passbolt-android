@@ -36,6 +36,7 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.time.ZonedDateTime
 import kotlin.test.assertIs
 
 @ExperimentalCoroutinesApi
@@ -275,6 +276,7 @@ class FoldersInteractorTest : KoinTest {
                         name = "Test Folder",
                         isShared = false,
                         permission = ResourcePermission.READ,
+                        modified = ZonedDateTime.now(),
                     ),
                 folderPermissions = emptyList(),
             )

@@ -113,8 +113,10 @@ import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -594,6 +596,26 @@ class HomeViewModelTest : KoinTest {
             viewModel = get()
 
             assertThat(viewModel.viewState.value.isAutofillConflictDetected).isFalse()
+        }
+
+    @Test
+    fun `should not regenerate homeData on refresh complete`() =
+        runTest {
+            mockHomeData()
+            val dataRefreshFlow: DataRefreshTrackingFlow = get()
+            val provider: HomeDataProvider = get()
+
+            viewModel = get()
+            viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
+            advanceUntilIdle()
+
+            clearInvocations(provider)
+
+            dataRefreshFlow.updateStatus(InProgress)
+            dataRefreshFlow.updateStatus(FinishedWithSuccess)
+            advanceUntilIdle()
+
+            verify(provider, never()).provideData(any(), any(), any(), any())
         }
 
     @Test

@@ -388,6 +388,7 @@ class LocationDetailsViewModelTest : KoinTest {
                 name = "Test Folder",
                 isShared = true,
                 permission = ResourcePermission.OWNER,
+                modified = ZonedDateTime.now(),
             )
         }
 
@@ -399,6 +400,7 @@ class LocationDetailsViewModelTest : KoinTest {
                     name = "Root",
                     isShared = false,
                     permission = ResourcePermission.OWNER,
+                    modified = ZonedDateTime.now(),
                 ),
                 FolderModel(
                     folderId = "parent-folder-id",
@@ -406,6 +408,7 @@ class LocationDetailsViewModelTest : KoinTest {
                     name = "Parent Folder",
                     isShared = true,
                     permission = ResourcePermission.UPDATE,
+                    modified = ZonedDateTime.now(),
                 ),
             )
         }
