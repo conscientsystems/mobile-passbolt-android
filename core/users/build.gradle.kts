@@ -5,7 +5,7 @@ plugins {
 dependencies {
     implementation(project(":dto"))
     implementation(project(":common"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":passboltapi"))
     implementation(project(":architecture"))
     implementation(project(":mappers"))

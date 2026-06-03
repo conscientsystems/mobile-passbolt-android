@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":localization"))
     implementation(project(":logger"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":preferences"))
     implementation(project(":navigation"))
 

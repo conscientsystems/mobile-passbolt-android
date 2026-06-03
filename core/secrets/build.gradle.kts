@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":architecture"))
     implementation(project(":resourcetypes"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":serializers"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":passphrasememorycache"))

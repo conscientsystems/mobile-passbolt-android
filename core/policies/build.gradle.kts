@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":common"))
     implementation(project(":dto"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":encryptedstorage"))
     implementation(project(":accounts"))
 

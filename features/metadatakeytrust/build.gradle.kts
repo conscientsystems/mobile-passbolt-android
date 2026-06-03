@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":common"))
     implementation(project(":localization"))

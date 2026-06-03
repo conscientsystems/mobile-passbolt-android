@@ -40,11 +40,11 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PassphraseWordCaseChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PassphraseWordSeparatorChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PassphraseWordsCountChanged
-import com.passbolt.mobile.android.ui.CaseTypeModel
-import com.passbolt.mobile.android.ui.CaseTypeModel.CAMELCASE
-import com.passbolt.mobile.android.ui.CaseTypeModel.LOWERCASE
-import com.passbolt.mobile.android.ui.CaseTypeModel.UPPERCASE
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel.CAMELCASE
+import com.passbolt.mobile.android.ui.CaseTypeUiModel.LOWERCASE
+import com.passbolt.mobile.android.ui.CaseTypeUiModel.UPPERCASE
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
 private const val PASSPHRASE_WORDS_MIN = 4
@@ -52,7 +52,7 @@ private const val PASSPHRASE_WORDS_MAX = 40
 
 @Composable
 internal fun PassphraseTabContent(
-    passphraseSettings: PassphraseGeneratorSettingsModel,
+    passphraseSettings: PassphraseGeneratorSettingsUiModel,
     onIntent: (AdvancedSecretGenerationIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -86,7 +86,7 @@ internal fun PassphraseTabContent(
     }
 }
 
-private fun wordCaseLabels(context: Context): Map<CaseTypeModel, String> =
+private fun wordCaseLabels(context: Context): Map<CaseTypeUiModel, String> =
     linkedMapOf(
         LOWERCASE to context.getString(LocalizationR.string.resource_form_word_case_lowercase),
         UPPERCASE to context.getString(LocalizationR.string.resource_form_word_case_uppercase),

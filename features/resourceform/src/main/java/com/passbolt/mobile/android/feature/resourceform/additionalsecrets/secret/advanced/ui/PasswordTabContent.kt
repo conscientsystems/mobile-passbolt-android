@@ -54,7 +54,7 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PasswordCharacterSetToggled
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PasswordExcludeLookAlikeChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PasswordLengthChanged
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
 private const val PASSWORD_LENGTH_MIN = 8
@@ -62,7 +62,7 @@ private const val PASSWORD_LENGTH_MAX = 128
 
 @Composable
 internal fun PasswordTabContent(
-    passwordSettings: PasswordGeneratorSettingsModel,
+    passwordSettings: PasswordGeneratorSettingsUiModel,
     onIntent: (AdvancedSecretGenerationIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -98,7 +98,7 @@ internal fun PasswordTabContent(
 
 private fun characterSetChips(
     context: Context,
-    settings: PasswordGeneratorSettingsModel,
+    settings: PasswordGeneratorSettingsUiModel,
 ): List<SelectableChipItemModel> =
     listOf(
         SelectableChipItemModel(

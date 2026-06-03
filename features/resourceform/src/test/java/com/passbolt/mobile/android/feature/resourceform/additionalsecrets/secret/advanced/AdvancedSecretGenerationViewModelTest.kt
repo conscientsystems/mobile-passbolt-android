@@ -39,10 +39,10 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.TabSelected
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationSideEffect.NavigateBack
-import com.passbolt.mobile.android.ui.CaseTypeModel
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -105,7 +105,7 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
             advanceUntilIdle()
 
             val state = viewModel.viewState.value
-            assertThat(state.selectedTab).isEqualTo(PasswordGeneratorTypeModel.PASSWORD)
+            assertThat(state.selectedTab).isEqualTo(PasswordGeneratorTypeUiModel.PASSWORD)
             assertThat(state.passwordSettings).isEqualTo(passwordSettings)
             assertThat(state.passphraseSettings).isEqualTo(passphraseSettings)
             assertThat(state.preview).isEqualTo("pwd1!")
@@ -118,11 +118,11 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
             val viewModel = createViewModel()
             advanceUntilIdle()
 
-            viewModel.onIntent(TabSelected(PasswordGeneratorTypeModel.PASSPHRASE))
+            viewModel.onIntent(TabSelected(PasswordGeneratorTypeUiModel.PASSPHRASE))
             advanceUntilIdle()
 
             val state = viewModel.viewState.value
-            assertThat(state.selectedTab).isEqualTo(PasswordGeneratorTypeModel.PASSPHRASE)
+            assertThat(state.selectedTab).isEqualTo(PasswordGeneratorTypeUiModel.PASSPHRASE)
             assertThat(state.preview).isEqualTo("phrase")
         }
 
@@ -194,10 +194,10 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
             val viewModel = createViewModel()
             advanceUntilIdle()
 
-            viewModel.onIntent(PassphraseWordCaseChanged(CaseTypeModel.UPPERCASE))
+            viewModel.onIntent(PassphraseWordCaseChanged(CaseTypeUiModel.UPPERCASE))
             advanceUntilIdle()
 
-            assertThat(viewModel.viewState.value.passphraseSettings.wordCase).isEqualTo(CaseTypeModel.UPPERCASE)
+            assertThat(viewModel.viewState.value.passphraseSettings.wordCase).isEqualTo(CaseTypeUiModel.UPPERCASE)
         }
 
     @Test
@@ -230,7 +230,7 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
                 val sideEffect = awaitItem()
                 assertIs<ApplyAndGoBack>(sideEffect)
                 assertThat(sideEffect.generatedSecret).isEqualTo("pwd1!")
-                assertThat(sideEffect.selectedTab).isEqualTo(PasswordGeneratorTypeModel.PASSWORD)
+                assertThat(sideEffect.selectedTab).isEqualTo(PasswordGeneratorTypeUiModel.PASSWORD)
                 assertThat(sideEffect.passwordSettings).isEqualTo(passwordSettings)
                 assertThat(sideEffect.passphraseSettings).isEqualTo(passphraseSettings)
             }
@@ -271,7 +271,7 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
     private fun createViewModel(): AdvancedSecretGenerationViewModel =
         get {
             parametersOf(
-                PasswordGeneratorTypeModel.PASSWORD,
+                PasswordGeneratorTypeUiModel.PASSWORD,
                 passwordSettings,
                 passphraseSettings,
             )
@@ -279,7 +279,7 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
 
     private companion object {
         val passwordSettings =
-            PasswordGeneratorSettingsModel(
+            PasswordGeneratorSettingsUiModel(
                 length = 16,
                 maskUpper = true,
                 maskLower = true,
@@ -295,10 +295,10 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
             )
 
         val passphraseSettings =
-            PassphraseGeneratorSettingsModel(
+            PassphraseGeneratorSettingsUiModel(
                 words = 8,
                 wordSeparator = " ",
-                wordCase = CaseTypeModel.LOWERCASE,
+                wordCase = CaseTypeUiModel.LOWERCASE,
             )
     }
 }

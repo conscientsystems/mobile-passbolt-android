@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":common"))
     implementation(project(":secrets"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":networking"))
     implementation(project(":database"))
     implementation(project(":entity"))

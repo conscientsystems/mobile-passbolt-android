@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":featureflags"))
     implementation(project(":database"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":security"))
     implementation(project(":logger"))
     implementation(project(":users"))

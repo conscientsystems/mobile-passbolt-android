@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(":localization"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":architecture"))
     implementation(project(":common"))
     implementation(project(":pwnedpasswordsapi"))

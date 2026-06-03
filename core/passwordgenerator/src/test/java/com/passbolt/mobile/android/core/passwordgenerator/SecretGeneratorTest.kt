@@ -2,9 +2,9 @@ package com.passbolt.mobile.android.core.passwordgenerator
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy
-import com.passbolt.mobile.android.ui.CaseTypeModel
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -52,7 +52,7 @@ class SecretGeneratorTest : KoinTest {
         runTest {
             val length = 3
             val settings =
-                PasswordGeneratorSettingsModel(
+                PasswordGeneratorSettingsUiModel(
                     length = length,
                     maskUpper = true,
                     maskLower = false,
@@ -76,10 +76,10 @@ class SecretGeneratorTest : KoinTest {
     fun `generate should return low entropy failure for low passphrase settings`() =
         runTest {
             val settings =
-                PassphraseGeneratorSettingsModel(
+                PassphraseGeneratorSettingsUiModel(
                     words = 1,
                     wordSeparator = "",
-                    wordCase = CaseTypeModel.LOWERCASE,
+                    wordCase = CaseTypeUiModel.LOWERCASE,
                 )
 
             val passphraseGenerationResult = secretGenerator.generatePassphrase(settings)

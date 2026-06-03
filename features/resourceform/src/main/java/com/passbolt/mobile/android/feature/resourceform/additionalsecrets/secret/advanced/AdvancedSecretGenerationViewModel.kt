@@ -48,17 +48,17 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.TabSelected
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationSideEffect.NavigateBack
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSPHRASE
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSWORD
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSPHRASE
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSWORD
 import kotlinx.coroutines.Job
 
 internal class AdvancedSecretGenerationViewModel(
-    initialTab: PasswordGeneratorTypeModel,
-    initialPasswordSettings: PasswordGeneratorSettingsModel,
-    initialPassphraseSettings: PassphraseGeneratorSettingsModel,
+    initialTab: PasswordGeneratorTypeUiModel,
+    initialPasswordSettings: PasswordGeneratorSettingsUiModel,
+    initialPassphraseSettings: PassphraseGeneratorSettingsUiModel,
     private val secretGenerator: SecretGenerator,
 ) : SideEffectViewModel<AdvancedSecretGenerationState, AdvancedSecretGenerationSideEffect>(
         initialState =
@@ -153,7 +153,7 @@ internal class AdvancedSecretGenerationViewModel(
             }
     }
 
-    private fun PasswordGeneratorSettingsModel.toggleMask(mask: String): PasswordGeneratorSettingsModel =
+    private fun PasswordGeneratorSettingsUiModel.toggleMask(mask: String): PasswordGeneratorSettingsUiModel =
         when (mask) {
             MASK_UPPER -> copy(maskUpper = !maskUpper)
             MASK_LOWER -> copy(maskLower = !maskLower)

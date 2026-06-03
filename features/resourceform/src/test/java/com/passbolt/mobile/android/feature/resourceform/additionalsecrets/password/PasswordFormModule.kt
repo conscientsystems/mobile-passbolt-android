@@ -2,7 +2,7 @@ package com.passbolt.mobile.android.feature.resourceform.additionalsecrets.passw
 
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
-import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.GetPasswordPoliciesUseCase
 import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module

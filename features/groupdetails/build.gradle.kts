@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":architecture"))
     implementation(project(":mappers"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":networking"))
     implementation(project(":passboltapi"))
     implementation(project(":database"))

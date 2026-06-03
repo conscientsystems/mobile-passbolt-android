@@ -36,15 +36,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSPHRASE
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSWORD
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSPHRASE
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSWORD
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 @Composable
 internal fun SecretPreviewSection(
-    selectedTab: PasswordGeneratorTypeModel,
+    selectedTab: PasswordGeneratorTypeUiModel,
     preview: String,
     minimumEntropyBits: Int?,
     modifier: Modifier = Modifier,

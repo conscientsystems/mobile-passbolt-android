@@ -59,12 +59,12 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.ui.PasswordTabContent
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.ui.SecretPreviewSection
 import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
-import com.passbolt.mobile.android.ui.CaseTypeModel.LOWERCASE
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSPHRASE
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSWORD
+import com.passbolt.mobile.android.ui.CaseTypeUiModel.LOWERCASE
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSPHRASE
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSWORD
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -72,9 +72,9 @@ import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
 @Composable
 internal fun AdvancedSecretGenerationScreen(
-    initialTab: PasswordGeneratorTypeModel,
-    initialPasswordSettings: PasswordGeneratorSettingsModel,
-    initialPassphraseSettings: PassphraseGeneratorSettingsModel,
+    initialTab: PasswordGeneratorTypeUiModel,
+    initialPasswordSettings: PasswordGeneratorSettingsUiModel,
+    initialPassphraseSettings: PassphraseGeneratorSettingsUiModel,
     modifier: Modifier = Modifier,
     navigator: AppNavigator = koinInject(),
     viewModel: AdvancedSecretGenerationViewModel =
@@ -168,7 +168,7 @@ private fun AdvancedSecretGenerationScreen(
                             isSelected = state.selectedTab == PASSPHRASE,
                         ),
                     ),
-                onSelect = { id -> onIntent(TabSelected(PasswordGeneratorTypeModel.valueOf(id))) },
+                onSelect = { id -> onIntent(TabSelected(PasswordGeneratorTypeUiModel.valueOf(id))) },
             )
             Spacer(modifier = Modifier.height(16.dp))
             Section {
@@ -191,7 +191,7 @@ private fun AdvancedSecretGenerationScreen(
 
 private fun getScreenTitle(
     context: Context,
-    selectedTab: PasswordGeneratorTypeModel,
+    selectedTab: PasswordGeneratorTypeUiModel,
 ): String =
     when (selectedTab) {
         PASSWORD ->
@@ -209,7 +209,7 @@ private fun AdvancedSecretGenerationScreenPasswordPreview() {
                 AdvancedSecretGenerationState(
                     selectedTab = PASSWORD,
                     passwordSettings =
-                        PasswordGeneratorSettingsModel(
+                        PasswordGeneratorSettingsUiModel(
                             length = 16,
                             maskUpper = true,
                             maskLower = false,
@@ -224,7 +224,7 @@ private fun AdvancedSecretGenerationScreenPasswordPreview() {
                             excludeLookAlikeChars = true,
                         ),
                     passphraseSettings =
-                        PassphraseGeneratorSettingsModel(
+                        PassphraseGeneratorSettingsUiModel(
                             words = 9,
                             wordSeparator = " ",
                             wordCase = LOWERCASE,
@@ -245,7 +245,7 @@ private fun AdvancedSecretGenerationScreenPassphrasePreview() {
                 AdvancedSecretGenerationState(
                     selectedTab = PASSPHRASE,
                     passwordSettings =
-                        PasswordGeneratorSettingsModel(
+                        PasswordGeneratorSettingsUiModel(
                             length = 16,
                             maskUpper = true,
                             maskLower = true,
@@ -260,7 +260,7 @@ private fun AdvancedSecretGenerationScreenPassphrasePreview() {
                             excludeLookAlikeChars = true,
                         ),
                     passphraseSettings =
-                        PassphraseGeneratorSettingsModel(
+                        PassphraseGeneratorSettingsUiModel(
                             words = 18,
                             wordSeparator = " ",
                             wordCase = LOWERCASE,

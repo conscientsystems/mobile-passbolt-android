@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":database"))
     implementation(project(":networking"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":mappers"))
     implementation(project(":secrets"))
     implementation(project(":authentication"))

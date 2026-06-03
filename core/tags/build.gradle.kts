@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":mappers"))
     implementation(project(":entity"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":jsonmodel"))
     implementation(project(":accounts"))
 

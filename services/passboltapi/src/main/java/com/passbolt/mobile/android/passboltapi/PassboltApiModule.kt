@@ -7,7 +7,6 @@ import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
 import com.passbolt.mobile.android.passboltapi.groups.groupsApiModule
 import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
 import com.passbolt.mobile.android.passboltapi.mfa.mfaApiModule
-import com.passbolt.mobile.android.passboltapi.passwordpolicies.passwordPoliciesApiModule
 import com.passbolt.mobile.android.passboltapi.rbac.rbacApiModule
 import com.passbolt.mobile.android.passboltapi.registration.mobileTransferApiModule
 import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
@@ -56,6 +55,5 @@ val passboltApiModule =
         favouritesApiModule()
         rbacApiModule()
         passwordExpiryApiModule()
-        passwordPoliciesApiModule()
         metadataApiModule()
     }

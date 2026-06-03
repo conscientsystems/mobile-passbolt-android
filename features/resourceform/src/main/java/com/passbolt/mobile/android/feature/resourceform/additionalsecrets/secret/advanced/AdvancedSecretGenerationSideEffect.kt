@@ -23,17 +23,17 @@
 
 package com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced
 
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
 
 internal sealed interface AdvancedSecretGenerationSideEffect {
     data object NavigateBack : AdvancedSecretGenerationSideEffect
 
     data class ApplyAndGoBack(
-        val passwordSettings: PasswordGeneratorSettingsModel,
-        val passphraseSettings: PassphraseGeneratorSettingsModel,
-        val selectedTab: PasswordGeneratorTypeModel,
+        val passwordSettings: PasswordGeneratorSettingsUiModel,
+        val passphraseSettings: PassphraseGeneratorSettingsUiModel,
+        val selectedTab: PasswordGeneratorTypeUiModel,
         val generatedSecret: String,
     ) : AdvancedSecretGenerationSideEffect
 }

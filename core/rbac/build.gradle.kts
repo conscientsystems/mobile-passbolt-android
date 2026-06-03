@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":common"))
     implementation(project(":dto"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

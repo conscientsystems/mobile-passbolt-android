@@ -24,7 +24,7 @@
 package com.passbolt.mobile.android.core.passwordgenerator.dice
 
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.ui.CaseTypeModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
@@ -93,7 +93,7 @@ class Dice(
     // https://www.eff.org/dice; use long words list
     suspend fun generatePassphrase(
         wordsCount: Int,
-        case: CaseTypeModel,
+        case: CaseTypeUiModel,
         wordsSeparator: String = DEFAULT_WORD_SEPARATOR,
         diceCount: Int = DEFAULT_DICE_COUNT,
     ): String {
@@ -109,9 +109,9 @@ class Dice(
                         .let { getWord(it) }
                 result.add(
                     when (case) {
-                        CaseTypeModel.UPPERCASE -> word.uppercase()
-                        CaseTypeModel.LOWERCASE -> word.lowercase()
-                        CaseTypeModel.CAMELCASE -> word.replaceFirstChar { it.uppercase() }
+                        CaseTypeUiModel.UPPERCASE -> word.uppercase()
+                        CaseTypeUiModel.LOWERCASE -> word.lowercase()
+                        CaseTypeUiModel.CAMELCASE -> word.replaceFirstChar { it.uppercase() }
                     },
                 )
             }

@@ -5,7 +5,7 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.Success
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
-import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.GetPasswordPoliciesUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.ApplyChanges
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.GeneratePassword
@@ -17,8 +17,8 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.passwo
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateBack
 import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.ui.Entropy
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSPHRASE
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel.PASSWORD
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSPHRASE
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSWORD
 import com.passbolt.mobile.android.ui.PasswordUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
 

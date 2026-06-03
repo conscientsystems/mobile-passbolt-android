@@ -3,9 +3,9 @@ package com.passbolt.mobile.android.core.navigation.compose.keys
 import androidx.navigation3.runtime.NavKey
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.CustomFieldsUiModel
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
 import com.passbolt.mobile.android.ui.PasswordUiModel
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
@@ -39,9 +39,9 @@ sealed interface ResourceFormNavigationKey : NavKey {
 
     @Serializable
     data class AdvancedSecretGenerationForm(
-        val selectedTab: PasswordGeneratorTypeModel,
-        val passwordSettings: PasswordGeneratorSettingsModel,
-        val passphraseSettings: PassphraseGeneratorSettingsModel,
+        val selectedTab: PasswordGeneratorTypeUiModel,
+        val passwordSettings: PasswordGeneratorSettingsUiModel,
+        val passphraseSettings: PassphraseGeneratorSettingsUiModel,
     ) : ResourceFormNavigationKey
 
     @Serializable
