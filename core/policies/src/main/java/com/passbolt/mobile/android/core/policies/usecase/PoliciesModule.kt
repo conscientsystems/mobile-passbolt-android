@@ -29,6 +29,4 @@ import org.koin.core.module.dsl.singleOf
 fun Module.policiesModule() {
     singleOf(::GetPasswordExpirySettingsUseCase)
     singleOf(::SavePasswordExpirySettingsUseCase)
-    singleOf(::SavePasswordPoliciesUseCase)
-    singleOf(::GetPasswordPoliciesUseCase)
 }

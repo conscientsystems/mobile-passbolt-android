@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":entity"))
     implementation(project(":navigation"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

@@ -6,12 +6,12 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateBack
-import com.passbolt.mobile.android.ui.CaseTypeModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
 import com.passbolt.mobile.android.ui.LeadingContentType
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
-import com.passbolt.mobile.android.ui.PasswordPolicies
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordPoliciesUiModel
 import com.passbolt.mobile.android.ui.PasswordStrength.Empty
 import com.passbolt.mobile.android.ui.PasswordStrength.VeryStrong
 import com.passbolt.mobile.android.ui.PasswordStrength.Weak
@@ -312,10 +312,10 @@ class PasswordFormViewModelTest : KoinTest {
             )
 
         private val defaultPasswordPolicies =
-            PasswordPolicies(
-                defaultGenerator = PasswordGeneratorTypeModel.PASSWORD,
+            PasswordPoliciesUiModel(
+                defaultGenerator = PasswordGeneratorTypeUiModel.PASSWORD,
                 passwordGeneratorSettings =
-                    PasswordGeneratorSettingsModel(
+                    PasswordGeneratorSettingsUiModel(
                         length = 18,
                         maskUpper = true,
                         maskLower = true,
@@ -330,10 +330,10 @@ class PasswordFormViewModelTest : KoinTest {
                         excludeLookAlikeChars = true,
                     ),
                 passphraseGeneratorSettings =
-                    PassphraseGeneratorSettingsModel(
+                    PassphraseGeneratorSettingsUiModel(
                         words = 9,
                         wordSeparator = " ",
-                        wordCase = CaseTypeModel.LOWERCASE,
+                        wordCase = CaseTypeUiModel.LOWERCASE,
                     ),
                 isExternalDictionaryCheckEnabled = true,
             )

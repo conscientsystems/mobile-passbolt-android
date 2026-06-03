@@ -2,7 +2,7 @@ package com.passbolt.mobile.android.core.passwordgenerator
 
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
 import kotlinx.coroutines.withContext
 
 /**
@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
 class PasswordGenerator(
     private val coroutineLaunchContext: CoroutineLaunchContext,
 ) {
-    suspend fun generate(settings: PasswordGeneratorSettingsModel): List<Codepoint> {
+    suspend fun generate(settings: PasswordGeneratorSettingsUiModel): List<Codepoint> {
         val codepointBuilder = mutableListOf<Codepoint>()
 
         withContext(coroutineLaunchContext.io) {

@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":localization"))
     implementation(project(":featureflags"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":accounts"))
     implementation(project(":architecture"))
     implementation(project(":idlingresource"))

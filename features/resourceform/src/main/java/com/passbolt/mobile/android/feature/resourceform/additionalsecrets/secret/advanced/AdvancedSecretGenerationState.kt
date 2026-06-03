@@ -23,14 +23,14 @@
 
 package com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced
 
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
 
 internal data class AdvancedSecretGenerationState(
-    val selectedTab: PasswordGeneratorTypeModel,
-    val passwordSettings: PasswordGeneratorSettingsModel,
-    val passphraseSettings: PassphraseGeneratorSettingsModel,
+    val selectedTab: PasswordGeneratorTypeUiModel,
+    val passwordSettings: PasswordGeneratorSettingsUiModel,
+    val passphraseSettings: PassphraseGeneratorSettingsUiModel,
     val preview: String = "",
     val minimumEntropyBits: Int? = null,
 )

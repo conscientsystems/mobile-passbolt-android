@@ -1,0 +1,31 @@
+plugins {
+    id("passbolt.android.library")
+}
+
+dependencies {
+    implementation(project(":dto"))
+    implementation(project(":common"))
+    implementation(project(":database"))
+    implementation(project(":resourcetypes"))
+    implementation(project(":supportedresourcetypes"))
+    implementation(project(":gopenpgp"))
+    implementation(project(":metadata"))
+    implementation(project(":uimodel"))
+    implementation(project(":accounts"))
+    implementation(project(":passphrasememorycache"))
+    implementation(project(":entity"))
+    implementation(project(":architecture"))
+
+    implementation(":gopenpgp@aar")
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin)
+    implementation(libs.gson)
+    implementation(libs.jsonschema.friend)
+    implementation(libs.room.core)
+
+    testImplementation(project(":commontest"))
+}
+
+android {
+    namespace = "com.passbolt.mobile.android.domain.serializers"
+}

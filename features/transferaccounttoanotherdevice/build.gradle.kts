@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":gopenpgp"))
     implementation(project(":passboltapi"))
     implementation(project(":mappers"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":idlingresource"))
     implementation(project(":localization"))
     implementation(project(":authenticationcore"))

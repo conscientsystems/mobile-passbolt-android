@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":passboltapi"))
     implementation(project(":mappers"))
     implementation(project(":common"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":architecture"))
     implementation(project(":coreui"))
     implementation(project(":localization"))

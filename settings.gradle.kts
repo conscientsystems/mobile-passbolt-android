@@ -47,7 +47,7 @@ fun featureModule(name: String) = projectModule(name, "features/")
 
 fun serviceModule(name: String) = projectModule(name, "services/")
 
-fun domainModule(name: String) = projectModule(name, "domain/")
+fun modelModule(name: String) = projectModule(name, "model/")
 
 projectModule("app")
 
@@ -123,10 +123,15 @@ serviceModule("passboltapi")
 serviceModule("linksapi")
 serviceModule("pwnedpasswordsapi")
 
-domainModule("dto")
-domainModule("ui")
-domainModule("mappers")
-domainModule("entity")
-domainModule("serializers")
-domainModule("supportedresourcetypes")
-domainModule("jsonmodel")
+modelModule("dto")
+modelModule("uimodel")
+modelModule("mappers")
+modelModule("entity")
+modelModule("serializers")
+modelModule("supportedresourcetypes")
+modelModule("jsonmodel")
+
+include(":passwordpolicies-domain")
+project(":passwordpolicies-domain").projectDir = file("domain/passwordpolicies")
+include(":passwordpolicies-data")
+project(":passwordpolicies-data").projectDir = file("data/passwordpolicies")

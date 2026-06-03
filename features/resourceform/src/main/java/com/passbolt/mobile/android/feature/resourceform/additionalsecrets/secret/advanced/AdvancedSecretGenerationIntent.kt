@@ -23,8 +23,8 @@
 
 package com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced
 
-import com.passbolt.mobile.android.ui.CaseTypeModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
 
 internal sealed interface AdvancedSecretGenerationIntent {
     data object GoBack : AdvancedSecretGenerationIntent
@@ -32,7 +32,7 @@ internal sealed interface AdvancedSecretGenerationIntent {
     data object SavePreferences : AdvancedSecretGenerationIntent
 
     data class TabSelected(
-        val type: PasswordGeneratorTypeModel,
+        val type: PasswordGeneratorTypeUiModel,
     ) : AdvancedSecretGenerationIntent
 
     data class PasswordLengthChanged(
@@ -56,6 +56,6 @@ internal sealed interface AdvancedSecretGenerationIntent {
     ) : AdvancedSecretGenerationIntent
 
     data class PassphraseWordCaseChanged(
-        val case: CaseTypeModel,
+        val case: CaseTypeUiModel,
     ) : AdvancedSecretGenerationIntent
 }

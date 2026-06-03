@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     api(project(":architecture"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":authentication"))
     implementation(project(":common"))

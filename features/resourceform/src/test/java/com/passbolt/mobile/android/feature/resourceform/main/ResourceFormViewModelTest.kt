@@ -8,7 +8,6 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.policies.usecase.PasswordExpiryPoliciesInteractor
-import com.passbolt.mobile.android.core.policies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
@@ -20,6 +19,7 @@ import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateConten
 import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
@@ -75,18 +75,18 @@ import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseC
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
-import com.passbolt.mobile.android.ui.CaseTypeModel
-import com.passbolt.mobile.android.ui.CaseTypeModel.LOWERCASE
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel.LOWERCASE
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel.PERSONAL
 import com.passbolt.mobile.android.ui.MetadataTypeModel
 import com.passbolt.mobile.android.ui.MetadataTypeModel.V4
 import com.passbolt.mobile.android.ui.OtpParseResult
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
-import com.passbolt.mobile.android.ui.PasswordPolicies
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordPoliciesUiModel
 import com.passbolt.mobile.android.ui.PasswordStrength
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
@@ -1471,7 +1471,7 @@ class ResourceFormViewModelTest : KoinTest {
                 AdvancedSecretGenerationFormResult(
                     passwordSettings = CUSTOM_PASSWORD_SETTINGS,
                     passphraseSettings = CUSTOM_PASSPHRASE_SETTINGS,
-                    selectedTab = PasswordGeneratorTypeModel.PASSPHRASE,
+                    selectedTab = PasswordGeneratorTypeUiModel.PASSPHRASE,
                     generatedSecret = "cached secret",
                 )
             viewModel.onIntent(ResourceFormIntent.AdvancedSecretGenerationResult(result))
@@ -1484,7 +1484,7 @@ class ResourceFormViewModelTest : KoinTest {
 
                 val sideEffect = awaitItem()
                 assertIs<ResourceFormSideEffect.NavigateToAdvancedSecretGeneration>(sideEffect)
-                assertThat(sideEffect.selectedTab).isEqualTo(PasswordGeneratorTypeModel.PASSPHRASE)
+                assertThat(sideEffect.selectedTab).isEqualTo(PasswordGeneratorTypeUiModel.PASSPHRASE)
                 assertThat(sideEffect.passwordSettings).isEqualTo(CUSTOM_PASSWORD_SETTINGS)
                 assertThat(sideEffect.passphraseSettings).isEqualTo(CUSTOM_PASSPHRASE_SETTINGS)
             }
@@ -1520,14 +1520,14 @@ class ResourceFormViewModelTest : KoinTest {
                 AdvancedSecretGenerationFormResult(
                     passwordSettings = CUSTOM_PASSWORD_SETTINGS,
                     passphraseSettings = CUSTOM_PASSPHRASE_SETTINGS,
-                    selectedTab = PasswordGeneratorTypeModel.PASSWORD,
+                    selectedTab = PasswordGeneratorTypeUiModel.PASSWORD,
                     generatedSecret = "generated secret",
                 )
             viewModel.onIntent(ResourceFormIntent.AdvancedSecretGenerationResult(result))
             advanceUntilIdle()
 
             val state = viewModel.viewState.value
-            assertThat(state.generatorType).isEqualTo(PasswordGeneratorTypeModel.PASSWORD)
+            assertThat(state.generatorType).isEqualTo(PasswordGeneratorTypeUiModel.PASSWORD)
             assertThat(state.passwordGeneratorSettings).isEqualTo(CUSTOM_PASSWORD_SETTINGS)
             assertThat(state.passphraseGeneratorSettings).isEqualTo(CUSTOM_PASSPHRASE_SETTINGS)
             assertThat(state.passwordData.password).isEqualTo("generated secret")
@@ -2349,10 +2349,10 @@ class ResourceFormViewModelTest : KoinTest {
         val EDIT_MODE = ResourceFormMode.Edit(resourceId = "resourceId", resourceName = "Test")
 
         val MOCK_PASSWORD_POLICIES =
-            PasswordPolicies(
-                defaultGenerator = PasswordGeneratorTypeModel.PASSWORD,
+            PasswordPoliciesUiModel(
+                defaultGenerator = PasswordGeneratorTypeUiModel.PASSWORD,
                 passwordGeneratorSettings =
-                    PasswordGeneratorSettingsModel(
+                    PasswordGeneratorSettingsUiModel(
                         length = 18,
                         maskUpper = true,
                         maskLower = true,
@@ -2367,7 +2367,7 @@ class ResourceFormViewModelTest : KoinTest {
                         excludeLookAlikeChars = true,
                     ),
                 passphraseGeneratorSettings =
-                    PassphraseGeneratorSettingsModel(
+                    PassphraseGeneratorSettingsUiModel(
                         words = 9,
                         wordSeparator = " ",
                         wordCase = LOWERCASE,
@@ -2379,7 +2379,7 @@ class ResourceFormViewModelTest : KoinTest {
             MOCK_PASSWORD_POLICIES.copy(isExternalDictionaryCheckEnabled = false)
 
         val CUSTOM_PASSWORD_SETTINGS =
-            PasswordGeneratorSettingsModel(
+            PasswordGeneratorSettingsUiModel(
                 length = 24,
                 maskUpper = true,
                 maskLower = true,
@@ -2395,10 +2395,10 @@ class ResourceFormViewModelTest : KoinTest {
             )
 
         val CUSTOM_PASSPHRASE_SETTINGS =
-            PassphraseGeneratorSettingsModel(
+            PassphraseGeneratorSettingsUiModel(
                 words = 7,
                 wordSeparator = "-",
-                wordCase = CaseTypeModel.UPPERCASE,
+                wordCase = CaseTypeUiModel.UPPERCASE,
             )
 
         val FEATURE_FLAGS_WITH_PASSWORD_EXPIRY =

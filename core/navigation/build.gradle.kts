@@ -15,7 +15,7 @@ android {
 dependencies {
     implementation(project(":localization"))
     implementation(project(":common"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
 
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)

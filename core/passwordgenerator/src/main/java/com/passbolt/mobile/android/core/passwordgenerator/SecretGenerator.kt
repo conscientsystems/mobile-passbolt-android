@@ -25,22 +25,22 @@ package com.passbolt.mobile.android.core.passwordgenerator
 
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
 
 class SecretGenerator(
     private val passwordGenerator: PasswordGenerator,
     private val passphraseGenerator: PassphraseGenerator,
     private val entropyCalculator: EntropyCalculator,
 ) {
-    suspend fun generatePassword(settings: PasswordGeneratorSettingsModel): SecretGenerationResult {
+    suspend fun generatePassword(settings: PasswordGeneratorSettingsUiModel): SecretGenerationResult {
         val password = passwordGenerator.generate(settings)
         val entropy = entropyCalculator.getPasswordEntropy(password, Alphabets.getCodepointSetsForModel(settings))
 
         return returnResult(password, entropy)
     }
 
-    suspend fun generatePassphrase(settings: PassphraseGeneratorSettingsModel): SecretGenerationResult {
+    suspend fun generatePassphrase(settings: PassphraseGeneratorSettingsUiModel): SecretGenerationResult {
         val passphrase = passphraseGenerator.generate(settings)
         val entropy =
             entropyCalculator.getPassphraseEntropy(

@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     implementation(project(":localization"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":common"))
     implementation(project(":testtags"))
 

@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":accounts"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

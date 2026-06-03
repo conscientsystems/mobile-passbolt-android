@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":qrscan"))
     implementation(project(":passboltapi"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":dto"))
     implementation(project(":mappers"))
     implementation(project(":gopenpgp"))
