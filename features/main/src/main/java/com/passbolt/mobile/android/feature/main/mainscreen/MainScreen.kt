@@ -13,6 +13,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
@@ -42,6 +43,7 @@ fun MainScreen(
 ) {
     val state by mainViewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val tabStateHolder = rememberSaveableStateHolder()
 
     AuthenticationHandler()
 
@@ -81,9 +83,9 @@ fun MainScreen(
                         .consumeWindowInsets(innerPadding),
             ) {
                 when (state.selectedTab) {
-                    HOME -> HomeTabContent()
-                    OTP -> OtpNavigation()
-                    SETTINGS -> SettingsNavigation()
+                    HOME -> tabStateHolder.SaveableStateProvider(HOME.name) { HomeTabContent() }
+                    OTP -> tabStateHolder.SaveableStateProvider(OTP.name) { OtpNavigation() }
+                    SETTINGS -> tabStateHolder.SaveableStateProvider(SETTINGS.name) { SettingsNavigation() }
                 }
             }
         }
