@@ -62,6 +62,8 @@ sealed interface OtpIntent {
 
     data object CreateNote : OtpIntent
 
+    data object CreatePinCode : OtpIntent
+
     data object CloseCreateResourceMenu : OtpIntent
 
     // otp more menu

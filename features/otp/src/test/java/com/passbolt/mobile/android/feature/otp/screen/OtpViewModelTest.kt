@@ -52,6 +52,7 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResou
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenCreateResourceMenu
@@ -72,6 +73,7 @@ import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
 import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
+import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
@@ -311,6 +313,20 @@ class OtpViewModelTest : KoinTest {
                 val sideEffect = awaitItem()
                 assertIs<NavigateToCreateResourceForm>(sideEffect)
                 assertThat(sideEffect.leadingContentType).isEqualTo(PASSWORD)
+            }
+        }
+
+    @Test
+    fun `should navigate to create resource form when create pin code intent is received`() =
+        runTest {
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(CreatePinCode)
+
+                val sideEffect = awaitItem()
+                assertIs<NavigateToCreateResourceForm>(sideEffect)
+                assertThat(sideEffect.leadingContentType).isEqualTo(PIN_CODE)
             }
         }
 
