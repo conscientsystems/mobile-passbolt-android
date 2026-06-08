@@ -2,11 +2,20 @@ package com.passbolt.mobile.android.feature.otp.scanotp
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.CreateTotpManually
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.GoToSettings
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.GrantCameraPermission
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.Initialize
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.RejectCameraPermission
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpSideEffect
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpSideEffect.NavigateToAppSettings
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpSideEffect.RequestCameraPermission
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpSideEffect.SetManualCreationResultAndNavigateBack
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpSideEffect.SetResultAndNavigateBack
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpState.TooltipMessage
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpViewModel
 import com.passbolt.mobile.android.ui.OtpParseResult
+import com.passbolt.mobile.android.ui.OtpParseResult.UserResolvableError
 import com.passbolt.mobile.android.ui.OtpParseResult.UserResolvableError.ErrorType.MULTIPLE_BARCODES
 import com.passbolt.mobile.android.ui.OtpParseResult.UserResolvableError.ErrorType.NOT_A_OTP_QR
 import com.passbolt.mobile.android.ui.OtpParseResult.UserResolvableError.ErrorType.NO_BARCODES_IN_RANGE
@@ -61,7 +70,7 @@ class ScanOtpViewModelTest : KoinTest {
             whenever(cameraInformationProvider.isCameraAvailable()).thenReturn(false)
             val viewModel = get<ScanOtpViewModel>()
 
-            viewModel.onIntent(ScanOtpIntent.Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
+            viewModel.onIntent(Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
 
             viewModel.viewState.test {
                 assertThat(awaitItem().showCameraRequiredDialog).isTrue()
@@ -76,10 +85,32 @@ class ScanOtpViewModelTest : KoinTest {
             val viewModel = get<ScanOtpViewModel>()
 
             viewModel.sideEffect.test {
-                viewModel.onIntent(ScanOtpIntent.Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
+                viewModel.onIntent(Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
 
                 val sideEffect = awaitItem()
-                assertIs<ScanOtpSideEffect.RequestCameraPermission>(sideEffect)
+                assertIs<RequestCameraPermission>(sideEffect)
+            }
+        }
+
+    @Test
+    fun `granting camera permission after initialize should start qr scanning`() =
+        runTest {
+            whenever(cameraInformationProvider.isCameraAvailable()).thenReturn(true)
+            whenever(cameraInformationProvider.isCameraPermissionGranted()).thenReturn(false)
+            val viewModel = get<ScanOtpViewModel>()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
+                assertIs<RequestCameraPermission>(awaitItem())
+
+                whenever(cameraInformationProvider.isCameraPermissionGranted()).thenReturn(true)
+                viewModel.onIntent(GrantCameraPermission)
+
+                parseFlow.emit(mockTotpQr)
+
+                val sideEffect = awaitItem()
+                assertIs<SetResultAndNavigateBack>(sideEffect)
+                assertThat(sideEffect.totpQr).isEqualTo(mockTotpQr)
             }
         }
 
@@ -88,7 +119,7 @@ class ScanOtpViewModelTest : KoinTest {
         runTest {
             val viewModel = get<ScanOtpViewModel>()
 
-            viewModel.onIntent(ScanOtpIntent.RejectCameraPermission)
+            viewModel.onIntent(RejectCameraPermission)
 
             viewModel.viewState.test {
                 assertThat(awaitItem().showCameraPermissionRequiredDialog).isTrue()
@@ -101,9 +132,9 @@ class ScanOtpViewModelTest : KoinTest {
             val viewModel = get<ScanOtpViewModel>()
 
             viewModel.sideEffect.test {
-                viewModel.onIntent(ScanOtpIntent.GoToSettings)
+                viewModel.onIntent(GoToSettings)
 
-                assertIs<ScanOtpSideEffect.NavigateToAppSettings>(awaitItem())
+                assertIs<NavigateToAppSettings>(awaitItem())
             }
         }
 
@@ -113,9 +144,9 @@ class ScanOtpViewModelTest : KoinTest {
             val viewModel = get<ScanOtpViewModel>()
 
             viewModel.sideEffect.test {
-                viewModel.onIntent(ScanOtpIntent.CreateTotpManually)
+                viewModel.onIntent(CreateTotpManually)
 
-                assertIs<ScanOtpSideEffect.SetManualCreationResultAndNavigateBack>(awaitItem())
+                assertIs<SetManualCreationResultAndNavigateBack>(awaitItem())
             }
         }
 
@@ -126,24 +157,24 @@ class ScanOtpViewModelTest : KoinTest {
             whenever(cameraInformationProvider.isCameraPermissionGranted()).thenReturn(true)
             val viewModel = get<ScanOtpViewModel>()
 
-            viewModel.onIntent(ScanOtpIntent.Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
+            viewModel.onIntent(Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
             testDispatcher.scheduler.advanceUntilIdle()
 
-            parseFlow.emit(OtpParseResult.UserResolvableError(MULTIPLE_BARCODES))
+            parseFlow.emit(UserResolvableError(MULTIPLE_BARCODES))
             testDispatcher.scheduler.advanceUntilIdle()
 
             viewModel.viewState.test {
                 assertThat(awaitItem().tooltipMessage).isEqualTo(TooltipMessage.MULTIPLE_BARCODES)
             }
 
-            parseFlow.emit(OtpParseResult.UserResolvableError(NOT_A_OTP_QR))
+            parseFlow.emit(UserResolvableError(NOT_A_OTP_QR))
             testDispatcher.scheduler.advanceUntilIdle()
 
             viewModel.viewState.test {
                 assertThat(awaitItem().tooltipMessage).isEqualTo(TooltipMessage.NOT_A_OTP_QR)
             }
 
-            parseFlow.emit(OtpParseResult.UserResolvableError(NO_BARCODES_IN_RANGE))
+            parseFlow.emit(UserResolvableError(NO_BARCODES_IN_RANGE))
             testDispatcher.scheduler.advanceUntilIdle()
 
             viewModel.viewState.test {
@@ -161,14 +192,14 @@ class ScanOtpViewModelTest : KoinTest {
             val successfulResult = mockTotpQr
 
             viewModel.sideEffect.test {
-                viewModel.onIntent(ScanOtpIntent.Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
+                viewModel.onIntent(Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
                 testDispatcher.scheduler.advanceUntilIdle()
 
                 parseFlow.emit(successfulResult)
                 testDispatcher.scheduler.advanceUntilIdle()
 
                 val sideEffect = awaitItem()
-                assertIs<ScanOtpSideEffect.SetResultAndNavigateBack>(sideEffect)
+                assertIs<SetResultAndNavigateBack>(sideEffect)
                 assertThat(sideEffect.totpQr).isEqualTo(successfulResult)
             }
         }
@@ -183,7 +214,7 @@ class ScanOtpViewModelTest : KoinTest {
             val successfulResult = mockTotpQr
 
             viewModel.sideEffect.test {
-                viewModel.onIntent(ScanOtpIntent.Initialize(scanningFlow, ScanOtpMode.SCAN_WITH_SUCCESS_SCREEN))
+                viewModel.onIntent(Initialize(scanningFlow, ScanOtpMode.SCAN_WITH_SUCCESS_SCREEN))
                 testDispatcher.scheduler.advanceUntilIdle()
 
                 parseFlow.emit(successfulResult)
@@ -204,7 +235,7 @@ class ScanOtpViewModelTest : KoinTest {
 
             val errorMessage = "Exception occurred"
 
-            viewModel.onIntent(ScanOtpIntent.Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
+            viewModel.onIntent(Initialize(scanningFlow, ScanOtpMode.SCAN_FOR_RESULT))
             testDispatcher.scheduler.advanceUntilIdle()
 
             parseFlow.emit(OtpParseResult.Failure(RuntimeException(errorMessage)))
