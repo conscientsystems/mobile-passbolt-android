@@ -40,6 +40,7 @@ import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.NavigationActivity.AuthenticationSignIn
 import com.passbolt.mobile.android.core.navigation.compose.NavigationActivity.Start
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
+import com.passbolt.mobile.android.core.ui.dialogs.LeaveSetupAlertDialog
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.feature.authentication.mfa.MfaDialogState
@@ -49,7 +50,9 @@ import com.passbolt.mobile.android.feature.authentication.mfa.MfaResult.Succeede
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.AuthenticateWithDuo
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.ChooseOtherProvider
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.Close
+import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.ConfirmSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.DismissDuoAuth
+import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.DismissSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.DuoAuthFinished
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoSideEffect.CloseAndNavigateToStartup
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoSideEffect.NavigateToLogin
@@ -69,10 +72,11 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
 internal fun AuthWithDuoScreen(
     mfaState: MfaDialogState.Duo,
     onMfaResult: (MfaResult) -> Unit,
+    isSetupFlow: Boolean = false,
     appNavigator: AppNavigator = koinInject(),
     viewModel: AuthWithDuoViewModel =
         koinViewModel {
-            parametersOf(mfaState.authToken, mfaState.hasOtherProviders)
+            parametersOf(mfaState.authToken, mfaState.hasOtherProviders, isSetupFlow)
         },
 ) {
     val context = LocalContext.current
@@ -213,6 +217,12 @@ private fun AuthWithDuoScreen(
             onDismiss = { onIntent(DismissDuoAuth) },
         )
     }
+
+    LeaveSetupAlertDialog(
+        isVisible = state.showSetupLeaveConfirmationDialog,
+        onLeaveConfirm = { onIntent(ConfirmSetupLeave) },
+        onDismiss = { onIntent(DismissSetupLeave) },
+    )
 
     ProgressDialog(isVisible = state.showProgress)
 }
