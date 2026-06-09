@@ -1,4 +1,4 @@
-# Passbolt 3.1.0-52 Android app release notes
+# Passbolt 3.1.0-55 Android app release notes
 
 ## Added
 - MOB-3901: Remove orientation lock; Lock in runtime for screen size compact; Improved split screen behaviour
@@ -10,6 +10,8 @@
 ## Improved
 - MOB-4115: Use obfuscated font for hidden note (improves scaling)
 - MOB-4181: Autofill code improvements
+- MOB-4474: Add confirmation dialog on MFA setup cancel
+- MOB-4445: Stable paging refresh - improved resource list jump
 
 ## Fixed
 - MOB-4026: Update folder personal field logic to support a single current user group case
@@ -17,9 +19,12 @@
 - MOB-3896: Fix foreground service not stopped on time crash on some devices
 - MOB-4059: Fix overlapping MFA keyboard
 - MOB-4082: Reintroduce pwned check
+- MOB-4468: Fix restarting of QR code scanning after camera permissions disabled
+- MOB-4480: Fix listener on add PIN in TOTP tab
 
 ## Security
 - MOB-3135: Use Gradle lock files
+- Add docker images pinning
 
 ## Maintenance
 - MOB-3471: Upgrade to Gradle 9
