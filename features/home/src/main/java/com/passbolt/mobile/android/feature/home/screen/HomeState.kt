@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.feature.home.screen
 
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.feature.home.screen.data.HomeData
@@ -51,6 +52,7 @@ data class HomeState(
     val showFiltersBottomSheet: Boolean = false,
     val showFolderMoreMenuBottomSheet: Boolean = false,
     val isAutofillConflictDetected: Boolean = false,
+    val appContext: AppContext = AppContext.APP,
 ) {
     val showBackIcon: Boolean
         get() =

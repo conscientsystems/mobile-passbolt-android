@@ -29,7 +29,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.IntentCompat
 import androidx.navigation3.runtime.NavKey
-import com.passbolt.mobile.android.common.lifecycleawarelazy.lifecycleAwareLazy
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.PartiallyAuthenticated
@@ -41,6 +40,7 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationK
 import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationKey.ScanQrCodes
 import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationKey.TransferDetails
 import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationKey.Welcome
+import com.passbolt.mobile.android.core.ui.orientation.LockCompactScreenOrientation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.koinInject
@@ -56,7 +56,7 @@ class SetUpActivity :
     private val setupNavigatorScopeId = "setup_navigator_${UUID.randomUUID()}"
     private var currentBackStackItem: StateFlow<NavKey?> = MutableStateFlow(Welcome)
 
-    override val bundledAccountSetupData: AccountSetupDataModel? by lifecycleAwareLazy {
+    override val bundledAccountSetupData: AccountSetupDataModel? by lazy {
         IntentCompat.getParcelableExtra(
             intent,
             ActivityIntents.EXTRA_ACCOUNT_SETUP_DATA,
@@ -69,6 +69,7 @@ class SetUpActivity :
         enableEdgeToEdge()
 
         setContent {
+            LockCompactScreenOrientation()
             @OptIn(KoinExperimentalAPI::class)
             KoinScope(
                 scopeID = setupNavigatorScopeId,

@@ -30,6 +30,7 @@ import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccoun
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AccessLogs
@@ -115,7 +116,9 @@ class WelcomeViewModelTest : KoinTest {
                 debugLogFileCreationDateTime = null,
                 isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = false,
+                isAuthRequiredOnEveryEntry = true,
                 debugLogLastAppVersion = null,
+                apiFetchPageSize = 2000,
                 accessibilityPoliciesConsentGiven = true,
             )
     }
@@ -193,7 +196,9 @@ class WelcomeViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = true,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 

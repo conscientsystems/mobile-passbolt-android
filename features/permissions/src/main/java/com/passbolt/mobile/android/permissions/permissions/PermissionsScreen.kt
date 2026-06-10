@@ -37,12 +37,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
+import com.passbolt.mobile.android.core.fulldatarefresh.service.DataRefreshService
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.PermissionsNavigationKey.GroupPermissionDetails
 import com.passbolt.mobile.android.core.navigation.compose.keys.PermissionsNavigationKey.PermissionRecipients
@@ -67,6 +68,7 @@ import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.See
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.TrustNewMetadataKey
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.TrustedMetadataKeyDeleted
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.CloseWithShareSuccess
+import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.InitiateDataRefresh
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateBack
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToGroupPermissionDetails
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToHome
@@ -94,6 +96,8 @@ fun PermissionsScreen(
     val state = viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val errorColor = colorResource(CoreUiR.color.red)
+    val successColor = colorResource(CoreUiR.color.green)
 
     PermissionsScreen(
         state = state.value,
@@ -132,6 +136,7 @@ fun PermissionsScreen(
                 resultBus.sendResult(result = ShareCompleteResult(shared = true))
                 navigator.navigateBack()
             }
+            InitiateDataRefresh -> DataRefreshService.start(context)
             NavigateToHome -> navigator.popToRoot()
             ShowContentNotAvailable ->
                 Toast
@@ -142,7 +147,7 @@ fun PermissionsScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getErrorMessage(context, effect.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorColor,
                         ),
                     )
                 }
@@ -151,7 +156,7 @@ fun PermissionsScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSuccessMessage(context, effect.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.green)),
+                            backgroundColor = successColor,
                         ),
                     )
                 }

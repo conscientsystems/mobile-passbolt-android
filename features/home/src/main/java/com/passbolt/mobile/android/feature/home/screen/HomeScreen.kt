@@ -39,9 +39,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -83,6 +83,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyResourceUs
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateFolder
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePassword
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateTotp
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.DeleteResource
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.EditResource
@@ -139,6 +140,8 @@ internal fun HomeScreen(
     val state by viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val errorColor = colorResource(CoreUiR.color.red)
+    val successColor = colorResource(CoreUiR.color.green)
 
     AutofillConflictSnackbarEffect(
         snackbarHostState = snackbarHostState,
@@ -156,6 +159,7 @@ internal fun HomeScreen(
             Initialize(
                 homeView = homeView,
                 showSuggestedModel = showSuggestedModel,
+                appContext = resourceHandlingStrategy.appContext,
             ),
         )
     }
@@ -183,7 +187,7 @@ internal fun HomeScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getErrorMessage(context, it.type, it.message),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorColor,
                         ),
                     )
                 }
@@ -192,7 +196,7 @@ internal fun HomeScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSuccessMessage(context, it.type, it.message),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.green)),
+                            backgroundColor = successColor,
                         ),
                     )
                 }
@@ -304,9 +308,11 @@ private fun HomeScreen(
     if (state.showCreateResourceBottomSheet) {
         CreateResourceMenuBottomSheet(
             homeDisplayViewModel = state.homeView,
+            appContext = state.appContext,
             onCreatePassword = { onIntent(CreatePassword) },
             onCreateTotp = { onIntent(CreateTotp) },
             onCreateNote = { onIntent(CreateNote) },
+            onCreatePinCode = { onIntent(CreatePinCode) },
             onCreateFolder = { onIntent(CreateFolder) },
             onDismissRequest = { onIntent(CloseCreateResourceMenu) },
         )

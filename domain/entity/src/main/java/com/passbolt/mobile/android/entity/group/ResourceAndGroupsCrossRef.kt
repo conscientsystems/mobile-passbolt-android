@@ -3,11 +3,13 @@ package com.passbolt.mobile.android.entity.group
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
+import androidx.room.Index
 import com.passbolt.mobile.android.entity.resource.Permission
 import com.passbolt.mobile.android.entity.resource.Resource
 
 @Entity(
     primaryKeys = ["resourceId", "groupId"],
+    indices = [Index(value = ["groupId"])],
     foreignKeys = [
         ForeignKey(
             entity = Resource::class,

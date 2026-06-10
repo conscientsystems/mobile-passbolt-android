@@ -101,6 +101,7 @@ class CreateResourceMenuViewModelTest : KoinTest {
                             isTotpEnabled = true,
                             isFolderEnabled = true,
                             isNoteEnabled = true,
+                            isPinCodeEnabled = true,
                         ),
                 )
         }
@@ -141,6 +142,7 @@ class CreateResourceMenuViewModelTest : KoinTest {
                                 isTotpEnabled = false,
                                 isFolderEnabled = false,
                                 isNoteEnabled = false,
+                                isPinCodeEnabled = false,
                             ),
                     )
             }
@@ -172,6 +174,7 @@ class CreateResourceMenuViewModelTest : KoinTest {
                                 isTotpEnabled = false,
                                 isFolderEnabled = false,
                                 isNoteEnabled = true,
+                                isPinCodeEnabled = false,
                             ),
                     )
             }

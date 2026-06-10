@@ -31,10 +31,8 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 internal data class DefaultFilterUiModel(
     val filter: DefaultFilterModel,
-    @StringRes
-    val nameRes: Int,
-    @DrawableRes
-    val iconRes: Int,
+    @param:StringRes val nameRes: Int,
+    @param:DrawableRes val iconRes: Int,
 )
 
 @Suppress("LongMethod")

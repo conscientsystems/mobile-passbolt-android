@@ -54,6 +54,8 @@ sealed interface PermissionsSideEffect {
 
     data object CloseWithShareSuccess : PermissionsSideEffect
 
+    data object InitiateDataRefresh : PermissionsSideEffect
+
     data object NavigateToHome : PermissionsSideEffect
 
     data class ShowErrorSnackbar(

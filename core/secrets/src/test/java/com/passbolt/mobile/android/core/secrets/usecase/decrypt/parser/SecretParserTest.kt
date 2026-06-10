@@ -29,12 +29,13 @@ import com.passbolt.mobile.android.jsonmodel.delegates.SecretCustomFieldType.NUM
 import com.passbolt.mobile.android.jsonmodel.delegates.SecretCustomFieldType.PASSWORD
 import com.passbolt.mobile.android.jsonmodel.delegates.SecretCustomFieldType.TEXT
 import com.passbolt.mobile.android.jsonmodel.delegates.SecretCustomFieldType.URI
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordDescriptionTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordString
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5CustomFields
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.ui.DecryptedSecretOrError
 import kotlinx.coroutines.test.runTest
 import net.jimblackler.jsonschemafriend.SchemaStore
@@ -47,7 +48,6 @@ import org.koin.test.KoinTestRule
 import org.koin.test.inject
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
-import java.util.UUID
 
 class SecretParserTest : KoinTest {
     @get:Rule
@@ -70,7 +70,7 @@ class SecretParserTest : KoinTest {
                 SchemaStore().loadSchema(
                     this::class.java.getResource("/password-and-description-secret-schema.json"),
                 )
-            on { schemaForSecret(PasswordDescriptionTotp.slug) } doReturn
+            on { schemaForSecret(ContentType.PasswordDescriptionTotp.slug) } doReturn
                 SchemaStore().loadSchema(
                     this::class.java.getResource("/password-description-totp-secret-schema.json"),
                 )
@@ -86,6 +86,10 @@ class SecretParserTest : KoinTest {
                 SchemaStore().loadSchema(
                     this::class.java.getResource("/v5-note-secret-schema.json"),
                 )
+            on { schemaForSecret(V5PinCodeStandalone.slug) } doReturn
+                SchemaStore().loadSchema(
+                    this::class.java.getResource("/v5-pin-code-secret-schema.json"),
+                )
         }
     }
 
@@ -93,13 +97,8 @@ class SecretParserTest : KoinTest {
     fun `password should parse correct for password string secret`() =
         runTest {
             val secret = "\\\"!@#_$%^&*()"
-            mockIdToSlugMappingProvider.stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(resourceTypeId to PasswordString.slug),
-                )
-            }
 
-            val secretResult = secretParser.parseSecret(resourceTypeId.toString(), secret)
+            val secretResult = secretParser.parseSecret(PasswordString.slug, secret)
 
             assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
             assertThat((secretResult as DecryptedSecretOrError.DecryptedSecret).secret.password).isEqualTo(secret)
@@ -115,13 +114,8 @@ class SecretParserTest : KoinTest {
                     "description": "desc"
                 }
                 """.trimIndent()
-            mockIdToSlugMappingProvider.stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(resourceTypeId to PasswordAndDescription.slug),
-                )
-            }
 
-            val secretResult = secretParser.parseSecret(resourceTypeId.toString(), secret)
+            val secretResult = secretParser.parseSecret(PasswordAndDescription.slug, secret)
 
             assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
             val parsedSecret = (secretResult as DecryptedSecretOrError.DecryptedSecret).secret
@@ -143,13 +137,8 @@ class SecretParserTest : KoinTest {
                     }
                 }
                 """.trimIndent()
-            mockIdToSlugMappingProvider.stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(resourceTypeId to Totp.slug),
-                )
-            }
 
-            val secretResult = secretParser.parseSecret(resourceTypeId.toString(), secret)
+            val secretResult = secretParser.parseSecret(Totp.slug, secret)
 
             assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
             val parsedSecret = (secretResult as DecryptedSecretOrError.DecryptedSecret).secret
@@ -175,13 +164,8 @@ class SecretParserTest : KoinTest {
                     }
                 }
                 """.trimIndent()
-            mockIdToSlugMappingProvider.stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(resourceTypeId to PasswordAndDescription.slug),
-                )
-            }
 
-            val parsedSecretResult = secretParser.parseSecret(resourceTypeId.toString(), secret)
+            val parsedSecretResult = secretParser.parseSecret(PasswordAndDescription.slug, secret)
 
             assertThat(parsedSecretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
             val parsedSecret = (parsedSecretResult as DecryptedSecretOrError.DecryptedSecret).secret
@@ -229,13 +213,8 @@ class SecretParserTest : KoinTest {
                     ]
                 }
                 """.trimIndent()
-            mockIdToSlugMappingProvider.stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(resourceTypeId to V5CustomFields.slug),
-                )
-            }
 
-            val secretResult = secretParser.parseSecret(resourceTypeId.toString(), secret)
+            val secretResult = secretParser.parseSecret(V5CustomFields.slug, secret)
             assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
             val parsedSecret = (secretResult as DecryptedSecretOrError.DecryptedSecret).secret
 
@@ -268,20 +247,31 @@ class SecretParserTest : KoinTest {
                     "description": "desc"
                 }
                 """.trimIndent()
-            mockIdToSlugMappingProvider.stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(resourceTypeId to V5Note.slug),
-                )
-            }
 
-            val secretResult = secretParser.parseSecret(resourceTypeId.toString(), secret)
+            val secretResult = secretParser.parseSecret(V5Note.slug, secret)
 
             assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
             val parsedSecret = (secretResult as DecryptedSecretOrError.DecryptedSecret).secret
             assertThat(parsedSecret.description).isEqualTo("desc")
         }
 
-    private companion object {
-        private val resourceTypeId = UUID.randomUUID()
-    }
+    @Test
+    fun `pin code should parse correct for v5 pin code secret`() =
+        runTest {
+            val secret =
+                """
+                {
+                    "object_type": "PASSBOLT_SECRET_DATA",
+                    "pin_code": "12345",
+                    "description": "desc"
+                }
+                """.trimIndent()
+
+            val secretResult = secretParser.parseSecret(V5PinCodeStandalone.slug, secret)
+
+            assertThat(secretResult).isInstanceOf(DecryptedSecretOrError.DecryptedSecret::class.java)
+            val parsedSecret = (secretResult as DecryptedSecretOrError.DecryptedSecret).secret
+            assertThat(parsedSecret.pinCode).isEqualTo("12345")
+            assertThat(parsedSecret.description).isEqualTo("desc")
+        }
 }

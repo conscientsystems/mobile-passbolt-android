@@ -79,6 +79,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.stub
+import java.time.ZonedDateTime
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -308,6 +309,7 @@ class FolderDetailsViewModelTest : KoinTest {
                 name = "Test Folder",
                 isShared = true,
                 permission = ResourcePermission.OWNER,
+                modified = ZonedDateTime.now(),
             )
         }
 
@@ -319,6 +321,7 @@ class FolderDetailsViewModelTest : KoinTest {
                     name = "Root",
                     isShared = false,
                     permission = ResourcePermission.OWNER,
+                    modified = ZonedDateTime.now(),
                 ),
                 FolderModel(
                     folderId = "parent-folder-id",
@@ -326,6 +329,7 @@ class FolderDetailsViewModelTest : KoinTest {
                     name = "Parent Folder",
                     isShared = true,
                     permission = ResourcePermission.UPDATE,
+                    modified = ZonedDateTime.now(),
                 ),
             )
         }

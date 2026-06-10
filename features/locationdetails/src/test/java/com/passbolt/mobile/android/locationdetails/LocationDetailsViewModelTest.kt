@@ -359,6 +359,7 @@ class LocationDetailsViewModelTest : KoinTest {
             ResourceModel(
                 resourceId = "resource-id-123",
                 resourceTypeId = "resource-type-id",
+                slug = "password-and-description",
                 folderId = "parent-folder-id",
                 permission = ResourcePermission.READ,
                 favouriteId = null,
@@ -387,6 +388,7 @@ class LocationDetailsViewModelTest : KoinTest {
                 name = "Test Folder",
                 isShared = true,
                 permission = ResourcePermission.OWNER,
+                modified = ZonedDateTime.now(),
             )
         }
 
@@ -398,6 +400,7 @@ class LocationDetailsViewModelTest : KoinTest {
                     name = "Root",
                     isShared = false,
                     permission = ResourcePermission.OWNER,
+                    modified = ZonedDateTime.now(),
                 ),
                 FolderModel(
                     folderId = "parent-folder-id",
@@ -405,6 +408,7 @@ class LocationDetailsViewModelTest : KoinTest {
                     name = "Parent Folder",
                     isShared = true,
                     permission = ResourcePermission.UPDATE,
+                    modified = ZonedDateTime.now(),
                 ),
             )
         }

@@ -1,12 +1,15 @@
 package com.passbolt.mobile.android.core.commonfolders.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.RemoveLocalFoldersWithUpdateStateUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.SetLocalFoldersUpdateStateUseCase
+import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpdateLocalFoldersIsSharedUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpsertLocalFoldersUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.dto.response.Pagination
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
@@ -33,6 +36,7 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.time.ZonedDateTime
 import kotlin.test.assertIs
 
 @ExperimentalCoroutinesApi
@@ -52,7 +56,10 @@ class FoldersInteractorTest : KoinTest {
                     single { mock<RemoveLocalFoldersWithUpdateStateUseCase>() }
                     single { mock<RemoveLocalFolderPermissionsUseCase>() }
                     single { mock<AddLocalFolderPermissionsUseCase>() }
+                    single { mock<UpdateLocalFoldersIsSharedUseCase>() }
+                    single { mock<GetAccountDataUseCase>() }
                     single { mock<GetSelectedAccountUseCase>() }
+                    single { mock<GetGlobalPreferencesUseCase>() }
                     singleOf(::FoldersInteractor)
                 },
             )
@@ -62,6 +69,32 @@ class FoldersInteractorTest : KoinTest {
     fun setUp() {
         whenever(get<GetSelectedAccountUseCase>().execute(Unit))
             .doReturn(GetSelectedAccountUseCase.Output(SELECTED_ACCOUNT_ID))
+        whenever(get<GetAccountDataUseCase>().execute(any()))
+            .doReturn(
+                GetAccountDataUseCase.Output(
+                    firstName = null,
+                    lastName = null,
+                    email = null,
+                    avatarUrl = null,
+                    url = "",
+                    serverId = SERVER_USER_ID,
+                    label = null,
+                    role = null,
+                ),
+            )
+        whenever(get<GetGlobalPreferencesUseCase>().execute(Unit))
+            .doReturn(
+                GetGlobalPreferencesUseCase.Output(
+                    areDebugLogsEnabled = false,
+                    debugLogFileCreationDateTime = null,
+                    debugLogLastAppVersion = null,
+                    isDeveloperModeEnabled = false,
+                    isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = false,
+                    apiFetchPageSize = FOLDERS_PAGE_SIZE,
+                    accessibilityPoliciesConsentGiven = true,
+                ),
+            )
     }
 
     @Test
@@ -101,7 +134,7 @@ class FoldersInteractorTest : KoinTest {
     fun `should fetch all pages when multiple pages are available`() =
         runTest {
             stubFoldersAvailable(true)
-            val totalCount = 4500 // requires 3 pages with 2000 page size
+            val totalCount = FOLDERS_PAGE_SIZE * 2 + 500 // requires 3 pages
             stubFoldersPaginatedSuccess(page = 1, folders = listOf(FOLDER_WITH_ATTRIBUTES), totalCount = totalCount)
             stubFoldersPaginatedSuccess(page = 2, folders = listOf(FOLDER_WITH_ATTRIBUTES), totalCount = totalCount)
             stubFoldersPaginatedSuccess(page = 3, folders = listOf(FOLDER_WITH_ATTRIBUTES), totalCount = totalCount)
@@ -132,7 +165,7 @@ class FoldersInteractorTest : KoinTest {
     fun `should return failure when subsequent page fetch fails`() =
         runTest {
             stubFoldersAvailable(true)
-            val totalCount = 4000 // 2 pages
+            val totalCount = FOLDERS_PAGE_SIZE * 2 // 2 pages
             stubFoldersPaginatedSuccess(page = 1, folders = listOf(FOLDER_WITH_ATTRIBUTES), totalCount = totalCount)
             stubFoldersPaginatedFailure(page = 2)
 
@@ -231,6 +264,7 @@ class FoldersInteractorTest : KoinTest {
 
     private companion object {
         private const val SELECTED_ACCOUNT_ID = "selectedAccountId"
+        private const val SERVER_USER_ID = "serverUserId"
         private const val FOLDERS_PAGE_SIZE = 2_000
 
         private val FOLDER_WITH_ATTRIBUTES =
@@ -242,6 +276,7 @@ class FoldersInteractorTest : KoinTest {
                         name = "Test Folder",
                         isShared = false,
                         permission = ResourcePermission.READ,
+                        modified = ZonedDateTime.now(),
                     ),
                 folderPermissions = emptyList(),
             )

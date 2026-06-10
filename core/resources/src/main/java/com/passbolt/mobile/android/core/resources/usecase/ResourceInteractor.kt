@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.GetResourcesPaginatedUseCase.Output.Failure
 import com.passbolt.mobile.android.core.resources.usecase.GetResourcesPaginatedUseCase.Output.Success
 import com.passbolt.mobile.android.core.resources.usecase.db.AddLocalResourcePermissionsUseCase
@@ -52,10 +53,13 @@ class ResourceInteractor(
     private val addLocalResourcePermissionsUseCase: AddLocalResourcePermissionsUseCase,
     private val setLocalResourcesUpdateStateUseCase: SetLocalResourcesUpdateStateUseCase,
     private val removeLocalResourcesWithUpdateStateUseCase: RemoveLocalResourcesWithUpdateStateUseCase,
+    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
 ) : SelectedAccountUseCase {
     @Suppress("ReturnCount")
     suspend fun fetchAndSaveResources(): Output {
         try {
+            val pageSize = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
+
             // set all resource update states to pending
             setLocalResourcesUpdateStateUseCase.execute(
                 SetLocalResourcesUpdateStateUseCase.Input(
@@ -71,7 +75,7 @@ class ResourceInteractor(
             // get first page
             val firstPageResult =
                 getResourcesPaginatedUseCase.execute(
-                    GetResourcesPaginatedUseCase.Input(page = FIRST_PAGE, limit = RESOURCES_PAGE_SIZE),
+                    GetResourcesPaginatedUseCase.Input(page = FIRST_PAGE, limit = pageSize),
                 )
 
             when (firstPageResult) {
@@ -81,13 +85,13 @@ class ResourceInteractor(
                     processResources(firstPageResult.resources)
 
                     // process remaining pages
-                    val totalPages = ceil(firstPageResult.pagination.count.toDouble() / RESOURCES_PAGE_SIZE).toInt()
+                    val totalPages = ceil(firstPageResult.pagination.count.toDouble() / pageSize).toInt()
 
                     for (page in SECOND_PAGE..totalPages) {
                         when (
                             val pageResult =
                                 getResourcesPaginatedUseCase.execute(
-                                    GetResourcesPaginatedUseCase.Input(page = page, limit = RESOURCES_PAGE_SIZE),
+                                    GetResourcesPaginatedUseCase.Input(page = page, limit = pageSize),
                                 )
                         ) {
                             is Failure<*> -> return Output.Failure(pageResult.authenticationState)
@@ -139,7 +143,6 @@ class ResourceInteractor(
     }
 
     private companion object {
-        private const val RESOURCES_PAGE_SIZE = 2_000
         private const val FIRST_PAGE = 1
         private const val SECOND_PAGE = 2
     }

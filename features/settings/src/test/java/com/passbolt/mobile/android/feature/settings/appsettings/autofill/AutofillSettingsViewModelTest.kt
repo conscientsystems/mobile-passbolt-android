@@ -27,6 +27,7 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.DISABLED
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.NOT_SUPPORTED
+import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAccessibilityPoliciesConsent
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAutofillEnabled
@@ -217,9 +218,11 @@ class AutofillSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    debugLogLastAppVersion = null,
                     isDeveloperModeEnabled = false,
-                    isHideRootDialogEnabled = false,
+                    isHideRootDialogEnabled = true,
+                    isAuthRequiredOnEveryEntry = true,
+                    debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -250,9 +253,11 @@ class AutofillSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
+                    isDeveloperModeEnabled = true,
+                    isHideRootDialogEnabled = true,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    isDeveloperModeEnabled = false,
-                    isHideRootDialogEnabled = false,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = false,
                 )
 

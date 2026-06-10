@@ -4,17 +4,15 @@ import com.passbolt.mobile.android.core.autofill.accessibility.AccessibilityComm
 
 class ReturnAccessibilityDataset(
     private val autofillCallback: AutofillCallback,
+    private val accessibilityCommunicator: AccessibilityCommunicator,
 ) : ReturnAutofillDatasetStrategy {
-    override fun returnDataset(
-        username: String,
-        password: String,
-        uri: String?,
-    ) {
-        AccessibilityCommunicator.lastCredentials =
-            AccessibilityCommunicator.Credentials(
-                username,
-                password,
-                uri,
+    override fun returnDataset(payload: AutofillPayload) {
+        accessibilityCommunicator.lastFill =
+            AccessibilityCommunicator.LastFill(
+                username = payload.username,
+                password = payload.password,
+                totpCode = payload.totpCode,
+                uri = payload.uri,
             )
         autofillCallback.finishAutofill()
     }

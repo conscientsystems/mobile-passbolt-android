@@ -24,9 +24,13 @@
 package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings
 
 internal sealed interface ExpertSettingsIntent {
-    object GoBack : ExpertSettingsIntent
+    data object GoBack : ExpertSettingsIntent
+
+    data object ToggleAuthRequiredOnEveryEntry : ExpertSettingsIntent
 
     data object ToggleDeveloperMode : ExpertSettingsIntent
 
     data object ToggleHideRootWarning : ExpertSettingsIntent
+
+    data object GoToPageSize : ExpertSettingsIntent
 }

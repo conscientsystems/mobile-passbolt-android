@@ -11,9 +11,12 @@ import com.passbolt.mobile.android.core.idlingresource.CreateResourceIdlingResou
 import com.passbolt.mobile.android.core.idlingresource.UpdateResourceIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.passwordgenerator.PinCodeGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
+import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractorFactory
 import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
@@ -61,6 +64,7 @@ import java.util.EnumSet
 
 internal val mockGetPasswordPoliciesUseCase = mock<GetPasswordPoliciesUseCase>()
 internal val mockSecretGenerator = mock<SecretGenerator>()
+internal val mockPinCodeGenerator = mock<PinCodeGenerator>()
 internal val mockEntropyCalculator = mock<EntropyCalculator>()
 internal val mockGetDefaultCreateContentTypeUseCase = mock<GetDefaultCreateContentTypeUseCase>()
 internal val mockGetEditContentTypeUseCase = mock<GetEditContentTypeUseCase>()
@@ -69,6 +73,8 @@ internal val mockMetadataPrivateKeysHelperInteractor = mock<MetadataPrivateKeysH
 internal val mockSecretPropertiesActionsInteractorSecretPropertiesActionsInteractorFactory =
     mock<SecretPropertiesActionsInteractorFactory>()
 internal val mockResourceUpdateActionsInteractorFactory = mock<ResourceUpdateActionsInteractorFactory>()
+internal val mockResourceCreateActionsInteractor = mock<ResourceCreateActionsInteractor>()
+internal val mockCheckPasswordPropertiesUseCase = mock<CheckPasswordPropertiesUseCase>()
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal val testResourceFormModule =
@@ -86,6 +92,7 @@ internal val testResourceFormModule =
         single { mockGetLocalResourceUseCase }
         single<SecretPropertiesActionsInteractorFactory> { mockSecretPropertiesActionsInteractorSecretPropertiesActionsInteractorFactory }
         single<ResourceUpdateActionsInteractorFactory> { mockResourceUpdateActionsInteractorFactory }
+        single<ResourceCreateActionsInteractor> { mockResourceCreateActionsInteractor }
         single {
             mapOf(
                 DefaultValue.NAME to "no name",
@@ -97,6 +104,7 @@ internal val testResourceFormModule =
                 mode = params.get(),
                 getPasswordPoliciesUseCase = mockGetPasswordPoliciesUseCase,
                 secretGenerator = mockSecretGenerator,
+                pinCodeGenerator = mockPinCodeGenerator,
                 entropyCalculator = mockEntropyCalculator,
                 metadataPrivateKeysHelperInteractor = mockMetadataPrivateKeysHelperInteractor,
                 getLocalResourceUseCase = get(),
@@ -107,6 +115,7 @@ internal val testResourceFormModule =
                 createResourceIdlingResource = get(),
                 updateResourceIdlingResource = get(),
                 resourceUpdateActionsInteractorFactory = get(),
+                checkPasswordPropertiesUseCase = mockCheckPasswordPropertiesUseCase,
             )
         }
 

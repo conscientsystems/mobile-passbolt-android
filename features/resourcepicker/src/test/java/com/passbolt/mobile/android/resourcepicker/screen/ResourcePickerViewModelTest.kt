@@ -37,7 +37,6 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
@@ -112,7 +111,6 @@ class ResourcePickerViewModelTest : KoinTest {
                     singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                     singleOf(::DataRefreshTrackingFlow)
                     single { mock<ResourcePickerDataProvider>() }
-                    single { mock<GetResourceTypeIdToSlugMappingUseCase>() }
                     single(named(JSON_MODEL_GSON)) { GsonBuilder().serializeNulls().create() }
                     single {
                         Configuration
@@ -146,17 +144,6 @@ class ResourcePickerViewModelTest : KoinTest {
                     anyOrNull(),
                 )
             }.doReturn(ResourcePickerData())
-        }
-
-        get<GetResourceTypeIdToSlugMappingUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(
-                GetResourceTypeIdToSlugMappingUseCase.Output(
-                    idToSlugMapping =
-                        mapOf(
-                            testResourceTypeId to ContentType.PasswordAndDescription.slug,
-                        ),
-                ),
-            )
         }
     }
 
@@ -279,17 +266,13 @@ class ResourcePickerViewModelTest : KoinTest {
     @Test
     fun `should show confirmation dialog for TOTP link when apply clicked`() =
         runTest {
-            val resource = mockResourcePickerListItem("id1", "Resource 1", SELECTABLE)
-            get<GetResourceTypeIdToSlugMappingUseCase>().stub {
-                onBlocking { execute(any()) }.doReturn(
-                    GetResourceTypeIdToSlugMappingUseCase.Output(
-                        idToSlugMapping =
-                            mapOf(
-                                testResourceTypeId to ContentType.PasswordAndDescription.slug,
-                            ),
-                    ),
+            val resource =
+                mockResourcePickerListItem(
+                    "id1",
+                    "Resource 1",
+                    SELECTABLE,
+                    slug = ContentType.PasswordAndDescription.slug,
                 )
-            }
 
             viewModel = get()
             viewModel.onIntent(ResourcePicked(resource))
@@ -307,17 +290,13 @@ class ResourcePickerViewModelTest : KoinTest {
     @Test
     fun `should show confirmation dialog for TOTP replace when apply clicked`() =
         runTest {
-            val resource = mockResourcePickerListItem("id1", "Resource 1", SELECTABLE)
-            get<GetResourceTypeIdToSlugMappingUseCase>().stub {
-                onBlocking { execute(any()) }.doReturn(
-                    GetResourceTypeIdToSlugMappingUseCase.Output(
-                        idToSlugMapping =
-                            mapOf(
-                                testResourceTypeId to ContentType.PasswordDescriptionTotp.slug,
-                            ),
-                    ),
+            val resource =
+                mockResourcePickerListItem(
+                    "id1",
+                    "Resource 1",
+                    SELECTABLE,
+                    slug = ContentType.PasswordDescriptionTotp.slug,
                 )
-            }
 
             viewModel = get()
             viewModel.onIntent(ResourcePicked(resource))
@@ -464,17 +443,13 @@ class ResourcePickerViewModelTest : KoinTest {
     @Test
     fun `should handle V5Default resource type for TOTP link`() =
         runTest {
-            val resource = mockResourcePickerListItem("id1", "Resource 1", SELECTABLE)
-            get<GetResourceTypeIdToSlugMappingUseCase>().stub {
-                onBlocking { execute(any()) }.doReturn(
-                    GetResourceTypeIdToSlugMappingUseCase.Output(
-                        idToSlugMapping =
-                            mapOf(
-                                testResourceTypeId to ContentType.V5Default.slug,
-                            ),
-                    ),
+            val resource =
+                mockResourcePickerListItem(
+                    "id1",
+                    "Resource 1",
+                    SELECTABLE,
+                    slug = ContentType.V5Default.slug,
                 )
-            }
 
             viewModel = get()
             viewModel.onIntent(ResourcePicked(resource))
@@ -494,17 +469,13 @@ class ResourcePickerViewModelTest : KoinTest {
     @Test
     fun `should handle V5DefaultWithTotp resource type for TOTP replace`() =
         runTest {
-            val resource = mockResourcePickerListItem("id1", "Resource 1", SELECTABLE)
-            get<GetResourceTypeIdToSlugMappingUseCase>().stub {
-                onBlocking { execute(any()) }.doReturn(
-                    GetResourceTypeIdToSlugMappingUseCase.Output(
-                        idToSlugMapping =
-                            mapOf(
-                                testResourceTypeId to ContentType.V5DefaultWithTotp.slug,
-                            ),
-                    ),
+            val resource =
+                mockResourcePickerListItem(
+                    "id1",
+                    "Resource 1",
+                    SELECTABLE,
+                    slug = ContentType.V5DefaultWithTotp.slug,
                 )
-            }
 
             viewModel = get()
             viewModel.onIntent(ResourcePicked(resource))
@@ -533,8 +504,9 @@ class ResourcePickerViewModelTest : KoinTest {
         id: String,
         name: String,
         selection: ResourcePickerListItem.Selection,
+        slug: String = ContentType.PasswordAndDescription.slug,
     ) = ResourcePickerListItem(
-        resourceModel = mockResourceModel(id, name),
+        resourceModel = mockResourceModel(id, name, slug),
         selection = selection,
         isSelected = false,
     )
@@ -542,9 +514,11 @@ class ResourcePickerViewModelTest : KoinTest {
     private fun mockResourceModel(
         id: String,
         name: String,
+        slug: String = ContentType.PasswordAndDescription.slug,
     ) = ResourceModel(
         resourceId = id,
         resourceTypeId = testResourceTypeIdString,
+        slug = slug,
         folderId = "folderId",
         permission = ResourcePermission.OWNER,
         favouriteId = null,

@@ -119,7 +119,7 @@ class TotpFormViewModelTest : KoinTest {
                 val sideEffect = awaitItem()
                 assertIs<ApplyAndGoBack>(sideEffect)
                 assertThat(sideEffect.totpUiModel!!.secret).isEqualTo(changedSecret)
-                assertThat(sideEffect.totpUiModel!!.issuer).isEqualTo(changedIssuer)
+                assertThat(sideEffect.totpUiModel.issuer).isEqualTo(changedIssuer)
             }
         }
 
@@ -145,8 +145,8 @@ class TotpFormViewModelTest : KoinTest {
                 val sideEffect = awaitItem()
                 assertIs<ApplyAndGoBack>(sideEffect)
                 assertThat(sideEffect.totpUiModel!!.expiry).isEqualTo(changedExpiry)
-                assertThat(sideEffect.totpUiModel!!.length).isEqualTo(changedLength)
-                assertThat(sideEffect.totpUiModel!!.algorithm).isEqualTo(changedAlgorithm)
+                assertThat(sideEffect.totpUiModel.length).isEqualTo(changedLength)
+                assertThat(sideEffect.totpUiModel.algorithm).isEqualTo(changedAlgorithm)
             }
         }
 
@@ -171,10 +171,10 @@ class TotpFormViewModelTest : KoinTest {
                 val sideEffect = awaitItem()
                 assertIs<ApplyAndGoBack>(sideEffect)
                 assertThat(sideEffect.totpUiModel!!.secret).isEqualTo(scannedTotp.secret)
-                assertThat(sideEffect.totpUiModel!!.issuer).isEqualTo(scannedTotp.issuer)
-                assertThat(sideEffect.totpUiModel!!.algorithm).isEqualTo(scannedTotp.algorithm.name)
-                assertThat(sideEffect.totpUiModel!!.length).isEqualTo(scannedTotp.digits.toString())
-                assertThat(sideEffect.totpUiModel!!.expiry).isEqualTo(scannedTotp.period.toString())
+                assertThat(sideEffect.totpUiModel.issuer).isEqualTo(scannedTotp.issuer)
+                assertThat(sideEffect.totpUiModel.algorithm).isEqualTo(scannedTotp.algorithm.name)
+                assertThat(sideEffect.totpUiModel.length).isEqualTo(scannedTotp.digits.toString())
+                assertThat(sideEffect.totpUiModel.expiry).isEqualTo(scannedTotp.period.toString())
             }
         }
 

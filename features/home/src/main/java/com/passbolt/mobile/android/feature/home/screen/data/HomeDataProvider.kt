@@ -72,6 +72,7 @@ class HomeDataProvider(
         searchQuery: String?,
         homeView: HomeDisplayViewModel,
         showSuggestedModel: ShowSuggestedModel,
+        slugs: Set<String> = homeSlugs,
     ): HomeData =
         when (homeView) {
             AllItems,
@@ -80,11 +81,11 @@ class HomeDataProvider(
             OwnedByMe,
             RecentlyModified,
             SharedWithMe,
-            -> getResourcesHomeData(searchQuery, homeView, showSuggestedModel)
+            -> getResourcesHomeData(searchQuery, homeView, showSuggestedModel, slugs)
 
-            is Tags -> getTagsHomeData(searchQuery, homeView, showSuggestedModel)
-            is Groups -> getGroupsHomeData(searchQuery, homeView, showSuggestedModel)
-            is Folders -> getFoldersHomeData(searchQuery, homeView, showSuggestedModel)
+            is Tags -> getTagsHomeData(searchQuery, homeView, showSuggestedModel, slugs)
+            is Groups -> getGroupsHomeData(searchQuery, homeView, showSuggestedModel, slugs)
+            is Folders -> getFoldersHomeData(searchQuery, homeView, showSuggestedModel, slugs)
             NotLoaded -> HomeData()
         }
 
@@ -92,6 +93,7 @@ class HomeDataProvider(
         searchQuery: String?,
         foldersView: Folders,
         showSuggestedModel: ShowSuggestedModel,
+        slugs: Set<String>,
     ): HomeData {
         if (getRbacRulesUseCase.execute(Unit).rbacModel.foldersUseRule != ALLOW) {
             return HomeData()
@@ -101,8 +103,9 @@ class HomeDataProvider(
             getLocalResourcesAndFoldersPaginatedUseCase.execute(
                 GetLocalResourcesAndFoldersPaginatedUseCase.Input(
                     foldersView.activeFolder,
-                    homeSlugs,
+                    slugs,
                     searchQuery,
+                    enablePlaceholders = true,
                 ),
             ) as GetLocalResourcesAndFoldersPaginatedUseCase.Output.Success
 
@@ -131,7 +134,7 @@ class HomeDataProvider(
                         GetLocalSubFolderResourcesFilteredPaginatedUseCase.Input(
                             allSubFolders.map { it.folderId },
                             searchQuery,
-                            homeSlugs,
+                            slugs,
                         ),
                     ).resources
 
@@ -149,6 +152,7 @@ class HomeDataProvider(
         searchQuery: String?,
         groupsView: Groups,
         showSuggestedModel: ShowSuggestedModel,
+        slugs: Set<String>,
     ): HomeData {
         val groups =
             getLocalGroupsWithShareItemsCountPaginatedUseCase
@@ -163,7 +167,7 @@ class HomeDataProvider(
                     .execute(
                         GetLocalResourcesWithGroupPaginatedUseCase.Input(
                             groupsView,
-                            homeSlugs,
+                            slugs,
                             searchQuery,
                         ),
                     ).resources
@@ -179,12 +183,24 @@ class HomeDataProvider(
         searchQuery: String?,
         homeView: HomeDisplayViewModel,
         showSuggestedModel: ShowSuggestedModel,
+        slugs: Set<String>,
     ): HomeData {
         val resourceList =
             getLocalResourcesPaginatedUseCase
                 .execute(
                     GetLocalResourcesPaginatedUseCase.Input(
-                        homeSlugs,
+                        slugs,
+                        homeView,
+                        searchQuery,
+                        enablePlaceholders = true,
+                    ),
+                ).pagedResourcesFlow
+
+        val suggestedSource =
+            getLocalResourcesPaginatedUseCase
+                .execute(
+                    GetLocalResourcesPaginatedUseCase.Input(
+                        slugs,
                         homeView,
                         searchQuery,
                     ),
@@ -192,7 +208,7 @@ class HomeDataProvider(
 
         return HomeData(
             resourceList = resourceList,
-            suggestedResourceList = getSuggestedList(resourceList, searchQuery, homeView, showSuggestedModel),
+            suggestedResourceList = getSuggestedList(suggestedSource, searchQuery, homeView, showSuggestedModel),
         )
     }
 
@@ -202,11 +218,13 @@ class HomeDataProvider(
         homeView: HomeDisplayViewModel,
         showSuggestedModel: ShowSuggestedModel,
     ): Flow<PagingData<ResourceModel>> =
-        if (shouldShowSuggested(homeView, searchQuery)) {
+        if (showSuggestedModel is ShowSuggestedModel.Show && shouldShowSuggested(homeView, searchQuery)) {
             resourceList.map { pagingData ->
                 pagingData.filter {
-                    val autofillUrl = (showSuggestedModel as? ShowSuggestedModel.Show)?.suggestedUri
-                    autofillMatcher.isMatching(autofillUrl, it.metadataJsonModel.uris.orEmpty() + it.metadataJsonModel.uri.orEmpty())
+                    autofillMatcher.isMatching(
+                        showSuggestedModel.suggestedUri,
+                        it.metadataJsonModel.uris.orEmpty() + it.metadataJsonModel.uri.orEmpty(),
+                    )
                 }
             }
         } else {
@@ -217,6 +235,7 @@ class HomeDataProvider(
         searchQuery: String?,
         tagsView: Tags,
         showSuggestedModel: ShowSuggestedModel,
+        slugs: Set<String>,
     ): HomeData {
         if (getRbacRulesUseCase.execute(Unit).rbacModel.tagsUseRule != ALLOW) {
             return HomeData()
@@ -231,7 +250,7 @@ class HomeDataProvider(
                     .execute(
                         GetLocalResourcesWithTagPaginatedUseCase.Input(
                             tagsView,
-                            homeSlugs,
+                            slugs,
                             searchQuery,
                         ),
                     ).resources

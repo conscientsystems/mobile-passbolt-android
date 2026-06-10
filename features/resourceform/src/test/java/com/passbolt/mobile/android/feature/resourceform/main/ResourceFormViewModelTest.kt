@@ -4,26 +4,35 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
+import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
+import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
 import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissMetadataKeyDialog
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalUris
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAppearance
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToMetadataDescription
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordUsernameTextChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeAdvancedGenerationResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ProceedWithPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanOtpResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpSecretChanged
@@ -34,6 +43,8 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPassword
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCode
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
@@ -44,6 +55,7 @@ import com.passbolt.mobile.android.ui.MetadataTypeModel
 import com.passbolt.mobile.android.ui.OtpParseResult
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
 import com.passbolt.mobile.android.ui.PasswordStrength
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.ADDITIONAL_URIS
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.APPEARANCE
@@ -53,6 +65,8 @@ import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PASSWORD
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.TOTP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -68,7 +82,10 @@ import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.whenever
 import kotlin.test.assertIs
 
 /**
@@ -220,6 +237,35 @@ class ResourceFormViewModelTest : KoinTest {
             assertThat(state.leadingContentType).isEqualTo(LeadingContentType.STANDALONE_NOTE)
             assertThat(state.isPrimaryButtonVisible).isTrue()
             assertThat(state.noteData.note).isEqualTo("")
+        }
+
+    @Test
+    fun `view should show correct ui for create pin code`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.shouldShowScreenProgress).isFalse()
+            assertThat(state.leadingContentType).isEqualTo(LeadingContentType.PIN_CODE)
+            assertThat(state.isPrimaryButtonVisible).isTrue()
+            assertThat(state.pinCodeData.pinCode).isEqualTo("")
+            assertThat(state.pinCodeData.length).isEqualTo(PinCodeUiModel.DEFAULT_LENGTH)
         }
 
     @Test
@@ -1017,6 +1063,123 @@ class ResourceFormViewModelTest : KoinTest {
         }
 
     @Test
+    fun `go to additional pin code should emit navigate to pin code side effect`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Note,
+                    ),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.STANDALONE_NOTE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(GoToAdditionalPinCode)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<NavigateToPinCode>(sideEffect)
+                assertIs<ResourceFormMode.Create>(sideEffect.mode)
+            }
+        }
+
+    @Test
+    fun `go to pin code advanced generation should emit navigate side effect`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(GoToPinCodeAdvancedGeneration)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<NavigateToPinCodeAdvancedGeneration>(sideEffect)
+            }
+        }
+
+    @Test
+    fun `generate pin code should update state with generated pin`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+            whenever(mockPinCodeGenerator.generate(PinCodeUiModel.DEFAULT_LENGTH)).thenReturn("4242")
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+            viewModel.onIntent(GeneratePinCode)
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.pinCodeData.pinCode).isEqualTo("4242")
+            assertThat(state.pinCodeData.length).isEqualTo(PinCodeUiModel.DEFAULT_LENGTH)
+        }
+
+    @Test
+    fun `pin code advanced generation result should regenerate with new length`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5PinCodeStandalone,
+                    ),
+                )
+            }
+            whenever(mockPinCodeGenerator.generate(8)).thenReturn("12345678")
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PIN_CODE,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            advanceUntilIdle()
+            viewModel.onIntent(PinCodeAdvancedGenerationResult(PinCodeUiModel(pinCode = "0000", length = 8)))
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.pinCodeData.pinCode).isEqualTo("12345678")
+            assertThat(state.pinCodeData.length).isEqualTo(8)
+        }
+
+    @Test
     fun `go to totp more settings should emit navigate to totp advanced settings`() =
         runTest {
             mockGetDefaultCreateContentTypeUseCase.stub {
@@ -1289,6 +1452,328 @@ class ResourceFormViewModelTest : KoinTest {
             assertThat(state.metadataKeyDeletedDialog).isNull()
         }
 
+    @Test
+    fun `create resource with pwned password should show data breach warning`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+            mockCheckPasswordPropertiesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    CheckPasswordPropertiesUseCase.Output.Pwned(dataBreachesCount = 10),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.viewState.drop(1).test {
+                viewModel.onIntent(PasswordTextChanged("breachedpassword"))
+                viewModel.onIntent(CreateResource)
+                advanceUntilIdle()
+
+                val state = expectMostRecentItem()
+                assertThat(state.showPasswordWarningDialog).isTrue()
+                assertThat(state.passwordWarningType).isEqualTo(PasswordWarningType.DATA_BREACH)
+            }
+        }
+
+    @Test
+    fun `create resource with weak password should show low entropy warning`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+            mockCheckPasswordPropertiesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    CheckPasswordPropertiesUseCase.Output.Weak,
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.viewState.drop(1).test {
+                viewModel.onIntent(PasswordTextChanged("weak"))
+                viewModel.onIntent(CreateResource)
+                advanceUntilIdle()
+
+                val state = expectMostRecentItem()
+                assertThat(state.showPasswordWarningDialog).isTrue()
+                assertThat(state.passwordWarningType).isEqualTo(PasswordWarningType.LOW_ENTROPY)
+            }
+        }
+
+    @Test
+    fun `create resource with fine password should not show warning`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+            mockCheckPasswordPropertiesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    CheckPasswordPropertiesUseCase.Output.Fine,
+                )
+            }
+            mockResourceCreateActionsInteractor.stub {
+                onBlocking { createGenericResource(any(), anyOrNull(), any(), any()) }.thenReturn(
+                    flowOf(ResourceCreateActionResult.Success("id", "name")),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.viewState.drop(1).test {
+                viewModel.onIntent(PasswordTextChanged("strongpassword123!"))
+                viewModel.onIntent(CreateResource)
+                advanceUntilIdle()
+
+                val state = expectMostRecentItem()
+                assertThat(state.showPasswordWarningDialog).isFalse()
+                assertThat(state.passwordWarningType).isNull()
+            }
+        }
+
+    @Test
+    fun `password check failure should not show warning`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+            mockCheckPasswordPropertiesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    mock<CheckPasswordPropertiesUseCase.Output.Failure<Any>>(),
+                )
+            }
+            mockResourceCreateActionsInteractor.stub {
+                onBlocking { createGenericResource(any(), anyOrNull(), any(), any()) }.thenReturn(
+                    flowOf(ResourceCreateActionResult.Success("id", "name")),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.viewState.drop(1).test {
+                viewModel.onIntent(PasswordTextChanged("somepassword"))
+                viewModel.onIntent(CreateResource)
+                advanceUntilIdle()
+
+                val state = expectMostRecentItem()
+                assertThat(state.showPasswordWarningDialog).isFalse()
+                assertThat(state.passwordWarningType).isNull()
+            }
+        }
+
+    @Test
+    fun `password check should be skipped when external dictionary check is disabled`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES_DICTIONARY_CHECK_DISABLED)
+            }
+            mockCheckPasswordPropertiesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    CheckPasswordPropertiesUseCase.Output.Pwned(dataBreachesCount = 10),
+                )
+            }
+            mockResourceCreateActionsInteractor.stub {
+                onBlocking { createGenericResource(any(), anyOrNull(), any(), any()) }.thenReturn(
+                    flowOf(ResourceCreateActionResult.Success("id", "name")),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.viewState.drop(1).test {
+                viewModel.onIntent(PasswordTextChanged("breachedpassword"))
+                viewModel.onIntent(CreateResource)
+                advanceUntilIdle()
+
+                val state = expectMostRecentItem()
+                assertThat(state.showPasswordWarningDialog).isFalse()
+                assertThat(state.passwordWarningType).isNull()
+            }
+        }
+
+    @Test
+    fun `proceed with password warning should clear warning state`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+            mockCheckPasswordPropertiesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    CheckPasswordPropertiesUseCase.Output.Pwned(dataBreachesCount = 5),
+                )
+            }
+            mockResourceCreateActionsInteractor.stub {
+                onBlocking { createGenericResource(any(), anyOrNull(), any(), any()) }.thenReturn(
+                    flowOf(ResourceCreateActionResult.Success("id", "name")),
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.viewState.drop(1).test {
+                viewModel.onIntent(PasswordTextChanged("breachedpassword"))
+                viewModel.onIntent(CreateResource)
+                advanceUntilIdle()
+
+                assertThat(expectMostRecentItem().passwordWarningType).isEqualTo(PasswordWarningType.DATA_BREACH)
+
+                viewModel.onIntent(ProceedWithPasswordWarning)
+
+                val state = expectMostRecentItem()
+                assertThat(state.showPasswordWarningDialog).isFalse()
+                assertThat(state.passwordWarningType).isNull()
+            }
+        }
+
+    @Test
+    fun `dismiss password warning should clear warning state`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = ContentType.V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+            mockCheckPasswordPropertiesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    CheckPasswordPropertiesUseCase.Output.Weak,
+                )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.viewState.drop(1).test {
+                viewModel.onIntent(PasswordTextChanged("weak"))
+                viewModel.onIntent(CreateResource)
+                advanceUntilIdle()
+
+                assertThat(expectMostRecentItem().passwordWarningType).isEqualTo(PasswordWarningType.LOW_ENTROPY)
+
+                viewModel.onIntent(DismissPasswordWarning)
+
+                val state = expectMostRecentItem()
+                assertThat(state.showPasswordWarningDialog).isFalse()
+                assertThat(state.passwordWarningType).isNull()
+            }
+        }
+
     private companion object {
         val MOCK_PASSWORD_POLICIES =
             com.passbolt.mobile.android.ui.PasswordPolicies(
@@ -1316,5 +1801,8 @@ class ResourceFormViewModelTest : KoinTest {
                     ),
                 isExternalDictionaryCheckEnabled = true,
             )
+
+        val MOCK_PASSWORD_POLICIES_DICTIONARY_CHECK_DISABLED =
+            MOCK_PASSWORD_POLICIES.copy(isExternalDictionaryCheckEnabled = false)
     }
 }

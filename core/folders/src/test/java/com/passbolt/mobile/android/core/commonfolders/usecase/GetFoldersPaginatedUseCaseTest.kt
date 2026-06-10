@@ -31,6 +31,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import java.net.HttpURLConnection
+import java.time.ZonedDateTime
 import kotlin.test.assertIs
 
 @ExperimentalCoroutinesApi
@@ -181,6 +182,7 @@ class GetFoldersPaginatedUseCaseTest : KoinTest {
                         name = "Test Folder",
                         isShared = false,
                         permission = ResourcePermission.READ,
+                        modified = ZonedDateTime.now(),
                     ),
                 folderPermissions = emptyList(),
             )

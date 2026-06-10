@@ -20,6 +20,11 @@ val Inconsolata =
         Font(R.font.inconsolata_regular, FontWeight.Normal),
     )
 
+val Obfuscation =
+    FontFamily(
+        Font(R.font.obfuscation_regular, FontWeight.Normal),
+    )
+
 val AppTypography =
     Typography(
         titleLarge =

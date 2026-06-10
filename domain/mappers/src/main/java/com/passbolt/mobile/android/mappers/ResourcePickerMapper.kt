@@ -29,18 +29,17 @@ import com.passbolt.mobile.android.ui.ResourcePickerListItem
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_NO_PERMISSION
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_UNSUPPORTED_RESOURCE_TYPE
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.SELECTABLE
-import java.util.UUID
 
 class ResourcePickerMapper {
     fun map(
         resource: ResourceModel,
-        selectableResourceTypeIds: Set<UUID>,
+        selectableResourceTypeSlugs: Set<String>,
     ) = ResourcePickerListItem(
         resourceModel = resource,
         selection =
             getSelection(
                 haveWritePermissions = haveWritePermissions(resource),
-                isAllowedResourceType = isAllowedResourceType(resource, selectableResourceTypeIds),
+                isAllowedResourceType = resource.slug in selectableResourceTypeSlugs,
             ),
         isSelected = false,
     )
@@ -59,11 +58,6 @@ class ResourcePickerMapper {
                 NOT_SELECTABLE_UNSUPPORTED_RESOURCE_TYPE
             }
         }
-
-    private fun isAllowedResourceType(
-        resource: ResourceModel,
-        selectableResourceTypeIds: Set<UUID>,
-    ) = UUID.fromString(resource.resourceTypeId) in selectableResourceTypeIds
 
     private fun haveWritePermissions(resource: ResourceModel) = resource.permission in WRITE_PERMISSIONS
 

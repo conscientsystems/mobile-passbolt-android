@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.feature.otp.screen
 
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,15 +35,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,6 +66,7 @@ import com.passbolt.mobile.android.core.ui.scaffold.HomeScaffold
 import com.passbolt.mobile.android.core.ui.search.SearchInput
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuBottomSheet
+import com.passbolt.mobile.android.feature.home.screen.ResourceHandlingStrategy
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountBottomSheet
 import com.passbolt.mobile.android.feature.metadatakeytrust.NewMetadataKeyTrustDialog
 import com.passbolt.mobile.android.feature.metadatakeytrust.TrustedMetadataKeyDeletedDialog
@@ -76,6 +80,7 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ConfirmDeleteTot
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CopyOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateNote
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.DeleteOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
@@ -94,8 +99,12 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.NavigateToEd
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowSuccessSnackbar
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowToast
+import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource
+import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource.RevealedOtp
+import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource.UniversalAutofillCountdown
 import com.passbolt.mobile.android.otpmoremenu.OtpMoreMenuBottomSheet
 import com.passbolt.mobile.android.testtags.composetags.Otp
+import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.ResourceFormMode
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -106,6 +115,7 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
 @Composable
 internal fun OtpScreen(
     navigator: AppNavigator,
+    resourceHandlingStrategy: ResourceHandlingStrategy,
     modifier: Modifier = Modifier,
     viewModel: OtpViewModel = koinViewModel(),
     resourceIconProvider: ResourceIconProvider = koinInject(),
@@ -115,12 +125,15 @@ internal fun OtpScreen(
     val state = viewModel.viewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val errorColor = colorResource(CoreUiR.color.red)
+    val successColor = colorResource(CoreUiR.color.green)
 
     OtpScreen(
         state = state.value,
         onIntent = viewModel::onIntent,
         resourceIconProvider = resourceIconProvider,
         snackbarHostState = snackbarHostState,
+        resourceHandlingStrategy = resourceHandlingStrategy,
         modifier = modifier,
     )
 
@@ -138,7 +151,7 @@ internal fun OtpScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getErrorMessage(context, it.type, it.message),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorColor,
                         ),
                     )
                 }
@@ -147,7 +160,7 @@ internal fun OtpScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSuccessMessage(context, it.type, it.message),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.green)),
+                            backgroundColor = successColor,
                         ),
                     )
                 }
@@ -166,14 +179,21 @@ internal fun OtpScreen(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun OtpScreen(
     state: OtpState,
     onIntent: (OtpIntent) -> Unit,
     resourceIconProvider: ResourceIconProvider,
     snackbarHostState: SnackbarHostState,
+    resourceHandlingStrategy: ResourceHandlingStrategy,
     modifier: Modifier = Modifier,
 ) {
+    val isAutofillMode = resourceHandlingStrategy.appContext == AppContext.AUTOFILL
+    val showMoreMenu = resourceHandlingStrategy.shouldShowResourceMoreMenu()
+    val showCloseButton = resourceHandlingStrategy.shouldShowCloseButton()
+    val activity = LocalActivity.current
+
     HomeScaffold(
         snackbarHostState = snackbarHostState,
         modifier =
@@ -181,6 +201,8 @@ fun OtpScreen(
                 .testTag(Otp.SCREEN),
         appBarTitle = stringResource(LocalizationR.string.main_menu_otp),
         appBarIconRes = CoreUiR.drawable.ic_time_lock,
+        shouldShowCloseIcon = showCloseButton,
+        onCloseClick = { activity?.finish() },
         appBarSearchInput = {
             SearchInput(
                 onValueChange = { onIntent(Search(it)) },
@@ -196,7 +218,7 @@ fun OtpScreen(
             )
         },
         floatingActionButton = {
-            if (!state.isRefreshing) {
+            if (!isAutofillMode && !state.isRefreshing) {
                 AddFloatingActionButton(onClick = { onIntent(OpenCreateResourceMenu) })
             }
         },
@@ -218,12 +240,55 @@ fun OtpScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(vertical = 16.dp),
                         ) {
+                            if (state.suggestedOtps.isNotEmpty()) {
+                                item {
+                                    Text(
+                                        text = stringResource(LocalizationR.string.suggested),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    )
+                                }
+                                items(state.suggestedOtps, key = { "suggested_${it.resource.resourceId}" }) { otpItem ->
+                                    OtpItem(
+                                        otpItem = otpItem,
+                                        resourceIconProvider = resourceIconProvider,
+                                        onItemClick = { resourceHandlingStrategy.resourceItemClick(otpItem.resource) },
+                                        onMoreClick = {},
+                                        showMoreMenu = false,
+                                        showEyeIcon = false,
+                                        progressSource =
+                                            resolveProgressSource(
+                                                otpItem = otpItem,
+                                                isAutofillMode = true,
+                                                universalCountdownSeconds = state.universalCountdownSeconds,
+                                            ),
+                                    )
+                                }
+                                item {
+                                    Text(
+                                        text = stringResource(LocalizationR.string.other),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    )
+                                }
+                            }
+
                             items(state.uiOtps) { otpItem ->
                                 OtpItem(
                                     otpItem = otpItem,
                                     resourceIconProvider = resourceIconProvider,
-                                    onItemClick = { onIntent(RevealOtp(otpItem)) },
+                                    onItemClick = {
+                                        resourceHandlingStrategy.resourceItemClick(otpItem.resource)
+                                    },
                                     onMoreClick = { onIntent(OpenOtpMoreMenu(otpItem)) },
+                                    showMoreMenu = showMoreMenu,
+                                    showEyeIcon = !isAutofillMode,
+                                    progressSource =
+                                        resolveProgressSource(
+                                            otpItem = otpItem,
+                                            isAutofillMode = isAutofillMode,
+                                            universalCountdownSeconds = state.universalCountdownSeconds,
+                                        ),
                                 )
                             }
                         }
@@ -234,6 +299,7 @@ fun OtpScreen(
                         onCreatePassword = { onIntent(CreatePassword) },
                         onCreateTotp = { onIntent(CreateTotp) },
                         onCreateNote = { onIntent(CreateNote) },
+                        onCreatePinCode = { onIntent(CreatePinCode) },
                         onDismissRequest = { onIntent(CloseCreateResourceMenu) },
                     )
                 }
@@ -244,7 +310,7 @@ fun OtpScreen(
                         resourceId = moreMenuResource.resource.resourceId,
                         resourceName = moreMenuResource.resource.metadataJsonModel.name,
                         onDismissRequest = { onIntent(CloseOtpMoreMenu) },
-                        onShowOtp = { onIntent(RevealOtp(moreMenuResource)) },
+                        onShowOtp = { onIntent(RevealOtp(moreMenuResource.resource)) },
                         onCopyOtp = { onIntent(CopyOtp(moreMenuResource)) },
                         onEditOtp = { onIntent(EditOtp(moreMenuResource)) },
                         onDeleteOtp = { onIntent(DeleteOtp(moreMenuResource)) },
@@ -283,4 +349,23 @@ fun OtpScreen(
                 ProgressDialog(state.showProgress)
             },
     )
+}
+
+private fun resolveProgressSource(
+    otpItem: OtpItemWrapper,
+    isAutofillMode: Boolean,
+    universalCountdownSeconds: Long,
+): ProgressSource? {
+    val remainingSeconds = otpItem.remainingSecondsCounter
+    val expirySeconds = otpItem.otpExpirySeconds
+    return when {
+        otpItem.isVisible && remainingSeconds != null && expirySeconds != null ->
+            RevealedOtp(remainingSeconds = remainingSeconds, expirySeconds = expirySeconds)
+        isAutofillMode ->
+            UniversalAutofillCountdown(
+                remainingSeconds = universalCountdownSeconds,
+                expirySeconds = DEFAULT_TOTP_PERIOD,
+            )
+        else -> null
+    }
 }

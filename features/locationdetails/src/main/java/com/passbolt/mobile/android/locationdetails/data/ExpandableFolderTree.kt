@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.locationdetails.data
 
 import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import java.time.ZonedDateTime
 
 data class ExpandableFolderNode(
     val id: String,
@@ -63,6 +64,7 @@ class ExpandableFolderTreeCreator(
                 name = fakeRootFolderName,
                 isShared = false,
                 permission = ResourcePermission.OWNER,
+                modified = ZonedDateTime.now(),
             )
         return listOf(fakeRootFolder) + folders
     }

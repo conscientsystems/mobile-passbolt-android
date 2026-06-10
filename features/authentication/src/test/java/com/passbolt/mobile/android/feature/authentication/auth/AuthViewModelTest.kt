@@ -16,6 +16,7 @@ import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
@@ -155,6 +156,8 @@ class AuthViewModelTest : KoinTest {
                 debugLogLastAppVersion = null,
                 isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = true,
+                isAuthRequiredOnEveryEntry = true,
+                apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                 accessibilityPoliciesConsentGiven = false,
             )
 

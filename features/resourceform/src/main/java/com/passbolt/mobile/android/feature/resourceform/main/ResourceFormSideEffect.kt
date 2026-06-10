@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.feature.resourceform.main
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.CustomFieldsUiModel
 import com.passbolt.mobile.android.ui.PasswordUiModel
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
 import com.passbolt.mobile.android.ui.TotpUiModel
@@ -26,6 +27,16 @@ sealed interface ResourceFormSideEffect {
     data class NavigateToNote(
         val mode: ResourceFormMode,
         val note: String,
+    ) : ResourceFormSideEffect
+
+    data class NavigateToPinCode(
+        val mode: ResourceFormMode,
+        val pinCodeUiModel: PinCodeUiModel,
+    ) : ResourceFormSideEffect
+
+    data class NavigateToPinCodeAdvancedGeneration(
+        val mode: ResourceFormMode,
+        val pinCodeUiModel: PinCodeUiModel,
     ) : ResourceFormSideEffect
 
     data class NavigateToDescription(

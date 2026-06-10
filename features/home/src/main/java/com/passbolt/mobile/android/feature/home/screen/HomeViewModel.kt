@@ -34,6 +34,7 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelected
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
 import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
@@ -59,6 +60,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyResourceUs
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateFolder
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePassword
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateTotp
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.DeleteResource
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.EditResource
@@ -106,6 +108,8 @@ import com.passbolt.mobile.android.feature.home.screen.data.HomeDataProvider
 import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
 import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.autofillSlugs
+import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.Folder.Child
 import com.passbolt.mobile.android.ui.Folder.Root
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
@@ -113,6 +117,7 @@ import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Folders
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Groups
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Tags
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
+import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption
@@ -148,6 +153,7 @@ internal class HomeViewModel(
 
     private var dataRefreshJob: Job? = null
     private var accountSwitchJob: Job? = null
+    private var lastInitializeIntent: Initialize? = null
 
     init {
         loadUserAvatar()
@@ -183,6 +189,7 @@ internal class HomeViewModel(
             CreatePassword -> createPassword()
             CreateTotp -> createTotp()
             CreateFolder -> createFolder()
+            CreatePinCode -> createPinCode()
             is Initialize -> initialize(intent)
             is OpenResourceMenu -> openResourceMoreMenu(intent)
             is Search -> searchQueryChanged(intent.searchQuery)
@@ -254,6 +261,18 @@ internal class HomeViewModel(
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = STANDALONE_NOTE,
+                    folderId = viewState.value.currentFolderId,
+                ),
+            )
+        }
+    }
+
+    private fun createPinCode() {
+        updateViewState { copy(showCreateResourceBottomSheet = false) }
+        onCanCreateResource {
+            emitSideEffect(
+                NavigateToCreateResourceForm(
+                    leadingContentType = PIN_CODE,
                     folderId = viewState.value.currentFolderId,
                 ),
             )
@@ -437,9 +456,14 @@ internal class HomeViewModel(
     }
 
     private fun initialize(intent: Initialize) {
+        if (intent == lastInitializeIntent) {
+            return
+        }
+        lastInitializeIntent = intent
         val filterPreferences = getHomeDisplayViewPrefsUseCase.execute(Unit)
 
         viewModelScope.launch {
+            updateViewState { copy(appContext = intent.appContext) }
             val homeView =
                 intent.homeView ?: homeModelMapper.map(
                     filterPreferences.userSetHomeView,
@@ -459,7 +483,7 @@ internal class HomeViewModel(
             dataRefreshJob?.cancel()
             dataRefreshJob =
                 viewModelScope.launch(coroutineLaunchContext.io) {
-                    synchronizeWithDataRefresh(intent.showSuggestedModel)
+                    synchronizeWithDataRefresh()
                 }
             accountSwitchJob?.cancel()
             accountSwitchJob =
@@ -488,7 +512,14 @@ internal class HomeViewModel(
         searchQuery,
         homeView,
         showSuggestedModel,
+        slugsForCurrentContext(),
     )
+
+    private fun slugsForCurrentContext(): Set<String> =
+        when (viewState.value.appContext) {
+            AppContext.AUTOFILL -> autofillSlugs
+            AppContext.APP -> homeSlugs
+        }
 
     private suspend fun shouldShowCreateButton(): Boolean {
         viewState.value.homeView.let {
@@ -532,7 +563,7 @@ internal class HomeViewModel(
             resultIfActionFails
         }
 
-    private suspend fun synchronizeWithDataRefresh(showSuggestedModel: ShowSuggestedModel) {
+    private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
                 InProgress -> updateViewState { copy(isRefreshing = true, canCreateResource = false) }
@@ -542,10 +573,8 @@ internal class HomeViewModel(
                 }
                 FinishedWithSuccess -> {
                     val showCreateResourceButton = shouldShowCreateButton()
-                    val homeData = getHomeData(viewState.value.homeView, viewState.value.searchQuery, showSuggestedModel)
                     updateViewState {
                         copy(
-                            homeData = homeData,
                             isRefreshing = false,
                             canCreateResource = showCreateResourceButton,
                         )

@@ -50,11 +50,11 @@ import com.passbolt.mobile.android.ui.PermissionModelUi.UserPermissionModel
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.TrustedKeyDeletedModel
 import com.passbolt.mobile.android.ui.UpdateResourceModel
+import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.single
 import timber.log.Timber
-import java.util.UUID
 
 class ResourceUpdateActionsInteractor(
     private val existingResource: ResourceModel,
@@ -62,7 +62,6 @@ class ResourceUpdateActionsInteractor(
     private val updateResourceInteractor: UpdateResourceInteractor,
     private val resourceTypesUpdateGraph: ResourceTypesUpdatesAdjacencyGraph,
     private val updateLocalResourceUseCase: UpdateLocalResourceUseCase,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
     private val getLocalCurrentUserUseCase: GetLocalCurrentUserUseCase,
     private val metadataPrivateKeysInteractor: MetadataPrivateKeysInteractor,
     private val getLocalFolderPermissionsUseCase: GetLocalFolderPermissionsUseCase,
@@ -104,12 +103,7 @@ class ResourceUpdateActionsInteractor(
                             )
                         },
                         updateSecret = { decryptedSecret ->
-                            val existingResourceContentType =
-                                ContentType.fromSlug(
-                                    idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                                        UUID.fromString(existingResource.resourceTypeId),
-                                    ]!!,
-                                )
+                            val existingResourceContentType = existingResource.contentType()
                             val modifiedSecret = secretModification(decryptedSecret)
                             val passwordChanged =
                                 decryptedSecret.getPassword(existingResourceContentType) !=
@@ -133,24 +127,14 @@ class ResourceUpdateActionsInteractor(
     ): Flow<ResourceUpdateActionResult> {
         val newContentType =
             resourceTypesUpdateGraph.getResourceTypeSlugAfterUpdate(
-                idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                    UUID.fromString(existingResource.resourceTypeId),
-                ]!!,
+                existingResource.slug,
                 updateAction,
             )
         return updateGenericResource(newContentType, metadataModification, secretModification)
     }
 
-    suspend fun reEncryptResourceMetadata(): Flow<ResourceUpdateActionResult> {
-        val contentType =
-            ContentType.fromSlug(
-                idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                    UUID.fromString(existingResource.resourceTypeId),
-                ]!!,
-            )
-
-        return updateGenericResource(contentType, forceMetadataSharedKey = true)
-    }
+    suspend fun reEncryptResourceMetadata(): Flow<ResourceUpdateActionResult> =
+        updateGenericResource(existingResource.contentType(), forceMetadataSharedKey = true)
 
     private suspend fun isSupported(contentType: ContentType) =
         resourceTypeIdToSlugMappingProvider

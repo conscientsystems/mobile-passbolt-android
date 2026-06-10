@@ -59,6 +59,7 @@ class PassphraseMemoryCacheTest : KoinTest {
 
     @Before
     fun setup() {
+        testIsAuthRequiredOnEveryEntry = true
         val scenario = activityScenarioRule.scenario
         scenario.moveToState(Lifecycle.State.RESUMED)
     }
@@ -111,6 +112,34 @@ class PassphraseMemoryCacheTest : KoinTest {
             scenario.moveToState(Lifecycle.State.DESTROYED)
 
             delay(LIFECYCLE_OBSERVATION_TIMEOUT_MILLIS)
+            assertThat(passphraseMemoryCache.get()).isInstanceOf(PotentialPassphrase.PassphraseNotPresent::class.java)
+        }
+
+    @Test
+    fun test_CacheIsNotClearedAfterAppIsInBackground_WhenAuthNotRequiredOnEveryEntry() =
+        runBlocking {
+            testIsAuthRequiredOnEveryEntry = false
+            passphraseMemoryCache.set(TEST_PASSPHRASE)
+
+            // start launcher app to send app to background
+            InstrumentationRegistry
+                .getInstrumentation()
+                .context
+                .startActivity(launcherIntent())
+
+            delay(LIFECYCLE_OBSERVATION_TIMEOUT_MILLIS)
+            assertThat(passphraseMemoryCache.get()).isInstanceOf(PotentialPassphrase.Passphrase::class.java)
+        }
+
+    @Test
+    fun test_CacheIsClearedByTimerExpiry_WhenAuthNotRequiredOnEveryEntry() =
+        runTest(testCoroutineLaunchContext.ui) {
+            testIsAuthRequiredOnEveryEntry = false
+            passphraseMemoryCache.set(TEST_PASSPHRASE)
+
+            // 5-minute timer should still clear the cache regardless of the flag
+            advanceTimeBy(PassphraseMemoryCache.CACHE_EXPIRATION_MILLIS + 1)
+
             assertThat(passphraseMemoryCache.get()).isInstanceOf(PotentialPassphrase.PassphraseNotPresent::class.java)
         }
 

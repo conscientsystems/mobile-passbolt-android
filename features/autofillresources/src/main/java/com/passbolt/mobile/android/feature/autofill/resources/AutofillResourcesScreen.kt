@@ -15,6 +15,7 @@ import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.SignIn
 import com.passbolt.mobile.android.core.navigation.AppContext
+import com.passbolt.mobile.android.core.navigation.AutofillType
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.NavigationActivity.Start
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
@@ -26,6 +27,7 @@ import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesS
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesSideEffect.ShowToast
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.ReturnAutofillDatasetStrategy
 import com.passbolt.mobile.android.feature.home.navigation.HomeTabContent
+import com.passbolt.mobile.android.feature.otp.navigation.TotpTabContent
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -33,6 +35,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun AutofillResourcesScreen(
     autofillUri: String?,
+    autofillType: AutofillType,
     returnAutofillDatasetStrategy: ReturnAutofillDatasetStrategy,
     modifier: Modifier = Modifier,
     viewModel: AutofillResourcesViewModel =
@@ -52,6 +55,7 @@ fun AutofillResourcesScreen(
             if (result.resultCode == Activity.RESULT_OK) {
                 viewModel.onIntent(UserAuthenticated)
             } else {
+                activity?.setResult(Activity.RESULT_CANCELED)
                 activity?.finish()
             }
         }
@@ -75,7 +79,7 @@ fun AutofillResourcesScreen(
                 }
             }
             is AutofillReturn ->
-                returnAutofillDatasetStrategy.returnDataset(it.username, it.password, it.uri)
+                returnAutofillDatasetStrategy.returnDataset(it.payload)
             is ShowToast ->
                 Toast.makeText(context, getToastMessage(context, it.type), Toast.LENGTH_SHORT).show()
         }
@@ -84,6 +88,7 @@ fun AutofillResourcesScreen(
     AutofillResourcesScreen(
         showHome = state.showHome,
         showProgress = state.showProgress,
+        autofillType = autofillType,
         modifier = modifier,
     )
 }
@@ -92,11 +97,15 @@ fun AutofillResourcesScreen(
 private fun AutofillResourcesScreen(
     showHome: Boolean,
     showProgress: Boolean,
+    autofillType: AutofillType,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
         if (showHome) {
-            HomeTabContent()
+            when (autofillType) {
+                AutofillType.CREDENTIALS, AutofillType.CREDENTIALS_AND_TOTP -> HomeTabContent()
+                AutofillType.TOTP -> TotpTabContent()
+            }
         }
 
         ProgressDialog(showProgress)

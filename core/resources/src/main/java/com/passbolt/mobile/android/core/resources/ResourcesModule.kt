@@ -16,7 +16,6 @@ import com.passbolt.mobile.android.core.resources.usecase.AddToFavouritesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.DeleteResourceUseCase
 import com.passbolt.mobile.android.core.resources.usecase.FavouritesInteractor
 import com.passbolt.mobile.android.core.resources.usecase.GetResourcesPaginatedUseCase
-import com.passbolt.mobile.android.core.resources.usecase.GetResourcesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.RemoveFromFavouritesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.ResourceInteractor
 import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor
@@ -59,7 +58,6 @@ val resourcesModule =
     module {
         resourcesDbModule()
 
-        singleOf(::GetResourcesUseCase)
         singleOf(::GetResourcesPaginatedUseCase)
         singleOf(::ResourceInteractor)
         singleOf(::SearchableMatcher)
@@ -82,7 +80,6 @@ val resourcesModule =
         factory { (resource: ResourceModel) ->
             ResourcePropertiesActionsInteractor(
                 resource,
-                idToSlugMappingProvider = get(),
             )
         }
         factory { (resource: ResourceModel) ->
@@ -97,7 +94,6 @@ val resourcesModule =
                 resource,
                 secretParser = get(),
                 secretInteractor = get(),
-                idToSlugMappingProvider = get(),
             )
         }
         factory<SecretPropertiesActionsInteractorFactory> {
@@ -110,7 +106,6 @@ val resourcesModule =
                 updateResourceInteractor = get(),
                 resourceTypesUpdateGraph = get(),
                 updateLocalResourceUseCase = get(),
-                idToSlugMappingProvider = get(),
                 getLocalCurrentUserUseCase = get(),
                 metadataPrivateKeysInteractor = get(),
                 getLocalFolderPermissionsUseCase = get(),

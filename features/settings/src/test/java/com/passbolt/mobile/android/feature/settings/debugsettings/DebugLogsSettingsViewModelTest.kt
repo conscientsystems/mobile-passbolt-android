@@ -24,6 +24,7 @@ package com.passbolt.mobile.android.feature.settings.debugsettings
  */
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.logger.FileLoggingTree
+import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.DebugLogsSettingsIntent.ToggleDebugLogs
@@ -93,7 +94,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -115,7 +118,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -138,7 +143,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
             val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
@@ -167,7 +174,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
             val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()

@@ -41,4 +41,5 @@ internal fun Module.foldersDbModule() {
     singleOf(::GetLocalFolderPermissionsUseCase)
     singleOf(::GetLocalParentFolderPermissionsToApplyToNewItemUseCase)
     singleOf(::AddLocalFolderUseCase)
+    singleOf(::UpdateLocalFoldersIsSharedUseCase)
 }

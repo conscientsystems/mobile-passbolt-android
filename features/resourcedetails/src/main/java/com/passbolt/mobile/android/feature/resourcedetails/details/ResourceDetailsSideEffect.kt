@@ -89,6 +89,7 @@ enum class ErrorSnackbarType {
     DATA_REFRESH_ERROR,
     TOGGLE_FAVOURITE_FAILURE,
     CANNOT_PERFORM_ACTION,
+    INVALID_TOTP_PARAMETERS,
 }
 
 enum class ToastType {

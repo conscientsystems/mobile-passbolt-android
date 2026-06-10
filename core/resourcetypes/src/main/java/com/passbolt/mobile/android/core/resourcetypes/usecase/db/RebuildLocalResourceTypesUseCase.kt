@@ -45,7 +45,11 @@ class RebuildLocalResourceTypesUseCase(
             resourceTypesModelMapper
                 .map(input.resourceTypesDto)
 
-        resourceTypesDao.upsertAll(resourceTypeDbModel)
+        // Types are static; rewriting them invalidates every query that JOINs ResourceType (the whole
+        // home list) and jumps the scroll, so skip the write when nothing changed.
+        if (resourceTypesDao.getAll().toSet() != resourceTypeDbModel.toSet()) {
+            resourceTypesDao.upsertAll(resourceTypeDbModel)
+        }
     }
 
     data class Input(
