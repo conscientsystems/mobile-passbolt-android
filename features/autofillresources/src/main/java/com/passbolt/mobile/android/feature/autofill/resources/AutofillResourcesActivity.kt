@@ -9,10 +9,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.remember
 import androidx.core.content.IntentCompat
-import com.passbolt.mobile.android.common.lifecycleawarelazy.lifecycleAwareLazy
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AutofillMode
+import com.passbolt.mobile.android.core.navigation.AutofillType
 import com.passbolt.mobile.android.core.navigation.compose.APP_NAVIGATOR_SCOPE
+import com.passbolt.mobile.android.core.ui.orientation.LockCompactScreenOrientation
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.NewResourceCreated
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.SelectAutofillItem
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.AutofillCallback
@@ -41,13 +42,19 @@ class AutofillResourcesActivity :
 
     override lateinit var resourceHandlingStrategy: AutofillResourceHandlingStrategy
 
-    private val bundledAutofillUri by lifecycleAwareLazy {
+    private val bundledAutofillUri by lazy {
         intent.getStringExtra(ActivityIntents.EXTRA_AUTOFILL_URI)
     }
-    private val bundledAutofillMode by lifecycleAwareLazy {
+    private val bundledAutofillMode by lazy {
         intent.getStringExtra(ActivityIntents.EXTRA_AUTOFILL_MODE_NAME).let {
             AutofillMode.valueOf(requireNotNull(it))
         }
+    }
+    private val bundledAutofillType by lazy {
+        intent
+            .getStringExtra(ActivityIntents.EXTRA_AUTOFILL_TYPE_NAME)
+            ?.let { AutofillType.valueOf(it) }
+            ?: AutofillType.CREDENTIALS
     }
 
     private lateinit var returnAutofillDatasetStrategy: ReturnAutofillDatasetStrategy
@@ -61,6 +68,7 @@ class AutofillResourcesActivity :
             scope.get(named(bundledAutofillMode)) { parametersOf(this as AutofillCallback) }
 
         setContent {
+            LockCompactScreenOrientation()
             viewModel =
                 koinViewModel(
                     parameters = { parametersOf(bundledAutofillUri) },
@@ -80,6 +88,7 @@ class AutofillResourcesActivity :
             ) {
                 AutofillResourcesScreen(
                     autofillUri = bundledAutofillUri,
+                    autofillType = bundledAutofillType,
                     returnAutofillDatasetStrategy = returnAutofillDatasetStrategy,
                     viewModel = viewModel,
                 )

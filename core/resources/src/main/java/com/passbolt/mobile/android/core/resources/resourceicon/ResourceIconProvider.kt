@@ -11,10 +11,7 @@ import android.view.Gravity
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordDescriptionTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordString
@@ -24,13 +21,14 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PasswordString
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.DEFAULT_BACKGROUND_COLOR_HEX_STRING
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_KEEPASS
 import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.util.UUID
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 /**
@@ -56,15 +54,8 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
  * @since v1.0
  */
 class ResourceIconProvider(
-    private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
     private val coroutineLaunchContext: CoroutineLaunchContext,
-    getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
-    val selectedAccount: String =
-        requireNotNull(
-            getSelectedAccountUseCase.execute(Unit).selectedAccount,
-        ) { "Encountered null selected account" }
-
     suspend fun getResourceIcon(
         context: Context,
         resource: ResourceModel,
@@ -82,14 +73,14 @@ class ResourceIconProvider(
                 // Fallback to default icon if keepass icon error
                 getIconByResourceType(
                     context,
-                    resource.resourceTypeId,
+                    resource,
                     resourceIcon.backgroundColorHexString,
                 )
             }
         } else {
             getIconByResourceType(
                 context,
-                resource.resourceTypeId,
+                resource,
                 resource.metadataJsonModel.icon?.backgroundColorHexString,
             )
         }
@@ -97,28 +88,18 @@ class ResourceIconProvider(
 
     private suspend fun getIconByResourceType(
         context: Context,
-        resourceTypeId: String,
+        resource: ResourceModel,
         backgroundHexString: String?,
     ): Drawable {
-        val resourceTypeIdToSlugMapping = resourceTypeIdToSlugMappingProvider.provideMappingForAccount(selectedAccount)
-        val slug = resourceTypeIdToSlugMapping[UUID.fromString(resourceTypeId)]
-        val contentType =
-            if (slug != null) {
-                ContentType.fromSlug(slug)
-            } else {
-                Timber.e("Encountered null slug; Resource type mapping size: ${resourceTypeIdToSlugMapping.size} ")
-                null
-            }
-
         val drawableRes =
-            when (contentType) {
+            when (resource.contentType()) {
                 PasswordAndDescription, V5Default -> CoreUiR.drawable.passbolt_password
                 PasswordDescriptionTotp, V5DefaultWithTotp -> CoreUiR.drawable.passbolt_totp_password_with_totp
                 PasswordString, V5PasswordString -> CoreUiR.drawable.passbolt_password
                 Totp, V5TotpStandalone -> CoreUiR.drawable.passbolt_totp
                 V5CustomFields -> CoreUiR.drawable.passbolt_key_value
                 V5Note -> CoreUiR.drawable.passbolt_note
-                null -> null
+                V5PinCodeStandalone -> CoreUiR.drawable.passbolt_pin
             }
 
         return createCircleDrawableWithIcon(

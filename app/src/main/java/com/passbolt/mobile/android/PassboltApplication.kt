@@ -27,6 +27,7 @@ import android.app.Application
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AppForegroundListener
 import com.passbolt.mobile.android.core.navigation.isAuthenticated
+import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -46,6 +47,8 @@ class PassboltApplication :
     private val appForegroundListener: AppForegroundListener by inject()
     private val applicationScope = MainScope()
     private val runtimeAuthenticatedFlag: RuntimeAuthenticatedFlag by inject()
+    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase by inject()
+    private val backgroundGracePeriodTimer: BackgroundGracePeriodTimer by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -61,13 +64,25 @@ class PassboltApplication :
         applicationScope.launch {
             runtimeAuthenticatedFlag.isAuthenticated = false
             appForegroundListener.appWentForegroundFlow.collect {
-                if (it.isAuthenticated()) {
+                val skipAuth =
+                    !getGlobalPreferencesUseCase.execute(Unit).isAuthRequiredOnEveryEntry &&
+                        backgroundGracePeriodTimer.isWithinGracePeriod()
+                backgroundGracePeriodTimer.reset()
+
+                if (it.isAuthenticated() && !skipAuth) {
                     it.startActivity(
                         ActivityIntents.authentication(
                             it,
                             ActivityIntents.AuthConfig.RefreshSession,
                         ),
                     )
+                }
+            }
+        }
+        applicationScope.launch {
+            appForegroundListener.appWentBackgroundFlow.collect {
+                if (!getGlobalPreferencesUseCase.execute(Unit).isAuthRequiredOnEveryEntry) {
+                    backgroundGracePeriodTimer.start()
                 }
             }
         }

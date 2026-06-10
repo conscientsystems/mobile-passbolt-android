@@ -33,8 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +47,7 @@ import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.NavigationActivity.AuthenticationSignIn
 import com.passbolt.mobile.android.core.navigation.compose.NavigationActivity.Start
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
+import com.passbolt.mobile.android.core.ui.dialogs.LeaveSetupAlertDialog
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.feature.authentication.mfa.MfaDialogState
@@ -56,8 +57,10 @@ import com.passbolt.mobile.android.feature.authentication.mfa.MfaResult.Succeede
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.CancelYubikeyScan
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ChooseOtherProvider
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.Close
+import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ConfirmSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.DismissNotFromCurrentUserDialog
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.DismissScanCancelledDialog
+import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.DismissSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ScanYubikey
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ToggleRememberMe
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ValidateYubikeyOtp
@@ -80,10 +83,11 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
 internal fun ScanYubikeyScreen(
     mfaState: MfaDialogState.Yubikey,
     onMfaResult: (MfaResult) -> Unit,
+    isSetupFlow: Boolean = false,
     appNavigator: AppNavigator = koinInject(),
     viewModel: ScanYubikeyViewModel =
         koinViewModel {
-            parametersOf(mfaState.authToken, mfaState.hasOtherProviders)
+            parametersOf(mfaState.authToken, mfaState.hasOtherProviders, isSetupFlow)
         },
 ) {
     val context = LocalContext.current
@@ -105,6 +109,7 @@ internal fun ScanYubikeyScreen(
             }
         }
 
+    val errorSnackbarColor = colorResource(CoreUiR.color.red)
     SideEffectDispatcher(viewModel.sideEffect) { sideEffect ->
         when (sideEffect) {
             is NotifyVerificationSucceeded -> onMfaResult(Succeeded(sideEffect.mfaHeader))
@@ -118,7 +123,7 @@ internal fun ScanYubikeyScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSnackbarMessage(context, sideEffect.kind),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorSnackbarColor,
                         ),
                     )
                 }
@@ -270,6 +275,12 @@ private fun ScanYubikeyScreen(
             onDismissRequest = { onIntent(DismissNotFromCurrentUserDialog) },
         )
     }
+
+    LeaveSetupAlertDialog(
+        isVisible = state.showSetupLeaveConfirmationDialog,
+        onLeaveConfirm = { onIntent(ConfirmSetupLeave) },
+        onDismiss = { onIntent(DismissSetupLeave) },
+    )
 
     ProgressDialog(isVisible = state.showProgress)
 }

@@ -28,4 +28,5 @@ enum class LeadingContentType {
     PASSWORD,
     CUSTOM_FIELDS,
     STANDALONE_NOTE,
+    PIN_CODE,
 }

@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.feature.home.screen
 
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption
@@ -32,6 +33,7 @@ sealed interface HomeIntent {
     data class Initialize(
         val showSuggestedModel: ShowSuggestedModel,
         val homeView: HomeDisplayViewModel?,
+        val appContext: AppContext = AppContext.APP,
     ) : HomeIntent
 
     data class Search(
@@ -59,6 +61,8 @@ sealed interface HomeIntent {
     data object CreateTotp : HomeIntent
 
     data object CreateNote : HomeIntent
+
+    data object CreatePinCode : HomeIntent
 
     data object CreateFolder : HomeIntent
 

@@ -36,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -136,6 +135,10 @@ internal fun AuthScreen(
         snackbarHostState = snackbarHostState,
     )
 
+    val sessionExpiredText = stringResource(LocalizationR.string.auth_reason_session_expired)
+    val passphraseExpiredText = stringResource(LocalizationR.string.auth_reason_passphrase_expired)
+    val biometricTitle = stringResource(LocalizationR.string.auth_biometric_title)
+    val errorSnackbarColor = colorResource(CoreUiR.color.red)
     SideEffectDispatcher(viewModel.sideEffect) { sideEffect ->
         when (sideEffect) {
             is NavigateBack -> {
@@ -168,10 +171,8 @@ internal fun AuthScreen(
                 val subtitle =
                     sideEffect.authReason?.let { reason ->
                         when (reason) {
-                            SESSION ->
-                                context.getString(LocalizationR.string.auth_reason_session_expired)
-                            PASSPHRASE ->
-                                context.getString(LocalizationR.string.auth_reason_passphrase_expired)
+                            SESSION -> sessionExpiredText
+                            PASSPHRASE -> passphraseExpiredText
                         }
                     } ?: ""
                 showBiometricPrompt(
@@ -179,7 +180,7 @@ internal fun AuthScreen(
                     executor = executor,
                     biometricPromptBuilder = biometricPromptBuilder,
                     biometricEncryptionCipher = sideEffect.cipher,
-                    title = context.getString(LocalizationR.string.auth_biometric_title),
+                    title = biometricTitle,
                     subtitle = subtitle,
                     onAuthenticationSuccess = { resultCipher ->
                         viewModel.onIntent(AuthIntent.BiometricAuthenticationSuccess(resultCipher))
@@ -210,7 +211,7 @@ internal fun AuthScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSnackBarMessage(context, sideEffect.kind, sideEffect.message),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorSnackbarColor,
                         ),
                     )
                 }

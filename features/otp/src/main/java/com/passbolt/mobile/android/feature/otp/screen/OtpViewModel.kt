@@ -30,6 +30,8 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.NotCompleted
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
+import com.passbolt.mobile.android.common.time.TimeProvider
+import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
@@ -45,11 +47,11 @@ import com.passbolt.mobile.android.core.resources.actions.performResourceUpdateA
 import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
+import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
@@ -60,6 +62,7 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ConfirmDeleteTot
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CopyOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateNote
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.DeleteOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
@@ -88,6 +91,7 @@ import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_T
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_TO_TRUST_METADATA_KEY
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FAILED_TO_VERIFY_METADATA_KEYS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.FETCH_FAILURE
+import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.INVALID_TOTP_PARAMETERS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.RESOURCE_SCHEMA_INVALID
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarErrorType.SECRET_SCHEMA_INVALID
@@ -102,59 +106,86 @@ import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelper
 import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.RESOURCE
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.SECRET
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordDescriptionTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.totpSlugs
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
+import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.allReset
+import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.findVisible
 import com.passbolt.mobile.android.ui.isExpired
 import com.passbolt.mobile.android.ui.refreshingNone
 import com.passbolt.mobile.android.ui.refreshingOnly
 import com.passbolt.mobile.android.ui.replaceOnId
 import com.passbolt.mobile.android.ui.revealed
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.parameter.parametersOf
 import timber.log.Timber
-import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
 internal class OtpViewModel(
+    private val showSuggestedModel: ShowSuggestedModel,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
     private val getLocalResourcesUseCase: GetLocalResourcesUseCase,
     private val otpModelMapper: OtpModelMapper,
     private val totpParametersProvider: TotpParametersProvider,
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
     private val timerFactory: TimerFactory,
     private val canCreateResourceUse: CanCreateResourceUseCase,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
     private val secretPropertiesActionsInteractorFactory: SecretPropertiesActionsInteractorFactory,
+    private val autofillUriMatcher: AutofillUriMatcher,
+    private val timeProvider: TimeProvider,
 ) : SideEffectViewModel<OtpState, OtpSideEffect>(OtpState()),
     KoinComponent {
+    private var dataRefreshJob: Job? = null
+    private var otpsCounterJob: Job? = null
+    private var universalCountdownJob: Job? = null
+
     init {
         loadUserAvatar()
-        viewModelScope.launch(coroutineLaunchContext.io) {
-            synchronizeWithDataRefresh()
-        }
-        viewModelScope.launch(coroutineLaunchContext.io) {
-            val otps = getOtpResources()
-            updateViewState { copy(otps = otps) }
-            updateOtpsCounterTime()
-        }
+        updateViewState { copy(universalCountdownSeconds = currentRemainingCountdownSeconds()) }
+        dataRefreshJob?.cancel()
+        dataRefreshJob =
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                synchronizeWithDataRefresh()
+            }
+        otpsCounterJob?.cancel()
+        otpsCounterJob =
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                val otps = getOtpResources()
+                updateViewState { copy(otps = otps, suggestedOtps = getSuggestedOtps(otps)) }
+                updateOtpsCounterTime()
+            }
+        universalCountdownJob?.cancel()
+        universalCountdownJob =
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                updateUniversalCountdown()
+            }
+    }
+
+    private fun currentRemainingCountdownSeconds(): Long =
+        DEFAULT_TOTP_PERIOD - (timeProvider.getCurrentEpochSeconds() % DEFAULT_TOTP_PERIOD)
+
+    override fun onCleared() {
+        dataRefreshJob?.cancel()
+        otpsCounterJob?.cancel()
+        universalCountdownJob?.cancel()
+        super.onCleared()
     }
 
     private fun onCanCreateResource(function: () -> Unit) {
@@ -176,7 +207,7 @@ internal class OtpViewModel(
             is Search -> searchQueryChanged(intent.searchQuery)
             is RevealOtp -> {
                 updateViewState { copy(showOtpMoreBottomSheet = false) }
-                otpClick(intent.otpItemWrapper)
+                otpClick(intent.resource)
             }
             is OpenOtpMoreMenu -> updateViewState { copy(showOtpMoreBottomSheet = true, moreMenuResource = intent.otpItemWrapper) }
             is CloseOtpMoreMenu -> updateViewState { copy(showOtpMoreBottomSheet = false) }
@@ -187,6 +218,10 @@ internal class OtpViewModel(
             CreateNote -> {
                 updateViewState { copy(showCreateResourceBottomSheet = false) }
                 onCanCreateResource { emitSideEffect(NavigateToCreateResourceForm(leadingContentType = STANDALONE_NOTE)) }
+            }
+            CreatePinCode -> {
+                updateViewState { copy(showCreateResourceBottomSheet = false) }
+                onCanCreateResource { emitSideEffect(NavigateToCreateResourceForm(leadingContentType = PIN_CODE)) }
             }
             CreateTotp -> {
                 updateViewState { copy(showCreateResourceBottomSheet = false) }
@@ -298,11 +333,7 @@ internal class OtpViewModel(
     private fun deleteTotp(moreMenuResource: OtpItemWrapper?) {
         viewModelScope.launch(coroutineLaunchContext.io) {
             val otpResource = requireNotNull(moreMenuResource)
-            val slug =
-                idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                    UUID.fromString(otpResource.resource.resourceTypeId),
-                ]
-            when (val contentType = ContentType.fromSlug(slug!!)) {
+            when (val contentType = otpResource.resource.contentType()) {
                 is Totp, V5TotpStandalone ->
                     deleteStandaloneTotpResource(otpResource.resource)
                 is PasswordDescriptionTotp, V5DefaultWithTotp ->
@@ -365,7 +396,7 @@ internal class OtpViewModel(
     }
 
     private fun copyTotp(otpItemWrapper: OtpItemWrapper) {
-        fetchTotp(otpItemWrapper) { totp ->
+        fetchTotp(otpItemWrapper.resource) { totp ->
             val otpParameters =
                 totpParametersProvider.provideOtpParameters(
                     secretKey = totp.result.key,
@@ -375,7 +406,7 @@ internal class OtpViewModel(
                 )
 
             when (otpParameters) {
-                InvalidTotpInput -> stopRefreshingAndShowError("Failed to generate totp parameters")
+                InvalidTotpInput -> stopRefreshingAndShowInvalidTotpError()
                 is OtpParameters -> {
                     emitSideEffect(
                         CopyToClipboard(
@@ -424,23 +455,23 @@ internal class OtpViewModel(
         }
     }
 
-    private fun otpClick(otpItemWrapper: OtpItemWrapper) {
+    private fun otpClick(resource: ResourceModel) {
         updateViewState { copy(showOtpMoreBottomSheet = false) }
-        fetchTotp(otpItemWrapper) {
-            showTotp(it, otpItemWrapper.resource.resourceId)
+        fetchTotp(resource) {
+            showTotp(it, resource.resourceId)
         }
     }
 
     private fun fetchTotp(
-        otpItemWrapper: OtpItemWrapper,
+        resource: ResourceModel,
         afterFetchAction: (SecretPropertyActionResult.Success<TotpSecret>) -> Unit,
     ) {
         viewModelScope.launch(coroutineLaunchContext.io) {
             updateViewState {
-                copy(otps = otps.refreshingOnly(otpItemWrapper.resource.resourceId))
+                copy(otps = otps.refreshingOnly(resource.resourceId))
             }
 
-            val secretPropertiesActionsInteractor = secretPropertiesActionsInteractorFactory.create(otpItemWrapper.resource)
+            val secretPropertiesActionsInteractor = secretPropertiesActionsInteractorFactory.create(resource)
 
             performSecretPropertyAction(
                 action = { secretPropertiesActionsInteractor.provideOtp() },
@@ -501,6 +532,12 @@ internal class OtpViewModel(
         }
     }
 
+    private suspend fun updateUniversalCountdown() {
+        timerFactory.createInfiniteTimer(tickDuration = 1.seconds).collectLatest {
+            updateViewState { copy(universalCountdownSeconds = currentRemainingCountdownSeconds()) }
+        }
+    }
+
     private suspend fun updateOtpsCounterTime() {
         timerFactory.createInfiniteTimer(tickDuration = 1.seconds).collectLatest {
             val visibleTotp = viewState.value.otps.findVisible()
@@ -509,7 +546,7 @@ internal class OtpViewModel(
 
                 if (updated.isExpired()) {
                     updateViewState { copy(otps = otps.allReset()) }
-                    fetchTotp(updated) {
+                    fetchTotp(updated.resource) {
                         showTotp(it, updated.resource.resourceId)
                     }
                 } else {
@@ -529,7 +566,7 @@ internal class OtpViewModel(
                 }
                 FinishedWithSuccess -> {
                     val otps = getOtpResources()
-                    updateViewState { copy(otps = otps, isRefreshing = false) }
+                    updateViewState { copy(otps = otps, suggestedOtps = getSuggestedOtps(otps), isRefreshing = false) }
                 }
                 NotCompleted -> {
                     // do nothing
@@ -547,6 +584,19 @@ internal class OtpViewModel(
         updateViewState { copy(userAvatar = avatarUrl) }
     }
 
+    private fun getSuggestedOtps(otps: List<OtpItemWrapper>): List<OtpItemWrapper> =
+        when (showSuggestedModel) {
+            is ShowSuggestedModel.DoNotShow -> emptyList()
+            is ShowSuggestedModel.Show ->
+                otps.filter { otpItem ->
+                    val resourceUris =
+                        otpItem.resource.metadataJsonModel.uris
+                            .orEmpty() +
+                            listOfNotNull(otpItem.resource.metadataJsonModel.uri)
+                    autofillUriMatcher.isMatching(showSuggestedModel.suggestedUri, resourceUris)
+                }
+        }
+
     private suspend fun getOtpResources(searchQuery: String? = null): List<OtpItemWrapper> =
         getLocalResourcesUseCase
             .execute(GetLocalResourcesUseCase.Input(totpSlugs, searchQuery = searchQuery))
@@ -556,6 +606,12 @@ internal class OtpViewModel(
     private fun stopRefreshingAndShowError(message: String) {
         Timber.e(message)
         emitSideEffect(ShowErrorSnackbar(ERROR, message))
+        updateViewState { copy(otps = otps.refreshingNone()) }
+    }
+
+    private fun stopRefreshingAndShowInvalidTotpError() {
+        Timber.e("Invalid TOTP parameters")
+        emitSideEffect(ShowErrorSnackbar(INVALID_TOTP_PARAMETERS))
         updateViewState { copy(otps = otps.refreshingNone()) }
     }
 }

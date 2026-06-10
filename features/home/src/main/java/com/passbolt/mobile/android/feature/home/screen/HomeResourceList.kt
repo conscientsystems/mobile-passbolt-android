@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -25,8 +27,10 @@ import com.passbolt.mobile.android.core.ui.lists.HeaderItem
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.data.HeaderSectionConfiguration
 import com.passbolt.mobile.android.feature.home.screen.list.FolderItem
+import com.passbolt.mobile.android.feature.home.screen.list.FolderItemPlaceholder
 import com.passbolt.mobile.android.feature.home.screen.list.GroupItem
 import com.passbolt.mobile.android.feature.home.screen.list.ResourceItem
+import com.passbolt.mobile.android.feature.home.screen.list.ResourceItemPlaceholder
 import com.passbolt.mobile.android.feature.home.screen.list.TagItem
 import com.passbolt.mobile.android.ui.Folder.Child
 import com.passbolt.mobile.android.ui.FolderWithCountAndPath
@@ -53,16 +57,27 @@ fun HomeResourceList(
     val headerConfig = rememberHeaderConfig(state, homeListData)
     val listState = rememberLazyListState()
 
-    // Auto-scroll to top when suggested section is visible and first items load
-    // resources and suggested are emitted at the same time - there can be race condition that makes list scrolled to resources
-    // and then suggested section appears above resources section
+    // Scroll to top once when the suggested section first appears (autofill); resources and suggested
+    // are emitted together, so without this the list can settle on resources before suggested shows above.
+    // The guard stops it re-snapping on later visibility toggles.
+    var hasScrolledToShowSuggested by remember { mutableStateOf(false) }
     LaunchedEffect(headerConfig.isSuggestedSectionVisible) {
-        if (headerConfig.isSuggestedSectionVisible) {
+        if (headerConfig.isSuggestedSectionVisible && !hasScrolledToShowSuggested) {
+            listState.scrollToItem(0)
+            hasScrolledToShowSuggested = true
+        }
+    }
+
+    // Auto-scroll to top when search query changes - multiple paginated sources load at once
+    // and sections added above the current scroll position (e.g. folders before resources) can push content off-screen
+    LaunchedEffect(state.searchQuery) {
+        if (state.searchQuery.isNotBlank()) {
             listState.scrollToItem(0)
         }
     }
 
-    val showEmpty = rememberDebouncedBoolean(headerConfig.areAllSectionsEmpty)
+    // Suppress the empty state while a refresh is running so it doesn't flash before the first data arrives.
+    val showEmpty = rememberDebouncedBoolean(headerConfig.areAllSectionsEmpty && !state.isRefreshing)
 
     if (showEmpty) {
         EmptyResourceListState(title = stringResource(LocalizationR.string.no_passwords))
@@ -74,7 +89,7 @@ fun HomeResourceList(
         ) {
             // suggested
             if (headerConfig.isSuggestedSectionVisible) {
-                item { HeaderItem(stringResource(R.string.suggested)) }
+                item(key = "header_suggested") { HeaderItem(stringResource(R.string.suggested)) }
                 items(
                     count = homeListData.suggestedResources.itemCount,
                     key = homeListData.suggestedResources.itemKey { "suggested_${it.resourceId}" },
@@ -93,12 +108,12 @@ fun HomeResourceList(
 
             // other items header
             if (headerConfig.isOtherItemsSectionVisible) {
-                item { HeaderItem(stringResource(R.string.other)) }
+                item(key = "header_other") { HeaderItem(stringResource(R.string.other)) }
             }
 
             // in current folder header
             if (headerConfig.isInCurrentFolderSectionVisible) {
-                item {
+                item(key = "header_in_current_folder") {
                     HeaderItem(
                         stringResource(
                             R.string.home_in_current_folder,
@@ -113,8 +128,9 @@ fun HomeResourceList(
             items(
                 count = homeListData.folders.itemCount,
                 key = homeListData.folders.itemKey { "folder_${it.folderId}" },
-            ) { folder ->
-                homeListData.folders[folder]?.let { folder ->
+            ) { index ->
+                val folder = homeListData.folders[index]
+                if (folder != null) {
                     FolderItem(
                         folder = folder,
                         onFolderClick = {
@@ -127,6 +143,8 @@ fun HomeResourceList(
                             }
                         },
                     )
+                } else {
+                    FolderItemPlaceholder()
                 }
             }
 
@@ -176,7 +194,8 @@ fun HomeResourceList(
                 count = homeListData.resources.itemCount,
                 key = homeListData.resources.itemKey { "resource_${it.resourceId}" },
             ) { index ->
-                homeListData.resources[index]?.let { resource ->
+                val resource = homeListData.resources[index]
+                if (resource != null) {
                     ResourceItem(
                         resource = resource,
                         resourceIconProvider = resourceIconProvider,
@@ -184,12 +203,14 @@ fun HomeResourceList(
                         onMoreClick = { onIntent(OpenResourceMenu(resource)) },
                         showMoreMenu = resourceHandlingStrategy.shouldShowResourceMoreMenu(),
                     )
+                } else {
+                    ResourceItemPlaceholder()
                 }
             }
 
             // in subfolders
             if (headerConfig.isInSubFoldersSectionVisible) {
-                item { HeaderItem(stringResource(R.string.home_in_sub_folders)) }
+                item(key = "header_in_subfolders") { HeaderItem(stringResource(R.string.home_in_sub_folders)) }
                 items(
                     count = homeListData.filteredSubfolders.itemCount,
                     key = homeListData.filteredSubfolders.itemKey { "subfolder_folder_${it.folderId}" },

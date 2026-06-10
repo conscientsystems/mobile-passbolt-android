@@ -48,9 +48,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -109,6 +109,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ui.CustomFiel
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.MetadataSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.NoteSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.PasswordSection
+import com.passbolt.mobile.android.feature.resourcedetails.details.ui.PinCodeSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.ResourceHeader
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.SharedWithSection
 import com.passbolt.mobile.android.feature.resourcedetails.details.ui.TotpSection
@@ -139,6 +140,8 @@ fun ResourceDetailsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val resultBus = NavigationResultEventBus.current
+    val errorColor = colorResource(CoreUiR.color.red)
+    val successColor = colorResource(CoreUiR.color.green)
 
     var resourceIcon by remember { mutableStateOf<Drawable?>(null) }
     val currentResourceModel = state.value.resourceData.resourceModel ?: resourceModel
@@ -226,7 +229,7 @@ fun ResourceDetailsScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getSuccessSnackbarMessage(context, sideEffect.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.green)),
+                            backgroundColor = successColor,
                         ),
                     )
                 }
@@ -236,7 +239,7 @@ fun ResourceDetailsScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getErrorSnackbarMessage(context, sideEffect.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorColor,
                         ),
                     )
                 }
@@ -390,6 +393,15 @@ private fun ResourceDetailsContent(
         if (state.totpData.showTotpSection) {
             TotpSection(
                 otpModel = state.totpData.totpModel,
+                onIntent = onIntent,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+        }
+
+        if (state.pinCodeData.showPinCodeSection) {
+            PinCodeSection(
+                pinCode = state.pinCodeData.pinCode,
+                isPinCodeVisible = state.pinCodeData.isPinCodeVisible,
                 onIntent = onIntent,
                 modifier = Modifier.padding(top = 16.dp),
             )

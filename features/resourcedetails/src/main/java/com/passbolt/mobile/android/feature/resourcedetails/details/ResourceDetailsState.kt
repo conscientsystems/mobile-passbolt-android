@@ -36,6 +36,7 @@ data class ResourceDetailsState(
     val totpData: TotpData = TotpData(),
     val noteData: NoteData = NoteData(),
     val passwordData: PasswordData = PasswordData(),
+    val pinCodeData: PinCodeData = PinCodeData(),
     val metadataData: MetadataData = MetadataData(),
     val sharedWithData: SharedWithData = SharedWithData(),
     val customFieldsData: CustomFieldsData = CustomFieldsData(),
@@ -82,6 +83,12 @@ data class PasswordData(
     val showPasswordEyeIcon: Boolean = false,
     val isPasswordVisible: Boolean = false,
     val password: String = "",
+)
+
+data class PinCodeData(
+    val showPinCodeSection: Boolean = false,
+    val isPinCodeVisible: Boolean = false,
+    val pinCode: String = "",
 )
 
 data class MetadataData(

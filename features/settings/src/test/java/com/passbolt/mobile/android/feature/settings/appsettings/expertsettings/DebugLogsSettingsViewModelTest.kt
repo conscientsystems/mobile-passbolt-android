@@ -23,6 +23,7 @@ package com.passbolt.mobile.android.feature.settings.appsettings.expertsettings
  * @since v1.0
  */
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
@@ -89,7 +90,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -112,7 +115,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -137,7 +142,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = true,
                     isHideRootDialogEnabled = true,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -162,7 +169,9 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     debugLogFileCreationDateTime = null,
                     isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
+                    isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
+                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 

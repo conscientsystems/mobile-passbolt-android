@@ -14,6 +14,8 @@ sealed interface ScanOtpIntent {
         val exception: Exception,
     ) : ScanOtpIntent
 
+    data object GrantCameraPermission : ScanOtpIntent
+
     data object RejectCameraPermission : ScanOtpIntent
 
     data object DismissCameraRequiredDialog : ScanOtpIntent

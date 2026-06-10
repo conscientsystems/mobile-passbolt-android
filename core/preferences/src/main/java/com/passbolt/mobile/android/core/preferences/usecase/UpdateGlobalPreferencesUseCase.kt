@@ -49,6 +49,12 @@ class UpdateGlobalPreferencesUseCase(
             input.isHideRootDialogEnabled?.let {
                 putBoolean(KEY_IS_HIDE_ROOT_DIALOG_ENABLED, it)
             }
+            input.isAuthRequiredOnEveryEntry?.let {
+                putBoolean(KEY_IS_AUTH_REQUIRED_ON_EVERY_ENTRY, it)
+            }
+            input.apiFetchPageSize?.let {
+                putInt(KEY_API_FETCH_PAGE_SIZE, it)
+            }
             input.accessibilityPoliciesConsentGiven?.let {
                 putBoolean(KEY_ACCESSIBILITY_POLICIES_CONSENT_GIVEN, it)
             }
@@ -62,6 +68,8 @@ class UpdateGlobalPreferencesUseCase(
         val debugLogLastAppVersion: String? = null,
         val isDeveloperModeEnabled: Boolean? = null,
         val isHideRootDialogEnabled: Boolean? = null,
+        val isAuthRequiredOnEveryEntry: Boolean? = null,
+        val apiFetchPageSize: Int? = null,
         val accessibilityPoliciesConsentGiven: Boolean? = null,
     )
 }

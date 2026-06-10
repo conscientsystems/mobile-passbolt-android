@@ -51,6 +51,8 @@ class SecretJsonModel(
 
     var customFields: SecretCustomFieldsModel? by RootRelativeJsonPathSecretCustomFieldsDelegate(jsonPath = "custom_fields")
 
+    var pinCode: String? by RootRelativeJsonPathNullableStringDelegate(jsonPath = "pin_code")
+
     fun getPassword(contentType: ContentType): String? =
         when (contentType) {
             ContentType.PasswordString, ContentType.V5PasswordString -> password
@@ -100,6 +102,15 @@ class SecretJsonModel(
                 """
                 {
                     ${emptyTotpObject()}
+                }
+                """.trimIndent(),
+            )
+
+        fun emptyPinCode(): SecretJsonModel =
+            SecretJsonModel(
+                """
+                {
+                    "pin_code": ""
                 }
                 """.trimIndent(),
             )

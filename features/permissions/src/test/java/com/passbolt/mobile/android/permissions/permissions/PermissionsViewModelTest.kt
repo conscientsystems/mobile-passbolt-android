@@ -12,14 +12,12 @@ import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.commontest.session.validSessionTestModule
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
-import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
@@ -30,7 +28,8 @@ import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.Gro
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.MainButtonIntent
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.UserPermissionDeleted
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.UserPermissionModified
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
+import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.CloseWithShareSuccess
+import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.InitiateDataRefresh
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
@@ -80,8 +79,6 @@ class PermissionsViewModelTest : KoinTest {
                     single { mock<GetLocalResourceUseCase>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
                     single { mock<ResourceShareInteractor>() }
-                    single { mock<HomeDataInteractor>() }
-                    single { mock<ResourceTypeIdToSlugMappingProvider>() }
                     single { mock<MetadataPrivateKeysHelperInteractor>() }
                     single { mock<ResourceUpdateActionsInteractorFactory>() }
                     single { mock<CanShareResourceUseCase>() }
@@ -110,8 +107,6 @@ class PermissionsViewModelTest : KoinTest {
                             getLocalFolderUseCase = get(),
                             permissionModelUiComparator = get(),
                             resourceShareInteractor = get(),
-                            homeDataInteractor = get(),
-                            resourceTypeIdToSlugMappingProvider = get(),
                             metadataPrivateKeysHelperInteractor = get(),
                             canShareResourceUseCase = get(),
                             dataRefreshTrackingFlow = get(),
@@ -338,7 +333,7 @@ class PermissionsViewModelTest : KoinTest {
         }
 
     @Test
-    fun `should close with share success after successful share`() =
+    fun `should initiate data refresh and close with share success after successful share`() =
         runTest {
             val ownerPermissions = GROUP_PERMISSIONS + USER_PERMISSIONS[0].copy(permission = ResourcePermission.OWNER)
             get<GetLocalResourcePermissionsUseCase>().stub {
@@ -349,16 +344,6 @@ class PermissionsViewModelTest : KoinTest {
                 onBlocking { simulateAndShareResource(any(), any()) }
                     .doReturn(ResourceShareInteractor.Output.Success)
             }
-            get<HomeDataInteractor>().stub {
-                onBlocking { refreshAllHomeScreenData() }
-                    .doReturn(HomeDataInteractor.Output.Success)
-            }
-            get<ResourceTypeIdToSlugMappingProvider>().stub {
-                onBlocking { provideMappingForSelectedAccount() }.doReturn(
-                    mapOf(RESOURCE_TYPE_ID to ContentType.PasswordAndDescription.slug),
-                )
-            }
-
             val viewModel =
                 get<PermissionsViewModel>(
                     parameters = { parametersOf(RESOURCE_ID, PermissionsMode.EDIT, PermissionsItem.RESOURCE) },
@@ -366,8 +351,8 @@ class PermissionsViewModelTest : KoinTest {
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(MainButtonIntent)
-                val effect = awaitItem()
-                assertIs<PermissionsSideEffect.CloseWithShareSuccess>(effect)
+                assertIs<InitiateDataRefresh>(awaitItem())
+                assertIs<CloseWithShareSuccess>(awaitItem())
             }
         }
 
@@ -379,6 +364,7 @@ class PermissionsViewModelTest : KoinTest {
             ResourceModel(
                 resourceId = RESOURCE_ID,
                 resourceTypeId = RESOURCE_TYPE_ID.toString(),
+                slug = "password-and-description",
                 folderId = FOLDER_ID.toString(),
                 permission = ResourcePermission.READ,
                 favouriteId = null,

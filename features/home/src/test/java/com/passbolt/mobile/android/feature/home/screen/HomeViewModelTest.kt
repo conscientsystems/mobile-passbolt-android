@@ -113,8 +113,10 @@ import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -194,6 +196,7 @@ class HomeViewModelTest : KoinTest {
                     any(),
                     any(),
                     any(),
+                    any(),
                 )
             }.doReturn(HomeData())
         }
@@ -238,7 +241,7 @@ class HomeViewModelTest : KoinTest {
     fun `should update search state when search query changes`() =
         runTest {
             val mockHomeData = mockResourcesData()
-            whenever(get<HomeDataProvider>().provideData(any(), any(), any())).thenReturn(mockHomeData)
+            whenever(get<HomeDataProvider>().provideData(any(), any(), any(), any())).thenReturn(mockHomeData)
 
             viewModel = get()
             viewModel.onIntent(Search("test query"))
@@ -596,6 +599,26 @@ class HomeViewModelTest : KoinTest {
         }
 
     @Test
+    fun `should not regenerate homeData on refresh complete`() =
+        runTest {
+            mockHomeData()
+            val dataRefreshFlow: DataRefreshTrackingFlow = get()
+            val provider: HomeDataProvider = get()
+
+            viewModel = get()
+            viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
+            advanceUntilIdle()
+
+            clearInvocations(provider)
+
+            dataRefreshFlow.updateStatus(InProgress)
+            dataRefreshFlow.updateStatus(FinishedWithSuccess)
+            advanceUntilIdle()
+
+            verify(provider, never()).provideData(any(), any(), any(), any())
+        }
+
+    @Test
     fun `should reload home data and avatar when account switches`() =
         runTest {
             mockHomeData()
@@ -618,7 +641,7 @@ class HomeViewModelTest : KoinTest {
             )
 
             val newHomeData = mockResourcesData()
-            whenever(get<HomeDataProvider>().provideData(any(), any(), any())).thenReturn(newHomeData)
+            whenever(get<HomeDataProvider>().provideData(any(), any(), any(), any())).thenReturn(newHomeData)
 
             val accountSwitchFlow: AccountSwitchFlow = get()
             accountSwitchFlow.notifyAccountSwitch("id2")
@@ -646,6 +669,7 @@ class HomeViewModelTest : KoinTest {
                     any(),
                     any(),
                     any(),
+                    any(),
                 )
             }.doReturn(homeData)
         }
@@ -670,6 +694,7 @@ class HomeViewModelTest : KoinTest {
     ) = ResourceModel(
         resourceId = id,
         resourceTypeId = "resTypeId",
+        slug = "password-and-description",
         folderId = "folderId",
         permission = ResourcePermission.READ,
         favouriteId = null,

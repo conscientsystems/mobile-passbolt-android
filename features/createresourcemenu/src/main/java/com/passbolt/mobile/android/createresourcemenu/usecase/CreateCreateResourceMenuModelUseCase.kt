@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.createresourcemenu.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseCase
@@ -32,6 +33,7 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAn
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Note
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5PinCodeStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.ui.CreateResourceMenuModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
@@ -74,9 +76,24 @@ class CreateCreateResourceMenuModelUseCase(
                         supportedContentTypes,
                     ),
                 isFolderEnabled = isFoldersViewSelected,
+                isPinCodeEnabled =
+                    input.appContext != AppContext.AUTOFILL &&
+                        isLeadingPinCodeResourceSupported(
+                            defaultMetadataType,
+                            supportedContentTypes,
+                        ),
             ),
         )
     }
+
+    private fun isLeadingPinCodeResourceSupported(
+        defaultMetadataType: MetadataTypeModel,
+        supportedSlugs: List<ContentType>,
+    ): Boolean =
+        when (defaultMetadataType) {
+            V4 -> false
+            V5 -> supportedSlugs.contains(V5PinCodeStandalone)
+        }
 
     private fun isLeadingNoteResourceSupported(
         defaultMetadataType: MetadataTypeModel,
@@ -108,6 +125,7 @@ class CreateCreateResourceMenuModelUseCase(
     data class Input(
         // homeDisplay is null when the user is on home (totp tab)
         val homeDisplay: HomeDisplayViewModel?,
+        val appContext: AppContext = AppContext.APP,
     )
 
     data class Output(

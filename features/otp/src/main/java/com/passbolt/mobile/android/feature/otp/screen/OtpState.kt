@@ -28,9 +28,13 @@ import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.TrustedKeyDeletedModel
 
+internal const val DEFAULT_TOTP_PERIOD = 30L
+
 data class OtpState(
     val otps: List<OtpItemWrapper> = emptyList(),
     val filteredOtps: List<OtpItemWrapper> = emptyList(),
+    val suggestedOtps: List<OtpItemWrapper> = emptyList(),
+    val universalCountdownSeconds: Long = DEFAULT_TOTP_PERIOD,
     val isRefreshing: Boolean = false,
     val searchQuery: String = "",
     val showProgress: Boolean = false,

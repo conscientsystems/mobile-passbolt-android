@@ -2,8 +2,11 @@ package com.passbolt.mobile.android.createresourcemenu
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -12,6 +15,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.ui.R
 import com.passbolt.mobile.android.core.ui.bottomsheet.BottomSheetHeader
 import com.passbolt.mobile.android.core.ui.menu.OpenableSettingsItem
@@ -19,11 +23,13 @@ import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.C
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreateFolder
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreateNote
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreatePassword
+import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreatePinCode
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuIntent.CreateTotp
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuSideEffect.Dismiss
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuSideEffect.InvokeCreateFolder
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuSideEffect.InvokeCreateNote
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuSideEffect.InvokeCreatePassword
+import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuSideEffect.InvokeCreatePinCode
 import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuSideEffect.InvokeCreateTotp
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -59,12 +65,14 @@ fun CreateResourceMenuBottomSheet(
     onCreatePassword: () -> Unit,
     onCreateTotp: () -> Unit,
     onCreateNote: () -> Unit,
+    onCreatePinCode: () -> Unit,
     onDismissRequest: () -> Unit,
     onCreateFolder: (() -> Unit)? = null,
     homeDisplayViewModel: HomeDisplayViewModel? = null,
+    appContext: AppContext = AppContext.APP,
     viewModel: CreateResourceMenuViewModel = koinViewModel(),
 ) {
-    viewModel.onIntent(CreateResourceMenuIntent.Initialize(homeDisplayViewModel))
+    viewModel.onIntent(CreateResourceMenuIntent.Initialize(homeDisplayViewModel, appContext))
 
     val state by viewModel.viewState.collectAsState()
 
@@ -80,6 +88,7 @@ fun CreateResourceMenuBottomSheet(
             InvokeCreatePassword -> onCreatePassword()
             InvokeCreateTotp -> onCreateTotp()
             InvokeCreateNote -> onCreateNote()
+            InvokeCreatePinCode -> onCreatePinCode()
             InvokeCreateFolder -> onCreateFolder?.invoke()
         }
     }
@@ -92,12 +101,21 @@ private fun CreateResourceMenuBottomSheet(
     onDismissRequest: () -> Unit,
     state: CreateResourceMenuState,
 ) {
+    val sheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+        )
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         containerColor = colorResource(R.color.elevated_background),
+        sheetState = sheetState,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
         ) {
             BottomSheetHeader(
                 title = stringResource(LocalizationR.string.create_resource_menu_create_a_resource),
@@ -127,6 +145,15 @@ private fun CreateResourceMenuBottomSheet(
                     title = stringResource(LocalizationR.string.create_resource_menu_create_note),
                     iconPainter = painterResource(CoreUiR.drawable.ic_notes),
                     onClick = { onIntent(CreateNote) },
+                    opensInternally = false,
+                )
+            }
+
+            if (state.showPinCodeButton) {
+                OpenableSettingsItem(
+                    title = stringResource(LocalizationR.string.create_resource_menu_create_pin_code),
+                    iconPainter = painterResource(CoreUiR.drawable.passbolt_pin),
+                    onClick = { onIntent(CreatePinCode) },
                     opensInternally = false,
                 )
             }

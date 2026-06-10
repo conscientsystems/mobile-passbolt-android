@@ -198,6 +198,7 @@ class FoldersSearchTest {
                 Permission.READ,
                 null,
                 false,
+                ZonedDateTime.now(),
                 FolderUpdateState.UPDATED,
             )
         val FOLDER_2 =
@@ -207,6 +208,7 @@ class FoldersSearchTest {
                 Permission.READ,
                 null,
                 false,
+                ZonedDateTime.now(),
                 FolderUpdateState.UPDATED,
             )
         val FOLDER_3 =
@@ -216,6 +218,7 @@ class FoldersSearchTest {
                 Permission.READ,
                 "rootFolder2",
                 false,
+                ZonedDateTime.now(),
                 FolderUpdateState.UPDATED,
             )
         val FOLDER_4 =
@@ -225,6 +228,7 @@ class FoldersSearchTest {
                 Permission.READ,
                 "rootFolder2Folder1",
                 false,
+                ZonedDateTime.now(),
                 FolderUpdateState.UPDATED,
             )
         val FOLDER_5 =
@@ -234,6 +238,7 @@ class FoldersSearchTest {
                 Permission.READ,
                 "rootFolder2Folder1Folder1",
                 false,
+                ZonedDateTime.now(),
                 FolderUpdateState.UPDATED,
             )
     }

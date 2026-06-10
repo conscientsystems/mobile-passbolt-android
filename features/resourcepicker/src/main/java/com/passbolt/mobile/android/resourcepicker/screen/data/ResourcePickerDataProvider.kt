@@ -26,7 +26,6 @@ package com.passbolt.mobile.android.resourcepicker.screen.data
 import com.passbolt.mobile.android.common.search.SearchableMatcher
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.mappers.ResourcePickerMapper
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerViewModel.Companion.SELECTABLE_RESOURCE_TYPES_SLUGS
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.allSlugs
@@ -34,7 +33,6 @@ import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.
 class ResourcePickerDataProvider(
     private val getLocalResourcesUseCase: GetLocalResourcesUseCase,
     private val resourcePickerMapper: ResourcePickerMapper,
-    private val getResourceTypeIdToSlugMappingUseCase: GetResourceTypeIdToSlugMappingUseCase,
     private val searchableMatcher: SearchableMatcher,
     private val autofillUriMatcher: AutofillUriMatcher,
 ) {
@@ -42,18 +40,11 @@ class ResourcePickerDataProvider(
         searchQuery: String?,
         suggestionUri: String?,
     ): ResourcePickerData {
-        val selectableResourceTypesIds =
-            getResourceTypeIdToSlugMappingUseCase
-                .execute(Unit)
-                .idToSlugMapping
-                .filter { it.value in SELECTABLE_RESOURCE_TYPES_SLUGS }
-                .keys
-
         val allResources =
             getLocalResourcesUseCase
                 .execute(GetLocalResourcesUseCase.Input(allSlugs))
                 .resources
-                .map { resourcePickerMapper.map(it, selectableResourceTypesIds) }
+                .map { resourcePickerMapper.map(it, SELECTABLE_RESOURCE_TYPES_SLUGS) }
 
         val suggestedResources =
             if (!suggestionUri.isNullOrBlank()) {

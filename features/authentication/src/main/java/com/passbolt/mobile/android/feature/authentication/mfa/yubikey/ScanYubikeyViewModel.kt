@@ -12,8 +12,10 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyYub
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.CancelYubikeyScan
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ChooseOtherProvider
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.Close
+import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ConfirmSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.DismissNotFromCurrentUserDialog
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.DismissScanCancelledDialog
+import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.DismissSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ScanYubikey
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ToggleRememberMe
 import com.passbolt.mobile.android.feature.authentication.mfa.yubikey.ScanYubikeyIntent.ValidateYubikeyOtp
@@ -30,6 +32,7 @@ import timber.log.Timber
 
 class ScanYubikeyViewModel(
     hasOtherProvider: Boolean,
+    private val isSetupFlow: Boolean,
     private val authToken: String?,
     private val signOutUseCase: SignOutUseCase,
     private val verifyYubikeyUseCase: VerifyYubikeyUseCase,
@@ -43,10 +46,23 @@ class ScanYubikeyViewModel(
             is CancelYubikeyScan -> updateViewState { copy(showScanCancelledDialog = true) }
             is ChooseOtherProvider -> emitSideEffect(NotifyChooseOtherProvider(authToken))
             is ValidateYubikeyOtp -> validateYubikeyOtp(intent.otp)
-            is Close -> signOutAndClose()
+            is Close -> close()
+            is ConfirmSetupLeave -> {
+                updateViewState { copy(showSetupLeaveConfirmationDialog = false) }
+                signOutAndClose()
+            }
+            is DismissSetupLeave -> updateViewState { copy(showSetupLeaveConfirmationDialog = false) }
             is ToggleRememberMe -> updateViewState { copy(rememberMe = intent.checked) }
             is DismissScanCancelledDialog -> updateViewState { copy(showScanCancelledDialog = false) }
             is DismissNotFromCurrentUserDialog -> updateViewState { copy(showNotFromCurrentUserDialog = false) }
+        }
+    }
+
+    private fun close() {
+        if (isSetupFlow) {
+            updateViewState { copy(showSetupLeaveConfirmationDialog = true) }
+        } else {
+            signOutAndClose()
         }
     }
 

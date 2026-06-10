@@ -35,6 +35,7 @@ fun Module.resourceFormModule() {
             mode = params.get(),
             getPasswordPoliciesUseCase = get(),
             secretGenerator = get(),
+            pinCodeGenerator = get(),
             entropyViewMapper = get(),
             entropyCalculator = get(),
             resourceFormMapper = get(),
@@ -45,6 +46,7 @@ fun Module.resourceFormModule() {
             createResourceIdlingResource = get(),
             updateResourceIdlingResource = get(),
             resourceUpdateActionsInteractorFactory = get(),
+            checkPasswordPropertiesUseCase = get(),
         )
     }
     factoryOf(::ResourceModelHandler)

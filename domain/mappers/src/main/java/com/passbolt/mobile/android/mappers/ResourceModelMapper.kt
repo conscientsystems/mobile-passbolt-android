@@ -43,12 +43,16 @@ import java.time.ZonedDateTime
 class ResourceModelMapper(
     private val permissionsModelMapper: PermissionsModelMapper,
 ) {
-    fun map(resource: ResourceResponseDto): ResourceModel =
+    fun map(
+        resource: ResourceResponseDto,
+        slug: String,
+    ): ResourceModel =
         when (resource) {
             is ResourceResponseV4Dto -> {
                 ResourceModel(
                     resourceId = resource.id.toString(),
                     resourceTypeId = resource.resourceTypeId.toString(),
+                    slug = slug,
                     folderId = resource.resourceFolderId?.toString(),
                     permission = permissionsModelMapper.map(resource.permission.type),
                     favouriteId = resource.favorite?.id?.toString(),
@@ -63,6 +67,7 @@ class ResourceModelMapper(
                 ResourceModel(
                     resourceId = resource.id.toString(),
                     resourceTypeId = resource.resourceTypeId.toString(),
+                    slug = slug,
                     folderId = resource.resourceFolderId?.toString(),
                     permission = permissionsModelMapper.map(resource.permission.type),
                     favouriteId = resource.favorite?.id?.toString(),
@@ -136,6 +141,7 @@ class ResourceModelMapper(
         ResourceModel(
             resourceId = resourceEntity.resourceId,
             resourceTypeId = resourceEntity.resourceTypeId,
+            slug = resourceEntity.slug,
             folderId = resourceEntity.folderId,
             permission = permissionsModelMapper.map(resourceEntity.resourcePermission),
             favouriteId = resourceEntity.favouriteId,

@@ -1,0 +1,26 @@
+plugins {
+    id("passbolt.android.library")
+}
+
+dependencies {
+    implementation(project(":common"))
+    implementation(project(":database"))
+    implementation(project(":entity"))
+    implementation(project(":networking"))
+    implementation(project(":passboltapi"))
+    implementation(project(":architecture"))
+    implementation(project(":dto"))
+    implementation(project(":mappers"))
+    implementation(project(":supportedresourcetypes"))
+    implementation(project(":accounts"))
+    implementation(project(":ui"))
+
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin)
+    implementation(libs.room.core)
+    implementation(libs.sqlite.cipher) { artifact { type = "aar" } }
+}
+
+android {
+    namespace = "com.passbolt.mobile.android.core.resourcetypes"
+}

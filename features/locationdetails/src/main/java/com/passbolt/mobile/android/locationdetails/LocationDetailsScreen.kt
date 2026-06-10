@@ -49,10 +49,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -84,6 +84,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import java.time.ZonedDateTime
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
@@ -107,6 +108,8 @@ internal fun LocationDetailsScreen(
         modifier = modifier,
     )
 
+    val errorColor = colorResource(CoreUiR.color.red)
+
     SideEffectDispatcher(viewModel.sideEffect) { sideEffect ->
         when (sideEffect) {
             NavigateUp -> navigator.navigateBack()
@@ -116,7 +119,7 @@ internal fun LocationDetailsScreen(
                     snackbarHostState.showSnackbar(
                         ColoredSnackbarVisuals(
                             message = getErrorMessage(context, sideEffect.type),
-                            backgroundColor = Color(context.getColor(CoreUiR.color.red)),
+                            backgroundColor = errorColor,
                         ),
                     )
                 }
@@ -256,6 +259,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                         name = "Projects",
                         isShared = false,
                         permission = ResourcePermission.OWNER,
+                        modified = ZonedDateTime.now(),
                     ),
                     FolderModel(
                         folderId = "2",
@@ -263,6 +267,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                         name = "Mobile Apps",
                         isShared = true,
                         permission = ResourcePermission.OWNER,
+                        modified = ZonedDateTime.now(),
                     ),
                 ),
             )
@@ -281,6 +286,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                                 name = "Projects",
                                 isShared = false,
                                 permission = ResourcePermission.OWNER,
+                                modified = ZonedDateTime.now(),
                             ),
                             FolderModel(
                                 folderId = "2",
@@ -288,6 +294,7 @@ private fun LocationDetailsPreview(expandableFolderTreeCreator: ExpandableFolder
                                 name = "Mobile Apps",
                                 isShared = true,
                                 permission = ResourcePermission.OWNER,
+                                modified = ZonedDateTime.now(),
                             ),
                         ),
                     folderTree = folderTree,

@@ -26,8 +26,6 @@ package com.passbolt.mobile.android.resourcemoremenu.usecase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.DescriptionOption.HAS_METADATA_DESCRIPTION
@@ -35,21 +33,19 @@ import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.DescriptionOption.HA
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.ADD_TO_FAVOURITES
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.REMOVE_FROM_FAVOURITES
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.isFavourite
-import java.util.UUID
 
 class CreateResourceMoreMenuModelUseCase(
     private val getLocalResourceUseCase: GetLocalResourceUseCase,
     private val getRbacRulesUseCase: GetRbacRulesUseCase,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) : AsyncUseCase<CreateResourceMoreMenuModelUseCase.Input, CreateResourceMoreMenuModelUseCase.Output> {
     override suspend fun execute(input: Input): Output {
         val resource = getLocalResourceUseCase.execute(GetLocalResourceUseCase.Input(input.resourceId)).resource
         val rbacModel = getRbacRulesUseCase.execute(Unit).rbacModel
         val isCopyRbacAllowed = rbacModel.passwordCopyRule == ALLOW
         val isShareRbacAllowed = rbacModel.shareViewRule == ALLOW
-        val slug = idToSlugMappingProvider.provideMappingForSelectedAccount()[UUID.fromString(resource.resourceTypeId)]
-        val contentType = ContentType.fromSlug(slug!!)
+        val contentType = resource.contentType()
 
         return Output(
             ResourceMoreMenuModel(

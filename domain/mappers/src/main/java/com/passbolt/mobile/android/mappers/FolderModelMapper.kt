@@ -7,6 +7,9 @@ import com.passbolt.mobile.android.entity.folder.FolderWithChildItemsCountAndPat
 import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.FolderModelWithAttributes
 import com.passbolt.mobile.android.ui.FolderWithCountAndPath
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 /**
  * Passbolt - Open source password manager for teams
@@ -33,23 +36,19 @@ import com.passbolt.mobile.android.ui.FolderWithCountAndPath
 class FolderModelMapper(
     private val permissionsModelMapper: PermissionsModelMapper,
 ) {
-    fun map(folder: FolderResponseDto): FolderModelWithAttributes {
-        val currentUserPermission = folder.permission
-        val otherUsersPermissions =
-            folder.permissions.filter { folderPermission ->
-                folderPermission.aroForeignKey != currentUserPermission.aroForeignKey
-            }
-        return FolderModelWithAttributes(
+    fun map(folder: FolderResponseDto): FolderModelWithAttributes =
+        FolderModelWithAttributes(
             FolderModel(
                 folderId = folder.id.toString(),
                 parentFolderId = folder.folderParentId?.toString(),
                 name = folder.name.orEmpty(),
-                isShared = otherUsersPermissions.isNotEmpty(),
+                // updated in batch after folders and permissions are inserted
+                isShared = false,
                 permission = permissionsModelMapper.map(folder.permission.type),
+                modified = folder.modified?.let(ZonedDateTime::parse) ?: EPOCH,
             ),
             folder.permissions.map(permissionsModelMapper::map),
         )
-    }
 
     fun map(folderModel: FolderModel): Folder = map(folderModel, FolderUpdateState.UPDATED)
 
@@ -63,6 +62,7 @@ class FolderModelMapper(
             permission = permissionsModelMapper.map(folderModel.permission),
             parentId = folderModel.parentFolderId,
             isShared = folderModel.isShared,
+            modified = folderModel.modified,
             updateState = folderUpdateState,
         )
 
@@ -73,6 +73,7 @@ class FolderModelMapper(
             parentFolderId = folderEntity.parentId,
             isShared = folderEntity.isShared,
             permission = permissionsModelMapper.map(folderEntity.permission),
+            modified = folderEntity.modified,
         )
 
     fun map(folderWithChildItemsCountAndPath: FolderWithChildItemsCountAndPath) =
@@ -85,4 +86,8 @@ class FolderModelMapper(
             subItemsCount = folderWithChildItemsCountAndPath.childItemsCount,
             path = folderWithChildItemsCountAndPath.path,
         )
+
+    private companion object {
+        private val EPOCH: ZonedDateTime = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+    }
 }

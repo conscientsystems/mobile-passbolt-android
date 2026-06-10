@@ -5,7 +5,6 @@ import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.Au
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.ReturnAccessibilityDataset
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.ReturnAutofillDataset
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.ReturnAutofillDatasetStrategy
-import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -16,6 +15,7 @@ fun Module.autofillResourcesModule() {
             getAccountsUseCase = get(),
             uri = params.getOrNull(),
             getLocalResourceUseCase = get(),
+            totpParametersProvider = get(),
             coroutineLaunchContext = get(),
         )
     }
@@ -26,7 +26,6 @@ fun Module.autofillResourcesModule() {
         ) { (callback: AutofillCallback) ->
             ReturnAutofillDataset(
                 autofillCallback = callback,
-                appContext = androidContext(),
                 assistStructureParser = get(),
                 fillableInputsFinder = get(),
                 remoteViewsFactory = get(),
@@ -35,7 +34,10 @@ fun Module.autofillResourcesModule() {
         scoped<ReturnAutofillDatasetStrategy>(
             named(AutofillMode.ACCESSIBILITY),
         ) { (callback: AutofillCallback) ->
-            ReturnAccessibilityDataset(callback)
+            ReturnAccessibilityDataset(
+                autofillCallback = callback,
+                accessibilityCommunicator = get(),
+            )
         }
     }
 }

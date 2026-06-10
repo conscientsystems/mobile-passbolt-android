@@ -1,6 +1,7 @@
 package com.passbolt.mobile.android.ui
 
 import com.passbolt.mobile.android.common.search.Searchable
+import java.time.ZonedDateTime
 
 /**
  * Passbolt - Open source password manager for teams
@@ -31,6 +32,7 @@ data class FolderModel(
     val name: String,
     val isShared: Boolean,
     val permission: ResourcePermission,
+    val modified: ZonedDateTime,
     override val searchCriteria: String = name,
 ) : Searchable
 

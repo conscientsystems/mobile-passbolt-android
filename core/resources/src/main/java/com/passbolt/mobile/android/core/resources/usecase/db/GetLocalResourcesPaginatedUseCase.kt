@@ -15,7 +15,6 @@ import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.HasPermi
 import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.IsFavourite
 import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
-import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import com.passbolt.mobile.android.ui.ResourceModel
 import kotlinx.coroutines.flow.Flow
@@ -53,15 +52,15 @@ class GetLocalResourcesPaginatedUseCase(
     override suspend fun execute(input: Input): Output =
         Output(
             Pager(
-                config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = false),
+                config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = input.enablePlaceholders),
                 pagingSourceFactory = {
                     val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
                     val resourceDao = databaseProvider.get(selectedAccount).paginatedResourcesDao()
                     val ftsQuery = querySanitizer.sanitize(input.searchQuery)
 
                     when (val viewType = homeDisplayViewMapper.map(input.homeDisplayView)) {
-                        is ByModifiedDateDescending -> resourceDao.getAllOrderedByModifiedDatePaginated(input.slugs, ftsQuery)
-                        is ByNameAscending -> resourceDao.getAllOrderedByNamePaginated(homeSlugs, ftsQuery)
+                        is ByModifiedDateDescending, is ByNameAscending ->
+                            resourceDao.getAllOrderedByModifiedDatePaginated(input.slugs, ftsQuery)
                         is IsFavourite -> resourceDao.getFavouritesPaginated(input.slugs, ftsQuery)
                         is HasPermissions ->
                             resourceDao.getWithPermissionsPaginated(
@@ -84,6 +83,7 @@ class GetLocalResourcesPaginatedUseCase(
         val homeDisplayView: HomeDisplayViewModel = HomeDisplayViewModel.AllItems,
         val searchQuery: String? = null,
         val pageSize: Int = DEFAULT_PAGE_SIZE,
+        val enablePlaceholders: Boolean = false,
     )
 
     data class Output(

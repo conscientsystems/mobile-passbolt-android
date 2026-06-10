@@ -5,8 +5,12 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyTotpUseCase
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.Close
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ConfirmSetupLeave
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.DismissSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ValidateOtp
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpSideEffect.ClearOtp
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpSideEffect.CloseAndNavigateToStartup
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpSideEffect.NavigateToLogin
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpSideEffect.SnackbarErrorType.GENERIC
@@ -33,6 +37,8 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import kotlin.test.assertIs
 
@@ -51,6 +57,7 @@ class EnterTotpViewModelTest : KoinTest {
                         EnterTotpViewModel(
                             authToken = params[0],
                             hasOtherProvider = params[1],
+                            isSetupFlow = params[2],
                             signOutUseCase = get(),
                             verifyTotpUseCase = get(),
                             refreshSessionUseCase = get(),
@@ -85,7 +92,7 @@ class EnterTotpViewModelTest : KoinTest {
             val refreshSessionUseCase: RefreshSessionUseCase = get()
             whenever(refreshSessionUseCase.execute(any())) doReturn RefreshSessionUseCase.Output.Failure
 
-            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false) })
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, false) })
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(ValidateOtp("123456"))
@@ -104,7 +111,7 @@ class EnterTotpViewModelTest : KoinTest {
                 onBlocking { execute(any()) } doReturn VerifyTotpUseCase.Output.WrongCode
             }
 
-            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false) })
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, false) })
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(ValidateOtp("000000"))
@@ -119,6 +126,57 @@ class EnterTotpViewModelTest : KoinTest {
         }
 
     @Test
+    fun `close in setup flow shows leave confirmation and does not sign out`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, true) })
+
+            viewModel.onIntent(Close)
+
+            assertThat(viewModel.viewState.value.showSetupLeaveConfirmationDialog).isTrue()
+            verifyNoInteractions(get<SignOutUseCase>())
+        }
+
+    @Test
+    fun `confirm setup leave signs out and navigates to startup`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, true) })
+            viewModel.onIntent(Close)
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(ConfirmSetupLeave)
+                assertIs<CloseAndNavigateToStartup>(awaitItem())
+            }
+
+            assertThat(viewModel.viewState.value.showSetupLeaveConfirmationDialog).isFalse()
+            verify(get<SignOutUseCase>()).execute(Unit)
+        }
+
+    @Test
+    fun `dismiss setup leave hides confirmation and does not sign out`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, true) })
+            viewModel.onIntent(Close)
+
+            viewModel.onIntent(DismissSetupLeave)
+
+            assertThat(viewModel.viewState.value.showSetupLeaveConfirmationDialog).isFalse()
+            verifyNoInteractions(get<SignOutUseCase>())
+        }
+
+    @Test
+    fun `close outside setup flow signs out and navigates to startup`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, false) })
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(Close)
+                assertIs<CloseAndNavigateToStartup>(awaitItem())
+            }
+
+            verify(get<SignOutUseCase>()).execute(Unit)
+        }
+
+    @Test
     fun `success with null mfaHeader emits generic error`() =
         runTest {
             val verifyTotpUseCase: VerifyTotpUseCase = get()
@@ -126,7 +184,7 @@ class EnterTotpViewModelTest : KoinTest {
                 onBlocking { execute(any()) } doReturn VerifyTotpUseCase.Output.Success(mfaHeader = null)
             }
 
-            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false) })
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, false) })
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(ValidateOtp("123456"))

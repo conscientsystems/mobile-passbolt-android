@@ -34,6 +34,7 @@ import com.passbolt.mobile.android.feature.settings.screen.appsettings.AppSettin
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillSettingsScreen
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterScreen
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreen
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeScreen
 import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.DebugLogsSettingsScreen
 import com.passbolt.mobile.android.feature.settings.screen.termsandlicenses.TermsAndLicensesScreen
 import com.passbolt.mobile.android.feature.settings.screen.termsandlicenses.licenses.LicensesScreen
@@ -70,6 +71,9 @@ class SettingsFeatureNavigation : FeatureModuleNavigation {
             }
             entry<SettingsNavigationKey.ExpertSettings> {
                 PassboltTheme { ExpertSettingsScreen() }
+            }
+            entry<SettingsNavigationKey.PageSize> {
+                PassboltTheme { PageSizeScreen() }
             }
         }
 }

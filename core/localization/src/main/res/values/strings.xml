@@ -51,6 +51,7 @@
     <string name="common_sign_out">Sign out</string>
     <string name="common_data_refresh_error">There was an error during data refresh. Swipe down to refresh.</string>
     <string name="common_decryption_failure">Error during secret decryption</string>
+    <string name="common_invalid_totp_parameters">Invalid TOTP parameters</string>
     <string name="common_metadata_encryption_failure">Error during metadata encryption</string>
     <string name="common_fetch_failure">Error during downloading the secret</string>
     <string name="common_encryption_failure">There was an error during secret encryption</string>
@@ -304,6 +305,8 @@
     <string name="resource_details_description_header">Description</string>
     <string name="resource_details_note_header">Note</string>
     <string name="resource_details_note_content">Content</string>
+    <string name="resource_details_pin_code_header">Pin code</string>
+    <string name="resource_details_pin_code_code">Code</string>
     <string name="resource_details_tags_header">Tags</string>
     <string name="hidden_secret"
         translatable="false">••••••••••••••••••</string>
@@ -365,6 +368,17 @@
     <string name="resource_form_create_init_error">Failed to initialize resource creation</string>
     <string name="resource_form_remove_totp">Remove TOTP</string>
     <string name="resource_form_remove_note">Remove Note</string>
+    <string name="resource_form_remove_pin_code">Remove pin code</string>
+    <string name="resource_form_pin_code">Pin code</string>
+    <string name="resource_form_create_pin_code">Create a pin code</string>
+    <string name="resource_form_pin_code_code">Code</string>
+    <string name="resource_form_enter_pin_code">Enter pin code</string>
+    <string name="resource_form_pin_code_advanced">Advanced pin code generation</string>
+    <string name="resource_form_pin_code_length">Length</string>
+    <string name="resource_form_pin_code_save_preferences">Save preferences</string>
+    <string name="resource_form_pin_code_additional_information">Additional information</string>
+    <string name="resource_form_pin_code_validation_too_short">Pin code must be at least %d digits</string>
+    <string name="resource_form_pin_code_validation_too_long">Pin code can be at most %d digits</string>
     <string name="resource_form_no_name">no name</string>
     <string name="resource_form_max_additional_uris_limit">You can add a maximum of %d additional URIs</string>
     <string name="resource_form_appearance">Appearance</string>
@@ -409,8 +423,11 @@
     <string name="settings_app_settings_biometry_authentication_error">Biometry authentication error. %s</string>
     <string name="settings_app_settings_expert_settings">Expert settings</string>
 
+    <string name="settings_app_settings_expert_settings_require_auth_on_every_entry">Require auth on every entry</string>
     <string name="settings_app_settings_expert_settings_dev_mode">Developer mode</string>
     <string name="settings_app_settings_expert_settings_hide_root">Hide “device is rooted” dialog</string>
+    <string name="settings_app_settings_expert_settings_fetch_page_size">API fetch page size</string>
+    <string name="settings_page_size_description">Number of resources fetched per API request. Higher values use more memory but reduce the number of network requests.</string>
 
     <string name="settings_autofill_autofill_title">Here you can change autofill methods</string>
     <string name="settings_autofill_autofill_desc">It is recommended to use the Autofill Service method, but the Service performance may depend on your device and battery optimization settings. \n\nIf the Autofill Service is not working reliably on your device you can try enabling autofill based on Accessibility Service.</string>
@@ -649,6 +666,9 @@
     <string name="create_resource_menu_create_password">Password</string>
     <string name="create_resource_menu_create_note">Note</string>
     <string name="create_resource_menu_create_folder">Folder</string>
+    <string name="create_resource_menu_other">Other</string>
+    <string name="create_resource_menu_other_title">Other resource types</string>
+    <string name="create_resource_menu_create_pin_code">Pin code</string>
 
     <string name="dialog_new_metadata_key_trust_changed">The metadata key has changed.</string>
     <string name="dialog_new_metadata_key_trust_modified_by_user">The encryption key used to share metadata between users has been updated by %s.</string>
@@ -684,6 +704,25 @@
         <item>password</item>
         <item>secret</item>
         <item>passphrase</item>
+    </string-array>
+
+    <!--
+      arrays can be inconsistent when in other languages
+      index / size is not used in code
+    -->
+    <string-array name="totp_hint_values"
+        tools:ignore="InconsistentArrays">
+        <item>otp</item>
+        <item>totp</item>
+        <item>one-time</item>
+        <item>one-time-code</item>
+        <item>verification</item>
+        <item>verification code</item>
+        <item>auth code</item>
+        <item>authentication code</item>
+        <item>2fa</item>
+        <item>mfa</item>
+        <item>security code</item>
     </string-array>
 
     <string-array name="dialog_encourage_autofill_setup_steps">

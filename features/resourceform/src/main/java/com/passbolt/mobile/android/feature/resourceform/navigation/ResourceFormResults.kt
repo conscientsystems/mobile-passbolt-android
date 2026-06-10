@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.feature.resourceform.navigation
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.CustomFieldsUiModel
 import com.passbolt.mobile.android.ui.PasswordUiModel
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
 import com.passbolt.mobile.android.ui.TotpUiModel
 
@@ -36,4 +37,12 @@ data class AppearanceFormResult(
 
 data class CustomFieldsFormResult(
     val model: CustomFieldsUiModel,
+)
+
+data class PinCodeFormResult(
+    val pinCodeUiModel: PinCodeUiModel?,
+)
+
+data class PinCodeAdvancedGenerationFormResult(
+    val pinCodeUiModel: PinCodeUiModel,
 )

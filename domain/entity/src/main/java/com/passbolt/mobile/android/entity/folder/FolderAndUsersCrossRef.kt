@@ -2,11 +2,13 @@ package com.passbolt.mobile.android.entity.folder
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import com.passbolt.mobile.android.entity.resource.Permission
 import com.passbolt.mobile.android.entity.user.User
 
 @Entity(
     primaryKeys = ["userId", "folderId"],
+    indices = [Index(value = ["folderId"])],
     foreignKeys = [
         ForeignKey(
             entity = Folder::class,

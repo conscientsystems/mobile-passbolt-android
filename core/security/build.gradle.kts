@@ -1,0 +1,27 @@
+plugins {
+    id("passbolt.android.library")
+    id(libs.plugins.compose.compiler.get().pluginId)
+}
+
+dependencies {
+    implementation(project(":localization"))
+    implementation(project(":navigation"))
+
+    implementation(libs.androidx.core)
+    implementation(libs.appcompat)
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin)
+    implementation(libs.koin.compose)
+    implementation(libs.rootbeer)
+
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.foundation)
+}
+
+android {
+    namespace = "com.passbolt.mobile.android.core.security"
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
+}

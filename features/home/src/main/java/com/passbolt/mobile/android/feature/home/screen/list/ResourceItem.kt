@@ -63,6 +63,7 @@ import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvi
 import com.passbolt.mobile.android.core.ui.R
 import com.passbolt.mobile.android.testtags.composetags.Home
 import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.isExpired
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
@@ -137,20 +138,22 @@ fun ResourceItem(
                 color = MaterialTheme.colorScheme.onBackground,
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
-            val username = resource.metadataJsonModel.username
-            val isUsernameEmpty = username.isNullOrBlank()
+            if (resource.contentType().hasUsername()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                val username = resource.metadataJsonModel.username
+                val isUsernameEmpty = username.isNullOrBlank()
 
-            Text(
-                text = if (!isUsernameEmpty) username else stringResource(LocalizationR.string.no_username),
-                style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        fontStyle = if (isUsernameEmpty) FontStyle.Italic else FontStyle.Normal,
-                    ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+                Text(
+                    text = if (!isUsernameEmpty) username else stringResource(LocalizationR.string.no_username),
+                    style =
+                        MaterialTheme.typography.bodyMedium.copy(
+                            fontStyle = if (isUsernameEmpty) FontStyle.Italic else FontStyle.Normal,
+                        ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(8.dp))

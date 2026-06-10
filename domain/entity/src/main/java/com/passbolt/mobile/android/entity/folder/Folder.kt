@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.passbolt.mobile.android.entity.resource.Permission
+import java.time.ZonedDateTime
 
 /**
  * Passbolt - Open source password manager for teams
@@ -36,6 +37,7 @@ data class Folder(
     val permission: Permission,
     val parentId: String?,
     val isShared: Boolean,
+    val modified: ZonedDateTime,
     val updateState: FolderUpdateState,
 )
 

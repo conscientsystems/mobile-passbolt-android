@@ -10,6 +10,7 @@ import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.passboltapi.folders.FoldersRepository
 import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.FolderModelWithAttributes
+import java.time.ZonedDateTime
 
 /**
  * Passbolt - Open source password manager for teams
@@ -50,6 +51,7 @@ class CreateFolderUseCase(
                             result.value.name,
                             !result.value.personal,
                             permissionsModelMapper.map(result.value.permission.type),
+                            result.value.modified?.let(ZonedDateTime::parse) ?: ZonedDateTime.now(),
                         ),
                         listOf(permissionsModelMapper.mapToUserPermission(result.value.permission)),
                     ),

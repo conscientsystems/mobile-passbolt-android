@@ -29,6 +29,7 @@ data class CreateFolderResponseDto(
     val id: UUID,
     @SerializedName("folder_parent_id")
     val parentFolderId: UUID?,
+    val modified: String?,
     val name: String,
     val personal: Boolean,
     val permission: PermissionDto,

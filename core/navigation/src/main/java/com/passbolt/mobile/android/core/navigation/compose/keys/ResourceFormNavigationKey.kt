@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.CustomFieldsUiModel
 import com.passbolt.mobile.android.ui.PasswordUiModel
+import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
 import com.passbolt.mobile.android.ui.TotpUiModel
@@ -61,5 +62,17 @@ sealed interface ResourceFormNavigationKey : NavKey {
     data class CustomFieldsForm(
         val mode: ResourceFormMode,
         val customFieldsUiModel: CustomFieldsUiModel,
+    ) : ResourceFormNavigationKey
+
+    @Serializable
+    data class PinCodeForm(
+        val mode: ResourceFormMode,
+        val pinCodeUiModel: PinCodeUiModel,
+    ) : ResourceFormNavigationKey
+
+    @Serializable
+    data class PinCodeAdvancedGenerationForm(
+        val mode: ResourceFormMode,
+        val pinCodeUiModel: PinCodeUiModel,
     ) : ResourceFormNavigationKey
 }

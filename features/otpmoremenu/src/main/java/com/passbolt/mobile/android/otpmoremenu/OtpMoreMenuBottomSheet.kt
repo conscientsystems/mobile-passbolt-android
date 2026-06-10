@@ -3,9 +3,12 @@ package com.passbolt.mobile.android.otpmoremenu
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -96,12 +99,21 @@ private fun OtpMoreMenuBottomSheet(
     onDismissRequest: () -> Unit,
     state: OtpMoreMenuState,
 ) {
+    val sheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+        )
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         containerColor = colorResource(R.color.elevated_background),
+        sheetState = sheetState,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
         ) {
             BottomSheetHeader(
                 title = state.title,

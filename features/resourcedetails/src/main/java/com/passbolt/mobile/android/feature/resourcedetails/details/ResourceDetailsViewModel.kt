@@ -47,12 +47,12 @@ import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyA
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.CANNOT_PERFORM_ACTION
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.DECRYPTION_FAILURE
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.FETCH_FAILURE
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.GENERAL_ERROR
+import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.INVALID_TOTP_PARAMETERS
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.TOGGLE_FAVOURITE_FAILURE
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseMoreMenu
@@ -61,6 +61,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetai
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyMetadataDescription
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyNote
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyPassword
+import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyPinCode
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyTotp
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyUrl
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyUsername
@@ -80,6 +81,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetai
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleFavourite
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleNoteVisibility
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.TogglePasswordVisibility
+import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.TogglePinCodeVisibility
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleTotpVisibility
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ViewPermissions
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsSideEffect.AddToClipboard
@@ -100,7 +102,6 @@ import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
-import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.CustomFieldModel.BooleanCustomField
 import com.passbolt.mobile.android.ui.CustomFieldModel.NumberCustomField
 import com.passbolt.mobile.android.ui.CustomFieldModel.PasswordCustomField
@@ -111,6 +112,7 @@ import com.passbolt.mobile.android.ui.RbacModel
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
+import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.isExpired
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
@@ -123,7 +125,7 @@ import timber.log.Timber
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
-@Suppress("LargeClass")
+@Suppress("LargeClass", "TooManyFunctions")
 class ResourceDetailsViewModel(
     private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
     private val getLocalResourceUseCase: GetLocalResourceUseCase,
@@ -132,7 +134,6 @@ class ResourceDetailsViewModel(
     private val getLocalFolderLocation: GetLocalFolderLocationUseCase,
     private val totpParametersProvider: TotpParametersProvider,
     private val otpModelMapper: OtpModelMapper,
-    private val idToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
     private val getRbacRulesUseCase: GetRbacRulesUseCase,
     private val resourceDetailActionIdlingResource: ResourceDetailActionIdlingResource,
     private val canShareResourceUseCase: CanShareResourceUseCase,
@@ -175,10 +176,12 @@ class ResourceDetailsViewModel(
             CopyMetadataDescription -> copyMetadataDescription()
             CopyNote -> copyNote()
             CopyTotp -> copyTotp()
+            CopyPinCode -> copyPinCode()
             is CopyCustomField -> copyCustomField(intent.key)
             TogglePasswordVisibility -> togglePasswordVisibility()
             ToggleNoteVisibility -> toggleNoteVisibility()
             ToggleTotpVisibility -> toggleTotpVisibility()
+            TogglePinCodeVisibility -> togglePinCodeVisibility()
             is ToggleCustomField -> toggleCustomFieldVisibility(intent.key)
             GoToTags -> goToTags()
             GoToLocation -> goToLocation()
@@ -241,11 +244,7 @@ class ResourceDetailsViewModel(
         rbac: RbacModel,
         featureFlags: FeatureFlagsModel,
     ) {
-        val slug =
-            idToSlugMappingProvider.provideMappingForSelectedAccount()[
-                UUID.fromString(resource.resourceTypeId),
-            ]
-        val contentType = ContentType.fromSlug(slug!!)
+        val contentType = resource.contentType()
 
         performResourcePropertyAction(
             action = { resourcePropertiesActionsInteractor.provideMainUri() },
@@ -288,6 +287,10 @@ class ResourceDetailsViewModel(
                 noteData =
                     noteData.copy(
                         showNoteSection = contentType.hasNote(),
+                    ),
+                pinCodeData =
+                    pinCodeData.copy(
+                        showPinCodeSection = contentType.hasPinCode(),
                     ),
             )
         }
@@ -509,6 +512,19 @@ class ResourceDetailsViewModel(
         }
     }
 
+    private fun copyPinCode() {
+        resourceDetailActionIdlingResource.setIdle(false)
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            performSecretPropertyAction(
+                action = { secretPropertiesActionsInteractor.providePinCode() },
+                doOnFetchFailure = { emitSideEffect(ShowErrorSnackbar(FETCH_FAILURE)) },
+                doOnDecryptionFailure = { emitSideEffect(ShowErrorSnackbar(DECRYPTION_FAILURE)) },
+                doOnSuccess = { emitSideEffect(AddToClipboard(it.label, it.result, it.isSecret)) },
+            )
+            resourceDetailActionIdlingResource.setIdle(true)
+        }
+    }
+
     private fun copyCustomField(key: UUID) {
         resourceDetailActionIdlingResource.setIdle(false)
         viewModelScope.launch(coroutineLaunchContext.io) {
@@ -606,6 +622,42 @@ class ResourceDetailsViewModel(
                                     noteData.copy(
                                         isNoteVisible = true,
                                         note = it.result,
+                                    ),
+                            )
+                        }
+                    },
+                )
+                resourceDetailActionIdlingResource.setIdle(true)
+            }
+        }
+    }
+
+    private fun togglePinCodeVisibility() {
+        val isCurrentlyVisible = viewState.value.pinCodeData.isPinCodeVisible
+        if (isCurrentlyVisible) {
+            updateViewState {
+                copy(
+                    pinCodeData =
+                        pinCodeData.copy(
+                            isPinCodeVisible = false,
+                            pinCode = "",
+                        ),
+                )
+            }
+        } else {
+            resourceDetailActionIdlingResource.setIdle(false)
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                performSecretPropertyAction(
+                    action = { secretPropertiesActionsInteractor.providePinCode() },
+                    doOnDecryptionFailure = { emitSideEffect(ShowErrorSnackbar(DECRYPTION_FAILURE)) },
+                    doOnFetchFailure = { emitSideEffect(ShowErrorSnackbar(FETCH_FAILURE)) },
+                    doOnSuccess = {
+                        updateViewState {
+                            copy(
+                                pinCodeData =
+                                    pinCodeData.copy(
+                                        isPinCodeVisible = true,
+                                        pinCode = it.result,
                                     ),
                             )
                         }
@@ -774,6 +826,7 @@ class ResourceDetailsViewModel(
             copy(
                 passwordData = passwordData.copy(isPasswordVisible = false, password = ""),
                 noteData = noteData.copy(isNoteVisible = false, note = ""),
+                pinCodeData = pinCodeData.copy(isPinCodeVisible = false, pinCode = ""),
                 customFieldsData = customFieldsData.copy(visibleCustomFields = emptyMap()),
             )
         }
@@ -797,9 +850,8 @@ class ResourceDetailsViewModel(
                         when (otpParametersResult) {
                             is OtpParameters -> action(it.label, it.result, otpParametersResult)
                             is TotpParametersProvider.OtpParametersResult.InvalidTotpInput -> {
-                                val error = "Invalid TOTP input"
-                                Timber.e(error)
-                                emitSideEffect(ShowErrorSnackbar(GENERAL_ERROR))
+                                Timber.e("Invalid TOTP parameters")
+                                emitSideEffect(ShowErrorSnackbar(INVALID_TOTP_PARAMETERS))
                             }
                         }
                     } else {
