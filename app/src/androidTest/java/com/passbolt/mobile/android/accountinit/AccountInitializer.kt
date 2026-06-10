@@ -53,7 +53,6 @@ class AccountInitializer(
         updateGlobalPreferencesUseCase.execute(
             UpdateGlobalPreferencesUseCase.Input(
                 areDebugLogsEnabled = false,
-                isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = false,
             ),
         )

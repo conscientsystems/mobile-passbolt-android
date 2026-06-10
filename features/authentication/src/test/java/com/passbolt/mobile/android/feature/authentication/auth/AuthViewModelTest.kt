@@ -158,7 +158,6 @@ class AuthViewModelTest : KoinTest {
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
                 debugLogLastAppVersion = null,
-                isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = true,
                 isAuthRequiredOnEveryEntry = true,
                 apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,

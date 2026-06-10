@@ -122,7 +122,6 @@ class ResourceInteractorTest : KoinTest {
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     debugLogLastAppVersion = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = false,
                     apiFetchPageSize = RESOURCES_PAGE_SIZE,

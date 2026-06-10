@@ -460,7 +460,6 @@
     <string name="settings_app_settings_expert_settings">Expert settings</string>
 
     <string name="settings_app_settings_expert_settings_require_auth_on_every_entry">Require auth on every entry</string>
-    <string name="settings_app_settings_expert_settings_dev_mode">Developer mode</string>
     <string name="settings_app_settings_expert_settings_hide_root">Hide “device is rooted” dialog</string>
     <string name="settings_app_settings_expert_settings_fetch_page_size">API fetch page size</string>
     <string name="settings_page_size_description">Number of resources fetched per API request. Higher values use more memory but reduce the number of network requests.</string>

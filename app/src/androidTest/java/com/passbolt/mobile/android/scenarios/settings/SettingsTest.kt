@@ -209,7 +209,6 @@ class SettingsTest : KoinTest {
                 hasTestTag(BackNavigation.ICON),
                 useUnmergedTree = true,
             ).assertIsDisplayed()
-            //    And 	    I see a Developer mode with nodes icon and a switch on the right
             //    And 	    I see a Hide "device is rooted" dialog with hash icon and a switch on the right
 
             ExpertSettingsItemModel.entries.forEach { item ->
