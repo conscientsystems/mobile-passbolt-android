@@ -49,6 +49,7 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.U
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.NavigationActivity.AuthenticationSignIn
 import com.passbolt.mobile.android.core.navigation.compose.NavigationActivity.Start
+import com.passbolt.mobile.android.core.ui.dialogs.LeaveSetupAlertDialog
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.feature.authentication.mfa.MfaDialogState
@@ -57,6 +58,8 @@ import com.passbolt.mobile.android.feature.authentication.mfa.MfaResult.OtherPro
 import com.passbolt.mobile.android.feature.authentication.mfa.MfaResult.Succeeded
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ChooseOtherProvider
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.Close
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ConfirmSetupLeave
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.DismissSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.PasteFromClipboard
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ToggleRememberMe
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ValidateOtp
@@ -88,9 +91,10 @@ private const val OTP_LENGTH = 6
 internal fun EnterTotpScreen(
     mfaState: MfaDialogState.Totp,
     onMfaResult: (MfaResult) -> Unit,
+    isSetupFlow: Boolean = false,
     viewModel: EnterTotpViewModel =
         koinViewModel {
-            parametersOf(mfaState.authToken, mfaState.hasOtherProviders)
+            parametersOf(mfaState.authToken, mfaState.hasOtherProviders, isSetupFlow)
         },
     clipboardAccess: ClipboardAccess = koinInject(),
     appNavigator: AppNavigator = koinInject(),
@@ -304,6 +308,12 @@ private fun EnterTotpScreen(
             }
         }
     }
+
+    LeaveSetupAlertDialog(
+        isVisible = state.showSetupLeaveConfirmationDialog,
+        onLeaveConfirm = { onIntent(ConfirmSetupLeave) },
+        onDismiss = { onIntent(DismissSetupLeave) },
+    )
 
     ProgressDialog(isVisible = state.showProgress)
 }

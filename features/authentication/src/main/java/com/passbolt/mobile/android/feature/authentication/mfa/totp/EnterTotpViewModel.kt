@@ -11,6 +11,8 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyTot
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyTotpUseCase.Output.WrongCode
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ChooseOtherProvider
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.Close
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ConfirmSetupLeave
+import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.DismissSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.PasteFromClipboard
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ToggleRememberMe
 import com.passbolt.mobile.android.feature.authentication.mfa.totp.EnterTotpIntent.ValidateOtp
@@ -30,6 +32,7 @@ import timber.log.Timber
 
 class EnterTotpViewModel(
     hasOtherProvider: Boolean,
+    private val isSetupFlow: Boolean,
     private val authToken: String?,
     private val signOutUseCase: SignOutUseCase,
     private val verifyTotpUseCase: VerifyTotpUseCase,
@@ -43,7 +46,20 @@ class EnterTotpViewModel(
             is ChooseOtherProvider -> emitSideEffect(NotifyChooseOtherProvider(authToken))
             is ToggleRememberMe -> updateViewState { copy(rememberMe = intent.checked) }
             is ValidateOtp -> validateOtp(intent.otp)
-            is Close -> signOutAndClose()
+            is Close -> close()
+            is ConfirmSetupLeave -> {
+                updateViewState { copy(showSetupLeaveConfirmationDialog = false) }
+                signOutAndClose()
+            }
+            is DismissSetupLeave -> updateViewState { copy(showSetupLeaveConfirmationDialog = false) }
+        }
+    }
+
+    private fun close() {
+        if (isSetupFlow) {
+            updateViewState { copy(showSetupLeaveConfirmationDialog = true) }
+        } else {
+            signOutAndClose()
         }
     }
 

@@ -7,7 +7,11 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSe
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyDuoCallbackUseCase
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.AuthenticateWithDuo
+import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.Close
+import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.ConfirmSetupLeave
+import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.DismissSetupLeave
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoIntent.DuoAuthFinished
+import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoSideEffect.CloseAndNavigateToStartup
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoSideEffect.NotifyVerificationSucceeded
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.duowebviewsheet.DuoState
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +55,7 @@ class AuthWithDuoViewModelTest : KoinTest {
                         AuthWithDuoViewModel(
                             authToken = params[0],
                             hasOtherProvider = params[1],
+                            isSetupFlow = params[2],
                             getDuoPromptUseCase = get(),
                             verifyDuoCallbackUseCase = get(),
                             refreshSessionUseCase = get(),
@@ -93,7 +98,7 @@ class AuthWithDuoViewModelTest : KoinTest {
                         mfaHeader = "mfa-token-abc",
                     )
             }
-            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false) })
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, false) })
 
             viewModel.onIntent(AuthenticateWithDuo)
 
@@ -126,7 +131,7 @@ class AuthWithDuoViewModelTest : KoinTest {
         runTest {
             val verifyDuoCallbackUseCase: VerifyDuoCallbackUseCase = get()
 
-            viewModel = get(parameters = { parametersOf(null, false) })
+            viewModel = get(parameters = { parametersOf(null, false, false) })
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(DuoAuthFinished(DuoState("state", "code")))
@@ -136,6 +141,57 @@ class AuthWithDuoViewModelTest : KoinTest {
                     assertThat(awaitItem().showProgress).isFalse()
                 }
             }
+        }
+
+    @Test
+    fun `close in setup flow shows leave confirmation and does not sign out`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, true) })
+
+            viewModel.onIntent(Close)
+
+            assertThat(viewModel.viewState.value.showSetupLeaveConfirmationDialog).isTrue()
+            verifyNoInteractions(get<SignOutUseCase>())
+        }
+
+    @Test
+    fun `confirm setup leave signs out and navigates to startup`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, true) })
+            viewModel.onIntent(Close)
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(ConfirmSetupLeave)
+                assertIs<CloseAndNavigateToStartup>(awaitItem())
+            }
+
+            assertThat(viewModel.viewState.value.showSetupLeaveConfirmationDialog).isFalse()
+            verify(get<SignOutUseCase>()).execute(Unit)
+        }
+
+    @Test
+    fun `dismiss setup leave hides confirmation and does not sign out`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, true) })
+            viewModel.onIntent(Close)
+
+            viewModel.onIntent(DismissSetupLeave)
+
+            assertThat(viewModel.viewState.value.showSetupLeaveConfirmationDialog).isFalse()
+            verifyNoInteractions(get<SignOutUseCase>())
+        }
+
+    @Test
+    fun `close outside setup flow signs out and navigates to startup`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AUTH_TOKEN, false, false) })
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(Close)
+                assertIs<CloseAndNavigateToStartup>(awaitItem())
+            }
+
+            verify(get<SignOutUseCase>()).execute(Unit)
         }
 
     private companion object {

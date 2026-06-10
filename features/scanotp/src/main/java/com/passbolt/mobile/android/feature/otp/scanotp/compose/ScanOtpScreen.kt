@@ -51,6 +51,7 @@ import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.Dis
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.DismissCameraRequiredDialog
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.GoBack
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.GoToSettings
+import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.GrantCameraPermission
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.Initialize
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.RejectCameraPermission
 import com.passbolt.mobile.android.feature.otp.scanotp.compose.ScanOtpIntent.StartCameraError
@@ -88,7 +89,9 @@ internal fun ScanOtpScreen(
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
         ) { isGranted: Boolean ->
-            if (!isGranted) {
+            if (isGranted) {
+                viewModel.onIntent(GrantCameraPermission)
+            } else {
                 viewModel.onIntent(RejectCameraPermission)
             }
         }
