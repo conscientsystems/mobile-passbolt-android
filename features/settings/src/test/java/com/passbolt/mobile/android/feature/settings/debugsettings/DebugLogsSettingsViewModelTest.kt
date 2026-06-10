@@ -92,7 +92,6 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
@@ -116,7 +115,6 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = true,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
@@ -141,7 +139,6 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
@@ -172,7 +169,6 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = true,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,

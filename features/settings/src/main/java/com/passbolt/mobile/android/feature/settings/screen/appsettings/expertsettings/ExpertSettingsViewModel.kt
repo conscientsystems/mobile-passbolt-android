@@ -29,7 +29,6 @@ import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferen
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoToPageSize
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleAuthRequiredOnEveryEntry
-import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleHideRootWarning
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateToPageSize
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateUp
@@ -46,7 +45,6 @@ internal class ExpertSettingsViewModel(
         when (intent) {
             GoBack -> emitSideEffect(NavigateUp)
             ToggleAuthRequiredOnEveryEntry -> toggleAuthRequiredOnEveryEntry()
-            ToggleDeveloperMode -> toggleDeveloperMode()
             ToggleHideRootWarning -> toggleHideRootWarning()
             GoToPageSize -> emitSideEffect(NavigateToPageSize)
         }
@@ -57,8 +55,6 @@ internal class ExpertSettingsViewModel(
         updateViewState {
             copy(
                 isAuthRequiredOnEveryEntryChecked = globalPreferences.isAuthRequiredOnEveryEntry,
-                isDeveloperModeChecked = globalPreferences.isDeveloperModeEnabled,
-                isHideRootWarningEnabled = globalPreferences.isDeveloperModeEnabled,
                 isHideRootWarningChecked = globalPreferences.isHideRootDialogEnabled,
             )
         }
@@ -71,36 +67,6 @@ internal class ExpertSettingsViewModel(
         )
         updateViewState {
             copy(isAuthRequiredOnEveryEntryChecked = isChecked)
-        }
-    }
-
-    private fun toggleDeveloperMode() {
-        val isDeveloperModeChecked = !viewState.value.isDeveloperModeChecked
-
-        if (isDeveloperModeChecked) {
-            updateGlobalPreferencesUseCase.execute(
-                UpdateGlobalPreferencesUseCase.Input(isDeveloperModeEnabled = true),
-            )
-            updateViewState {
-                copy(
-                    isDeveloperModeChecked = true,
-                    isHideRootWarningEnabled = true,
-                )
-            }
-        } else {
-            updateGlobalPreferencesUseCase.execute(
-                UpdateGlobalPreferencesUseCase.Input(
-                    isDeveloperModeEnabled = false,
-                    isHideRootDialogEnabled = false,
-                ),
-            )
-            updateViewState {
-                copy(
-                    isDeveloperModeChecked = false,
-                    isHideRootWarningEnabled = false,
-                    isHideRootWarningChecked = false,
-                )
-            }
         }
     }
 

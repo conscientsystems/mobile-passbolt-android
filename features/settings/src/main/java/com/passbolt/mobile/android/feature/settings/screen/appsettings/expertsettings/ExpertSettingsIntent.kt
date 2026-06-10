@@ -28,8 +28,6 @@ internal sealed interface ExpertSettingsIntent {
 
     data object ToggleAuthRequiredOnEveryEntry : ExpertSettingsIntent
 
-    data object ToggleDeveloperMode : ExpertSettingsIntent
-
     data object ToggleHideRootWarning : ExpertSettingsIntent
 
     data object GoToPageSize : ExpertSettingsIntent

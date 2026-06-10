@@ -43,9 +43,6 @@ class UpdateGlobalPreferencesUseCase(
             input.debugLogLastAppVersion?.let {
                 putString(KEY_DEBUG_LOGS_LAST_APP_VERSION, it)
             }
-            input.isDeveloperModeEnabled?.let {
-                putBoolean(KEY_IS_DEVELOPER_MODE_ENABLED, it)
-            }
             input.isHideRootDialogEnabled?.let {
                 putBoolean(KEY_IS_HIDE_ROOT_DIALOG_ENABLED, it)
             }
@@ -66,7 +63,6 @@ class UpdateGlobalPreferencesUseCase(
         val areDebugLogsEnabled: Boolean? = null,
         val debugLogFileCreationDateTime: LocalDateTime? = null,
         val debugLogLastAppVersion: String? = null,
-        val isDeveloperModeEnabled: Boolean? = null,
         val isHideRootDialogEnabled: Boolean? = null,
         val isAuthRequiredOnEveryEntry: Boolean? = null,
         val apiFetchPageSize: Int? = null,

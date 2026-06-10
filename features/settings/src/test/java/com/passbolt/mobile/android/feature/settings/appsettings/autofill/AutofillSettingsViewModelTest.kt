@@ -218,7 +218,6 @@ class AutofillSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
@@ -253,7 +252,6 @@ class AutofillSettingsViewModelTest : KoinTest {
                 GetGlobalPreferencesUseCase.Output(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = true,
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,

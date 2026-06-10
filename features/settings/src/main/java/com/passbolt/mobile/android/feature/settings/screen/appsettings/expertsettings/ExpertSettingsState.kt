@@ -25,7 +25,5 @@ package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertse
 
 internal data class ExpertSettingsState(
     val isAuthRequiredOnEveryEntryChecked: Boolean = true,
-    val isDeveloperModeChecked: Boolean = false,
-    val isHideRootWarningEnabled: Boolean = false,
     val isHideRootWarningChecked: Boolean = false,
 )
