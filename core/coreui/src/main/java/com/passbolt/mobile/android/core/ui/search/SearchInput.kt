@@ -23,6 +23,7 @@
 package com.passbolt.mobile.android.core.ui.search
 
 import PassboltTheme
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -57,6 +58,7 @@ fun SearchInput(
     endIconMode: SearchInputEndIconMode,
     modifier: Modifier = Modifier,
     avatarUrl: String? = null,
+    @DrawableRes avatarPlaceholderRes: Int = R.drawable.ic_user_avatar,
     initialValue: String = "",
     onEndIconClick: (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -78,6 +80,7 @@ fun SearchInput(
                         imageUrl = avatarUrl,
                         width = 28.dp,
                         height = 28.dp,
+                        placeholderRes = avatarPlaceholderRes,
                         modifier = Modifier.clickable { onEndIconClick?.invoke() },
                     )
                 SearchInputEndIconMode.CLEAR ->

@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.feature.accountdetails.screen
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -22,12 +20,19 @@ package com.passbolt.mobile.android.feature.accountdetails.screen
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal sealed interface AccountDetailsScreenSideEffect {
-    data object NavigateUp : AccountDetailsScreenSideEffect
 
-    data object NavigateToTransferAccount : AccountDetailsScreenSideEffect
+package com.passbolt.mobile.android.core.users.profile
 
-    data class ShowProfileFetchError(
-        val message: String?,
-    ) : AccountDetailsScreenSideEffect
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+class UserProfileRefreshTrackingFlow {
+    val isRefreshing: StateFlow<Boolean>
+        get() = _isRefreshing.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(false)
+
+    fun setRefreshing(refreshing: Boolean) {
+        _isRefreshing.value = refreshing
+    }
 }
