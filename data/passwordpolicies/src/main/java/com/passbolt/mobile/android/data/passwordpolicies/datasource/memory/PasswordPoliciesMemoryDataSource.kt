@@ -30,7 +30,7 @@ internal class PasswordPoliciesMemoryDataSource : PasswordPoliciesDataSource {
     private var cached: PasswordPolicies? = null
 
     override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> =
-        cached?.let { DomainResult.Success(it) } ?: DomainResult.Failure.NotFound
+        cached?.let { DomainResult.Success(it) } ?: DomainResult.Failure.NotCached
 
     override suspend fun setPasswordPolicies(passwordPolicies: PasswordPolicies) {
         cached = passwordPolicies

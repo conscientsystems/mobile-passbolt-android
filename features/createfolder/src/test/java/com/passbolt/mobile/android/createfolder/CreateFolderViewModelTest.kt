@@ -57,7 +57,7 @@ import com.passbolt.mobile.android.ui.FolderModelWithAttributes
 import com.passbolt.mobile.android.ui.PermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -398,10 +398,10 @@ class CreateFolderViewModelTest : KoinTest {
 
     private suspend fun setupMocksForRootFolder() {
         val getCurrentUserUseCase = get<GetLocalCurrentUserUseCase>()
-        whenever(getCurrentUserUseCase.execute(Unit)) doReturn GetLocalCurrentUserUseCase.Output(mockUserModel)
+        whenever(getCurrentUserUseCase.execute(Unit)) doReturn GetLocalCurrentUserUseCase.Output(mockUserUiModel)
 
         val usersModelMapper = get<UsersModelMapper>()
-        whenever(usersModelMapper.mapToUserWithAvatar(mockUserModel)) doReturn mockUserWithAvatar
+        whenever(usersModelMapper.mapToUserWithAvatar(mockUserUiModel)) doReturn mockUserWithAvatar
     }
 
     private suspend fun setupMocksForParentFolder() {
@@ -489,8 +489,8 @@ class CreateFolderViewModelTest : KoinTest {
         private const val NEW_FOLDER_ID = "new-folder-id"
         private const val USER_ID = "user-id"
 
-        private val mockUserModel =
-            mock<UserModel>()
+        private val mockUserUiModel =
+            mock<UserUiModel>()
 
         private val mockUserWithAvatar =
             UserWithAvatar(

@@ -5,7 +5,7 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.users.usecase.db.AddLocalUsersUseCase
 import com.passbolt.mobile.android.core.users.usecase.db.RemoveLocalUsersUseCase
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 class RebuildUsersTablesUseCase(
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
@@ -19,6 +19,6 @@ class RebuildUsersTablesUseCase(
     }
 
     class Input(
-        val users: List<UserModel>,
+        val users: List<UserUiModel>,
     )
 }

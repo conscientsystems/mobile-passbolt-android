@@ -35,11 +35,11 @@ import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import com.passbolt.mobile.android.metadata.usecase.GetTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.metadata.usecase.SaveTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.metadata.usecase.UpdateMetadataPrivateKeyUseCase
-import com.passbolt.mobile.android.ui.GpgKeyModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.ParsedMetadataKeyModel
 import com.passbolt.mobile.android.ui.ParsedMetadataPrivateKeyModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.proton.gopenpgp.crypto.Crypto
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -99,12 +99,12 @@ class MetadataPrivateKeysInteractorTest : KoinTest {
         mockGetLocalUserUseCase.stub {
             onBlocking { execute(GetLocalUserUseCase.Input(GRACE_USER_ID)) } doReturn
                 GetLocalUserUseCase.Output(
-                    UserModel(
+                    UserUiModel(
                         id = GRACE_USER_ID,
                         userName = "grace@passbolt.com",
                         disabled = false,
                         gpgKey =
-                            GpgKeyModel(
+                            GpgKeyUiModel(
                                 armoredKey = gracePublicKey,
                                 fingerprint = "63452C7A0AE6FAE8C8C309640BD9E2409BC6A569",
                                 bits = 4096,
@@ -116,7 +116,7 @@ class MetadataPrivateKeysInteractorTest : KoinTest {
                                 id = "d7c9f849-71ba-5940-a3ca-ab26472c06fb",
                             ),
                         profile =
-                            UserProfileModel(
+                            UserProfileUiModel(
                                 username = "grace@passbolt.com",
                                 firstName = "grace",
                                 lastName = "Hopper",
@@ -126,12 +126,12 @@ class MetadataPrivateKeysInteractorTest : KoinTest {
                 )
             onBlocking { execute(GetLocalUserUseCase.Input(ADMIN_USER_ID)) } doReturn
                 GetLocalUserUseCase.Output(
-                    UserModel(
+                    UserUiModel(
                         id = ADMIN_USER_ID,
                         userName = "admin@passbolt.com",
                         disabled = false,
                         gpgKey =
-                            GpgKeyModel(
+                            GpgKeyUiModel(
                                 armoredKey = adminPublicKey,
                                 fingerprint = "0C1D1761110D1E33C9006D1A5B1B332ED06426D3",
                                 bits = 4096,
@@ -143,7 +143,7 @@ class MetadataPrivateKeysInteractorTest : KoinTest {
                                 id = "91d8a7fd-3ab3-5e98-a4a5-0d8694ff23b9",
                             ),
                         profile =
-                            UserProfileModel(
+                            UserProfileUiModel(
                                 username = "admin@passbolt.com",
                                 firstName = "Passbolt",
                                 lastName = "Admin",

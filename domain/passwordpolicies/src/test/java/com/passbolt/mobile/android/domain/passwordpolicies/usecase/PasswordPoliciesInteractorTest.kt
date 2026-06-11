@@ -150,9 +150,9 @@ class PasswordPoliciesInteractorTest : KoinTest {
         }
 
     @Test
-    fun `notfound failure stays authenticated`() =
+    fun `notcached failure stays authenticated`() =
         runTest {
-            val failure = DomainResult.Failure.NotFound
+            val failure = DomainResult.Failure.NotCached
             repository.stub {
                 onBlocking { getPasswordPolicies() }.thenReturn(failure)
             }

@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.ui
-
-import com.passbolt.mobile.android.common.search.Searchable
-import java.time.ZonedDateTime
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,33 +20,25 @@ import java.time.ZonedDateTime
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-data class UserModel(
-    val id: String,
-    val userName: String,
-    val disabled: Boolean,
-    val gpgKey: GpgKeyModel,
-    val profile: UserProfileModel,
-    override val searchCriteria: String = "$userName${profile.firstName.orEmpty()}${profile.lastName.orEmpty()}",
-) : Searchable {
-    val fullName: String
-        get() = "${profile.firstName.orEmpty()} ${profile.lastName.orEmpty()}"
+
+package com.passbolt.mobile.android.data.users
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.domain.users.UsersDataSource
+import com.passbolt.mobile.android.domain.users.UsersRepository
+import com.passbolt.mobile.android.domain.users.model.UserProfile
+import com.passbolt.mobile.android.dto.response.UserDto
+
+internal class UsersRepositoryImpl(
+    private val remoteDataSource: UsersDataSource,
+    private val responseHandler: ResponseHandler,
+) : UsersRepository {
+    override suspend fun getMyProfile(): DomainResult<UserProfile> = remoteDataSource.getMyProfile()
+
+    // TODO MOB-4496: migrate to the domain model repository architecture
+    override suspend fun getUsers(hasAccessTo: List<String>?): NetworkResult<List<UserDto>> =
+        callWithHandler(responseHandler) { remoteDataSource.getUsers(hasAccessTo) }
 }
-
-data class GpgKeyModel(
-    val id: String,
-    val armoredKey: String,
-    val fingerprint: String,
-    val bits: Int,
-    val uid: String?,
-    val keyId: String,
-    val type: String?,
-    val keyExpirationDate: ZonedDateTime?,
-    val keyCreationDate: ZonedDateTime?,
-)
-
-data class UserProfileModel(
-    val username: String,
-    val firstName: String?,
-    val lastName: String?,
-    val avatarUrl: String?,
-)

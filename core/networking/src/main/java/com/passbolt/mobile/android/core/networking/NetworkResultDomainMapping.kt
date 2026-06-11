@@ -24,10 +24,18 @@
 package com.passbolt.mobile.android.core.networking
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.OFFLINE
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.TIMEOUT
 
 fun NetworkResult.Failure<*>.toDomainFailure(): DomainResult.Failure =
     when {
         isUnauthorized -> DomainResult.Failure.Unauthorized
         isMfaRequired -> DomainResult.Failure.MfaRequired(MfaTypeProvider.get(this))
+        isNoNetworkException || this is NetworkResult.Failure.NetworkError ->
+            DomainResult.Failure.NetworkError(OFFLINE, exception)
+        isServerNotReachable ->
+            DomainResult.Failure.NetworkError(TIMEOUT, exception)
+        this is NetworkResult.Failure.ServerError ->
+            DomainResult.Failure.ServerError(headerMessage, errorCode, exception)
         else -> DomainResult.Failure.Unknown(exception)
     }

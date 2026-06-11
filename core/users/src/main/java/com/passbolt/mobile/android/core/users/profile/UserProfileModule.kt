@@ -1,7 +1,3 @@
-package com.passbolt.mobile.android.core.users.profile
-
-import org.koin.core.module.Module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -24,16 +20,16 @@ import org.koin.core.module.Module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+
+package com.passbolt.mobile.android.core.users.profile
+
+import org.koin.core.module.Module
+
+// TODO move interactor to domain - first move the two use cases
 fun Module.userProfileModule() {
     single {
-        FetchUserProfileUseCase(
-            usersRepository = get(),
-            userProfileMapper = get(),
-        )
-    }
-    single {
         UserProfileInteractor(
-            fetchUserProfileUseCase = get(),
+            usersRepository = get(),
             updateAccountDataUseCase = get(),
             getSelectedAccountUseCase = get(),
         )

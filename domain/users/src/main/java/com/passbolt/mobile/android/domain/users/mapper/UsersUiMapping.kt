@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.users
-
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,17 +20,41 @@ import com.passbolt.mobile.android.core.networking.callWithHandler
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class UsersRepository(
-    private val usersDataSource: UsersDataSource,
-    private val responseHandler: ResponseHandler,
-) {
-    suspend fun getUsers(hasAccessTo: List<String>? = null) =
-        callWithHandler(responseHandler) {
-            usersDataSource.getUsers(hasAccessTo)
-        }
 
-    suspend fun getMyProfile() =
-        callWithHandler(responseHandler) {
-            usersDataSource.getMyProfile()
-        }
-}
+package com.passbolt.mobile.android.domain.users.mapper
+
+import com.passbolt.mobile.android.domain.users.model.GpgKey
+import com.passbolt.mobile.android.domain.users.model.UserProfile
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
+
+fun UserProfile.toUiModel(): UserProfileUiModel =
+    UserProfileUiModel(
+        username = username,
+        firstName = firstName,
+        lastName = lastName,
+        avatarUrl = avatarUrl,
+    )
+
+fun UserProfile.toUserModel(): UserUiModel =
+    UserUiModel(
+        id = id,
+        userName = username,
+        disabled = disabled,
+        gpgKey = requireNotNull(gpgKey).toUiModel(),
+        profile = toUiModel(),
+    )
+
+fun GpgKey.toUiModel(): GpgKeyUiModel =
+    GpgKeyUiModel(
+        id = id,
+        armoredKey = armoredKey,
+        fingerprint = fingerprint,
+        bits = bits,
+        uid = uid,
+        keyId = keyId,
+        type = type,
+        keyExpirationDate = keyExpirationDate,
+        keyCreationDate = keyCreationDate,
+    )

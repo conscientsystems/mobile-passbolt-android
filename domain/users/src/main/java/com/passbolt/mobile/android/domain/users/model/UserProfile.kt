@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.users
-
-import com.passbolt.mobile.android.core.networking.RestService
-import org.koin.core.module.Module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,20 +21,29 @@ import org.koin.core.module.Module
  * @since v1.0
  */
 
-internal fun Module.usersApiModule() {
-    single {
-        UsersRepository(
-            usersDataSource = get(),
-            responseHandler = get(),
-        )
-    }
-    single<UsersDataSource> {
-        UsersRemoteDataSource(
-            usersApi = get(),
-        )
-    }
-    single {
-        get<RestService>()
-            .service(UsersApi::class.java)
-    }
-}
+package com.passbolt.mobile.android.domain.users.model
+
+import java.time.ZonedDateTime
+
+data class UserProfile(
+    val id: String,
+    val username: String,
+    val disabled: Boolean,
+    val role: String?,
+    val firstName: String?,
+    val lastName: String?,
+    val avatarUrl: String?,
+    val gpgKey: GpgKey?,
+)
+
+data class GpgKey(
+    val id: String,
+    val armoredKey: String,
+    val fingerprint: String,
+    val bits: Int,
+    val uid: String?,
+    val keyId: String,
+    val type: String?,
+    val keyExpirationDate: ZonedDateTime?,
+    val keyCreationDate: ZonedDateTime?,
+)

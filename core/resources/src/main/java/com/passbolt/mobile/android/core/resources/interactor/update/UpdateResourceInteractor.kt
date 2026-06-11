@@ -56,7 +56,7 @@ import com.passbolt.mobile.android.ui.EncryptedSecretOrError
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.UpdateResourceModel
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import java.time.ZonedDateTime
 
 class UpdateResourceInteractor(
@@ -114,7 +114,7 @@ class UpdateResourceInteractor(
     private suspend fun updateResource(
         secretInput: SecretInput,
         passphrase: ByteArray,
-        usersWhoHaveAccess: List<UserModel>,
+        usersWhoHaveAccess: List<UserUiModel>,
         resourceInput: UpdateResourceModel,
     ): Output {
         val encryptedSecrets = encrypt(secretInput.secretJsonModel.json!!, passphrase, usersWhoHaveAccess)
@@ -213,7 +213,7 @@ class UpdateResourceInteractor(
     private suspend fun encrypt(
         plainSecret: String,
         passphrase: ByteArray,
-        usersWhoHaveAccess: List<UserModel>,
+        usersWhoHaveAccess: List<UserUiModel>,
     ): List<EncryptedSecretOrError> =
         usersWhoHaveAccess.mapTo(mutableListOf()) {
             val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)

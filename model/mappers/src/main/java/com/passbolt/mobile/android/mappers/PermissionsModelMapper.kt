@@ -9,7 +9,7 @@ import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.PermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 
 /**
@@ -120,7 +120,7 @@ class PermissionsModelMapper(
     ) = PermissionModelUi.GroupPermissionModel(permission, permissionId, model)
 
     fun map(
-        model: UserModel,
+        model: UserUiModel,
         permission: ResourcePermission,
         permissionId: String,
     ) = PermissionModelUi.UserPermissionModel(

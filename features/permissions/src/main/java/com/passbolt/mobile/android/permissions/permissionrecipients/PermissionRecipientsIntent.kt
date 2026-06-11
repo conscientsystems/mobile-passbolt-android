@@ -24,7 +24,7 @@
 package com.passbolt.mobile.android.permissions.permissionrecipients
 
 import com.passbolt.mobile.android.ui.GroupModel
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 sealed interface PermissionRecipientsIntent {
     data object GoBack : PermissionRecipientsIntent
@@ -38,7 +38,7 @@ sealed interface PermissionRecipientsIntent {
     ) : PermissionRecipientsIntent
 
     data class ToggleUserSelection(
-        val user: UserModel,
+        val user: UserUiModel,
     ) : PermissionRecipientsIntent
 
     data object Save : PermissionRecipientsIntent
