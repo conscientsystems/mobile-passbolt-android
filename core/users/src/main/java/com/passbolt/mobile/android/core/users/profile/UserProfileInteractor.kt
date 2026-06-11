@@ -27,6 +27,10 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccou
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
 import com.passbolt.mobile.android.domain.users.UsersRepository
 import timber.log.Timber
 
@@ -55,16 +59,29 @@ class UserProfileInteractor(
             }
             is DomainResult.Failure -> {
                 Timber.e("Failed to fetch user profile")
-                Output.Failure(result.displayMessage())
+                Output.Failure(result)
             }
         }
     }
 
-    sealed class Output {
+    sealed class Output : AuthenticatedUseCaseOutput {
+        override val authenticationState: AuthenticationState
+            get() =
+                when {
+                    this is Failure && this.result is DomainResult.Failure.Unauthorized ->
+                        AuthenticationState.Unauthenticated(Session)
+                    this is Failure && this.result is DomainResult.Failure.MfaRequired ->
+                        AuthenticationState.Unauthenticated(Mfa(this.result.providers))
+                    else -> AuthenticationState.Authenticated
+                }
+
         data object Success : Output()
 
         data class Failure(
-            val message: String?,
-        ) : Output()
+            val result: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = result.displayMessage()
+        }
     }
 }

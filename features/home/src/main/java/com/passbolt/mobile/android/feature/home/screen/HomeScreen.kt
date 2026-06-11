@@ -272,6 +272,7 @@ private fun HomeScreen(
                         .fillMaxWidth()
                         .padding(end = 16.dp),
                 avatarUrl = state.userAvatar,
+                avatarPlaceholderRes = CoreUiR.drawable.ic_avatar_placeholder,
                 initialValue = state.searchQuery,
                 onEndIconClick = { onIntent(SearchEndIconAction) },
                 leadingIcon = {

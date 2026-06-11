@@ -25,15 +25,19 @@ package com.passbolt.mobile.android.feature.accountdetails.screen
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
+import com.passbolt.mobile.android.commontest.session.validSessionTestModule
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.SaveChanges
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.StartTransferAccount
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.UpdateLabel
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsScreenSideEffect.NavigateUp
+import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsScreenSideEffect.ShowProfileFetchError
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsValidationError.MaxLengthExceeded
 import com.passbolt.mobile.android.mappers.AccountModelMapper
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +60,7 @@ import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import kotlin.test.assertIs
@@ -73,10 +78,17 @@ class AccountDetailsViewModelTest : KoinTest {
                         single { mock<GetSelectedAccountDataUseCase>() }
                         single { mock<GetSelectedAccountUseCase>() }
                         single { mock<UpdateAccountDataUseCase>() }
+                        single {
+                            mock<UserProfileInteractor> {
+                                onBlocking { fetchAndUpdateUserProfile() } doReturn
+                                    UserProfileInteractor.Output.Success
+                            }
+                        }
                         singleOf(::SessionRefreshTrackingFlow)
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factoryOf(::AccountDetailsViewModel)
                     },
+                    validSessionTestModule,
                 ),
             )
         }
@@ -115,6 +127,27 @@ class AccountDetailsViewModelTest : KoinTest {
                 assertThat(state.email).isEqualTo(EMAIL)
                 assertThat(state.name).isEqualTo("$FIRST_NAME $LAST_NAME")
                 assertThat(state.role).isEqualTo(ROLE)
+            }
+        }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun `when profile fetch fails on load then profile fetch error side effect is emitted`() =
+        runTest {
+            val userProfileInteractor = get<UserProfileInteractor>()
+            userProfileInteractor.stub {
+                onBlocking { fetchAndUpdateUserProfile() } doReturn
+                    UserProfileInteractor.Output.Failure(
+                        DomainResult.Failure.Unknown(RuntimeException(PROFILE_ERROR)),
+                    )
+            }
+
+            viewModel = get()
+
+            viewModel.sideEffect.test {
+                val effect = awaitItem()
+                assertIs<ShowProfileFetchError>(effect)
+                assertThat(effect.message).isEqualTo(PROFILE_ERROR)
             }
         }
 
@@ -238,6 +271,7 @@ class AccountDetailsViewModelTest : KoinTest {
         private const val LABEL = "label"
         private const val ROLE = "user"
         private const val SELECTED_ACCOUNT_ID = "selected"
+        private const val PROFILE_ERROR = "profile fetch failed"
 
         private val selectedAccountData =
             GetSelectedAccountDataUseCase.Output(

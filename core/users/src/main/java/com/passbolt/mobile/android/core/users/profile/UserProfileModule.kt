@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.core.users.profile
 
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.singleOf
 
 // TODO move interactor to domain - first move the two use cases
 fun Module.userProfileModule() {
@@ -34,4 +35,5 @@ fun Module.userProfileModule() {
             getSelectedAccountUseCase = get(),
         )
     }
+    singleOf(::UserProfileRefreshTrackingFlow)
 }

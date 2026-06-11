@@ -84,7 +84,6 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVer
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor.Error.TimeIsOutOfSync
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor.Error.ConfigurationFetchError
-import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor.Error.UserProfileFetchError
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmup
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor
@@ -488,10 +487,6 @@ class AuthViewModel(
                     signInIdlingResource.setIdle(true)
                     when (it) {
                         ConfigurationFetchError -> updateViewState { copy(showFetchFeatureFlagsError = true) }
-                        UserProfileFetchError ->
-                            emitSideEffect(
-                                ShowErrorSnackbar(AuthSideEffect.SnackbarErrorType.PROFILE_FETCH_FAILURE),
-                            )
                     }
                 },
             ) {

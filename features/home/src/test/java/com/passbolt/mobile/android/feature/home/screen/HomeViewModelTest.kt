@@ -37,15 +37,19 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
+import com.passbolt.mobile.android.commontest.session.validSessionTestModule
 import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
+import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.entity.home.HomeDisplayView
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseSwitchAccount
@@ -66,6 +70,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeSideEffect.ShowSucces
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel.DoNotShow
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_TO_REFRESH_DATA
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
+import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.PROFILE_FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.FOLDER_CREATED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_CREATED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_DELETED
@@ -145,6 +150,12 @@ class HomeViewModelTest : KoinTest {
                     single { mock<CanCreateResourceUseCase>() }
                     single { mock<CanShareResourceUseCase>() }
                     single { mock<DetectAutofillConflict>() }
+                    single {
+                        mock<UserProfileInteractor> {
+                            onBlocking { fetchAndUpdateUserProfile() } doReturn UserProfileInteractor.Output.Success
+                        }
+                    }
+                    singleOf(::UserProfileRefreshTrackingFlow)
                     single { AccountSwitchFlow(mock { on { execute(any()) } doReturn GetSelectedAccountUseCase.Output("id1") }) }
                     single(named(JSON_MODEL_GSON)) { GsonBuilder().serializeNulls().create() }
                     single {
@@ -158,6 +169,7 @@ class HomeViewModelTest : KoinTest {
                     singleOf(::JsonPathJsonPathOps) bind JsonPathsOps::class
                     factoryOf(::HomeViewModel)
                 },
+                validSessionTestModule,
             )
         }
 
@@ -235,6 +247,25 @@ class HomeViewModelTest : KoinTest {
             viewModel = get()
 
             assertThat(viewModel.viewState.value.userAvatar).isEqualTo(avatar)
+        }
+
+    @Test
+    fun `should show error snackbar when profile refresh fails on init`() =
+        runTest {
+            val errorMessage = "profile fetch failed"
+            get<UserProfileInteractor>().stub {
+                onBlocking { fetchAndUpdateUserProfile() } doReturn
+                    UserProfileInteractor.Output.Failure(DomainResult.Failure.Unknown(RuntimeException(errorMessage)))
+            }
+
+            viewModel = get()
+
+            viewModel.sideEffect.test {
+                val effect = awaitItem()
+                assertIs<ShowErrorSnackbar>(effect)
+                assertThat(effect.type).isEqualTo(PROFILE_FETCH_FAILURE)
+                assertThat(effect.message).isEqualTo(errorMessage)
+            }
         }
 
     @Test

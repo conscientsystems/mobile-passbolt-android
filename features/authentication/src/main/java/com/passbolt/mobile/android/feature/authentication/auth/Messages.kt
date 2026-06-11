@@ -10,7 +10,6 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Sn
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_VERIFICATION_FAILURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.DECRYPTION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.GENERIC
-import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.PROFILE_FETCH_FAILURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.TIME_OUT_OF_SYNC
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.WRONG_PASSPHRASE
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
@@ -47,14 +46,6 @@ internal fun getSnackBarMessage(
         CHALLENGE_TOKEN_EXPIRED -> context.getString(LocalizationR.string.auth_error_token_expired)
         CHALLENGE_VERIFICATION_FAILURE -> context.getString(LocalizationR.string.auth_error_challenge_verification_failure)
         TIME_OUT_OF_SYNC -> context.getString(LocalizationR.string.common_time_is_out_of_sync)
-        PROFILE_FETCH_FAILURE -> {
-            val base = context.getString(LocalizationR.string.auth_error_profile_fetch_failure)
-            if (!message.isNullOrBlank()) {
-                "$base($message)"
-            } else {
-                base
-            }
-        }
         BIOMETRIC_DECRYPT_ERROR -> context.getString(LocalizationR.string.biometric_decrypt_error_message)
         BIOMETRIC_NO_CRYPTO_CIPHER -> context.getString(LocalizationR.string.biometric_no_crypto_cipher)
     }

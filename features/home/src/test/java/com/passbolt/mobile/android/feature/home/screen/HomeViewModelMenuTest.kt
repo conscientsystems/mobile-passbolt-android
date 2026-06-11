@@ -33,6 +33,7 @@ import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
 import com.passbolt.mobile.android.common.autofill.DetectAutofillConflict
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
+import com.passbolt.mobile.android.commontest.session.validSessionTestModule
 import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
@@ -46,6 +47,8 @@ import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActi
 import com.passbolt.mobile.android.core.resources.actions.ResourcePropertyActionResult
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.entity.home.HomeDisplayView
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyPassword
@@ -129,6 +132,12 @@ class HomeViewModelMenuTest : KoinTest {
                     single { mock<CanCreateResourceUseCase>() }
                     single { mock<CanShareResourceUseCase>() }
                     single { mock<DetectAutofillConflict>() }
+                    single {
+                        mock<UserProfileInteractor> {
+                            onBlocking { fetchAndUpdateUserProfile() } doReturn UserProfileInteractor.Output.Success
+                        }
+                    }
+                    singleOf(::UserProfileRefreshTrackingFlow)
                     single { AccountSwitchFlow(mock { on { execute(any()) } doReturn GetSelectedAccountUseCase.Output("id1") }) }
                     single(named(JSON_MODEL_GSON)) { GsonBuilder().serializeNulls().create() }
                     single {
@@ -142,6 +151,7 @@ class HomeViewModelMenuTest : KoinTest {
                     singleOf(::JsonPathJsonPathOps) bind JsonPathsOps::class
                     factoryOf(::HomeViewModel)
                 },
+                validSessionTestModule,
             )
         }
 

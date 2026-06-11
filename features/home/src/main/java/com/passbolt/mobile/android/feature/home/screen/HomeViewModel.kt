@@ -45,6 +45,11 @@ import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyA
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
+import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor.Output.Failure
+import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor.Output.Success
+import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
+import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseFiltersBottomSheet
@@ -98,6 +103,7 @@ import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_TO_REFRESH_DATA
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
+import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.PROFILE_FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.TOGGLE_FAVOURITE_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_CREATED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_DELETED
@@ -142,6 +148,8 @@ internal class HomeViewModel(
     private val canShareResourceUse: CanShareResourceUseCase,
     private val detectAutofillConflict: DetectAutofillConflict,
     private val accountSwitchFlow: AccountSwitchFlow,
+    private val userProfileInteractor: UserProfileInteractor,
+    private val userProfileRefreshTrackingFlow: UserProfileRefreshTrackingFlow,
 ) : SideEffectViewModel<HomeState, HomeSideEffect>(HomeState()),
     KoinComponent {
     private val resourcePropertiesActionsInteractor: ResourcePropertiesActionsInteractor
@@ -157,6 +165,7 @@ internal class HomeViewModel(
 
     init {
         loadUserAvatar()
+        refreshUserProfile()
     }
 
     private fun loadUserAvatar() {
@@ -167,6 +176,25 @@ internal class HomeViewModel(
                         .execute(Unit)
                         .avatarUrl,
             )
+        }
+    }
+
+    private fun refreshUserProfile() {
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            userProfileRefreshTrackingFlow.setRefreshing(true)
+            try {
+                when (
+                    val result =
+                        runAuthenticatedOperation {
+                            userProfileInteractor.fetchAndUpdateUserProfile()
+                        }
+                ) {
+                    is Success -> loadUserAvatar()
+                    is Failure -> emitSideEffect(ShowErrorSnackbar(PROFILE_FETCH_FAILURE, result.message))
+                }
+            } finally {
+                userProfileRefreshTrackingFlow.setRefreshing(false)
+            }
         }
     }
 
