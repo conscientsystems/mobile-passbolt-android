@@ -22,13 +22,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.passbolt.mobile.android.core.localization.R
 import com.passbolt.mobile.android.core.ui.circularimage.CircularProfileImage
-import com.passbolt.mobile.android.ui.GpgKeyModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 @Composable
 internal fun UserRecipientRow(
-    user: UserModel,
+    user: UserUiModel,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -84,12 +84,12 @@ internal fun UserRecipientRow(
 }
 
 private val previewUser =
-    UserModel(
+    UserUiModel(
         id = "1",
         userName = "john@passbolt.com",
         disabled = false,
         gpgKey =
-            GpgKeyModel(
+            GpgKeyUiModel(
                 id = "1",
                 armoredKey = "",
                 fingerprint = "",
@@ -101,7 +101,7 @@ private val previewUser =
                 keyCreationDate = null,
             ),
         profile =
-            UserProfileModel(
+            UserProfileUiModel(
                 username = "john@passbolt.com",
                 firstName = "John",
                 lastName = "Doe",

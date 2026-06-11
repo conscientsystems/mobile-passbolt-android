@@ -1,6 +1,7 @@
-package com.passbolt.mobile.android.passboltapi.users
+package com.passbolt.mobile.android.ui
 
-import com.passbolt.mobile.android.dto.response.UserDto
+import com.passbolt.mobile.android.common.search.Searchable
+import java.time.ZonedDateTime
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,9 +25,33 @@ import com.passbolt.mobile.android.dto.response.UserDto
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-interface UsersDataSource {
-    suspend fun getUsers(hasAccessTo: List<String>? = null): List<UserDto>
-
-    suspend fun getMyProfile(): UserDto
+data class UserUiModel(
+    val id: String,
+    val userName: String,
+    val disabled: Boolean,
+    val gpgKey: GpgKeyUiModel,
+    val profile: UserProfileUiModel,
+    override val searchCriteria: String = "$userName${profile.firstName.orEmpty()}${profile.lastName.orEmpty()}",
+) : Searchable {
+    val fullName: String
+        get() = "${profile.firstName.orEmpty()} ${profile.lastName.orEmpty()}"
 }
+
+data class GpgKeyUiModel(
+    val id: String,
+    val armoredKey: String,
+    val fingerprint: String,
+    val bits: Int,
+    val uid: String?,
+    val keyId: String,
+    val type: String?,
+    val keyExpirationDate: ZonedDateTime?,
+    val keyCreationDate: ZonedDateTime?,
+)
+
+data class UserProfileUiModel(
+    val username: String,
+    val firstName: String?,
+    val lastName: String?,
+    val avatarUrl: String?,
+)

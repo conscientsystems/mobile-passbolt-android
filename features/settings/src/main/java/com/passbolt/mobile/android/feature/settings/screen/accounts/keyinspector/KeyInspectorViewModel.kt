@@ -76,9 +76,9 @@ internal class KeyInspectorViewModel(
 
     private suspend fun fetchKeyData() {
         when (val keyData = runAuthenticatedOperation { fetchCurrentUserUseCase.execute(Unit) }) {
-            is FetchCurrentUserUseCase.Output.Failure<*> -> emitSideEffect(ShowErrorSnackbar(FAILED_TO_FETCH_KEY, keyData.message))
+            is FetchCurrentUserUseCase.Output.Failure -> emitSideEffect(ShowErrorSnackbar(FAILED_TO_FETCH_KEY, keyData.message))
             is FetchCurrentUserUseCase.Output.Success -> {
-                val keyData = keyData.userModel.gpgKey
+                val keyData = keyData.userUiModel.gpgKey
                 updateViewState {
                     copy(
                         fingerprint = fingerprintFormatter.format(keyData.fingerprint, appendMiddleSpacing = false).orEmpty(),

@@ -1,9 +1,3 @@
-package com.passbolt.mobile.android.core.users.profile
-
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,27 +20,42 @@ import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSele
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+
+package com.passbolt.mobile.android.core.users.profile
+
+import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
+import com.passbolt.mobile.android.domain.users.UsersRepository
+import timber.log.Timber
+
+// TODO move interactor to domain - first move the two use cases
 class UserProfileInteractor(
-    private val fetchUserProfileUseCase: FetchUserProfileUseCase,
+    private val usersRepository: UsersRepository,
     private val updateAccountDataUseCase: UpdateAccountDataUseCase,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
     suspend fun fetchAndUpdateUserProfile(): Output {
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        return when (val result = fetchUserProfileUseCase.execute(UserIdInput(userId))) {
-            is FetchUserProfileUseCase.Output.Failure -> Output.Failure(result.message)
-            is FetchUserProfileUseCase.Output.Success -> {
+        return when (val result = usersRepository.getMyProfile()) {
+            is DomainResult.Success -> {
+                val profile = result.value
                 updateAccountDataUseCase.execute(
                     UpdateAccountDataUseCase.Input(
                         userId = userId,
-                        avatarUrl = result.profile.avatarUrl,
-                        firstName = result.profile.firstName,
-                        lastName = result.profile.lastName,
-                        email = result.profile.username,
-                        role = result.roleName,
+                        avatarUrl = profile.avatarUrl,
+                        firstName = profile.firstName,
+                        lastName = profile.lastName,
+                        email = profile.username,
+                        role = profile.role,
                     ),
                 )
                 Output.Success
+            }
+            is DomainResult.Failure -> {
+                Timber.e("Failed to fetch user profile")
+                Output.Failure(result.displayMessage())
             }
         }
     }

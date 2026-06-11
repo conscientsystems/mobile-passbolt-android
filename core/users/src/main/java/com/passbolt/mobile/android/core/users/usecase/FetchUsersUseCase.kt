@@ -5,9 +5,9 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.networking.MfaTypeProvider
 import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.domain.users.UsersRepository
 import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.passboltapi.users.UsersRepository
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 /**
  * Passbolt - Open source password manager for teams
@@ -64,7 +64,7 @@ class FetchUsersUseCase(
                 }
 
         data class Success(
-            val users: List<UserModel>,
+            val users: List<UserUiModel>,
         ) : Output()
 
         data class Failure<T : Any>(

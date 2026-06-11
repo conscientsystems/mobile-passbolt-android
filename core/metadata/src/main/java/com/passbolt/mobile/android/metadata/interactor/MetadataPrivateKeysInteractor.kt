@@ -19,7 +19,7 @@ import com.passbolt.mobile.android.ui.MetadataKeyModification
 import com.passbolt.mobile.android.ui.MetadataKeyModification.DELETION
 import com.passbolt.mobile.android.ui.ParsedMetadataKeyModel
 import com.passbolt.mobile.android.ui.ParsedMetadataPrivateKeyModel
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import timber.log.Timber
 import java.util.UUID
 
@@ -185,7 +185,7 @@ class MetadataPrivateKeysInteractor(
         currentUserSigningKeyFingerprint: String,
         verifiedMessage: VerifiedMessage,
         backendMetadataPrivateKey: ParsedMetadataPrivateKeyModel,
-        userWhoModifiedTheKey: UserModel,
+        userWhoModifiedTheKey: UserUiModel,
     ): Output {
         Timber.d("Metadata key signature is valid")
 
@@ -214,7 +214,7 @@ class MetadataPrivateKeysInteractor(
     private suspend fun verifyWithBackendKeyPresentWithValidSignatureAndWithLocalKey(
         verifiedKeyPgpMessage: VerifiedMessage,
         backendMetadataPrivateKey: ParsedMetadataPrivateKeyModel,
-        userWhoModifiedTheKey: UserModel,
+        userWhoModifiedTheKey: UserUiModel,
         localTrustedKey: TrustedKey,
     ): Output {
         Timber.d("There is a local trusted key")
@@ -295,7 +295,7 @@ class MetadataPrivateKeysInteractor(
         currentUserSigningKeyFingerprint: String,
         verifiedKeyPgpMessage: VerifiedMessage,
         backendMetadataPrivateKey: ParsedMetadataPrivateKeyModel,
-        userWhoModifiedTheKey: UserModel,
+        userWhoModifiedTheKey: UserUiModel,
     ): Output {
         Timber.d("There is no local trusted key")
         val signatureSigningKeyFingerprint = verifiedKeyPgpMessage.signatureKeyFingerprint

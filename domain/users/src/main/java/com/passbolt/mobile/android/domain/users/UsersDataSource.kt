@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.mappers
-
-import com.passbolt.mobile.android.dto.response.UserProfileResponseDto
-import com.passbolt.mobile.android.ui.UserProfileModel
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,16 +20,16 @@ import com.passbolt.mobile.android.ui.UserProfileModel
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class UserProfileMapper {
-    fun mapToUi(
-        profileResponseDto: UserProfileResponseDto?,
-        username: String,
-    ) = profileResponseDto?.let {
-        UserProfileModel(
-            username = username,
-            firstName = profileResponseDto.firstName,
-            lastName = profileResponseDto.lastName,
-            avatarUrl = profileResponseDto.avatar?.url?.medium,
-        )
-    }
+
+package com.passbolt.mobile.android.domain.users
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.users.model.UserProfile
+import com.passbolt.mobile.android.dto.response.UserDto
+
+interface UsersDataSource {
+    suspend fun getMyProfile(): DomainResult<UserProfile>
+
+    // TODO MOB-4496: migrate to the domain model repository architecture
+    suspend fun getUsers(hasAccessTo: List<String>? = null): List<UserDto>
 }

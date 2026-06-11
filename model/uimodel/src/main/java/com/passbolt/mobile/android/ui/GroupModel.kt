@@ -55,5 +55,5 @@ data class GroupWithCount(
 
 data class GroupWithUsersModel(
     val group: GroupModel,
-    val users: List<UserModel>,
+    val users: List<UserUiModel>,
 )

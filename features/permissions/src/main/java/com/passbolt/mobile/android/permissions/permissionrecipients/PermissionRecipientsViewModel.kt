@@ -42,7 +42,7 @@ import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRe
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import kotlinx.coroutines.launch
 
 class PermissionRecipientsViewModel(
@@ -150,7 +150,7 @@ class PermissionRecipientsViewModel(
         recomputeDisplayPermissions()
     }
 
-    private fun toggleUserSelection(user: UserModel) {
+    private fun toggleUserSelection(user: UserUiModel) {
         val currentIds = viewState.value.selectedUserIds
         val newIds =
             if (user.id in currentIds) {

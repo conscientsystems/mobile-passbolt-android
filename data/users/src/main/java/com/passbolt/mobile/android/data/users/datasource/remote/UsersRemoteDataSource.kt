@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.users
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -22,10 +20,30 @@ package com.passbolt.mobile.android.passboltapi.users
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+
+package com.passbolt.mobile.android.data.users.datasource.remote
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.data.users.datasource.remote.api.UsersApi
+import com.passbolt.mobile.android.data.users.mapper.toDomain
+import com.passbolt.mobile.android.domain.users.UsersDataSource
+import com.passbolt.mobile.android.domain.users.model.UserProfile
+import com.passbolt.mobile.android.dto.response.UserDto
+
 internal class UsersRemoteDataSource(
     private val usersApi: UsersApi,
+    private val responseHandler: ResponseHandler,
 ) : UsersDataSource {
-    override suspend fun getUsers(hasAccessTo: List<String>?) = usersApi.getUsers(hasAccessTo).body
+    override suspend fun getMyProfile(): DomainResult<UserProfile> =
+        when (val result = callWithHandler(responseHandler) { usersApi.getMyProfile().body }) {
+            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
+            is NetworkResult.Failure -> result.toDomainFailure()
+        }
 
-    override suspend fun getMyProfile() = usersApi.getMyProfile().body
+    // TODO MOB-4496: migrate to the domain model repository architecture
+    override suspend fun getUsers(hasAccessTo: List<String>?): List<UserDto> = usersApi.getUsers(hasAccessTo).body
 }

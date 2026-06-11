@@ -193,6 +193,8 @@ dependencies {
     implementation(project(":policies"))
     implementation(project(":passwordpolicies-data"))
     implementation(project(":passwordpolicies-domain"))
+    implementation(project(":users-data"))
+    implementation(project(":users-domain"))
     implementation(project(":pwnedpasswordsapi"))
     implementation(project(":passwordgenerator"))
     implementation(project(":metadata"))

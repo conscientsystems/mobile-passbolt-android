@@ -18,15 +18,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.passbolt.mobile.android.core.ui.circularimage.CircularProfileImage
-import com.passbolt.mobile.android.ui.GpgKeyModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import java.time.ZonedDateTime
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 @Composable
 internal fun GroupMemberItem(
-    member: UserModel,
+    member: UserUiModel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,12 +81,12 @@ private fun GroupMemberItemPreview() {
     PassboltTheme {
         GroupMemberItem(
             member =
-                UserModel(
+                UserUiModel(
                     id = "1",
                     userName = "grace@passbolt.com",
                     disabled = false,
                     gpgKey =
-                        GpgKeyModel(
+                        GpgKeyUiModel(
                             id = "1",
                             armoredKey = "",
                             fingerprint = "93UT247Z1R1VF142",
@@ -98,7 +98,7 @@ private fun GroupMemberItemPreview() {
                             keyCreationDate = ZonedDateTime.now(),
                         ),
                     profile =
-                        UserProfileModel(
+                        UserProfileUiModel(
                             username = "grace",
                             firstName = "Grace",
                             lastName = "Hopper",

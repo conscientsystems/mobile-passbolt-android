@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.users
-
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import com.passbolt.mobile.android.dto.response.UserDto
-import retrofit2.http.GET
-import retrofit2.http.Query
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,19 +21,20 @@ import retrofit2.http.Query
  * @since v1.0
  */
 
-internal interface UsersApi {
-    @GET(USERS)
-    suspend fun getUsers(
-        @Query(QUERY_HAS_ACCESS_PERMISSION) hasAccessTo: List<String>? = null,
-    ): BaseResponse<List<UserDto>>
+package com.passbolt.mobile.android.data.users
 
-    @GET(USERS_ME)
-    suspend fun getMyProfile(): BaseResponse<UserDto>
+import com.passbolt.mobile.android.core.networking.RestService
+import com.passbolt.mobile.android.data.users.datasource.remote.UsersRemoteDataSource
+import com.passbolt.mobile.android.data.users.datasource.remote.api.UsersApi
+import com.passbolt.mobile.android.domain.users.UsersDataSource
+import com.passbolt.mobile.android.domain.users.UsersRepository
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
 
-    private companion object {
-        private const val QUERY_HAS_ACCESS_PERMISSION = "filter[has-access]"
-
-        private const val USERS = "users.json"
-        private const val USERS_ME = "users/me.json"
+val usersDataModule =
+    module {
+        single { get<RestService>().service(UsersApi::class.java) }
+        singleOf(::UsersRemoteDataSource) bind UsersDataSource::class
+        singleOf(::UsersRepositoryImpl) bind UsersRepository::class
     }
-}

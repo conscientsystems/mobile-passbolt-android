@@ -5,7 +5,7 @@ import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 /**
  * Passbolt - Open source password manager for teams
@@ -45,6 +45,6 @@ class GetLocalCurrentUserUseCase(
     }
 
     data class Output(
-        val user: UserModel,
+        val user: UserUiModel,
     )
 }

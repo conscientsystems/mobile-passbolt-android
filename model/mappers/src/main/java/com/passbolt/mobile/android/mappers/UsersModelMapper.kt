@@ -4,16 +4,16 @@ import com.passbolt.mobile.android.dto.response.UserDto
 import com.passbolt.mobile.android.entity.user.User
 import com.passbolt.mobile.android.entity.user.UserGpgKey
 import com.passbolt.mobile.android.entity.user.UserProfile
-import com.passbolt.mobile.android.ui.GpgKeyModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 import java.time.ZonedDateTime
 
 class UsersModelMapper {
-    fun map(userDto: UserDto): UserModel {
+    fun map(userDto: UserDto): UserUiModel {
         val usersGpgKey = requireNotNull(userDto.gpgKey)
-        return UserModel(
+        return UserUiModel(
             id = userDto.id.toString(),
             userName = userDto.username,
             // if disabled date is in the past the user is disabled
@@ -21,7 +21,7 @@ class UsersModelMapper {
                 userDto.disabled
                     ?.let { ZonedDateTime.parse(it).isBefore(ZonedDateTime.now()) } ?: false,
             gpgKey =
-                GpgKeyModel(
+                GpgKeyUiModel(
                     id = usersGpgKey.id.toString(),
                     armoredKey = usersGpgKey.armoredKey,
                     fingerprint = usersGpgKey.fingerprint,
@@ -33,7 +33,7 @@ class UsersModelMapper {
                     keyCreationDate = usersGpgKey.keyCreated?.let { keyCreated -> ZonedDateTime.parse(keyCreated) },
                 ),
             profile =
-                UserProfileModel(
+                UserProfileUiModel(
                     username = userDto.username,
                     firstName = userDto.profile?.firstName,
                     lastName = userDto.profile?.lastName,
@@ -46,12 +46,12 @@ class UsersModelMapper {
         )
     }
 
-    fun map(input: List<UserDto>): List<UserModel> =
+    fun map(input: List<UserDto>): List<UserUiModel> =
         input
             .filter { it.active && !it.deleted }
             .map(::map)
 
-    fun map(input: UserModel) =
+    fun map(input: UserUiModel) =
         User(
             id = input.id,
             userName = input.userName,
@@ -77,11 +77,11 @@ class UsersModelMapper {
         )
 
     fun map(input: User) =
-        UserModel(
+        UserUiModel(
             id = input.id,
             userName = input.userName,
             gpgKey =
-                GpgKeyModel(
+                GpgKeyUiModel(
                     id = input.gpgKey.id,
                     armoredKey = input.gpgKey.armoredKey,
                     fingerprint = input.gpgKey.fingerprint,
@@ -94,7 +94,7 @@ class UsersModelMapper {
                 ),
             disabled = input.disabled,
             profile =
-                UserProfileModel(
+                UserProfileUiModel(
                     username = input.userName,
                     firstName = input.profile.firstName,
                     lastName = input.profile.lastName,
@@ -102,7 +102,7 @@ class UsersModelMapper {
                 ),
         )
 
-    fun mapToUserWithAvatar(input: UserModel) =
+    fun mapToUserWithAvatar(input: UserUiModel) =
         UserWithAvatar(
             userId = input.id,
             firstName = input.profile.firstName.orEmpty(),

@@ -27,13 +27,13 @@ import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 data class PermissionRecipientsState(
     val groups: List<GroupModel> = emptyList(),
-    val users: List<UserModel> = emptyList(),
+    val users: List<UserUiModel> = emptyList(),
     val filteredGroups: List<GroupModel> = emptyList(),
-    val filteredUsers: List<UserModel> = emptyList(),
+    val filteredUsers: List<UserUiModel> = emptyList(),
     val selectedGroupIds: Set<String> = emptySet(),
     val selectedUserIds: Set<String> = emptySet(),
     val searchInputEndIconMode: SearchInputEndIconMode = NONE,

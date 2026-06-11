@@ -60,6 +60,7 @@ import com.passbolt.mobile.android.core.users.usersModule
 import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
 import com.passbolt.mobile.android.data.passwordpolicies.passwordPoliciesDataModule
+import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
 import com.passbolt.mobile.android.domain.passwordpolicies.passwordPoliciesDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
@@ -172,6 +173,7 @@ class KoinInitializer : Initializer<Unit> {
                 policiesModule,
                 passwordPoliciesDomainModule,
                 passwordPoliciesDataModule,
+                usersDataModule,
                 pwnedPasswordsApiModule,
                 passwordGeneratorModule,
                 metadataModule,

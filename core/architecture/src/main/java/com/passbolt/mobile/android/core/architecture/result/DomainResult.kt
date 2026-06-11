@@ -37,10 +37,30 @@ sealed interface DomainResult<out T> {
             val providers: List<MfaProvider?>?,
         ) : Failure
 
-        data object NotFound : Failure
+        data object NotCached : Failure
+
+        data class ServerError(
+            val message: String,
+            val errorCode: Int?,
+            val cause: Throwable,
+        ) : Failure
+
+        data class NetworkError(
+            val reason: Reason,
+            val cause: Throwable,
+        ) : Failure {
+            enum class Reason { OFFLINE, TIMEOUT }
+        }
 
         data class Unknown(
             val cause: Throwable,
         ) : Failure
     }
 }
+
+fun DomainResult.Failure.displayMessage(): String? =
+    when (this) {
+        is DomainResult.Failure.ServerError -> message
+        is DomainResult.Failure.Unknown -> cause.message
+        else -> null
+    }

@@ -54,9 +54,9 @@ import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.Initialize
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateUp
-import com.passbolt.mobile.android.ui.GpgKeyModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.time.ZonedDateTime
@@ -154,12 +154,12 @@ private fun GroupMembersPreview() {
                     groupName = "Development Team",
                     members =
                         listOf(
-                            UserModel(
+                            UserUiModel(
                                 id = "1",
                                 userName = "grace@passbolt.com",
                                 disabled = false,
                                 gpgKey =
-                                    GpgKeyModel(
+                                    GpgKeyUiModel(
                                         id = "1",
                                         armoredKey = "",
                                         fingerprint = "03F60E958F4CB29723ACDF761353B5B15D9B054F",
@@ -171,19 +171,19 @@ private fun GroupMembersPreview() {
                                         keyCreationDate = ZonedDateTime.now(),
                                     ),
                                 profile =
-                                    UserProfileModel(
+                                    UserProfileUiModel(
                                         username = "grace",
                                         firstName = "Grace",
                                         lastName = "Hopper",
                                         avatarUrl = null,
                                     ),
                             ),
-                            UserModel(
+                            UserUiModel(
                                 id = "2",
                                 userName = "ada@passbolt.com",
                                 disabled = false,
                                 gpgKey =
-                                    GpgKeyModel(
+                                    GpgKeyUiModel(
                                         id = "2",
                                         armoredKey = "",
                                         fingerprint = "03F60E958F4CB29723ACDF761353B5B15D9B054F",
@@ -195,7 +195,7 @@ private fun GroupMembersPreview() {
                                         keyCreationDate = ZonedDateTime.now(),
                                     ),
                                 profile =
-                                    UserProfileModel(
+                                    UserProfileUiModel(
                                         username = "ada",
                                         firstName = "Ada",
                                         lastName = "Lovelace",

@@ -91,10 +91,10 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
         }
 
     @Test
-    fun `notfound failure also falls back to defaults`() =
+    fun `notcached failure also falls back to defaults`() =
         runTest {
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Failure.NotFound)
+                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Failure.NotCached)
             }
 
             val result = useCase.execute(Unit)
