@@ -65,12 +65,10 @@ import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.core.ui.scaffold.HomeScaffold
 import com.passbolt.mobile.android.core.ui.search.SearchInput
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
-import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuBottomSheet
 import com.passbolt.mobile.android.feature.home.screen.ResourceHandlingStrategy
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountBottomSheet
 import com.passbolt.mobile.android.feature.metadatakeytrust.NewMetadataKeyTrustDialog
 import com.passbolt.mobile.android.feature.metadatakeytrust.TrustedMetadataKeyDeletedDialog
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
@@ -78,13 +76,9 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseTrustNewKey
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseTrustedKeyDeletedDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ConfirmDeleteTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CopyOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateNote
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.DeleteOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.RevealOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Search
@@ -219,7 +213,7 @@ fun OtpScreen(
         },
         floatingActionButton = {
             if (!isAutofillMode && !state.isRefreshing) {
-                AddFloatingActionButton(onClick = { onIntent(OpenCreateResourceMenu) })
+                AddFloatingActionButton(onClick = { onIntent(CreateTotp) })
             }
         },
         content =
@@ -294,16 +288,6 @@ fun OtpScreen(
                         }
                     }
                 }
-                if (state.showCreateResourceBottomSheet) {
-                    CreateResourceMenuBottomSheet(
-                        onCreatePassword = { onIntent(CreatePassword) },
-                        onCreateTotp = { onIntent(CreateTotp) },
-                        onCreateNote = { onIntent(CreateNote) },
-                        onCreatePinCode = { onIntent(CreatePinCode) },
-                        onDismissRequest = { onIntent(CloseCreateResourceMenu) },
-                    )
-                }
-
                 if (state.showOtpMoreBottomSheet) {
                     val moreMenuResource = requireNotNull(state.moreMenuResource)
                     OtpMoreMenuBottomSheet(

@@ -52,7 +52,6 @@ import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
@@ -60,13 +59,9 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseTrustNewKey
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseTrustedKeyDeletedDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ConfirmDeleteTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CopyOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateNote
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.DeleteOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OtpQRScanReturned
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ResourceFormReturned
@@ -111,9 +106,6 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType.Totp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5DefaultWithTotp
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5TotpStandalone
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.totpSlugs
-import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
-import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
-import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
@@ -202,8 +194,6 @@ internal class OtpViewModel(
     @Suppress("CyclomaticComplexMethod", "LongMethod")
     fun onIntent(intent: OtpIntent) {
         when (intent) {
-            OpenCreateResourceMenu -> updateViewState { copy(showCreateResourceBottomSheet = true) }
-            CloseCreateResourceMenu -> updateViewState { copy(showCreateResourceBottomSheet = false) }
             is Search -> searchQueryChanged(intent.searchQuery)
             is RevealOtp -> {
                 updateViewState { copy(showOtpMoreBottomSheet = false) }
@@ -211,22 +201,7 @@ internal class OtpViewModel(
             }
             is OpenOtpMoreMenu -> updateViewState { copy(showOtpMoreBottomSheet = true, moreMenuResource = intent.otpItemWrapper) }
             is CloseOtpMoreMenu -> updateViewState { copy(showOtpMoreBottomSheet = false) }
-            CreatePassword -> {
-                updateViewState { copy(showCreateResourceBottomSheet = false) }
-                onCanCreateResource { emitSideEffect(NavigateToCreateResourceForm(leadingContentType = PASSWORD)) }
-            }
-            CreateNote -> {
-                updateViewState { copy(showCreateResourceBottomSheet = false) }
-                onCanCreateResource { emitSideEffect(NavigateToCreateResourceForm(leadingContentType = STANDALONE_NOTE)) }
-            }
-            CreatePinCode -> {
-                updateViewState { copy(showCreateResourceBottomSheet = false) }
-                onCanCreateResource { emitSideEffect(NavigateToCreateResourceForm(leadingContentType = PIN_CODE)) }
-            }
-            CreateTotp -> {
-                updateViewState { copy(showCreateResourceBottomSheet = false) }
-                onCanCreateResource { emitSideEffect(NavigateToCreateTotp) }
-            }
+            CreateTotp -> onCanCreateResource { emitSideEffect(NavigateToCreateTotp) }
             is OtpQRScanReturned -> processOtpScanResult(intent)
             is ResourceFormReturned -> processResourceFormResult(intent)
             is CopyOtp -> {

@@ -48,14 +48,10 @@ import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUs
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OtpQRScanReturned
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Search
@@ -72,8 +68,6 @@ import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
 import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
-import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
@@ -193,21 +187,6 @@ class OtpViewModelTest : KoinTest {
     }
 
     @Test
-    fun `should be able to open and close create resource`() =
-        runTest {
-            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
-
-            viewModel.onIntent(OpenCreateResourceMenu)
-
-            viewModel.viewState.test {
-                assertThat(awaitItem().showCreateResourceBottomSheet).isTrue()
-
-                viewModel.onIntent(CloseCreateResourceMenu)
-                assertThat(awaitItem().showCreateResourceBottomSheet).isFalse()
-            }
-        }
-
-    @Test
     fun `should be able to open and close switch account`() =
         runTest {
             viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
@@ -299,34 +278,6 @@ class OtpViewModelTest : KoinTest {
                 val state = awaitItem()
                 assertThat(state.userAvatar).isEqualTo(selectedAccountData.avatarUrl)
                 assertThat(state.otps).hasSize(otpResources.size)
-            }
-        }
-
-    @Test
-    fun `should navigate to create resource form when create password intent is received`() =
-        runTest {
-            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
-
-            viewModel.sideEffect.test {
-                viewModel.onIntent(CreatePassword)
-
-                val sideEffect = awaitItem()
-                assertIs<NavigateToCreateResourceForm>(sideEffect)
-                assertThat(sideEffect.leadingContentType).isEqualTo(PASSWORD)
-            }
-        }
-
-    @Test
-    fun `should navigate to create resource form when create pin code intent is received`() =
-        runTest {
-            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
-
-            viewModel.sideEffect.test {
-                viewModel.onIntent(CreatePinCode)
-
-                val sideEffect = awaitItem()
-                assertIs<NavigateToCreateResourceForm>(sideEffect)
-                assertThat(sideEffect.leadingContentType).isEqualTo(PIN_CODE)
             }
         }
 
@@ -453,11 +404,6 @@ class OtpViewModelTest : KoinTest {
             viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
-                viewModel.onIntent(CreatePassword)
-                val stateAfterCreatePassword = awaitItem()
-                assertIs<OtpSideEffect.ShowErrorSnackbar>(stateAfterCreatePassword)
-                assertThat(stateAfterCreatePassword.type).isEqualTo(SnackbarErrorType.NO_SHARED_KEY_ACCESS)
-
                 viewModel.onIntent(CreateTotp)
                 val stateAfterCreateTotp = awaitItem()
                 assertIs<OtpSideEffect.ShowErrorSnackbar>(stateAfterCreateTotp)
