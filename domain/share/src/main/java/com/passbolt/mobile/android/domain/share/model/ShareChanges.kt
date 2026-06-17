@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.share
-
-import com.passbolt.mobile.android.core.networking.RestService
-import org.koin.core.module.Module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,20 +21,13 @@ import org.koin.core.module.Module
  * @since v1.0
  */
 
-internal fun Module.shareApiModule() {
-    single<ShareDataSource> {
-        ShareRemoteDataSource(
-            shareApi = get(),
-        )
-    }
-    single {
-        ShareRepository(
-            shareDataSource = get(),
-            responseHandler = get(),
-        )
-    }
-    single {
-        get<RestService>()
-            .service(ShareApi::class.java)
-    }
-}
+package com.passbolt.mobile.android.domain.share.model
+
+data class ShareChanges(
+    val added: List<ShareRecipient>,
+    val removed: List<ShareRecipient>,
+)
+
+data class ShareRecipient(
+    val userId: String,
+)

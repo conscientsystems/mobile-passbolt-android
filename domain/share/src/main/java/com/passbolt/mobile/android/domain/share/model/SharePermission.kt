@@ -1,16 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.groups.groupsApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.rbac.rbacApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.resourcetypes.resourceTypesApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import com.passbolt.mobile.android.passboltapi.settings.settingsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -33,15 +20,39 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
-    module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        resourceTypesApiModule()
-        foldersApiModule()
-        groupsApiModule()
-        settingsApiModule()
-        rbacApiModule()
-        metadataApiModule()
-    }
+
+package com.passbolt.mobile.android.domain.share.model
+
+sealed class SharePermission(
+    val aro: String,
+    val aroForeignKey: String,
+    val aco: String,
+    val acoForeignKey: String,
+    val type: Int,
+) {
+    class NewSharePermission(
+        aro: String,
+        aroForeignKey: String,
+        aco: String,
+        acoForeignKey: String,
+        type: Int,
+    ) : SharePermission(aro, aroForeignKey, aco, acoForeignKey, type)
+
+    class UpdatedSharePermission(
+        val id: String,
+        aro: String,
+        aroForeignKey: String,
+        aco: String,
+        acoForeignKey: String,
+        type: Int,
+    ) : SharePermission(aro, aroForeignKey, aco, acoForeignKey, type)
+
+    class DeletedSharePermission(
+        val id: String,
+        aro: String,
+        aroForeignKey: String,
+        aco: String,
+        acoForeignKey: String,
+        type: Int,
+    ) : SharePermission(aro, aroForeignKey, aco, acoForeignKey, type)
+}

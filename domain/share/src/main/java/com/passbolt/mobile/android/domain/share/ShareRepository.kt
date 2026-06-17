@@ -1,9 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.share
-
-import com.passbolt.mobile.android.dto.request.FolderShareRequest
-import com.passbolt.mobile.android.dto.request.ResourceShareRequest
-import com.passbolt.mobile.android.dto.request.SimulateShareRequest
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,23 +20,28 @@ import com.passbolt.mobile.android.dto.request.SimulateShareRequest
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class ShareRemoteDataSource(
-    private val shareApi: ShareApi,
-) : ShareDataSource {
-    override suspend fun simulateShareResource(
-        resourceId: String,
-        request: SimulateShareRequest,
-    ) = shareApi.simulateShareResource(resourceId, request).body
 
-    override suspend fun shareResource(
-        resourceId: String,
-        request: ResourceShareRequest,
-    ) = shareApi.shareResource(resourceId, request).body
+package com.passbolt.mobile.android.domain.share
 
-    override suspend fun shareFolder(
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.share.model.EncryptedSecret
+import com.passbolt.mobile.android.domain.share.model.ShareChanges
+import com.passbolt.mobile.android.domain.share.model.SharePermission
+
+interface ShareRepository {
+    suspend fun simulateShareResource(
+        resourceId: String,
+        permissions: List<SharePermission>,
+    ): DomainResult<ShareChanges>
+
+    suspend fun shareResource(
+        resourceId: String,
+        permissions: List<SharePermission>,
+        secrets: List<EncryptedSecret>,
+    ): DomainResult<Unit>
+
+    suspend fun shareFolder(
         folderId: String,
-        request: FolderShareRequest,
-    ) {
-        shareApi.shareFolder(folderId, request)
-    }
+        permissions: List<SharePermission>,
+    ): DomainResult<Unit>
 }

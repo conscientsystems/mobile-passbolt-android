@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(":dto"))
+    implementation(project(":share-domain"))
     implementation(project(":entity"))
     implementation(project(":common"))
     implementation(project(":uimodel"))

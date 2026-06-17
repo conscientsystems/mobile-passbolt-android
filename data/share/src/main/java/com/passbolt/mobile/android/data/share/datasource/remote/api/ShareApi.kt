@@ -1,15 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.share
-
-import com.passbolt.mobile.android.dto.request.FolderShareRequest
-import com.passbolt.mobile.android.dto.request.ResourceShareRequest
-import com.passbolt.mobile.android.dto.request.SimulateShareRequest
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import com.passbolt.mobile.android.dto.response.SimulateShareResponse
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Path
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -32,6 +20,19 @@ import retrofit2.http.Path
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+
+package com.passbolt.mobile.android.data.share.datasource.remote.api
+
+import com.passbolt.mobile.android.dto.request.FolderShareRequest
+import com.passbolt.mobile.android.dto.request.ResourceShareRequest
+import com.passbolt.mobile.android.dto.request.SimulateShareRequest
+import com.passbolt.mobile.android.dto.response.BaseResponse
+import com.passbolt.mobile.android.dto.response.SimulateShareResponse
+import retrofit2.http.Body
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+
 internal interface ShareApi {
     @POST(SIMULATE_RESOURCE_SHARE)
     suspend fun simulateShareResource(

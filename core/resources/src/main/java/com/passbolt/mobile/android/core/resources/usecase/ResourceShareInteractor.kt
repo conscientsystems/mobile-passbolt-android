@@ -3,6 +3,8 @@ package com.passbolt.mobile.android.core.resources.usecase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.UnauthenticatedReason
@@ -11,7 +13,7 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphras
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.SecretInteractor
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
-import com.passbolt.mobile.android.dto.response.ShareRecipientDto
+import com.passbolt.mobile.android.domain.share.model.ShareRecipient
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper
@@ -55,6 +57,7 @@ class ResourceShareInteractor(
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val sharePermissionsModelMapper: SharePermissionsModelMapper,
 ) {
+    // TODO FolderShareInteractor belongs in :share-domain, refactor after all dependencies are moved
     suspend fun simulateAndShareResource(
         resourceId: String,
         recipients: List<PermissionModelUi>,
@@ -83,13 +86,9 @@ class ResourceShareInteractor(
                 Timber.d("Share simulation success; Starting to share resource")
                 shareResource(resourceId, recipients, existingResourcePermissions, simulateShareOutput.value.added)
             }
-            is SimulateShareResourceUseCase.Output.Failure<*> -> {
-                Timber.e(
-                    simulateShareOutput.response.exception,
-                    "Share simulation failure: %s",
-                    simulateShareOutput.response.headerMessage,
-                )
-                Output.SimulateShareFailure(simulateShareOutput.response.exception)
+            is SimulateShareResourceUseCase.Output.Failure -> {
+                Timber.e("Share simulation failure: %s", simulateShareOutput.message)
+                Output.SimulateShareFailure(simulateShareOutput.failure)
             }
         }
     }
@@ -99,7 +98,7 @@ class ResourceShareInteractor(
         resourceId: String,
         recipients: List<PermissionModelUi>,
         existingPermissions: List<PermissionModelUi>,
-        newUsers: List<ShareRecipientDto>,
+        newUsers: List<ShareRecipient>,
     ): Output {
         return when (val secretOutput = secretInteractor.fetchAndDecrypt(resourceId)) {
             is SecretInteractor.Output.DecryptFailure -> {
@@ -145,13 +144,9 @@ class ResourceShareInteractor(
                                 ShareResourceUseCase.Input(resourceId, sharePermissions, secrets),
                             )
                     ) {
-                        is ShareResourceUseCase.Output.Failure<*> -> {
-                            Timber.e(
-                                shareOutput.response.exception,
-                                "Share resource failure: %s",
-                                shareOutput.response.headerMessage,
-                            )
-                            Output.ShareFailure(shareOutput.response.exception)
+                        is ShareResourceUseCase.Output.Failure -> {
+                            Timber.e("Share resource failure: %s", shareOutput.message)
+                            Output.ShareFailure(shareOutput.failure)
                         }
                         is ShareResourceUseCase.Output.Success -> {
                             Timber.d("Share request success")
@@ -169,11 +164,11 @@ class ResourceShareInteractor(
     private suspend fun prepareEncryptedSecretsData(
         passphrase: ByteArray,
         decryptedSecret: String,
-        addedUsers: List<ShareRecipientDto>,
+        addedUsers: List<ShareRecipient>,
     ): List<EncryptedSecretOrError> {
         val encryptedSecretsForAddedUsers = mutableListOf<EncryptedSecretOrError>()
         addedUsers
-            .map { getLocalUserUseCase.execute(GetLocalUserUseCase.Input(it.user.id.toString())).user }
+            .map { getLocalUserUseCase.execute(GetLocalUserUseCase.Input(it.userId)).user }
             .forEach { user ->
                 val currentUserId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
                 val privateKey = getPrivateKeyUseCase.execute(UserIdInput(currentUserId)).privateKey
@@ -202,28 +197,17 @@ class ResourceShareInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        @Suppress("ComplexCondition")
         override val authenticationState: AuthenticationState
             get() =
-                if (
-                    (
-                        this is SecretFetchFailure &&
-                            (this.exception as? HttpException)?.code() == HttpURLConnection.HTTP_UNAUTHORIZED
-                    ) ||
-                    (
-                        this is ShareFailure &&
-                            (this.exception as? HttpException)?.code() == HttpURLConnection.HTTP_UNAUTHORIZED
-                    ) ||
-                    (
-                        this is SimulateShareFailure &&
-                            (this.exception as? HttpException)?.code() == HttpURLConnection.HTTP_UNAUTHORIZED
-                    )
-                ) {
-                    AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                } else if (this is Unauthorized) {
-                    AuthenticationState.Unauthenticated(this.reason)
-                } else {
-                    AuthenticationState.Authenticated
+                when (this) {
+                    is SecretFetchFailure if (this.exception as? HttpException)?.code() == HttpURLConnection.HTTP_UNAUTHORIZED ->
+                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
+                    is ShareFailure if this.failure is DomainResult.Failure.Unauthorized ->
+                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
+                    is SimulateShareFailure if this.failure is DomainResult.Failure.Unauthorized ->
+                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
+                    is Unauthorized -> AuthenticationState.Unauthenticated(this.reason)
+                    else -> AuthenticationState.Authenticated
                 }
 
         data class SecretFetchFailure(
@@ -239,12 +223,18 @@ class ResourceShareInteractor(
         ) : Output()
 
         data class ShareFailure(
-            val exception: Exception,
-        ) : Output()
+            val failure: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = failure.displayMessage()
+        }
 
         data class SimulateShareFailure(
-            val exception: Exception,
-        ) : Output()
+            val failure: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = failure.displayMessage()
+        }
 
         class Unauthorized(
             val reason: UnauthenticatedReason,

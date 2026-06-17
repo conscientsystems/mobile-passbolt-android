@@ -1,14 +1,15 @@
 package com.passbolt.mobile.android.core.resources.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.dto.request.EncryptedSharedSecret
-import com.passbolt.mobile.android.dto.request.ResourceShareRequest
-import com.passbolt.mobile.android.dto.request.SharePermission
-import com.passbolt.mobile.android.passboltapi.share.ShareRepository
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.domain.share.ShareRepository
+import com.passbolt.mobile.android.domain.share.model.EncryptedSecret
+import com.passbolt.mobile.android.domain.share.model.SharePermission
 import com.passbolt.mobile.android.ui.EncryptedSecretOrError
 
 /**
@@ -38,42 +39,38 @@ class ShareResourceUseCase(
 ) : AsyncUseCase<ShareResourceUseCase.Input, ShareResourceUseCase.Output> {
     override suspend fun execute(input: Input) =
         when (
-            val response =
+            val result =
                 shareRepository.shareResource(
                     input.resourceId,
-                    ResourceShareRequest(
-                        input.sharePermissions,
-                        input.encryptedSecrets.map { EncryptedSharedSecret(input.resourceId, it.userId, it.data) },
-                    ),
+                    input.sharePermissions,
+                    input.encryptedSecrets.map { EncryptedSecret(input.resourceId, it.userId, it.data) },
                 )
         ) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> Output.Success
+            is DomainResult.Success -> Output.Success
+            is DomainResult.Failure -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                when (val output = this) {
+                    is Failure ->
+                        when (val failure = output.failure) {
+                            is DomainResult.Failure.Unauthorized -> AuthenticationState.Unauthenticated(Session)
+                            is DomainResult.Failure.MfaRequired -> AuthenticationState.Unauthenticated(Mfa(failure.providers))
+                            else -> AuthenticationState.Authenticated
+                        }
+                    else -> AuthenticationState.Authenticated
                 }
 
         data object Success : Output()
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            val failure: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = failure.displayMessage()
+        }
     }
 
     data class Input(

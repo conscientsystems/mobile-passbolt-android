@@ -293,8 +293,8 @@ class ResourceCreateActionsInteractor(
             is ResourceShareInteractor.Output.SecretDecryptFailure -> CryptoFailure(shareResult.message)
             is ResourceShareInteractor.Output.SecretEncryptFailure -> CryptoFailure(shareResult.message)
             is ResourceShareInteractor.Output.SecretFetchFailure -> FetchFailure
-            is ResourceShareInteractor.Output.ShareFailure -> ShareFailure(shareResult.exception.message)
-            is ResourceShareInteractor.Output.SimulateShareFailure -> ShareFailure(shareResult.exception.message)
+            is ResourceShareInteractor.Output.ShareFailure -> ShareFailure(shareResult.message)
+            is ResourceShareInteractor.Output.SimulateShareFailure -> ShareFailure(shareResult.message)
             is ResourceShareInteractor.Output.Success -> Success(resource.resourceId, resource.metadataJsonModel.name)
             is ResourceShareInteractor.Output.Unauthorized -> Unauthorized
         }

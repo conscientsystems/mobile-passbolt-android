@@ -1,13 +1,14 @@
 package com.passbolt.mobile.android.core.commonfolders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.dto.request.FolderShareRequest
-import com.passbolt.mobile.android.dto.request.SharePermission
-import com.passbolt.mobile.android.passboltapi.share.ShareRepository
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.domain.share.ShareRepository
+import com.passbolt.mobile.android.domain.share.model.SharePermission
 
 /**
  * Passbolt - Open source password manager for teams
@@ -36,10 +37,9 @@ class ShareFolderUseCase(
     private val shareRepository: ShareRepository,
 ) : AsyncUseCase<ShareFolderUseCase.Input, ShareFolderUseCase.Output> {
     override suspend fun execute(input: Input): Output =
-        when (val result = shareRepository.shareFolder(input.folderId, FolderShareRequest(input.folderPermissions))) {
-            is NetworkResult.Failure.NetworkError -> Output.Failure(result)
-            is NetworkResult.Failure.ServerError -> Output.Failure(result)
-            is NetworkResult.Success -> Output.Success
+        when (val result = shareRepository.shareFolder(input.folderId, input.folderPermissions)) {
+            is DomainResult.Success -> Output.Success
+            is DomainResult.Failure -> Output.Failure(result)
         }
 
     data class Input(
@@ -50,25 +50,23 @@ class ShareFolderUseCase(
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                when {
-                    this is Failure && this.result.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure && this.result.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.result)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                when (val output = this) {
+                    is Failure ->
+                        when (val failure = output.failure) {
+                            is DomainResult.Failure.Unauthorized -> AuthenticationState.Unauthenticated(Session)
+                            is DomainResult.Failure.MfaRequired -> AuthenticationState.Unauthenticated(Mfa(failure.providers))
+                            else -> AuthenticationState.Authenticated
+                        }
+                    else -> AuthenticationState.Authenticated
                 }
 
         data object Success : Output()
 
         data class Failure(
-            val result: NetworkResult.Failure<*>,
-        ) : Output()
+            val failure: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = failure.displayMessage()
+        }
     }
 }

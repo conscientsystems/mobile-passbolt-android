@@ -1,13 +1,13 @@
 package com.passbolt.mobile.android.core.commonfolders.usecase
 
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.UnauthenticatedReason
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper
 import com.passbolt.mobile.android.ui.PermissionModelUi
-import retrofit2.HttpException
-import java.net.HttpURLConnection
 
 /**
  * Passbolt - Open source password manager for teams
@@ -36,6 +36,7 @@ class FolderShareInteractor(
     private val sharePermissionsModelMapper: SharePermissionsModelMapper,
     private val getLocalFolderPermissionsUseCase: GetLocalFolderPermissionsUseCase,
 ) {
+    // TODO FolderShareInteractor belongs in :share-domain, refactor after GetLocalFolderPermissionsUseCase is moved
     suspend fun shareFolder(
         folderId: String,
         permissions: List<PermissionModelUi>,
@@ -53,7 +54,7 @@ class FolderShareInteractor(
             )
 
         return when (val output = shareFolderUseCase.execute(ShareFolderUseCase.Input(folderId, sharePermissions))) {
-            is ShareFolderUseCase.Output.Failure -> Output.ShareFailure(output.result.exception)
+            is ShareFolderUseCase.Output.Failure -> Output.ShareFailure(output.failure)
             is ShareFolderUseCase.Output.Success -> Output.Success
         }
     }
@@ -61,22 +62,19 @@ class FolderShareInteractor(
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                if (
-                    (
-                        this is ShareFailure &&
-                            (this.exception as? HttpException)?.code() == HttpURLConnection.HTTP_UNAUTHORIZED
-                    )
-                ) {
-                    AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                } else if (this is Unauthorized) {
-                    AuthenticationState.Unauthenticated(this.reason)
-                } else {
-                    AuthenticationState.Authenticated
+                when (this) {
+                    is ShareFailure if this.failure is DomainResult.Failure.Unauthorized ->
+                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
+                    is Unauthorized -> AuthenticationState.Unauthenticated(this.reason)
+                    else -> AuthenticationState.Authenticated
                 }
 
         data class ShareFailure(
-            val exception: Exception,
-        ) : Output()
+            val failure: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = failure.displayMessage()
+        }
 
         class Unauthorized(
             val reason: UnauthenticatedReason,
