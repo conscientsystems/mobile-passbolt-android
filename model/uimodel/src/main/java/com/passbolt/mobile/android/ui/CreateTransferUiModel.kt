@@ -1,9 +1,4 @@
-package com.passbolt.mobile.android.passboltapi.registration
-
-import com.passbolt.mobile.android.core.networking.RestService
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
+package com.passbolt.mobile.android.ui
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,12 +22,11 @@ import org.koin.dsl.bind
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-internal fun Module.mobileTransferApiModule() {
-    singleOf(::MobileTransferRepository)
-    singleOf(::MobileTransferRemoteDataSource) bind MobileTransferDataSource::class
-    single {
-        get<RestService>()
-            .service(MobileTransferApi::class.java)
-    }
-}
+data class CreateTransferUiModel(
+    val id: String,
+    val status: Status,
+    val currentPage: Int,
+    val totalPages: Int,
+    val hash: String,
+    val authenticationToken: String,
+)

@@ -192,6 +192,8 @@ dependencies {
     implementation(project(":accounts"))
     implementation(project(":passwordpolicies-data"))
     implementation(project(":passwordpolicies-domain"))
+    implementation(project(":mobiletransfer-data"))
+    implementation(project(":mobiletransfer-domain"))
     implementation(project(":favourites-data"))
     implementation(project(":favourites-domain"))
     implementation(project(":passwordexpiry-data"))

@@ -36,8 +36,12 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccou
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountExistsUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.OFFLINE
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.TIMEOUT
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.ConfirmSetupLeave
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.DismissHelpMenu
@@ -66,7 +70,6 @@ import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.Use
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NOT_A_PASSBOLT_QR
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NO_BARCODES_IN_RANGE
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
-import com.passbolt.mobile.android.feature.setup.scanqr.usecase.UpdateTransferUseCase
 import com.passbolt.mobile.android.ui.ResultStatus
 import com.passbolt.mobile.android.ui.Status
 import kotlinx.coroutines.Job
@@ -273,21 +276,29 @@ internal class ScanQrViewModel(
             )
         when (response) {
             is UpdateTransferUseCase.Output.Failure -> {
-                Timber.e(response.error.exception, "There was an error during transfer update")
+                Timber.e(
+                    (response.failure as? DomainResult.Failure.Unknown)?.cause,
+                    "There was an error during transfer update. Failure: %s",
+                    response.failure,
+                )
                 if (status == Status.ERROR || status == Status.CANCEL) {
                     // ignoring
                 } else {
-                    if (response.error.isServerNotReachable) {
-                        updateViewState {
-                            copy(
-                                showServerNotReachableDialog = true,
-                                serverDomain = serverDomain,
-                            )
-                        }
-                    } else if (response.error.isNoNetworkException) {
-                        emitSideEffect(NavigateToSummary(ResultStatus.NoNetwork()))
-                    } else {
-                        emitSideEffect(ScanQrSideEffect.ShowToast(ToastType.UPDATE_TRANSFER_ERROR))
+                    when (val failure = response.failure) {
+                        is DomainResult.Failure.NetworkError ->
+                            when (failure.reason) {
+                                TIMEOUT ->
+                                    updateViewState {
+                                        copy(
+                                            showServerNotReachableDialog = true,
+                                            serverDomain = serverDomain,
+                                        )
+                                    }
+                                OFFLINE ->
+                                    emitSideEffect(NavigateToSummary(ResultStatus.NoNetwork()))
+                            }
+                        else ->
+                            emitSideEffect(ScanQrSideEffect.ShowToast(ToastType.UPDATE_TRANSFER_ERROR))
                     }
                 }
             }

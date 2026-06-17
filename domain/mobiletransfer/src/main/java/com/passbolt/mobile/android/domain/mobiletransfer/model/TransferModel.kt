@@ -1,14 +1,3 @@
-package com.passbolt.mobile.android.feature.setup.scanqr
-
-import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.KeyAssembler
-import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.QrScanResultsMapper
-import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
-import kotlinx.serialization.json.Json
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -32,10 +21,14 @@ import org.koin.core.module.dsl.viewModelOf
  * @since v1.0
  */
 
-fun Module.scanQrModule() {
-    viewModelOf(::ScanQrViewModel)
-    singleOf(::QrScanResultsMapper)
-    singleOf(::KeyAssembler)
-    factoryOf(::ScanQrParser)
-    single { Json { ignoreUnknownKeys = true } }
-}
+package com.passbolt.mobile.android.domain.mobiletransfer.model
+
+import com.passbolt.mobile.android.ui.Status
+
+data class TransferModel(
+    val id: String,
+    val status: Status,
+    val currentPage: Int,
+    val totalPages: Int,
+    val hash: String,
+)

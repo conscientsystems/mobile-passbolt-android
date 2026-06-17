@@ -1,13 +1,4 @@
-package com.passbolt.mobile.android.feature.setup.scanqr
-
-import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.KeyAssembler
-import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.QrScanResultsMapper
-import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
-import kotlinx.serialization.json.Json
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
+package com.passbolt.mobile.android.ui
 
 /**
  * Passbolt - Open source password manager for teams
@@ -31,11 +22,10 @@ import org.koin.core.module.dsl.viewModelOf
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-fun Module.scanQrModule() {
-    viewModelOf(::ScanQrViewModel)
-    singleOf(::QrScanResultsMapper)
-    singleOf(::KeyAssembler)
-    factoryOf(::ScanQrParser)
-    single { Json { ignoreUnknownKeys = true } }
-}
+data class UpdateTransferUiModel(
+    val id: String,
+    val firstName: String?,
+    val lastName: String?,
+    val avatarUrl: String?,
+    val email: String?,
+)

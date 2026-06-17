@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.ui
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -22,11 +20,25 @@ package com.passbolt.mobile.android.ui
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-data class CreateTransferModel(
-    val id: String,
-    val status: Status,
-    val currentPage: Int,
-    val totalPages: Int,
-    val hash: String,
-    val authenticationToken: String,
-)
+
+package com.passbolt.mobile.android.data.mobiletransfer
+
+import com.passbolt.mobile.android.core.networking.RestService
+import com.passbolt.mobile.android.data.mobiletransfer.datasource.remote.MobileTransferRemoteDataSource
+import com.passbolt.mobile.android.data.mobiletransfer.datasource.remote.api.MobileTransferApi
+import com.passbolt.mobile.android.domain.mobiletransfer.MobileTransferDataSource
+import com.passbolt.mobile.android.domain.mobiletransfer.MobileTransferRepository
+import org.koin.dsl.module
+
+val mobileTransferDataModule =
+    module {
+        single { get<RestService>().service(MobileTransferApi::class.java) }
+
+        single<MobileTransferDataSource> { MobileTransferRemoteDataSource(get(), get()) }
+
+        single<MobileTransferRepository> {
+            MobileTransferRepositoryImpl(
+                remoteDataSource = get(),
+            )
+        }
+    }

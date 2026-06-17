@@ -37,9 +37,12 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccou
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountExistsUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.OFFLINE
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.TIMEOUT
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
-import com.passbolt.mobile.android.core.networking.NetworkResult.Failure.NetworkError
 import com.passbolt.mobile.android.core.qrscan.analyzer.BarcodeScanResult
+import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
 import com.passbolt.mobile.android.dto.response.qrcode.AccountKitPageDto
 import com.passbolt.mobile.android.dto.response.qrcode.QrFirstPageDto
 import com.passbolt.mobile.android.dto.response.qrcode.ReservedBytesDto
@@ -71,13 +74,12 @@ import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.Use
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NO_BARCODES_IN_RANGE
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
-import com.passbolt.mobile.android.feature.setup.scanqr.usecase.UpdateTransferUseCase
 import com.passbolt.mobile.android.ui.ResultStatus.AlreadyLinked
 import com.passbolt.mobile.android.ui.ResultStatus.Failure
 import com.passbolt.mobile.android.ui.ResultStatus.HttpNotSupported
 import com.passbolt.mobile.android.ui.ResultStatus.NoNetwork
 import com.passbolt.mobile.android.ui.ResultStatus.Success
-import com.passbolt.mobile.android.ui.UpdateTransferModel
+import com.passbolt.mobile.android.ui.UpdateTransferUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -105,8 +107,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.util.UUID
 import kotlin.test.assertIs
 import kotlin.time.ExperimentalTime
@@ -356,7 +356,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
                 UpdateTransferUseCase.Output.Success(
-                    UpdateTransferModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
+                    UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
 
             viewModel = get()
@@ -417,7 +417,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
                 UpdateTransferUseCase.Output.Success(
-                    UpdateTransferModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
+                    UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
 
             viewModel = get()
@@ -447,7 +447,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
                 UpdateTransferUseCase.Output.Success(
-                    UpdateTransferModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
+                    UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
 
             viewModel = get()
@@ -480,7 +480,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
                 UpdateTransferUseCase.Output.Success(
-                    UpdateTransferModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
+                    UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
             whenever(savePrivateKeyUseCase.execute(any())) doReturn SavePrivateKeyUseCase.Output.Success
 
@@ -515,7 +515,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
                 UpdateTransferUseCase.Output.Success(
-                    UpdateTransferModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
+                    UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
             whenever(savePrivateKeyUseCase.execute(any())) doReturn SavePrivateKeyUseCase.Output.Failure
 
@@ -565,12 +565,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(checkAccountExistsUseCase.execute(any())) doReturn CheckAccountExistsUseCase.Output(false)
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
-                UpdateTransferUseCase.Output.Failure(
-                    NetworkError(
-                        exception = SocketTimeoutException("Server not reachable"),
-                        headerMessage = "Server not reachable",
-                    ),
-                )
+                UpdateTransferUseCase.Output.Failure(DomainResult.Failure.NetworkError(TIMEOUT, RuntimeException()))
 
             viewModel = get()
             viewModel.onIntent(Initialize(barcodeScanFlow = barcodeScanFlow, accountSetupDataModel = null))
@@ -597,12 +592,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(checkAccountExistsUseCase.execute(any())) doReturn CheckAccountExistsUseCase.Output(false)
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
-                UpdateTransferUseCase.Output.Failure(
-                    NetworkError(
-                        exception = UnknownHostException("No network"),
-                        headerMessage = "No network",
-                    ),
-                )
+                UpdateTransferUseCase.Output.Failure(DomainResult.Failure.NetworkError(OFFLINE, RuntimeException()))
 
             viewModel = get()
             viewModel.onIntent(Initialize(barcodeScanFlow = barcodeScanFlow, accountSetupDataModel = null))
@@ -630,12 +620,7 @@ class ScanQrViewModelTest : KoinTest {
             whenever(checkAccountExistsUseCase.execute(any())) doReturn CheckAccountExistsUseCase.Output(false)
             whenever(httpsVerifier.isHttps(any())) doReturn true
             whenever(updateTransferUseCase.execute(any())) doReturn
-                UpdateTransferUseCase.Output.Failure(
-                    NetworkError(
-                        exception = Exception("Unknown error"),
-                        headerMessage = "Unknown error",
-                    ),
-                )
+                UpdateTransferUseCase.Output.Failure(DomainResult.Failure.Unknown(RuntimeException("Unknown error")))
 
             viewModel = get()
             viewModel.onIntent(Initialize(barcodeScanFlow = barcodeScanFlow, accountSetupDataModel = null))

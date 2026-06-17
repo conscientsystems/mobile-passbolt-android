@@ -1,14 +1,13 @@
-package com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.usecase
+package com.passbolt.mobile.android.domain.mobiletransfer.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.mappers.TransferMapper
-import com.passbolt.mobile.android.passboltapi.registration.MobileTransferRepository
-import com.passbolt.mobile.android.ui.TransferModel
+import com.passbolt.mobile.android.domain.mobiletransfer.MobileTransferRepository
+import com.passbolt.mobile.android.domain.mobiletransfer.mapper.toUiModel
+import com.passbolt.mobile.android.ui.CreateTransferUiModel
 import kotlinx.coroutines.withContext
 
 /**
@@ -34,49 +33,46 @@ import kotlinx.coroutines.withContext
  * @since v1.0
  */
 
-class ViewTransferUseCase(
+class CreateTransferUseCase(
     private val mobileTransferRepository: MobileTransferRepository,
-    private val transferMapper: TransferMapper,
     private val coroutineContext: CoroutineLaunchContext,
-) : AsyncUseCase<ViewTransferUseCase.Input, ViewTransferUseCase.Output> {
+) : AsyncUseCase<CreateTransferUseCase.Input, CreateTransferUseCase.Output> {
     override suspend fun execute(input: Input): Output =
         withContext(coroutineContext.io) {
-            when (val response = mobileTransferRepository.viewTransfer(input.authToken, input.mfaCookie, input.uuid)) {
-                is NetworkResult.Failure -> Output.Failure(response)
-                is NetworkResult.Success -> Output.Success(transferMapper.mapViewResponseToUi(response.value))
+            when (val result = mobileTransferRepository.createTransfer(input.totalPagesCount, input.hash)) {
+                is DomainResult.Success -> Output.Success(result.value.toUiModel())
+                is DomainResult.Failure -> Output.Failure(result)
             }
         }
 
     data class Input(
-        val authToken: String,
-        val mfaCookie: String?,
-        val uuid: String,
+        val totalPagesCount: Int,
+        val hash: String,
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
+            get() {
+                val failure = (this as? Failure)?.failure
+                return when (failure) {
+                    is DomainResult.Failure.Unauthorized ->
                         AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
+                            AuthenticationState.Unauthenticated.Reason.Session,
                         )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                    is DomainResult.Failure.MfaRequired ->
+                        AuthenticationState.Unauthenticated(
+                            AuthenticationState.Unauthenticated.Reason.Mfa(failure.providers),
+                        )
+                    else -> AuthenticationState.Authenticated
                 }
+            }
 
         data class Success(
-            val transfer: TransferModel,
+            val transfer: CreateTransferUiModel,
         ) : Output()
 
-        class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
+        data class Failure(
+            val failure: DomainResult.Failure,
         ) : Output()
     }
 }

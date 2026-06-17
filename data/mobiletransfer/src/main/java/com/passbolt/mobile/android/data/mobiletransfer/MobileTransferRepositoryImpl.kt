@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.registration
-
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.dto.request.CreateTransferRequestDto
-import com.passbolt.mobile.android.dto.request.UpdateTransferRequestDto
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -27,29 +20,35 @@ import com.passbolt.mobile.android.dto.request.UpdateTransferRequestDto
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class MobileTransferRepository(
-    private val mobileTransferDataSource: MobileTransferDataSource,
-    private val responseHandler: ResponseHandler,
-) {
-    suspend fun turnPage(
+
+package com.passbolt.mobile.android.data.mobiletransfer
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.mobiletransfer.MobileTransferDataSource
+import com.passbolt.mobile.android.domain.mobiletransfer.MobileTransferRepository
+import com.passbolt.mobile.android.domain.mobiletransfer.model.CreateTransferModel
+import com.passbolt.mobile.android.domain.mobiletransfer.model.TransferModel
+import com.passbolt.mobile.android.domain.mobiletransfer.model.UpdateTransferModel
+import com.passbolt.mobile.android.ui.Status
+
+internal class MobileTransferRepositoryImpl(
+    private val remoteDataSource: MobileTransferDataSource,
+) : MobileTransferRepository {
+    override suspend fun turnPage(
         uuid: String,
         authToken: String,
-        pageRequestDto: UpdateTransferRequestDto,
-        userProfile: String?,
-    ) = callWithHandler(responseHandler) {
-        mobileTransferDataSource.updateTransfer(uuid, authToken, pageRequestDto, userProfile)
-    }
+        currentPage: Int,
+        status: Status,
+    ): DomainResult<UpdateTransferModel> = remoteDataSource.updateTransfer(uuid, authToken, currentPage, status)
 
-    suspend fun createTransfer(createTransferRequest: CreateTransferRequestDto) =
-        callWithHandler(responseHandler) {
-            mobileTransferDataSource.createTransfer(createTransferRequest)
-        }
+    override suspend fun createTransfer(
+        totalPagesCount: Int,
+        hash: String,
+    ): DomainResult<CreateTransferModel> = remoteDataSource.createTransfer(totalPagesCount, hash)
 
-    suspend fun viewTransfer(
+    override suspend fun viewTransfer(
         authToken: String,
         mfaCookie: String?,
         uuid: String,
-    ) = callWithHandler(responseHandler) {
-        mobileTransferDataSource.viewTransfer(authToken, mfaCookie, uuid)
-    }
+    ): DomainResult<TransferModel> = remoteDataSource.viewTransfer(authToken, mfaCookie, uuid)
 }

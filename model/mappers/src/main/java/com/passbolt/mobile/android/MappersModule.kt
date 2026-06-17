@@ -42,7 +42,6 @@ import com.passbolt.mobile.android.mappers.SignInMapper
 import com.passbolt.mobile.android.mappers.SignOutMapper
 import com.passbolt.mobile.android.mappers.SwitchAccountModelMapper
 import com.passbolt.mobile.android.mappers.TagsModelMapper
-import com.passbolt.mobile.android.mappers.TransferMapper
 import com.passbolt.mobile.android.mappers.UsersModelMapper
 import com.passbolt.mobile.android.mappers.comparator.SwitchAccountUiModelComparator
 import org.koin.core.module.dsl.singleOf
@@ -50,7 +49,6 @@ import org.koin.dsl.module
 
 val mappersModule =
     module {
-        singleOf(::TransferMapper)
         singleOf(::AccountModelMapper)
         singleOf(::SignInMapper)
         singleOf(::ResourceModelMapper)

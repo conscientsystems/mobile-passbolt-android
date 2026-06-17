@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.ui
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -22,10 +20,16 @@ package com.passbolt.mobile.android.ui
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-data class UpdateTransferModel(
+
+package com.passbolt.mobile.android.domain.mobiletransfer.model
+
+import com.passbolt.mobile.android.ui.Status
+
+data class CreateTransferModel(
     val id: String,
-    val firstName: String?,
-    val lastName: String?,
-    val avatarUrl: String?,
-    val email: String?,
+    val status: Status,
+    val currentPage: Int,
+    val totalPages: Int,
+    val hash: String,
+    val authenticationToken: String,
 )
