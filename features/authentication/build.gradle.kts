@@ -26,7 +26,7 @@ dependencies {
     implementation(project(":logs"))
     implementation(project(":inappreview"))
     implementation(project(":idlingresource"))
-    implementation(project(":rbac"))
+    implementation(project(":rbac-domain"))
     implementation(project(":metadata"))
     implementation(project(":accounts"))
     implementation(project(":testtags"))

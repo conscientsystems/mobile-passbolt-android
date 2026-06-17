@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":fulldatarefresh"))
     implementation(project(":authentication"))
     implementation(project(":entity"))
-    implementation(project(":rbac"))
+    implementation(project(":rbac-domain"))
     implementation(project(":idlingresource"))
     implementation(project(":featureflags"))
     implementation(project(":accounts"))

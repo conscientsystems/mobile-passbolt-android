@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.core.preferences.usecase
 
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.entity.home.HomeDisplayView
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase

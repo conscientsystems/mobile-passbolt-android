@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":featureflags"))
     implementation(project(":uimodel"))
     implementation(project(":entity"))
-    implementation(project(":rbac"))
+    implementation(project(":rbac-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

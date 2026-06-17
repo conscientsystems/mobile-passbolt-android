@@ -32,7 +32,6 @@ import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.mappers.MetadataMapper
 import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
-import com.passbolt.mobile.android.mappers.RbacMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
 import com.passbolt.mobile.android.mappers.ResourcePickerMapper
@@ -66,7 +65,6 @@ val mappersModule =
         singleOf(::SharePermissionsModelMapper)
         singleOf(::OtpModelMapper)
         singleOf(::ResourcePickerMapper)
-        singleOf(::RbacMapper)
         singleOf(::MetadataMapper)
         singleOf(::EntropyViewMapper)
         singleOf(::ResourceFormMapper)

@@ -49,7 +49,6 @@ import com.passbolt.mobile.android.core.passphrasememorycache.passphraseMemoryCa
 import com.passbolt.mobile.android.core.passwordgenerator.passwordGeneratorModule
 import com.passbolt.mobile.android.core.preferences.preferencesModule
 import com.passbolt.mobile.android.core.qrscan.barcodeScanModule
-import com.passbolt.mobile.android.core.rbacModule
 import com.passbolt.mobile.android.core.resources.resourcesModule
 import com.passbolt.mobile.android.core.resourcetypes.resourceTypesModule
 import com.passbolt.mobile.android.core.secrets.secretsModule
@@ -63,6 +62,7 @@ import com.passbolt.mobile.android.data.mfa.mfaDataModule
 import com.passbolt.mobile.android.data.mobiletransfer.mobileTransferDataModule
 import com.passbolt.mobile.android.data.passwordexpiry.passwordExpiryDataModule
 import com.passbolt.mobile.android.data.passwordpolicies.passwordPoliciesDataModule
+import com.passbolt.mobile.android.data.rbac.rbacDataModule
 import com.passbolt.mobile.android.data.share.shareDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
@@ -70,6 +70,7 @@ import com.passbolt.mobile.android.domain.favourites.favouritesDomainModule
 import com.passbolt.mobile.android.domain.mobiletransfer.mobileTransferDomainModule
 import com.passbolt.mobile.android.domain.passwordexpiry.passwordExpiryDomainModule
 import com.passbolt.mobile.android.domain.passwordpolicies.passwordPoliciesDomainModule
+import com.passbolt.mobile.android.domain.rbac.rbacDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
 import com.passbolt.mobile.android.feature.accountdetails.accountDetailsModule
 import com.passbolt.mobile.android.feature.authenticationModule
@@ -175,7 +176,8 @@ class KoinInitializer : Initializer<Unit> {
                 tagsModule,
                 scanOtpMainModule,
                 otpMoreMenuModule,
-                rbacModule,
+                rbacDomainModule,
+                rbacDataModule,
                 accountsCoreModule,
                 passwordPoliciesDomainModule,
                 passwordPoliciesDataModule,
