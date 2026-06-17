@@ -73,7 +73,7 @@ class EnterTotpViewModel(
                         VerifyTotpUseCase.Input(otp, authToken.orEmpty(), viewState.value.rememberMe),
                     )
             ) {
-                is Failure<*> -> genericError()
+                is Failure -> genericError()
                 is NetworkFailure -> networkError()
                 is Success -> otpSuccess(result.mfaHeader)
                 is WrongCode -> totpError()

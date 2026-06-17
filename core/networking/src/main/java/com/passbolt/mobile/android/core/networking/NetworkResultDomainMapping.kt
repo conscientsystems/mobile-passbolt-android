@@ -30,7 +30,7 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure
 fun NetworkResult.Failure<*>.toDomainFailure(): DomainResult.Failure =
     when {
         isUnauthorized -> DomainResult.Failure.Unauthorized
-        isMfaRequired -> DomainResult.Failure.MfaRequired(MfaTypeProvider.get(this))
+        isMfaRequired -> toMfaRequiredFailure()
         isNoNetworkException || this is NetworkResult.Failure.NetworkError ->
             DomainResult.Failure.NetworkError(OFFLINE, exception)
         isServerNotReachable ->
@@ -39,3 +39,8 @@ fun NetworkResult.Failure<*>.toDomainFailure(): DomainResult.Failure =
             DomainResult.Failure.ServerError(headerMessage, errorCode, exception)
         else -> DomainResult.Failure.Unknown(exception)
     }
+
+fun NetworkResult.Failure<*>.toMfaRequiredFailure(): DomainResult.Failure.MfaRequired =
+    DomainResult.Failure.MfaRequired(
+        providers = MfaTypeProvider.get(this),
+    )

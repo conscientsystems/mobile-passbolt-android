@@ -1,9 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.mfa
-
-import com.passbolt.mobile.android.dto.request.HotpRequest
-import com.passbolt.mobile.android.dto.request.TotpRequest
-import retrofit2.Response
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -27,23 +21,18 @@ import retrofit2.Response
  * @since v1.0
  */
 
-interface MfaDataSource {
-    suspend fun verifyTotp(
-        totpRequest: TotpRequest,
-        authHeader: String?,
-    ): Response<Void>
+package com.passbolt.mobile.android.domain.mfa.model
 
-    suspend fun verifyYubikeyOtp(
-        hotpRequest: HotpRequest,
-        authHeader: String?,
-    ): Response<Void>
+sealed interface YubikeyVerification {
+    data class Succeeded(
+        val mfaHeader: String?,
+    ) : YubikeyVerification
 
-    suspend fun getDuoPromptUrl(authHeader: String?): Response<Void>
+    data object Unauthorized : YubikeyVerification
 
-    suspend fun verifyDuoCallback(
-        authHeader: String?,
-        passboltDuoStateUuid: String,
-        state: String?,
-        code: String?,
-    ): Response<Void>
+    data object NotFromCurrentUser : YubikeyVerification
+
+    data class OtherFailure(
+        val errorCode: Int,
+    ) : YubikeyVerification
 }

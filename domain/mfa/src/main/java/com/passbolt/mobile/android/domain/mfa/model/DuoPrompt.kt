@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.mfa
-
-import com.passbolt.mobile.android.core.networking.NO_REDIRECT_RETROFIT_SERVICE
-import com.passbolt.mobile.android.core.networking.RestService
-import org.koin.core.module.Module
-import org.koin.core.qualifier.named
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,20 +21,19 @@ import org.koin.core.qualifier.named
  * @since v1.0
  */
 
-internal fun Module.mfaApiModule() {
-    single<MfaDataSource> {
-        MfaRemoteDataSource(
-            mfaApi = get(),
-        )
-    }
-    single {
-        MfaRepository(
-            mfaDataSource = get(),
-            responseHandler = get(),
-        )
-    }
-    single {
-        get<RestService>(named(NO_REDIRECT_RETROFIT_SERVICE))
-            .service(MfaApi::class.java)
-    }
+package com.passbolt.mobile.android.domain.mfa.model
+
+sealed interface DuoPrompt {
+    data class Found(
+        val duoPromptUrl: String,
+        val passboltDuoCookieUuid: String,
+    ) : DuoPrompt
+
+    data object NotFound : DuoPrompt
+
+    data object Unauthorized : DuoPrompt
+
+    data class OtherFailure(
+        val errorCode: Int,
+    ) : DuoPrompt
 }

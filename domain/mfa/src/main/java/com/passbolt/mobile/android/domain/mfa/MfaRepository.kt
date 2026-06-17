@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.mfa
-
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.dto.request.HotpRequest
-import com.passbolt.mobile.android.dto.request.TotpRequest
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -27,40 +20,34 @@ import com.passbolt.mobile.android.dto.request.TotpRequest
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class MfaRepository(
-    private val mfaDataSource: MfaDataSource,
-    private val responseHandler: ResponseHandler,
-) {
+
+package com.passbolt.mobile.android.domain.mfa
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.mfa.model.DuoPrompt
+import com.passbolt.mobile.android.domain.mfa.model.DuoVerification
+import com.passbolt.mobile.android.domain.mfa.model.TotpVerification
+import com.passbolt.mobile.android.domain.mfa.model.YubikeyVerification
+
+interface MfaRepository {
     suspend fun verifyTotp(
-        totpRequest: TotpRequest,
-        authHeader: String?,
-    ) = callWithHandler(responseHandler) {
-        mfaDataSource.verifyTotp(totpRequest, authHeader)
-    }
+        otp: String,
+        remember: Boolean,
+        authToken: String?,
+    ): DomainResult<TotpVerification>
 
     suspend fun verifyYubikeyOtp(
-        hotpRequest: HotpRequest,
-        authHeader: String?,
-    ) = callWithHandler(responseHandler) {
-        mfaDataSource.verifyYubikeyOtp(hotpRequest, authHeader)
-    }
+        otp: String,
+        remember: Boolean,
+        authToken: String?,
+    ): DomainResult<YubikeyVerification>
 
-    suspend fun getDuoPromptUrl(authHeader: String?) =
-        callWithHandler(responseHandler) {
-            mfaDataSource.getDuoPromptUrl(authHeader)
-        }
+    suspend fun getDuoPrompt(authToken: String?): DomainResult<DuoPrompt>
 
     suspend fun verifyDuoCallback(
-        authHeader: String?,
-        passboltDuoStateUuid: String,
+        authToken: String?,
+        duoStateUuid: String,
         state: String?,
         code: String?,
-    ) = callWithHandler(responseHandler) {
-        mfaDataSource.verifyDuoCallback(
-            authHeader = authHeader,
-            passboltDuoStateUuid = passboltDuoStateUuid,
-            state = state,
-            code = code,
-        )
-    }
+    ): DomainResult<DuoVerification>
 }
