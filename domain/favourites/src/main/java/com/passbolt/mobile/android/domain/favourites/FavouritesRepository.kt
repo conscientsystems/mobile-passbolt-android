@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.favourites
-
-import com.passbolt.mobile.android.core.networking.RestService
-import org.koin.core.module.Module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,20 +21,12 @@ import org.koin.core.module.Module
  * @since v1.0
  */
 
-internal fun Module.favouritesApiModule() {
-    single<FavouritesDataSource> {
-        FavouritesRemoteDataSource(
-            favouritesApi = get(),
-        )
-    }
-    single {
-        FavouritesRepository(
-            favouritesDataSource = get(),
-            responseHandler = get(),
-        )
-    }
-    single {
-        get<RestService>()
-            .service(FavouritesApi::class.java)
-    }
+package com.passbolt.mobile.android.domain.favourites
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+
+interface FavouritesRepository {
+    suspend fun addToFavourites(resourceId: String): DomainResult<String>
+
+    suspend fun removeFromFavourites(favouriteId: String): DomainResult<Unit>
 }

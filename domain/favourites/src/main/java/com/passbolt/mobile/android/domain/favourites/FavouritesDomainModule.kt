@@ -1,7 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.favourites
-
-import com.passbolt.mobile.android.dto.response.AddToFavouritesResponseDto
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,8 +21,15 @@ import com.passbolt.mobile.android.dto.response.AddToFavouritesResponseDto
  * @since v1.0
  */
 
-interface FavouritesDataSource {
-    suspend fun addToFavourites(resourceId: String): AddToFavouritesResponseDto
+package com.passbolt.mobile.android.domain.favourites
 
-    suspend fun removeFromFavourites(favouriteId: String)
-}
+import com.passbolt.mobile.android.domain.favourites.usecase.AddToFavouritesUseCase
+import com.passbolt.mobile.android.domain.favourites.usecase.RemoveFromFavouritesUseCase
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+
+val favouritesDomainModule =
+    module {
+        singleOf(::AddToFavouritesUseCase)
+        singleOf(::RemoveFromFavouritesUseCase)
+    }

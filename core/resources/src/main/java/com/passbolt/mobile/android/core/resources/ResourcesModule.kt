@@ -12,11 +12,9 @@ import com.passbolt.mobile.android.core.resources.interactor.create.CreateResour
 import com.passbolt.mobile.android.core.resources.interactor.update.UpdateResourceInteractor
 import com.passbolt.mobile.android.core.resources.resourceicon.BackgroundColorIconProvider
 import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
-import com.passbolt.mobile.android.core.resources.usecase.AddToFavouritesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.DeleteResourceUseCase
 import com.passbolt.mobile.android.core.resources.usecase.FavouritesInteractor
 import com.passbolt.mobile.android.core.resources.usecase.GetResourcesPaginatedUseCase
-import com.passbolt.mobile.android.core.resources.usecase.RemoveFromFavouritesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.ResourceInteractor
 import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor
 import com.passbolt.mobile.android.core.resources.usecase.ShareResourceUseCase
@@ -64,8 +62,6 @@ val resourcesModule =
         singleOf(::DeleteResourceUseCase)
         singleOf(::SimulateShareResourceUseCase)
         singleOf(::ShareResourceUseCase)
-        singleOf(::AddToFavouritesUseCase)
-        singleOf(::RemoveFromFavouritesUseCase)
         singleOf(::FavouritesInteractor)
         singleOf(::ResourceShareInteractor)
         singleOf(::UpdateResourceInteractor)

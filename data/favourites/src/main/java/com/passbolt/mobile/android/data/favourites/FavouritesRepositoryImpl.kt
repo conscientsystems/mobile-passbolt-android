@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.favourites
-
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,17 +20,17 @@ import com.passbolt.mobile.android.core.networking.callWithHandler
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class FavouritesRepository(
-    private val favouritesDataSource: FavouritesDataSource,
-    private val responseHandler: ResponseHandler,
-) {
-    suspend fun addToFavourites(resourceId: String) =
-        callWithHandler(responseHandler) {
-            favouritesDataSource.addToFavourites(resourceId)
-        }
 
-    suspend fun removeFromFavourites(favouriteId: String) =
-        callWithHandler(responseHandler) {
-            favouritesDataSource.removeFromFavourites(favouriteId)
-        }
+package com.passbolt.mobile.android.data.favourites
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.favourites.FavouritesDataSource
+import com.passbolt.mobile.android.domain.favourites.FavouritesRepository
+
+internal class FavouritesRepositoryImpl(
+    private val remoteDataSource: FavouritesDataSource,
+) : FavouritesRepository {
+    override suspend fun addToFavourites(resourceId: String): DomainResult<String> = remoteDataSource.addToFavourites(resourceId)
+
+    override suspend fun removeFromFavourites(favouriteId: String): DomainResult<Unit> = remoteDataSource.removeFromFavourites(favouriteId)
 }

@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":networking"))
     implementation(project(":passboltapi"))
+    implementation(project(":favourites-domain"))
     implementation(project(":database"))
     implementation(project(":gopenpgp"))
     implementation(project(":secrets"))
