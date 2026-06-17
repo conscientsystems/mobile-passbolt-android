@@ -32,7 +32,6 @@ import com.passbolt.mobile.android.data.users.datasource.remote.api.UsersApi
 import com.passbolt.mobile.android.data.users.mapper.toDomain
 import com.passbolt.mobile.android.domain.users.UsersDataSource
 import com.passbolt.mobile.android.domain.users.model.UserProfile
-import com.passbolt.mobile.android.dto.response.UserDto
 
 internal class UsersRemoteDataSource(
     private val usersApi: UsersApi,
@@ -44,6 +43,9 @@ internal class UsersRemoteDataSource(
             is NetworkResult.Failure -> result.toDomainFailure()
         }
 
-    // TODO MOB-4496: migrate to the domain model repository architecture
-    override suspend fun getUsers(hasAccessTo: List<String>?): List<UserDto> = usersApi.getUsers(hasAccessTo).body
+    override suspend fun getUsers(hasAccessTo: List<String>?): DomainResult<List<UserProfile>> =
+        when (val result = callWithHandler(responseHandler) { usersApi.getUsers(hasAccessTo).body }) {
+            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
+            is NetworkResult.Failure -> result.toDomainFailure()
+        }
 }

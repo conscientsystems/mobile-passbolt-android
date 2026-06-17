@@ -29,6 +29,10 @@ import com.passbolt.mobile.android.dto.response.GpgKeyDto
 import com.passbolt.mobile.android.dto.response.UserDto
 import java.time.ZonedDateTime
 
+fun List<UserDto>.toDomain(): List<UserProfile> =
+    filter { it.active && !it.deleted }
+        .map { it.toDomain() }
+
 fun UserDto.toDomain(): UserProfile =
     UserProfile(
         id = id.toString(),

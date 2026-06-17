@@ -25,11 +25,9 @@ package com.passbolt.mobile.android.domain.users
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.users.model.UserProfile
-import com.passbolt.mobile.android.dto.response.UserDto
 
 interface UsersDataSource {
     suspend fun getMyProfile(): DomainResult<UserProfile>
 
-    // TODO MOB-4496: migrate to the domain model repository architecture
-    suspend fun getUsers(hasAccessTo: List<String>? = null): List<UserDto>
+    suspend fun getUsers(hasAccessTo: List<String>? = null): DomainResult<List<UserProfile>>
 }

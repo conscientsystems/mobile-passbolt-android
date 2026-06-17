@@ -1,12 +1,14 @@
 package com.passbolt.mobile.android.core.users.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
 import com.passbolt.mobile.android.domain.users.UsersRepository
-import com.passbolt.mobile.android.mappers.UsersModelMapper
+import com.passbolt.mobile.android.domain.users.mapper.toUserModel
 import com.passbolt.mobile.android.ui.UserUiModel
 
 /**
@@ -33,12 +35,11 @@ import com.passbolt.mobile.android.ui.UserUiModel
  */
 class FetchUsersUseCase(
     private val usersRepository: UsersRepository,
-    private val usersMapper: UsersModelMapper,
 ) : AsyncUseCase<FetchUsersUseCase.Input, FetchUsersUseCase.Output> {
     override suspend fun execute(input: Input) =
-        when (val response = usersRepository.getUsers(input.hasAccessTo)) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> Output.Success(usersMapper.map(response.value))
+        when (val result = usersRepository.getUsers(input.hasAccessTo)) {
+            is DomainResult.Success -> Output.Success(result.value.map { it.toUserModel() })
+            is DomainResult.Failure -> Output.Failure(result)
         }
 
     data class Input(
@@ -48,27 +49,27 @@ class FetchUsersUseCase(
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                when (val output = this) {
+                    is Failure ->
+                        when (val failure = output.failure) {
+                            is DomainResult.Failure.Unauthorized ->
+                                AuthenticationState.Unauthenticated(Session)
+                            is DomainResult.Failure.MfaRequired ->
+                                AuthenticationState.Unauthenticated(Mfa(failure.providers))
+                            else -> AuthenticationState.Authenticated
+                        }
+                    else -> AuthenticationState.Authenticated
                 }
 
         data class Success(
             val users: List<UserUiModel>,
         ) : Output()
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            val failure: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = failure.displayMessage()
+        }
     }
 }
