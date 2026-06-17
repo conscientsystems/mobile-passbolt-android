@@ -32,10 +32,10 @@ import com.passbolt.mobile.android.core.networking.MfaTypeProvider
 import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.policies.usecase.GetPasswordExpirySettingsUseCase
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.SecretInput
 import com.passbolt.mobile.android.core.users.usecase.FetchUsersUseCase
+import com.passbolt.mobile.android.domain.passwordexpiry.usecase.GetPasswordExpirySettingsUseCase
 import com.passbolt.mobile.android.dto.request.CreateV4ResourceDto
 import com.passbolt.mobile.android.dto.request.CreateV5ResourceDto
 import com.passbolt.mobile.android.dto.request.EncryptedSecret
@@ -189,7 +189,7 @@ class UpdateResourceInteractor(
         secretInput: SecretInput,
     ): ZonedDateTime? =
         if (SupportedContentTypes.resourcesSlugsSupportingExpiry.contains(resourceInput.contentType)) {
-            val expirySettings = passwordExpirySettingsUseCase.execute(Unit).expirySettings
+            val expirySettings = passwordExpirySettingsUseCase.execute(Unit)
             if (expirySettings.automaticUpdate) {
                 if (secretInput.passwordChanged) {
                     if (expirySettings.defaultExpiryPeriodDays != null) {

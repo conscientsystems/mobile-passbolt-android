@@ -33,9 +33,9 @@ import com.passbolt.mobile.android.core.networking.MfaTypeProvider
 import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.policies.usecase.GetPasswordExpirySettingsUseCase
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
+import com.passbolt.mobile.android.domain.passwordexpiry.usecase.GetPasswordExpirySettingsUseCase
 import com.passbolt.mobile.android.dto.request.CreateV4ResourceDto
 import com.passbolt.mobile.android.dto.request.CreateV5ResourceDto
 import com.passbolt.mobile.android.dto.request.EncryptedSecret
@@ -183,7 +183,7 @@ class CreateResourceInteractor(
     // https://drive.google.com/file/d/1lqiF0ajpuvx1xaZ74aSSjxiDLMGPBXVa/view?usp=drive_link
     private suspend fun getResourceExpiry(contentType: ContentType): ZonedDateTime? =
         if (SupportedContentTypes.resourcesSlugsSupportingExpiry.contains(contentType)) {
-            val expirySettings = passwordExpirySettingsUseCase.execute(Unit).expirySettings
+            val expirySettings = passwordExpirySettingsUseCase.execute(Unit)
             if (expirySettings.automaticUpdate) {
                 if (expirySettings.defaultExpiryPeriodDays != null) {
                     ZonedDateTime

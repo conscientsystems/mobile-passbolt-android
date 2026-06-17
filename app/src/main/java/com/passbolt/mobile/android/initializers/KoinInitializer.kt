@@ -47,7 +47,6 @@ import com.passbolt.mobile.android.core.notifications.notificationsModule
 import com.passbolt.mobile.android.core.otpcore.otpCoreModule
 import com.passbolt.mobile.android.core.passphrasememorycache.passphraseMemoryCacheModule
 import com.passbolt.mobile.android.core.passwordgenerator.passwordGeneratorModule
-import com.passbolt.mobile.android.core.policiesModule
 import com.passbolt.mobile.android.core.preferences.preferencesModule
 import com.passbolt.mobile.android.core.qrscan.barcodeScanModule
 import com.passbolt.mobile.android.core.rbacModule
@@ -59,9 +58,11 @@ import com.passbolt.mobile.android.core.tags.tagsModule
 import com.passbolt.mobile.android.core.users.usersModule
 import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
+import com.passbolt.mobile.android.data.passwordexpiry.passwordExpiryDataModule
 import com.passbolt.mobile.android.data.passwordpolicies.passwordPoliciesDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
+import com.passbolt.mobile.android.domain.passwordexpiry.passwordExpiryDomainModule
 import com.passbolt.mobile.android.domain.passwordpolicies.passwordPoliciesDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
 import com.passbolt.mobile.android.feature.accountdetails.accountDetailsModule
@@ -170,9 +171,10 @@ class KoinInitializer : Initializer<Unit> {
                 otpMoreMenuModule,
                 rbacModule,
                 accountsCoreModule,
-                policiesModule,
                 passwordPoliciesDomainModule,
                 passwordPoliciesDataModule,
+                passwordExpiryDomainModule,
+                passwordExpiryDataModule,
                 usersDataModule,
                 pwnedPasswordsApiModule,
                 passwordGeneratorModule,

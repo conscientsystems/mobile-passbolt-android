@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":uimodel"))
     implementation(project(":localization"))
-    implementation(project(":policies"))
+    implementation(project(":passwordexpiry-domain"))
     implementation(project(":passwordpolicies-domain"))
     implementation(project(":featureflags"))
     implementation(project(":entity"))

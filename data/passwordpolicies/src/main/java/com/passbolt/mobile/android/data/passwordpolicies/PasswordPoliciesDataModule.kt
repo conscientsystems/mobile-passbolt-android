@@ -39,7 +39,7 @@ val passwordPoliciesDataModule =
     module {
         single { get<RestService>().service(PasswordPoliciesApi::class.java) }
 
-        single<PasswordPoliciesDataSource>(DATA_SOURCE_MEMORY) { PasswordPoliciesMemoryDataSource() }
+        single<PasswordPoliciesDataSource>(DATA_SOURCE_MEMORY) { PasswordPoliciesMemoryDataSource(get()) }
         single<PasswordPoliciesDataSource>(DATA_SOURCE_REMOTE) { PasswordPoliciesRemoteDataSource(get(), get()) }
 
         single<PasswordPoliciesRepository> {
