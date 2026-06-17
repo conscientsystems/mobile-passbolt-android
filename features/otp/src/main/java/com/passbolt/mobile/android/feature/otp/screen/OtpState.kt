@@ -43,7 +43,6 @@ data class OtpState(
     val moreMenuResource: OtpItemWrapper? = null,
     val metadataDeletedKeyModel: TrustedKeyDeletedModel? = null,
     val newMetadataKeyTrustModel: NewMetadataKeyToTrustModel? = null,
-    val showCreateResourceBottomSheet: Boolean = false,
     val showOtpMoreBottomSheet: Boolean = false,
     val showAccountSwitchBottomSheet: Boolean = false,
     val showDeleteTotpConfirmationDialog: Boolean = false,

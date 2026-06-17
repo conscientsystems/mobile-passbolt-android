@@ -53,18 +53,8 @@ sealed interface OtpIntent {
     // switch account
     object CloseSwitchAccount : OtpIntent
 
-    // create resource menu
-    data object OpenCreateResourceMenu : OtpIntent
-
-    data object CreatePassword : OtpIntent
-
+    // create totp
     data object CreateTotp : OtpIntent
-
-    data object CreateNote : OtpIntent
-
-    data object CreatePinCode : OtpIntent
-
-    data object CloseCreateResourceMenu : OtpIntent
 
     // otp more menu
     data class OpenOtpMoreMenu(

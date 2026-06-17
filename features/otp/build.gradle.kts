@@ -33,7 +33,6 @@ dependencies {
     implementation(project(":serializers"))
     implementation(project(":accounts"))
     implementation(project(":jsonmodel"))
-    implementation(project(":createresourcemenu"))
     implementation(project(":resourceform"))
     implementation(project(":metadatakeytrust"))
     implementation(project(":metadata"))
