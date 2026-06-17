@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.core.resources.usecase
-
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.passboltapi.favourites.FavouritesRepository
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,39 +20,47 @@ import com.passbolt.mobile.android.passboltapi.favourites.FavouritesRepository
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+
+package com.passbolt.mobile.android.domain.favourites.usecase
+
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.domain.favourites.FavouritesRepository
+
 class AddToFavouritesUseCase(
     private val favouritesRepository: FavouritesRepository,
 ) : AsyncUseCase<AddToFavouritesUseCase.Input, AddToFavouritesUseCase.Output> {
     override suspend fun execute(input: Input) =
-        when (val response = favouritesRepository.addToFavourites(input.resourceId)) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> Output.Success(response.value.favouriteId.toString())
+        when (val result = favouritesRepository.addToFavourites(input.resourceId)) {
+            is DomainResult.Success -> Output.Success(result.value)
+            is DomainResult.Failure -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
+            get() {
+                val failure = (this as? Failure)?.failure
+                return when (failure) {
+                    is DomainResult.Failure.Unauthorized ->
                         AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
+                            AuthenticationState.Unauthenticated.Reason.Session,
                         )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                    is DomainResult.Failure.MfaRequired ->
+                        AuthenticationState.Unauthenticated(
+                            AuthenticationState.Unauthenticated.Reason.Mfa(failure.providers),
+                        )
+                    else -> AuthenticationState.Authenticated
                 }
+            }
 
         data class Success(
             val favouriteId: String,
         ) : Output()
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
+        data class Failure(
+            val failure: DomainResult.Failure,
         ) : Output()
     }
 

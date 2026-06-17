@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.favourites
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -22,12 +20,13 @@ package com.passbolt.mobile.android.passboltapi.favourites
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class FavouritesRemoteDataSource(
-    private val favouritesApi: FavouritesApi,
-) : FavouritesDataSource {
-    override suspend fun addToFavourites(resourceId: String) = favouritesApi.addToFavourites(resourceId).body
 
-    override suspend fun removeFromFavourites(favouriteId: String) {
-        favouritesApi.removeFromFavourites(favouriteId)
-    }
+package com.passbolt.mobile.android.domain.favourites
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+
+interface FavouritesDataSource {
+    suspend fun addToFavourites(resourceId: String): DomainResult<String>
+
+    suspend fun removeFromFavourites(favouriteId: String): DomainResult<Unit>
 }

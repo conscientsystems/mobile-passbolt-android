@@ -1,8 +1,11 @@
 package com.passbolt.mobile.android.core.resources.usecase
 
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.resources.usecase.db.UpdateLocalResourceUseCase
+import com.passbolt.mobile.android.domain.favourites.usecase.AddToFavouritesUseCase
+import com.passbolt.mobile.android.domain.favourites.usecase.RemoveFromFavouritesUseCase
 import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.isFavourite
 import timber.log.Timber
@@ -34,6 +37,9 @@ class FavouritesInteractor(
     private val removeFromFavouritesUseCase: RemoveFromFavouritesUseCase,
     private val updateLocalResourceUseCase: UpdateLocalResourceUseCase,
 ) {
+    // TODO MOB-4499: this interactor class should live in :favourites-domain next to the favourites use cases,
+    //  but it writes to the local DB via UpdateLocalResourceUseCase (:resources). Moving it as-is would create a
+    //  circular dependency (favourites-domain -> resources -> favourites-domain).
     suspend fun addToFavouritesAndUpdateLocal(resource: ResourceModel): Output {
         val addToFavouritesResult =
             addToFavouritesUseCase.execute(
@@ -41,11 +47,11 @@ class FavouritesInteractor(
             )
 
         return when (addToFavouritesResult) {
-            is AddToFavouritesUseCase.Output.Failure<*> -> {
+            is AddToFavouritesUseCase.Output.Failure -> {
                 Timber.e(
-                    addToFavouritesResult.response.exception,
-                    "Error when adding to favourites: %s",
-                    addToFavouritesResult.response.headerMessage,
+                    (addToFavouritesResult.failure as? DomainResult.Failure.Unknown)?.cause,
+                    "Error when adding to favourites. Failure: %s",
+                    addToFavouritesResult.failure,
                 )
                 Output.Failure(addToFavouritesResult.authenticationState)
             }
@@ -62,11 +68,11 @@ class FavouritesInteractor(
             )
 
         return when (removeFromFavouritesResult) {
-            is RemoveFromFavouritesUseCase.Output.Failure<*> -> {
+            is RemoveFromFavouritesUseCase.Output.Failure -> {
                 Timber.e(
-                    removeFromFavouritesResult.response.exception,
-                    "Error when removing from favourites: %s",
-                    removeFromFavouritesResult.response.headerMessage,
+                    (removeFromFavouritesResult.failure as? DomainResult.Failure.Unknown)?.cause,
+                    "Error when removing from favourites. Failure: %s",
+                    removeFromFavouritesResult.failure,
                 )
                 Output.Failure(removeFromFavouritesResult.authenticationState)
             }

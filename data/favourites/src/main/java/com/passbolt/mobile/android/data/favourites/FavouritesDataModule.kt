@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.favourites
-
-import com.passbolt.mobile.android.dto.response.AddToFavouritesResponseDto
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import retrofit2.http.DELETE
-import retrofit2.http.POST
-import retrofit2.http.Path
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,22 +21,20 @@ import retrofit2.http.Path
  * @since v1.0
  */
 
-internal interface FavouritesApi {
-    @POST(FAVOURITE_RESOURCE_BY_ID)
-    suspend fun addToFavourites(
-        @Path(PATH_RESOURCE_ID) resourceId: String,
-    ): BaseResponse<AddToFavouritesResponseDto>
+package com.passbolt.mobile.android.data.favourites
 
-    @DELETE(FAVOURITES_BY_ID)
-    suspend fun removeFromFavourites(
-        @Path(PATH_FAVOURITE_ID) favouriteId: String,
-    ): BaseResponse<Unit>
+import com.passbolt.mobile.android.core.networking.RestService
+import com.passbolt.mobile.android.data.favourites.datasource.remote.FavouritesRemoteDataSource
+import com.passbolt.mobile.android.data.favourites.datasource.remote.api.FavouritesApi
+import com.passbolt.mobile.android.domain.favourites.FavouritesDataSource
+import com.passbolt.mobile.android.domain.favourites.FavouritesRepository
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
 
-    private companion object {
-        private const val PATH_RESOURCE_ID = "resourceId"
-        private const val PATH_FAVOURITE_ID = "favouriteId"
-        private const val FAVOURITES = "favorites"
-        private const val FAVOURITES_BY_ID = "$FAVOURITES/{$PATH_FAVOURITE_ID}.json"
-        private const val FAVOURITE_RESOURCE_BY_ID = "$FAVOURITES/resource/{$PATH_RESOURCE_ID}.json"
+val favouritesDataModule =
+    module {
+        single { get<RestService>().service(FavouritesApi::class.java) }
+        singleOf(::FavouritesRemoteDataSource) bind FavouritesDataSource::class
+        singleOf(::FavouritesRepositoryImpl) bind FavouritesRepository::class
     }
-}
