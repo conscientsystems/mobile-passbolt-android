@@ -347,8 +347,8 @@ class ResourceUpdateActionsInteractor(
                     operation()
                 }
         ) {
-            is UpdateResourceInteractor.Output.Failure<*> -> {
-                ResourceUpdateActionResult.Failure(operationResult.response.exception.message)
+            is UpdateResourceInteractor.Output.Failure -> {
+                ResourceUpdateActionResult.Failure(operationResult.message)
             }
             is UpdateResourceInteractor.Output.OpenPgpError -> {
                 ResourceUpdateActionResult.CryptoFailure(operationResult.message)

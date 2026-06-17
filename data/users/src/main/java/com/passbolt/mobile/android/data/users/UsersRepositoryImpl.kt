@@ -24,21 +24,14 @@
 package com.passbolt.mobile.android.data.users
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
 import com.passbolt.mobile.android.domain.users.UsersDataSource
 import com.passbolt.mobile.android.domain.users.UsersRepository
 import com.passbolt.mobile.android.domain.users.model.UserProfile
-import com.passbolt.mobile.android.dto.response.UserDto
 
 internal class UsersRepositoryImpl(
     private val remoteDataSource: UsersDataSource,
-    private val responseHandler: ResponseHandler,
 ) : UsersRepository {
     override suspend fun getMyProfile(): DomainResult<UserProfile> = remoteDataSource.getMyProfile()
 
-    // TODO MOB-4496: migrate to the domain model repository architecture
-    override suspend fun getUsers(hasAccessTo: List<String>?): NetworkResult<List<UserDto>> =
-        callWithHandler(responseHandler) { remoteDataSource.getUsers(hasAccessTo) }
+    override suspend fun getUsers(hasAccessTo: List<String>?): DomainResult<List<UserProfile>> = remoteDataSource.getUsers(hasAccessTo)
 }

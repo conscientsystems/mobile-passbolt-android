@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.mappers
 
-import com.passbolt.mobile.android.dto.response.UserDto
 import com.passbolt.mobile.android.entity.user.User
 import com.passbolt.mobile.android.entity.user.UserGpgKey
 import com.passbolt.mobile.android.entity.user.UserProfile
@@ -8,49 +7,8 @@ import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.UserProfileUiModel
 import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
-import java.time.ZonedDateTime
 
 class UsersModelMapper {
-    fun map(userDto: UserDto): UserUiModel {
-        val usersGpgKey = requireNotNull(userDto.gpgKey)
-        return UserUiModel(
-            id = userDto.id.toString(),
-            userName = userDto.username,
-            // if disabled date is in the past the user is disabled
-            disabled =
-                userDto.disabled
-                    ?.let { ZonedDateTime.parse(it).isBefore(ZonedDateTime.now()) } ?: false,
-            gpgKey =
-                GpgKeyUiModel(
-                    id = usersGpgKey.id.toString(),
-                    armoredKey = usersGpgKey.armoredKey,
-                    fingerprint = usersGpgKey.fingerprint,
-                    bits = usersGpgKey.bits,
-                    uid = usersGpgKey.uid,
-                    keyId = usersGpgKey.keyId,
-                    type = usersGpgKey.type,
-                    keyExpirationDate = usersGpgKey.expires?.let { expires -> ZonedDateTime.parse(expires) },
-                    keyCreationDate = usersGpgKey.keyCreated?.let { keyCreated -> ZonedDateTime.parse(keyCreated) },
-                ),
-            profile =
-                UserProfileUiModel(
-                    username = userDto.username,
-                    firstName = userDto.profile?.firstName,
-                    lastName = userDto.profile?.lastName,
-                    avatarUrl =
-                        userDto.profile
-                            ?.avatar
-                            ?.url
-                            ?.medium,
-                ),
-        )
-    }
-
-    fun map(input: List<UserDto>): List<UserUiModel> =
-        input
-            .filter { it.active && !it.deleted }
-            .map(::map)
-
     fun map(input: UserUiModel) =
         User(
             id = input.id,

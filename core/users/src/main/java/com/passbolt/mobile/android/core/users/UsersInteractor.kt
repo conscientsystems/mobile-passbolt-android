@@ -35,7 +35,7 @@ class UsersInteractor(
 ) {
     suspend fun fetchAndSaveUsers(): Output =
         when (val fetched = fetchUsersUseCase.execute(FetchUsersUseCase.Input())) {
-            is FetchUsersUseCase.Output.Failure<*> -> Output.Failure(fetched.authenticationState)
+            is FetchUsersUseCase.Output.Failure -> Output.Failure(fetched.authenticationState)
             is FetchUsersUseCase.Output.Success -> {
                 try {
                     rebuildLocalUsersUseCase.execute(RebuildUsersTablesUseCase.Input(fetched.users))
