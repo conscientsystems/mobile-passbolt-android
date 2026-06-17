@@ -38,7 +38,7 @@ dependencies {
     implementation(project(":scanotp"))
     implementation(project(":otpmoremenu"))
     implementation(project(":otpcore"))
-    implementation(project(":rbac"))
+    implementation(project(":rbac-domain"))
     implementation(project(":serializers"))
     implementation(project(":autofill"))
     implementation(project(":accounts"))

@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
-import com.passbolt.mobile.android.core.rbac.usecase.RbacInteractor
+import com.passbolt.mobile.android.domain.rbac.usecase.RbacInteractor
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.featureflags.usecase.FeatureFlagsInteractor
 import timber.log.Timber

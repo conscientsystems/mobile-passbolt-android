@@ -34,7 +34,7 @@ import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderD
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.folderdetails.FolderDetailsIntent.GoBack
 import com.passbolt.mobile.android.folderdetails.FolderDetailsIntent.GoToLocationDetails
 import com.passbolt.mobile.android.folderdetails.FolderDetailsIntent.GoToPermissionDetails

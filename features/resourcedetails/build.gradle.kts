@@ -36,7 +36,7 @@ dependencies {
     implementation(project(":folders"))
     implementation(project(":otpmoremenu"))
     implementation(project(":scanotp"))
-    implementation(project(":rbac"))
+    implementation(project(":rbac-domain"))
     implementation(project(":serializers"))
     implementation(project(":accounts"))
     implementation(project(":jsonmodel"))

@@ -5,7 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.preferences.usecase.UpdateHomeDisplayViewPrefsUseCase
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.entity.home.HomeDisplayView.ALL_ITEMS
 import com.passbolt.mobile.android.entity.home.HomeDisplayView.EXPIRY

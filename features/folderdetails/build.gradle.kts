@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":fulldatarefresh"))
     implementation(project(":folders"))
     implementation(project(":localization"))
-    implementation(project(":rbac"))
+    implementation(project(":rbac-domain"))
     implementation(project(":accounts"))
 
     implementation(platform(libs.koin.bom))

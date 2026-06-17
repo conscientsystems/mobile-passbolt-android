@@ -25,9 +25,9 @@ package com.passbolt.mobile.android.feature.resources.details
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyPassword
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.Initialize
