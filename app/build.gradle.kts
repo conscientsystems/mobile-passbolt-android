@@ -200,6 +200,8 @@ dependencies {
     implementation(project(":passwordexpiry-domain"))
     implementation(project(":users-data"))
     implementation(project(":users-domain"))
+    implementation(project(":share-data"))
+    implementation(project(":share-domain"))
     implementation(project(":mfa-data"))
     implementation(project(":pwnedpasswordsapi"))
     implementation(project(":passwordgenerator"))

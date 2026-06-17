@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.share
-
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.dto.request.FolderShareRequest
-import com.passbolt.mobile.android.dto.request.ResourceShareRequest
-import com.passbolt.mobile.android.dto.request.SimulateShareRequest
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,28 +20,28 @@ import com.passbolt.mobile.android.dto.request.SimulateShareRequest
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class ShareRepository(
-    private val shareDataSource: ShareDataSource,
-    private val responseHandler: ResponseHandler,
-) {
+
+package com.passbolt.mobile.android.domain.share
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.share.model.EncryptedSecret
+import com.passbolt.mobile.android.domain.share.model.ShareChanges
+import com.passbolt.mobile.android.domain.share.model.SharePermission
+
+interface ShareDataSource {
     suspend fun simulateShareResource(
         resourceId: String,
-        request: SimulateShareRequest,
-    ) = callWithHandler(responseHandler) {
-        shareDataSource.simulateShareResource(resourceId, request)
-    }
+        permissions: List<SharePermission>,
+    ): DomainResult<ShareChanges>
 
     suspend fun shareResource(
         resourceId: String,
-        request: ResourceShareRequest,
-    ) = callWithHandler(responseHandler) {
-        shareDataSource.shareResource(resourceId, request)
-    }
+        permissions: List<SharePermission>,
+        secrets: List<EncryptedSecret>,
+    ): DomainResult<Unit>
 
     suspend fun shareFolder(
         folderId: String,
-        request: FolderShareRequest,
-    ) = callWithHandler(responseHandler) {
-        shareDataSource.shareFolder(folderId, request)
-    }
+        permissions: List<SharePermission>,
+    ): DomainResult<Unit>
 }

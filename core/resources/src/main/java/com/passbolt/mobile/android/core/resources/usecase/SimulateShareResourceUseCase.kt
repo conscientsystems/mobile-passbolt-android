@@ -1,14 +1,15 @@
 package com.passbolt.mobile.android.core.resources.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.dto.request.SharePermission
-import com.passbolt.mobile.android.dto.request.SimulateShareRequest
-import com.passbolt.mobile.android.dto.response.ShareChangesDto
-import com.passbolt.mobile.android.passboltapi.share.ShareRepository
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.domain.share.ShareRepository
+import com.passbolt.mobile.android.domain.share.model.ShareChanges
+import com.passbolt.mobile.android.domain.share.model.SharePermission
 
 /**
  * Passbolt - Open source password manager for teams
@@ -36,42 +37,34 @@ class SimulateShareResourceUseCase(
     private val shareRepository: ShareRepository,
 ) : AsyncUseCase<SimulateShareResourceUseCase.Input, SimulateShareResourceUseCase.Output> {
     override suspend fun execute(input: Input) =
-        when (
-            val response =
-                shareRepository.simulateShareResource(
-                    input.resourceId,
-                    SimulateShareRequest(input.simulateSharePermissions),
-                )
-        ) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> Output.Success(response.value.changes)
+        when (val result = shareRepository.simulateShareResource(input.resourceId, input.simulateSharePermissions)) {
+            is DomainResult.Success -> Output.Success(result.value)
+            is DomainResult.Failure -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                when (val output = this) {
+                    is Failure ->
+                        when (val failure = output.failure) {
+                            is DomainResult.Failure.Unauthorized -> AuthenticationState.Unauthenticated(Session)
+                            is DomainResult.Failure.MfaRequired -> AuthenticationState.Unauthenticated(Mfa(failure.providers))
+                            else -> AuthenticationState.Authenticated
+                        }
+                    else -> AuthenticationState.Authenticated
                 }
 
         data class Success(
-            val value: ShareChangesDto,
+            val value: ShareChanges,
         ) : Output()
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            val failure: DomainResult.Failure,
+        ) : Output() {
+            val message: String?
+                get() = failure.displayMessage()
+        }
     }
 
     data class Input(

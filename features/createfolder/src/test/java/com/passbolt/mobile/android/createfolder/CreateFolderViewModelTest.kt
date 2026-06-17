@@ -26,6 +26,7 @@ package com.passbolt.mobile.android.createfolder
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.commonfolders.usecase.AddLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.FolderShareInteractor
@@ -480,7 +481,7 @@ class CreateFolderViewModelTest : KoinTest {
 
         whenever(folderShareInteractor.shareFolder(any(), any())) doReturn
             FolderShareInteractor.Output.ShareFailure(
-                Exception("Share failed"),
+                DomainResult.Failure.Unknown(RuntimeException("Share failed")),
             )
     }
 

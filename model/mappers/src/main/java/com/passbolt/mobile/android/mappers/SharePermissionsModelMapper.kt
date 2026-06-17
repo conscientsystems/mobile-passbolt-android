@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.mappers
 
-import com.passbolt.mobile.android.dto.request.SharePermission
+import com.passbolt.mobile.android.domain.share.model.SharePermission
 import com.passbolt.mobile.android.mappers.PermissionsConstants.ACO_FOLDER
 import com.passbolt.mobile.android.mappers.PermissionsConstants.ACO_RESOURCE
 import com.passbolt.mobile.android.mappers.PermissionsConstants.ARO_GROUP

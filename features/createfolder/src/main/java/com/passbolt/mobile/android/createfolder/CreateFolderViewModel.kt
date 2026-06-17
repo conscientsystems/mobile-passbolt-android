@@ -228,7 +228,7 @@ internal class CreateFolderViewModel(
                 }
         ) {
             is FolderShareInteractor.Output.ShareFailure -> {
-                emitSideEffect(ShowErrorSnackbar(SHARE_FOLDER_ERROR, output.exception.message))
+                emitSideEffect(ShowErrorSnackbar(SHARE_FOLDER_ERROR, output.message))
             }
             is FolderShareInteractor.Output.Success -> {
                 emitSideEffect(FolderCreated(folderName))

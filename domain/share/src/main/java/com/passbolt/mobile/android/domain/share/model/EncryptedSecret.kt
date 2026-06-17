@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.share
-
-import com.passbolt.mobile.android.dto.request.FolderShareRequest
-import com.passbolt.mobile.android.dto.request.ResourceShareRequest
-import com.passbolt.mobile.android.dto.request.SimulateShareRequest
-import com.passbolt.mobile.android.dto.response.SimulateShareResponse
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,19 +21,10 @@ import com.passbolt.mobile.android.dto.response.SimulateShareResponse
  * @since v1.0
  */
 
-interface ShareDataSource {
-    suspend fun simulateShareResource(
-        resourceId: String,
-        request: SimulateShareRequest,
-    ): SimulateShareResponse
+package com.passbolt.mobile.android.domain.share.model
 
-    suspend fun shareResource(
-        resourceId: String,
-        request: ResourceShareRequest,
-    )
-
-    suspend fun shareFolder(
-        folderId: String,
-        request: FolderShareRequest,
-    )
-}
+data class EncryptedSecret(
+    val resourceId: String,
+    val userId: String,
+    val data: String,
+)

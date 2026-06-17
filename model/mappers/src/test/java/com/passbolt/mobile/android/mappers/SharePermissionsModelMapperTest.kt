@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.mappers
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.dto.request.SharePermission
+import com.passbolt.mobile.android.domain.share.model.SharePermission
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
