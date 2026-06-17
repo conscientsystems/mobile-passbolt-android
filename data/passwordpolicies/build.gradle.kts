@@ -7,6 +7,8 @@ dependencies {
     implementation(project(":architecture"))
     implementation(project(":networking"))
     implementation(project(":dto"))
+    implementation(project(":accounts"))
+    implementation(project(":common"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

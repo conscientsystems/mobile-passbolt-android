@@ -1,7 +1,6 @@
 package com.passbolt.mobile.android.passboltapi
 
 import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.expiry.passwordExpiryApiModule
 import com.passbolt.mobile.android.passboltapi.favourites.favouritesApiModule
 import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
 import com.passbolt.mobile.android.passboltapi.groups.groupsApiModule
@@ -52,6 +51,5 @@ val passboltApiModule =
         shareApiModule()
         favouritesApiModule()
         rbacApiModule()
-        passwordExpiryApiModule()
         metadataApiModule()
     }

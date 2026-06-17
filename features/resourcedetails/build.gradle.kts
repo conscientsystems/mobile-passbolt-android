@@ -39,7 +39,6 @@ dependencies {
     implementation(project(":rbac"))
     implementation(project(":serializers"))
     implementation(project(":accounts"))
-    implementation(project(":policies"))
     implementation(project(":jsonmodel"))
     implementation(project(":resourceform"))
     implementation(project(":clipboard"))

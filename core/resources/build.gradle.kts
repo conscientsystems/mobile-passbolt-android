@@ -20,7 +20,7 @@ dependencies {
     implementation(project(":entity"))
     implementation(project(":tags"))
     implementation(project(":serializers"))
-    implementation(project(":policies"))
+    implementation(project(":passwordexpiry-domain"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":folders"))
     implementation(project(":accounts"))

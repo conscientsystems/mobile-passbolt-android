@@ -2,12 +2,11 @@ package com.passbolt.mobile.android.feature.resourceform.main
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
-import com.passbolt.mobile.android.core.policies.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
@@ -19,6 +18,8 @@ import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateConten
 import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
+import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
+import com.passbolt.mobile.android.domain.passwordexpiry.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.domain.passwordpolicies.usecase.PasswordPoliciesInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
@@ -2020,10 +2021,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { fetchAndSavePasswordExpiryPolicies() }
                     .thenReturn(
                         PasswordExpiryPoliciesInteractor.Output.Failure.FetchFailure(
-                            NetworkResult.Failure.NetworkError<Unit>(
-                                exception = RuntimeException("boom"),
-                                headerMessage = "",
-                            ),
+                            DomainResult.Failure.Unknown(RuntimeException("boom")),
                         ),
                     )
             }
@@ -2405,7 +2403,7 @@ class ResourceFormViewModelTest : KoinTest {
             DEFAULT_TEST_FEATURE_FLAGS.copy(isPasswordExpiryAvailable = true)
 
         val MOCK_PASSWORD_EXPIRY_SETTINGS =
-            com.passbolt.mobile.android.ui.PasswordExpirySettings(
+            PasswordExpirySettings(
                 automaticExpiry = true,
                 automaticUpdate = true,
                 defaultExpiryPeriodDays = 90,
