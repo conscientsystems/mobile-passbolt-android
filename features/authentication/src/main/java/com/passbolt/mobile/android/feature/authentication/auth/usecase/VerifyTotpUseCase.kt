@@ -1,15 +1,13 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
-import com.passbolt.mobile.android.common.CookieExtractor
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.ErrorHeaderMapper
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.dto.request.TotpRequest
-import com.passbolt.mobile.android.passboltapi.mfa.MfaRepository
-import java.net.HttpURLConnection
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.domain.mfa.MfaRepository
+import com.passbolt.mobile.android.domain.mfa.model.TotpVerification
 
 /**
  * Passbolt - Open source password manager for teams
@@ -35,38 +33,17 @@ import java.net.HttpURLConnection
  */
 class VerifyTotpUseCase(
     private val mfaRepository: MfaRepository,
-    private val cookieExtractor: CookieExtractor,
-    private val errorHeaderMapper: ErrorHeaderMapper,
 ) : AsyncUseCase<VerifyTotpUseCase.Input, VerifyTotpUseCase.Output> {
     override suspend fun execute(input: Input): Output =
-        when (
-            val result =
-                mfaRepository.verifyTotp(
-                    TotpRequest(input.totp, input.remember),
-                    "Bearer ${input.jwtHeader}",
-                )
-        ) {
-            is NetworkResult.Failure.NetworkError -> Output.Failure(result)
-            is NetworkResult.Failure.ServerError -> Output.Failure(result)
-            is NetworkResult.Success -> {
-                if (result.value.isSuccessful) {
-                    val mfaHeader = cookieExtractor.get(result.value, CookieExtractor.MFA_COOKIE)
-                    Output.Success(mfaHeader)
-                } else {
-                    when {
-                        result.value.code() == HttpURLConnection.HTTP_UNAUTHORIZED -> {
-                            Output.Unauthorized
-                        }
-                        errorHeaderMapper.getValidationFieldsError(result.value.errorBody())?.contains(VALID_OTP)
-                            ?: false -> {
-                            Output.WrongCode
-                        }
-                        else -> {
-                            Output.NetworkFailure(result.value.code())
-                        }
-                    }
+        when (val result = mfaRepository.verifyTotp(input.totp, input.remember, input.jwtHeader)) {
+            is DomainResult.Success ->
+                when (val verification = result.value) {
+                    is TotpVerification.Succeeded -> Output.Success(verification.mfaHeader)
+                    is TotpVerification.WrongOtp -> Output.WrongCode
+                    is TotpVerification.Unauthorized -> Output.Unauthorized
+                    is TotpVerification.OtherFailure -> Output.NetworkFailure(verification.errorCode)
                 }
-            }
+            is DomainResult.Failure -> Output.Failure(result)
         }
 
     data class Input(
@@ -78,16 +55,9 @@ class VerifyTotpUseCase(
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized ->
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
+                when (val failure = (this as? Failure)?.failure) {
+                    is DomainResult.Failure.Unauthorized -> AuthenticationState.Unauthenticated(Session)
+                    is DomainResult.Failure.MfaRequired -> AuthenticationState.Unauthenticated(Mfa(failure.providers))
                     else -> AuthenticationState.Authenticated
                 }
 
@@ -101,14 +71,10 @@ class VerifyTotpUseCase(
 
         data object Unauthorized : Output()
 
-        class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
+        data class Failure(
+            val failure: DomainResult.Failure,
         ) : Output()
 
         data object WrongCode : Output()
-    }
-
-    companion object {
-        private const val VALID_OTP = "isValidOtp"
     }
 }

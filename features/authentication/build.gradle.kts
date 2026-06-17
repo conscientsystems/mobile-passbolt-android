@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":entity"))
     implementation(project(":passboltapi"))
+    implementation(project(":mfa-domain"))
     implementation(project(":dto"))
     implementation(project(":gopenpgp"))
     implementation(project(":navigation"))

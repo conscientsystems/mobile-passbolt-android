@@ -1,14 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.mfa
-
-import com.passbolt.mobile.android.dto.request.HotpRequest
-import com.passbolt.mobile.android.dto.request.TotpRequest
-import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
-import retrofit2.http.Query
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -31,6 +20,17 @@ import retrofit2.http.Query
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+
+package com.passbolt.mobile.android.data.mfa.datasource.remote.api
+
+import com.passbolt.mobile.android.dto.request.HotpRequest
+import com.passbolt.mobile.android.dto.request.TotpRequest
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Query
 
 internal interface MfaApi {
     @POST(MFA_VERIFICATION_TOTP)

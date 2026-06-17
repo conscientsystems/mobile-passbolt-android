@@ -1,9 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.mfa
-
-import com.passbolt.mobile.android.dto.request.HotpRequest
-import com.passbolt.mobile.android.dto.request.TotpRequest
-import retrofit2.Response
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,31 +20,26 @@ import retrofit2.Response
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class MfaRemoteDataSource(
-    private val mfaApi: MfaApi,
-) : MfaDataSource {
-    override suspend fun verifyTotp(
-        totpRequest: TotpRequest,
-        authHeader: String?,
-    ): Response<Void> = mfaApi.verifyTotp(totpRequest, authHeader)
 
-    override suspend fun verifyYubikeyOtp(
-        hotpRequest: HotpRequest,
-        authHeader: String?,
-    ): Response<Void> = mfaApi.verifyYubikeyOtp(hotpRequest, authHeader)
+package com.passbolt.mobile.android.data.mfa
 
-    override suspend fun getDuoPromptUrl(authHeader: String?): Response<Void> = mfaApi.getDuoPromptUrl(authHeader)
+import com.passbolt.mobile.android.core.networking.NO_REDIRECT_RETROFIT_SERVICE
+import com.passbolt.mobile.android.core.networking.RestService
+import com.passbolt.mobile.android.data.mfa.datasource.remote.MfaRemoteDataSource
+import com.passbolt.mobile.android.data.mfa.datasource.remote.api.MfaApi
+import com.passbolt.mobile.android.domain.mfa.MfaDataSource
+import com.passbolt.mobile.android.domain.mfa.MfaRepository
+import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.named
+import org.koin.dsl.bind
+import org.koin.dsl.module
 
-    override suspend fun verifyDuoCallback(
-        authHeader: String?,
-        passboltDuoStateUuid: String,
-        state: String?,
-        code: String?,
-    ): Response<Void> =
-        mfaApi.verifyDuoCallback(
-            authHeader = authHeader,
-            passboltDuoState = "passbolt_duo_state=%s".format(passboltDuoStateUuid),
-            state = state,
-            code = code,
-        )
-}
+val mfaDataModule =
+    module {
+        single {
+            get<RestService>(named(NO_REDIRECT_RETROFIT_SERVICE))
+                .service(MfaApi::class.java)
+        }
+        singleOf(::MfaRemoteDataSource) bind MfaDataSource::class
+        singleOf(::MfaRepositoryImpl) bind MfaRepository::class
+    }

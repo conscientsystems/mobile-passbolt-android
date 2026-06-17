@@ -84,7 +84,7 @@ class ScanYubikeyViewModel(
                         VerifyYubikeyUseCase.Input(otp, authToken, viewState.value.rememberMe),
                     )
             ) {
-                is Failure<*> -> emitSideEffect(ShowErrorSnackbar(GENERIC))
+                is Failure -> emitSideEffect(ShowErrorSnackbar(GENERIC))
                 is NetworkFailure -> emitSideEffect(ShowErrorSnackbar(GENERIC))
                 is Success -> yubikeySuccess(result.mfaHeader)
                 is Unauthorized -> {
