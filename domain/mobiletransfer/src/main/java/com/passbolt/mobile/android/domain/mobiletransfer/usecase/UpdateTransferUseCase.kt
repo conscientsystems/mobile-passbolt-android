@@ -1,14 +1,12 @@
-package com.passbolt.mobile.android.feature.setup.scanqr.usecase
+package com.passbolt.mobile.android.domain.mobiletransfer.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import com.passbolt.mobile.android.dto.response.TransferResponseDto
-import com.passbolt.mobile.android.mappers.TransferMapper
-import com.passbolt.mobile.android.passboltapi.registration.MobileTransferRepository
+import com.passbolt.mobile.android.domain.mobiletransfer.MobileTransferRepository
+import com.passbolt.mobile.android.domain.mobiletransfer.mapper.toUiModel
 import com.passbolt.mobile.android.ui.Status
-import com.passbolt.mobile.android.ui.UpdateTransferModel
+import com.passbolt.mobile.android.ui.UpdateTransferUiModel
 import kotlinx.coroutines.withContext
 
 /**
@@ -35,21 +33,21 @@ import kotlinx.coroutines.withContext
  */
 class UpdateTransferUseCase(
     private val mobileTransferRepository: MobileTransferRepository,
-    private val transferMapper: TransferMapper,
     private val coroutineContext: CoroutineLaunchContext,
 ) : AsyncUseCase<UpdateTransferUseCase.Input, UpdateTransferUseCase.Output> {
     override suspend fun execute(input: Input): Output =
         withContext(coroutineContext.io) {
-            val response =
-                mobileTransferRepository.turnPage(
-                    input.uuid,
-                    input.authToken,
-                    transferMapper.mapRequestToDto(input.currentPage, input.status),
-                    if (input.status == Status.COMPLETE) PROFILE_INFO_REQUIRED else null,
-                )
-            when (response) {
-                is NetworkResult.Failure -> Output.Failure(response)
-                is NetworkResult.Success -> Output.Success(transferMapper.mapUpdateResponseToUi(response.value.body))
+            when (
+                val result =
+                    mobileTransferRepository.turnPage(
+                        input.uuid,
+                        input.authToken,
+                        input.currentPage,
+                        input.status,
+                    )
+            ) {
+                is DomainResult.Success -> Output.Success(result.value.toUiModel())
+                is DomainResult.Failure -> Output.Failure(result)
             }
         }
 
@@ -62,15 +60,11 @@ class UpdateTransferUseCase(
 
     sealed class Output {
         data class Success(
-            val updateTransferModel: UpdateTransferModel,
+            val updateTransferModel: UpdateTransferUiModel,
         ) : Output()
 
         data class Failure(
-            val error: NetworkResult.Failure<BaseResponse<TransferResponseDto>>,
+            val failure: DomainResult.Failure,
         ) : Output()
-    }
-
-    companion object {
-        private const val PROFILE_INFO_REQUIRED = "1"
     }
 }

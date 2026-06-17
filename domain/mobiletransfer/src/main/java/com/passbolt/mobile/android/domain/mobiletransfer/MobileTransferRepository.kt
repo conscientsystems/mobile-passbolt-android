@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.registration
-
-import com.passbolt.mobile.android.dto.request.CreateTransferRequestDto
-import com.passbolt.mobile.android.dto.request.UpdateTransferRequestDto
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import com.passbolt.mobile.android.dto.response.TransferResponseDto
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -27,26 +20,31 @@ import com.passbolt.mobile.android.dto.response.TransferResponseDto
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class MobileTransferRemoteDataSource(
-    private val mobileTransferApi: MobileTransferApi,
-) : MobileTransferDataSource {
-    override suspend fun updateTransfer(
+
+package com.passbolt.mobile.android.domain.mobiletransfer
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.mobiletransfer.model.CreateTransferModel
+import com.passbolt.mobile.android.domain.mobiletransfer.model.TransferModel
+import com.passbolt.mobile.android.domain.mobiletransfer.model.UpdateTransferModel
+import com.passbolt.mobile.android.ui.Status
+
+interface MobileTransferRepository {
+    suspend fun turnPage(
         uuid: String,
         authToken: String,
-        pageRequestDto: UpdateTransferRequestDto,
-        userProfile: String?,
-    ): BaseResponse<TransferResponseDto> = mobileTransferApi.updateTransfer(uuid, authToken, pageRequestDto, userProfile)
+        currentPage: Int,
+        status: Status,
+    ): DomainResult<UpdateTransferModel>
 
-    override suspend fun createTransfer(createTransferRequest: CreateTransferRequestDto) =
-        mobileTransferApi.createTransfer(createTransferRequest).body
+    suspend fun createTransfer(
+        totalPagesCount: Int,
+        hash: String,
+    ): DomainResult<CreateTransferModel>
 
-    override suspend fun viewTransfer(
+    suspend fun viewTransfer(
         authToken: String,
         mfaCookie: String?,
         uuid: String,
-    ) = if (mfaCookie != null) {
-        mobileTransferApi.viewTransferWithMfa(authToken, mfaCookie, uuid).body
-    } else {
-        mobileTransferApi.viewTransfer(authToken, uuid).body
-    }
+    ): DomainResult<TransferModel>
 }

@@ -1,4 +1,4 @@
-package com.passbolt.mobile.android.passboltapi.registration
+package com.passbolt.mobile.android.data.mobiletransfer.datasource.remote.api
 
 import com.passbolt.mobile.android.dto.request.CreateTransferRequestDto
 import com.passbolt.mobile.android.dto.request.UpdateTransferRequestDto

@@ -26,12 +26,14 @@ package com.passbolt.mobile.android.feature.transferaccounttodevice.transferacco
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.core.idlingresource.TransferAccountIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
+import com.passbolt.mobile.android.domain.mobiletransfer.usecase.CreateTransferUseCase
+import com.passbolt.mobile.android.domain.mobiletransfer.usecase.ViewTransferUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase.Output.JwtWillExpire
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.TransferAccountIntent.CancelTransfer
@@ -47,12 +49,10 @@ import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transf
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.TransferAccountViewModel
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data.CreateTransferInputParametersGenerator
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data.TransferQrCodesDataGenerator
-import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.usecase.CreateTransferUseCase
-import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.usecase.ViewTransferUseCase
-import com.passbolt.mobile.android.ui.CreateTransferModel
+import com.passbolt.mobile.android.ui.CreateTransferUiModel
 import com.passbolt.mobile.android.ui.Status
 import com.passbolt.mobile.android.ui.TransferAccountStatusType
-import com.passbolt.mobile.android.ui.TransferModel
+import com.passbolt.mobile.android.ui.TransferUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -77,7 +77,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
-import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import kotlin.test.assertIs
 import kotlin.time.ExperimentalTime
@@ -157,7 +156,6 @@ class TransferAccountViewModelTest : KoinTest {
     @Test
     fun `initialization should show error when create transfer fails`() =
         runTest {
-            val errorMessage = "Network error"
             val parametersGenerator: CreateTransferInputParametersGenerator = get()
             parametersGenerator.stub {
                 onBlocking { calculateCreateTransferParameters() } doReturn
@@ -172,10 +170,7 @@ class TransferAccountViewModelTest : KoinTest {
             createTransferUseCase.stub {
                 onBlocking { execute(any()) } doReturn
                     CreateTransferUseCase.Output.Failure(
-                        NetworkResult.Failure.NetworkError(
-                            UnknownHostException(),
-                            errorMessage,
-                        ),
+                        DomainResult.Failure.ServerError("Server create error", null, RuntimeException()),
                     )
             }
 
@@ -185,7 +180,7 @@ class TransferAccountViewModelTest : KoinTest {
                 val networkingErrorEffect = awaitItem()
                 assertThat(networkingErrorEffect).isInstanceOf(ShowErrorSnackbar::class.java)
                 assertThat((networkingErrorEffect as ShowErrorSnackbar).type).isEqualTo(FAILED_TO_CREATE_TRANSFER)
-                assertThat(networkingErrorEffect.errorMessage).isEqualTo(errorMessage)
+                assertThat(networkingErrorEffect.errorMessage).isEqualTo("Server create error")
             }
         }
 
@@ -301,15 +296,11 @@ class TransferAccountViewModelTest : KoinTest {
         runTest {
             setupSuccessfulInitialization()
 
-            val errorMessage = "Failed to fetch transfer"
             val viewTransferUseCase: ViewTransferUseCase = get()
             viewTransferUseCase.stub {
                 onBlocking { execute(any()) } doReturn
                     ViewTransferUseCase.Output.Failure(
-                        NetworkResult.Failure.NetworkError(
-                            UnknownHostException(),
-                            errorMessage,
-                        ),
+                        DomainResult.Failure.ServerError("Server fetch error", null, RuntimeException()),
                     )
             }
 
@@ -321,7 +312,7 @@ class TransferAccountViewModelTest : KoinTest {
                 val effect = awaitItem()
                 assertThat(effect).isInstanceOf(ShowErrorSnackbar::class.java)
                 assertThat((effect as ShowErrorSnackbar).type).isEqualTo(FAILED_TO_FETCH_TRANSFER_DETAILS)
-                assertThat(effect.errorMessage).isEqualTo(errorMessage)
+                assertThat(effect.errorMessage).isEqualTo("Server fetch error")
             }
 
             viewModel.cancelPollingForTests()
@@ -501,7 +492,7 @@ class TransferAccountViewModelTest : KoinTest {
         private const val TEST_AUTH_TOKEN = "auth-token-123"
 
         private val TEST_CREATE_TRANSFER_MODEL =
-            CreateTransferModel(
+            CreateTransferUiModel(
                 id = TEST_TRANSFER_ID,
                 status = Status.START,
                 currentPage = 0,
@@ -511,7 +502,7 @@ class TransferAccountViewModelTest : KoinTest {
             )
 
         private val TEST_TRANSFER_MODEL =
-            TransferModel(
+            TransferUiModel(
                 id = TEST_TRANSFER_ID,
                 status = Status.IN_PROGRESS,
                 currentPage = 0,

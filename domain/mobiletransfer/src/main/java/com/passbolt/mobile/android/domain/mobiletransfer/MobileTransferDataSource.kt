@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.registration
-
-import com.passbolt.mobile.android.dto.request.CreateTransferRequestDto
-import com.passbolt.mobile.android.dto.request.UpdateTransferRequestDto
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import com.passbolt.mobile.android.dto.response.CreateTransferResponseDto
-import com.passbolt.mobile.android.dto.response.TransferResponseDto
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,19 +21,30 @@ import com.passbolt.mobile.android.dto.response.TransferResponseDto
  * @since v1.0
  */
 
+package com.passbolt.mobile.android.domain.mobiletransfer
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.mobiletransfer.model.CreateTransferModel
+import com.passbolt.mobile.android.domain.mobiletransfer.model.TransferModel
+import com.passbolt.mobile.android.domain.mobiletransfer.model.UpdateTransferModel
+import com.passbolt.mobile.android.ui.Status
+
 interface MobileTransferDataSource {
     suspend fun updateTransfer(
         uuid: String,
         authToken: String,
-        pageRequestDto: UpdateTransferRequestDto,
-        userProfile: String?,
-    ): BaseResponse<TransferResponseDto>
+        currentPage: Int,
+        status: Status,
+    ): DomainResult<UpdateTransferModel>
 
-    suspend fun createTransfer(createTransferRequest: CreateTransferRequestDto): CreateTransferResponseDto
+    suspend fun createTransfer(
+        totalPagesCount: Int,
+        hash: String,
+    ): DomainResult<CreateTransferModel>
 
     suspend fun viewTransfer(
         authToken: String,
         mfaCookie: String?,
         uuid: String,
-    ): TransferResponseDto
+    ): DomainResult<TransferModel>
 }
