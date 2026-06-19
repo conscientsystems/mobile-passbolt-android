@@ -204,6 +204,7 @@ dependencies {
     implementation(project(":share-data"))
     implementation(project(":share-domain"))
     implementation(project(":mfa-data"))
+    implementation(project(":resourcetypes-data"))
     implementation(project(":pwnedpasswordsapi"))
     implementation(project(":passwordgenerator"))
     implementation(project(":metadata"))

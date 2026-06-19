@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.resourcetypes
-
-import com.passbolt.mobile.android.core.networking.RestService
-import org.koin.core.module.Module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,20 +21,15 @@ import org.koin.core.module.Module
  * @since v1.0
  */
 
-internal fun Module.resourceTypesApiModule() {
-    single {
-        ResourceTypesRepository(
-            resourceTypesDataSource = get(),
-            responseHandler = get(),
-        )
-    }
-    single<ResourceTypesDataSource> {
-        ResourceTypesRemoteDataSource(
-            resourceTypesApi = get(),
-        )
-    }
-    single {
-        get<RestService>()
-            .service(ResourceTypesApi::class.java)
-    }
-}
+package com.passbolt.mobile.android.domain.resourcetypes.mapper
+
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
+import com.passbolt.mobile.android.ui.ResourceTypeModel
+
+fun ResourceType.toUiModel(): ResourceTypeModel =
+    ResourceTypeModel(
+        id = id,
+        slug = slug,
+        name = name,
+        deleted = deleted,
+    )

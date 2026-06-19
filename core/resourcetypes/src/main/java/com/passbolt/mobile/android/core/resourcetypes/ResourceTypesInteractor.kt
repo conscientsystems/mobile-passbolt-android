@@ -1,11 +1,13 @@
 package com.passbolt.mobile.android.core.resourcetypes
 
 import android.database.SQLException
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.RebuildLocalResourceTypesUseCase
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
+import com.passbolt.mobile.android.domain.resourcetypes.RefreshResourceTypesRepository
 import timber.log.Timber
 
 /**
@@ -31,34 +33,29 @@ import timber.log.Timber
  * @since v1.0
  */
 class ResourceTypesInteractor(
-    private val fetchResourceTypesUseCase: GetResourceTypesUseCase,
-    private val rebuildLocalResourceTypesUseCase: RebuildLocalResourceTypesUseCase,
+    private val refreshResourceTypesRepository: RefreshResourceTypesRepository,
     private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) {
     suspend fun fetchAndSaveResourceTypes(): Output =
-        when (val fetched = fetchResourceTypesUseCase.execute(Unit)) {
-            is GetResourceTypesUseCase.Output.Failure -> Output.Failure(fetched.authenticationState)
-            is GetResourceTypesUseCase.Output.Success -> {
-                try {
-                    rebuildLocalResourceTypesUseCase.execute(
-                        RebuildLocalResourceTypesUseCase.Input(
-                            fetched.resourceTypes,
-                        ),
-                    )
+        try {
+            when (val result = refreshResourceTypesRepository.refreshResourceTypes()) {
+                is DomainResult.Incomplete -> Output.Failure(result)
+                is DomainResult.Finished -> {
                     resourceTypeIdToSlugMappingProvider.invalidateSelectedUserMapping()
                     Output.Success
-                } catch (exception: SQLException) {
-                    Timber.e(exception, "There was an error during resource types db insert")
-                    Output.Failure(fetched.authenticationState)
                 }
             }
+        } catch (exception: SQLException) {
+            Timber.e(exception, "There was an error during resource types db insert")
+            Output.Failure(DomainResult.Incomplete.Error(UNKNOWN, exception.message))
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
         data object Success : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
-            override val authenticationState: AuthenticationState,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

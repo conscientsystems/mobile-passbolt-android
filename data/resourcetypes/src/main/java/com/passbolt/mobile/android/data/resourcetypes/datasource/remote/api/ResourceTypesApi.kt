@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.resourcetypes
-
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,12 +20,18 @@ import com.passbolt.mobile.android.core.networking.callWithHandler
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class ResourceTypesRepository(
-    private val resourceTypesDataSource: ResourceTypesDataSource,
-    private val responseHandler: ResponseHandler,
-) {
-    suspend fun getResourceTypes() =
-        callWithHandler(responseHandler) {
-            resourceTypesDataSource.getResourceTypes()
-        }
+
+package com.passbolt.mobile.android.data.resourcetypes.datasource.remote.api
+
+import com.passbolt.mobile.android.dto.response.BaseResponse
+import com.passbolt.mobile.android.dto.response.ResourceTypeDto
+import retrofit2.http.GET
+
+internal interface ResourceTypesApi {
+    @GET(GET_RESOURCE_TYPES)
+    suspend fun getResourceTypes(): BaseResponse<List<ResourceTypeDto>>
+
+    private companion object {
+        private const val GET_RESOURCE_TYPES = "resource-types.json"
+    }
 }

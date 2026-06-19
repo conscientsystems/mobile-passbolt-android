@@ -1,9 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.resourcetypes
-
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import com.passbolt.mobile.android.dto.response.ResourceTypeDto
-import retrofit2.http.GET
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -27,11 +21,24 @@ import retrofit2.http.GET
  * @since v1.0
  */
 
-internal interface ResourceTypesApi {
-    @GET(GET_RESOURCE_TYPES)
-    suspend fun getResourceTypes(): BaseResponse<List<ResourceTypeDto>>
+package com.passbolt.mobile.android.data.resourcetypes.mapper
 
-    private companion object {
-        private const val GET_RESOURCE_TYPES = "resource-types.json"
-    }
-}
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
+import java.util.UUID
+import com.passbolt.mobile.android.entity.resource.ResourceType as ResourceTypeEntity
+
+fun ResourceType.toEntity(): ResourceTypeEntity =
+    ResourceTypeEntity(
+        resourceTypeId = id.toString(),
+        name = name,
+        slug = slug,
+        deleted = deleted,
+    )
+
+fun ResourceTypeEntity.toDomain(): ResourceType =
+    ResourceType(
+        id = UUID.fromString(resourceTypeId),
+        slug = slug,
+        name = name,
+        deleted = deleted,
+    )

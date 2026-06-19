@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.passboltapi.resourcetypes
-
-import com.passbolt.mobile.android.dto.response.BaseResponse
-import com.passbolt.mobile.android.dto.response.ResourceTypeDto
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,8 +20,22 @@ import com.passbolt.mobile.android.dto.response.ResourceTypeDto
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class ResourceTypesRemoteDataSource(
-    private val resourceTypesApi: ResourceTypesApi,
-) : ResourceTypesDataSource {
-    override suspend fun getResourceTypes(): BaseResponse<List<ResourceTypeDto>> = resourceTypesApi.getResourceTypes()
+
+package com.passbolt.mobile.android.data.resourcetypes
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.resourcetypes.RefreshResourceTypesRepository
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
+
+internal class RefreshResourceTypesRepositoryImpl(
+    private val localDataSource: ResourceTypesDataSource,
+    private val remoteDataSource: ResourceTypesDataSource,
+) : RefreshResourceTypesRepository {
+    override suspend fun refreshResourceTypes(): DomainResult<List<ResourceType>> =
+        remoteDataSource.getResourceTypes().also {
+            if (it is DomainResult.Finished) {
+                localDataSource.setResourceTypes(it.value)
+            }
+        }
 }
