@@ -24,8 +24,8 @@
 package com.passbolt.mobile.android.core.resourcetypes.usecase.db
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
-import com.passbolt.mobile.android.database.DatabaseProvider
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRepository
 import java.util.UUID
 
 /**
@@ -33,21 +33,13 @@ import java.util.UUID
  * @see ResourceTypeIdToSlugMappingProvider
  */
 class GetResourceTypeIdToSlugMappingUseCase(
-    private val databaseProvider: DatabaseProvider,
-) : AsyncUseCase<Unit, GetResourceTypeIdToSlugMappingUseCase.Output>,
-    SelectedAccountUseCase {
-    override suspend fun execute(input: Unit) =
-        Output(
-            databaseProvider
-                .get(selectedAccountId)
-                .resourceTypesDao()
-                .getResourceTypesIdToSlugMapping()
-                .let {
-                    buildMap(it.size) {
-                        putAll(it.map { UUID.fromString(it.resourceTypeId) to it.slug })
-                    }
-                },
-        )
+    private val resourceTypesRepository: ResourceTypesRepository,
+) : AsyncUseCase<Unit, GetResourceTypeIdToSlugMappingUseCase.Output> {
+    override suspend fun execute(input: Unit): Output =
+        when (val result = resourceTypesRepository.getResourceTypeIdToSlugMapping()) {
+            is DomainResult.Finished -> Output(result.value)
+            is DomainResult.Incomplete -> Output(emptyMap())
+        }
 
     data class Output(
         val idToSlugMapping: Map<UUID, String>,

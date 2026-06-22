@@ -32,9 +32,7 @@ val resourceTypesModule =
     module {
         resourceTypesDbModule()
 
-        singleOf(::GetResourceTypesUseCase)
         singleOf(::ResourceTypesInteractor)
 
-        singleOf(::ResourceTypesUpdatesAdjacencyGraph)
         singleOf(::ResourceTypesUpdatesAdjacencyGraph)
     }

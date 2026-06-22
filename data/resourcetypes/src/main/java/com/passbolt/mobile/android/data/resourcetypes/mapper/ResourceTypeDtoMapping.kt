@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.core.resourcetypes.usecase.db
-
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.singleOf
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,8 +21,18 @@ import org.koin.core.module.dsl.singleOf
  * @since v1.0
  */
 
-internal fun Module.resourceTypesDbModule() {
-    singleOf(::GetResourceTypeIdToSlugMappingUseCase)
-    singleOf(::ResourceTypeIdToSlugMappingProvider)
-    singleOf(::GetLocalResourceTypesUseCase)
-}
+package com.passbolt.mobile.android.data.resourcetypes.mapper
+
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
+import com.passbolt.mobile.android.dto.response.ResourceTypeDto
+import java.time.ZonedDateTime
+
+fun List<ResourceTypeDto>.toDomain(): List<ResourceType> = map { it.toResourceType() }
+
+private fun ResourceTypeDto.toResourceType(): ResourceType =
+    ResourceType(
+        id = id,
+        slug = slug,
+        name = name,
+        deleted = deleted?.let { ZonedDateTime.parse(it) },
+    )

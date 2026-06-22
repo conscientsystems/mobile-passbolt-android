@@ -63,6 +63,7 @@ import com.passbolt.mobile.android.data.mobiletransfer.mobileTransferDataModule
 import com.passbolt.mobile.android.data.passwordexpiry.passwordExpiryDataModule
 import com.passbolt.mobile.android.data.passwordpolicies.passwordPoliciesDataModule
 import com.passbolt.mobile.android.data.rbac.rbacDataModule
+import com.passbolt.mobile.android.data.resourcetypes.resourceTypesDataModule
 import com.passbolt.mobile.android.data.share.shareDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
@@ -163,6 +164,7 @@ class KoinInitializer : Initializer<Unit> {
                 resourceMoreMenuModule,
                 fullDataRefreshModule,
                 resourceTypesModule,
+                resourceTypesDataModule,
                 notificationsModule,
                 autofillModule,
                 inAppReviewModule,

@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.core.resourcetypes.usecase.db
-
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.singleOf
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,8 +21,24 @@ import org.koin.core.module.dsl.singleOf
  * @since v1.0
  */
 
-internal fun Module.resourceTypesDbModule() {
-    singleOf(::GetResourceTypeIdToSlugMappingUseCase)
-    singleOf(::ResourceTypeIdToSlugMappingProvider)
-    singleOf(::GetLocalResourceTypesUseCase)
+package com.passbolt.mobile.android.data.resourcetypes.datasource.remote
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.map
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.core.networking.toDomainResult
+import com.passbolt.mobile.android.data.resourcetypes.datasource.remote.api.ResourceTypesApi
+import com.passbolt.mobile.android.data.resourcetypes.mapper.toDomain
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
+
+internal class ResourceTypesRemoteDataSource(
+    private val resourceTypesApi: ResourceTypesApi,
+    private val responseHandler: ResponseHandler,
+) : ResourceTypesDataSource {
+    override suspend fun getResourceTypes(): DomainResult<List<ResourceType>> =
+        callWithHandler(responseHandler) { resourceTypesApi.getResourceTypes().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

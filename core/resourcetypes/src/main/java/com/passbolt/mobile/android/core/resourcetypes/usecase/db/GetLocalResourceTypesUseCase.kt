@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.core.resourcetypes.usecase.db
-
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
-import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.mappers.ResourceTypesModelMapper
-import com.passbolt.mobile.android.ui.ResourceTypeModel
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,21 +20,23 @@ import com.passbolt.mobile.android.ui.ResourceTypeModel
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class GetLocalResourceTypesUseCase(
-    private val databaseProvider: DatabaseProvider,
-    private val resourceTypesModelMapper: ResourceTypesModelMapper,
-) : AsyncUseCase<Unit, GetLocalResourceTypesUseCase.Output>,
-    SelectedAccountUseCase {
-    override suspend fun execute(input: Unit): Output {
-        val resourceTypes =
-            databaseProvider
-                .get(selectedAccountId)
-                .resourceTypesDao()
-                .getAll()
-                .map(resourceTypesModelMapper::map)
 
-        return Output(resourceTypes)
-    }
+package com.passbolt.mobile.android.core.resourcetypes.usecase.db
+
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRepository
+import com.passbolt.mobile.android.domain.resourcetypes.mapper.toUiModel
+import com.passbolt.mobile.android.ui.ResourceTypeModel
+
+class GetLocalResourceTypesUseCase(
+    private val resourceTypesRepository: ResourceTypesRepository,
+) : AsyncUseCase<Unit, GetLocalResourceTypesUseCase.Output> {
+    override suspend fun execute(input: Unit): Output =
+        when (val result = resourceTypesRepository.getResourceTypes()) {
+            is DomainResult.Finished -> Output(result.value.map { it.toUiModel() })
+            is DomainResult.Incomplete -> Output(emptyList())
+        }
 
     data class Output(
         val resourceTypes: List<ResourceTypeModel>,
