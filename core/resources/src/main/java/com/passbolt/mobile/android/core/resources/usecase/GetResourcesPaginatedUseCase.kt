@@ -1,12 +1,12 @@
 package com.passbolt.mobile.android.core.resources.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
-import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
 import com.passbolt.mobile.android.dto.response.Pagination
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
@@ -45,12 +45,12 @@ class GetResourcesPaginatedUseCase(
 ) : AsyncUseCase<GetResourcesPaginatedUseCase.Input, GetResourcesPaginatedUseCase.Output> {
     override suspend fun execute(input: Input): Output {
         val slugMapping = resourceTypeIdToSlugMappingProvider.provideMappingForSelectedAccount()
-        return when (val response = resourceRepository.getResourcesPaginated(input.limit, input.page)) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success ->
+        return when (val result = resourceRepository.getResourcesPaginated(input.limit, input.page).toDomainResult()) {
+            is DomainResult.Incomplete -> Output.Failure(result)
+            is DomainResult.Finished ->
                 Output.Success(
-                    pagination = response.value.header.pagination,
-                    response.value.body.map {
+                    pagination = result.value.header.pagination,
+                    result.value.body.map {
                         val slug = requireNotNull(slugMapping[it.resourceTypeId])
                         ResourceModelWithAttributes(
                             resourceModelMapper.map(it, slug = slug),
@@ -69,33 +69,15 @@ class GetResourcesPaginatedUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.exception is PassphraseNotInCacheException -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Passphrase)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
-                }
-
         data class Success(
             val pagination: Pagination,
             val resources: List<ResourceModelWithAttributes>,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
-        class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.GetResourcesPaginatedUseCase.Output.Failure
 import com.passbolt.mobile.android.core.resources.usecase.GetResourcesPaginatedUseCase.Output.Success
@@ -79,7 +80,7 @@ class ResourceInteractor(
                 )
 
             when (firstPageResult) {
-                is Failure<*> -> return Output.Failure(firstPageResult.authenticationState)
+                is Failure -> return Output.Failure(firstPageResult.authenticationState)
                 is Success -> {
                     // process first page
                     processResources(firstPageResult.resources)
@@ -94,7 +95,7 @@ class ResourceInteractor(
                                     GetResourcesPaginatedUseCase.Input(page = page, limit = pageSize),
                                 )
                         ) {
-                            is Failure<*> -> return Output.Failure(pageResult.authenticationState)
+                            is Failure -> return Output.Failure(pageResult.authenticationState)
                             is Success -> processResources(pageResult.resources)
                         }
                     }
@@ -132,10 +133,7 @@ class ResourceInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success : Output(), CompleteAuthenticatedOutput
 
         class Failure(
             override val authenticationState: AuthenticationState,

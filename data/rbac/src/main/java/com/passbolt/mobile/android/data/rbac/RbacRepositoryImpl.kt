@@ -36,7 +36,7 @@ internal class RbacRepositoryImpl(
 
     override suspend fun refreshRbac(): DomainResult<Rbac> =
         remoteDataSource.getRbac().also {
-            if (it is DomainResult.Success) {
+            if (it is DomainResult.Finished) {
                 localDataSource.setRbac(it.value)
             }
         }

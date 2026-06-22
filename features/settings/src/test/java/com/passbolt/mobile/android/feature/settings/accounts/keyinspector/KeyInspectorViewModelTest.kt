@@ -27,6 +27,7 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.formatter.DateFormatter
 import com.passbolt.mobile.android.core.formatter.FingerprintFormatter
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
@@ -69,7 +70,6 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
-import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.time.ExperimentalTime
@@ -165,7 +165,7 @@ class KeyInspectorViewModelTest : KoinTest {
             fetchCurrentUserUseCase.stub {
                 onBlocking { execute(Unit) }.thenReturn(
                     FetchCurrentUserUseCase.Output.Failure(
-                        DomainResult.Failure.Unknown(UnknownHostException(errorMessage)),
+                        DomainResult.Incomplete.Error(UNKNOWN, errorMessage),
                     ),
                 )
             }

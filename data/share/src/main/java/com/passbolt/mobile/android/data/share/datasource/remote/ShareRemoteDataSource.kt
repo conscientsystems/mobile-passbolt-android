@@ -24,10 +24,10 @@
 package com.passbolt.mobile.android.data.share.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.share.datasource.remote.api.ShareApi
 import com.passbolt.mobile.android.data.share.mapper.toDomain
 import com.passbolt.mobile.android.data.share.mapper.toDto
@@ -47,46 +47,28 @@ internal class ShareRemoteDataSource(
         resourceId: String,
         permissions: List<SharePermission>,
     ): DomainResult<ShareChanges> =
-        when (
-            val result =
-                callWithHandler(responseHandler) {
-                    shareApi.simulateShareResource(resourceId, SimulateShareRequest(permissions.map { it.toDto() })).body
-                }
-        ) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) {
+            shareApi.simulateShareResource(resourceId, SimulateShareRequest(permissions.map { it.toDto() })).body
+        }.toDomainResult().map { it.toDomain() }
 
     override suspend fun shareResource(
         resourceId: String,
         permissions: List<SharePermission>,
         secrets: List<EncryptedSecret>,
     ): DomainResult<Unit> =
-        when (
-            val result =
-                callWithHandler(responseHandler) {
-                    shareApi
-                        .shareResource(
-                            resourceId,
-                            ResourceShareRequest(permissions.map { it.toDto() }, secrets.map { it.toDto() }),
-                        ).body
-                }
-        ) {
-            is NetworkResult.Success -> DomainResult.Success(Unit)
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) {
+            shareApi
+                .shareResource(
+                    resourceId,
+                    ResourceShareRequest(permissions.map { it.toDto() }, secrets.map { it.toDto() }),
+                ).body
+        }.toDomainResult()
 
     override suspend fun shareFolder(
         folderId: String,
         permissions: List<SharePermission>,
     ): DomainResult<Unit> =
-        when (
-            val result =
-                callWithHandler(responseHandler) {
-                    shareApi.shareFolder(folderId, FolderShareRequest(permissions.map { it.toDto() })).body
-                }
-        ) {
-            is NetworkResult.Success -> DomainResult.Success(Unit)
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) {
+            shareApi.shareFolder(folderId, FolderShareRequest(permissions.map { it.toDto() })).body
+        }.toDomainResult()
 }

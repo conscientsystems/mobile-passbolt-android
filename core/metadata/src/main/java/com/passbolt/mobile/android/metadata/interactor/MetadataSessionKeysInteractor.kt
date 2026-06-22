@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedU
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
@@ -72,7 +73,7 @@ class MetadataSessionKeysInteractor(
                     Output.Failure(AuthenticationState.Unauthenticated(Passphrase))
                 }
             }
-            is FetchMetadataSessionKeysUseCase.Output.Failure<*> ->
+            is FetchMetadataSessionKeysUseCase.Output.Failure ->
                 Output.Failure(response.authenticationState)
         }
 
@@ -179,7 +180,7 @@ class MetadataSessionKeysInteractor(
                 PostMetadataSessionKeysUseCase.Input(encryptedData),
             )
         ) {
-            is PostMetadataSessionKeysUseCase.Output.Failure<*> -> {
+            is PostMetadataSessionKeysUseCase.Output.Failure -> {
                 Timber.e("Error when posting session keys cache")
                 // error when processing session key is not blocking
                 Output.Success
@@ -205,7 +206,7 @@ class MetadataSessionKeysInteractor(
                 ),
             )
         ) {
-            is UpdateMetadataSessionKeysUseCase.Output.Failure<*> -> {
+            is UpdateMetadataSessionKeysUseCase.Output.Failure -> {
                 Timber.e("Error when updating session keys cache")
                 // error when processing session key is not blocking
                 Output.Success
@@ -301,10 +302,9 @@ class MetadataSessionKeysInteractor(
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success :
+            Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
             override val authenticationState: AuthenticationState,

@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.domain.favourites.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.domain.favourites.FavouritesRepository
 import kotlinx.coroutines.test.runTest
@@ -68,7 +69,7 @@ class RemoveFromFavouritesUseCaseTest : KoinTest {
     @Test
     fun `success stays authenticated`() =
         runTest {
-            repository.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(DomainResult.Success(Unit)) }
+            repository.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(DomainResult.Finished(Unit)) }
 
             val output = useCase.execute(RemoveFromFavouritesUseCase.Input(FAVOURITE_ID))
 
@@ -79,7 +80,7 @@ class RemoveFromFavouritesUseCaseTest : KoinTest {
     @Test
     fun `unauthorized failure surfaces as session re-auth`() =
         runTest {
-            val failure = DomainResult.Failure.Unauthorized
+            val failure = DomainResult.Incomplete.Unauthorized
             repository.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(failure) }
 
             val output = useCase.execute(RemoveFromFavouritesUseCase.Input(FAVOURITE_ID))
@@ -94,7 +95,7 @@ class RemoveFromFavouritesUseCaseTest : KoinTest {
     fun `mfa-required failure surfaces with mfa providers`() =
         runTest {
             val providers = emptyList<AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider?>()
-            val failure = DomainResult.Failure.MfaRequired(providers)
+            val failure = DomainResult.Incomplete.MfaRequired(providers)
             repository.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(failure) }
 
             val output = useCase.execute(RemoveFromFavouritesUseCase.Input(FAVOURITE_ID))
@@ -108,7 +109,7 @@ class RemoveFromFavouritesUseCaseTest : KoinTest {
     @Test
     fun `unknown failure stays authenticated`() =
         runTest {
-            val failure = DomainResult.Failure.Unknown(RuntimeException("boom"))
+            val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             repository.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(failure) }
 
             val output = useCase.execute(RemoveFromFavouritesUseCase.Input(FAVOURITE_ID))

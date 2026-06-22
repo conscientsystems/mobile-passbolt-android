@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.feature.resourceform.main
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
@@ -1797,7 +1798,7 @@ class ResourceFormViewModelTest : KoinTest {
             }
             mockCheckPasswordPropertiesUseCase.stub {
                 onBlocking { execute(any()) }.thenReturn(
-                    mock<CheckPasswordPropertiesUseCase.Output.Failure<Any>>(),
+                    CheckPasswordPropertiesUseCase.Output.Failure,
                 )
             }
             mockResourceCreateActionsInteractor.stub {
@@ -2021,7 +2022,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { fetchAndSavePasswordExpiryPolicies() }
                     .thenReturn(
                         PasswordExpiryPoliciesInteractor.Output.Failure.FetchFailure(
-                            DomainResult.Failure.Unknown(RuntimeException("boom")),
+                            DomainResult.Incomplete.Error(UNKNOWN, "boom"),
                         ),
                     )
             }

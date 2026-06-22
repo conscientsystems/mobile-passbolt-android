@@ -46,8 +46,8 @@ class UpdateTransferUseCase(
                         input.status,
                     )
             ) {
-                is DomainResult.Success -> Output.Success(result.value.toUiModel())
-                is DomainResult.Failure -> Output.Failure(result)
+                is DomainResult.Finished -> Output.Success(result.value.toUiModel())
+                is DomainResult.Incomplete -> Output.Failure(result)
             }
         }
 
@@ -64,7 +64,7 @@ class UpdateTransferUseCase(
         ) : Output()
 
         data class Failure(
-            val failure: DomainResult.Failure,
+            val incomplete: DomainResult.Incomplete,
         ) : Output()
     }
 }

@@ -2,6 +2,7 @@ package com.passbolt.mobile.android.metadata.interactor
 
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.metadata.usecase.FetchMetadataKeysSettingsUseCase
 import com.passbolt.mobile.android.metadata.usecase.SaveMetadataKeysSettingsUseCase
 import com.passbolt.mobile.android.ui.MetadataKeysSettingsModel
@@ -38,7 +39,7 @@ class MetadataKeysSettingsInteractor(
             is FetchMetadataKeysSettingsUseCase.Output.Success -> {
                 saveMetadataKeysSettings(response.metadataKeysSettings)
             }
-            is FetchMetadataKeysSettingsUseCase.Output.Failure<*> ->
+            is FetchMetadataKeysSettingsUseCase.Output.Failure ->
                 Output.Failure(response.authenticationState)
         }
 
@@ -48,10 +49,9 @@ class MetadataKeysSettingsInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success :
+            Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
             override val authenticationState: AuthenticationState,

@@ -34,10 +34,10 @@ internal class PasswordPoliciesRepositoryImpl(
 ) : PasswordPoliciesRepository {
     override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> =
         when (val memory = memoryDataSource.getPasswordPolicies()) {
-            is DomainResult.Success -> memory
-            is DomainResult.Failure ->
+            is DomainResult.Finished -> memory
+            is DomainResult.Incomplete ->
                 remoteDataSource.getPasswordPolicies().also {
-                    if (it is DomainResult.Success) {
+                    if (it is DomainResult.Finished) {
                         setPasswordPolicies(it.value)
                     }
                 }

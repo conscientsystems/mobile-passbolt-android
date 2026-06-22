@@ -24,23 +24,28 @@
 package com.passbolt.mobile.android.core.networking
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.OFFLINE
-import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.TIMEOUT
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.SERVER
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
+import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
 
-fun NetworkResult.Failure<*>.toDomainFailure(): DomainResult.Failure =
-    when {
-        isUnauthorized -> DomainResult.Failure.Unauthorized
-        isMfaRequired -> toMfaRequiredFailure()
-        isNoNetworkException || this is NetworkResult.Failure.NetworkError ->
-            DomainResult.Failure.NetworkError(OFFLINE, exception)
-        isServerNotReachable ->
-            DomainResult.Failure.NetworkError(TIMEOUT, exception)
-        this is NetworkResult.Failure.ServerError ->
-            DomainResult.Failure.ServerError(headerMessage, errorCode, exception)
-        else -> DomainResult.Failure.Unknown(exception)
+fun <T : Any> NetworkResult<T>.toDomainResult(): DomainResult<T> =
+    when (this) {
+        is NetworkResult.Success -> DomainResult.Finished(value)
+        is NetworkResult.Failure -> toIncomplete()
     }
 
-fun NetworkResult.Failure<*>.toMfaRequiredFailure(): DomainResult.Failure.MfaRequired =
-    DomainResult.Failure.MfaRequired(
-        providers = MfaTypeProvider.get(this),
-    )
+private fun NetworkResult.Failure<*>.toIncomplete(): DomainResult.Incomplete =
+    when {
+        isUnauthorized -> DomainResult.Incomplete.Unauthorized
+        isMfaRequired -> DomainResult.Incomplete.MfaRequired(MfaTypeProvider.get(this))
+        exception is PassphraseNotInCacheException -> DomainResult.Incomplete.PassphraseNotInCache
+        isNoNetworkException || this is NetworkResult.Failure.NetworkError ->
+            DomainResult.Incomplete.Error(OFFLINE, null)
+        isServerNotReachable ->
+            DomainResult.Incomplete.Error(TIMEOUT, null)
+        this is NetworkResult.Failure.ServerError ->
+            DomainResult.Incomplete.Error(SERVER, headerMessage)
+        else -> DomainResult.Incomplete.Error(UNKNOWN, exception.message)
+    }

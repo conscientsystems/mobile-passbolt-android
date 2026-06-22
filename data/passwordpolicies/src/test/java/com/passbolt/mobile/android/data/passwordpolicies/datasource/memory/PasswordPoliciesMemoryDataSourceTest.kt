@@ -76,7 +76,7 @@ class PasswordPoliciesMemoryDataSourceTest : KoinTest {
         runTest {
             mockSelectedAccount("userA")
 
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Failure.NotCached)
+            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
@@ -85,7 +85,7 @@ class PasswordPoliciesMemoryDataSourceTest : KoinTest {
             mockSelectedAccount("userA")
             dataSource.setPasswordPolicies(defaultPolicies)
 
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Success(defaultPolicies))
+            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Finished(defaultPolicies))
         }
 
     @Test
@@ -96,7 +96,7 @@ class PasswordPoliciesMemoryDataSourceTest : KoinTest {
 
             mockSelectedAccount("userB")
 
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Failure.NotCached)
+            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
@@ -108,8 +108,8 @@ class PasswordPoliciesMemoryDataSourceTest : KoinTest {
             dataSource.setPasswordPolicies(policiesWithDisabledExternalCheck)
 
             mockSelectedAccount("userA")
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Success(defaultPolicies))
+            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Finished(defaultPolicies))
             mockSelectedAccount("userB")
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Success(policiesWithDisabledExternalCheck))
+            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Finished(policiesWithDisabledExternalCheck))
         }
 }

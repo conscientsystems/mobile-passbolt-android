@@ -26,41 +26,34 @@ package com.passbolt.mobile.android.core.architecture.result
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider
 
 sealed interface DomainResult<out T> {
-    data class Success<out T>(
+    data class Finished<out T>(
         val value: T,
     ) : DomainResult<T>
 
-    sealed interface Failure : DomainResult<Nothing> {
-        data object Unauthorized : Failure
+    sealed interface Incomplete : DomainResult<Nothing> {
+        data object Unauthorized : Incomplete
 
         data class MfaRequired(
             val providers: List<MfaProvider?>?,
-        ) : Failure
+        ) : Incomplete
 
-        data object NotCached : Failure
+        data object NotCached : Incomplete
 
-        data class ServerError(
-            val message: String,
-            val errorCode: Int?,
-            val cause: Throwable,
-        ) : Failure
+        data object PassphraseNotInCache : Incomplete
 
-        data class NetworkError(
+        data class Error(
             val reason: Reason,
-            val cause: Throwable,
-        ) : Failure {
-            enum class Reason { OFFLINE, TIMEOUT }
+            val message: String?,
+        ) : Incomplete {
+            enum class Reason { OFFLINE, TIMEOUT, SERVER, UNKNOWN }
         }
-
-        data class Unknown(
-            val cause: Throwable,
-        ) : Failure
     }
 }
 
-fun DomainResult.Failure.displayMessage(): String? =
+fun DomainResult.Incomplete.displayMessage(): String? = (this as? DomainResult.Incomplete.Error)?.message
+
+inline fun <T, R> DomainResult<T>.map(transform: (T) -> R): DomainResult<R> =
     when (this) {
-        is DomainResult.Failure.ServerError -> message
-        is DomainResult.Failure.Unknown -> cause.message
-        else -> null
+        is DomainResult.Finished -> DomainResult.Finished(transform(value))
+        is DomainResult.Incomplete -> this
     }

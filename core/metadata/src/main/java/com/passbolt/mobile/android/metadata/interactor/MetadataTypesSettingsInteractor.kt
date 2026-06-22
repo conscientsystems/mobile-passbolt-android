@@ -2,6 +2,7 @@ package com.passbolt.mobile.android.metadata.interactor
 
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.metadata.usecase.FetchMetadataTypesSettingsUseCase
 import com.passbolt.mobile.android.metadata.usecase.SaveMetadataTypesSettingsUseCase
 import com.passbolt.mobile.android.ui.MetadataTypesSettingsModel
@@ -38,7 +39,7 @@ class MetadataTypesSettingsInteractor(
             is FetchMetadataTypesSettingsUseCase.Output.Success -> {
                 saveMetadataTypesSettings(response.metadataTypesSettings)
             }
-            is FetchMetadataTypesSettingsUseCase.Output.Failure<*> ->
+            is FetchMetadataTypesSettingsUseCase.Output.Failure ->
                 Output.Failure(response.authenticationState)
         }
 
@@ -48,10 +49,9 @@ class MetadataTypesSettingsInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success :
+            Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
             override val authenticationState: AuthenticationState,

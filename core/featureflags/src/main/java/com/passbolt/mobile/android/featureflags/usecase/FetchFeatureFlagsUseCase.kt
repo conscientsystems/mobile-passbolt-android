@@ -34,7 +34,7 @@ class FetchFeatureFlagsUseCase(
 ) : AsyncUseCase<Unit, FetchFeatureFlagsUseCase.Output> {
     override suspend fun execute(input: Unit): Output =
         when (val response = settingsRepository.getSettings()) {
-            is NetworkResult.Failure -> Output.Failure(response)
+            is NetworkResult.Failure -> Output.Failure
             is NetworkResult.Success -> {
                 Output.Success(featureFlagsMapper.map(response.value.body))
             }
@@ -45,8 +45,6 @@ class FetchFeatureFlagsUseCase(
             val featureFlags: FeatureFlagsModel,
         ) : Output()
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data object Failure : Output()
     }
 }

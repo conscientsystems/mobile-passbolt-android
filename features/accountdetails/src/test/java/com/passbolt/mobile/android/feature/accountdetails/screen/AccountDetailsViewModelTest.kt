@@ -30,6 +30,7 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelected
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
@@ -138,7 +139,7 @@ class AccountDetailsViewModelTest : KoinTest {
             userProfileInteractor.stub {
                 onBlocking { fetchAndUpdateUserProfile() } doReturn
                     UserProfileInteractor.Output.Failure(
-                        DomainResult.Failure.Unknown(RuntimeException(PROFILE_ERROR)),
+                        DomainResult.Incomplete.Error(UNKNOWN, PROFILE_ERROR),
                     )
             }
 

@@ -3,9 +3,8 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.domain.mfa.MfaRepository
 import com.passbolt.mobile.android.domain.mfa.model.YubikeyVerification
 
@@ -36,14 +35,14 @@ class VerifyYubikeyUseCase(
 ) : AsyncUseCase<VerifyYubikeyUseCase.Input, VerifyYubikeyUseCase.Output> {
     override suspend fun execute(input: Input): Output =
         when (val result = mfaRepository.verifyYubikeyOtp(input.totp, input.remember, input.jwtHeader)) {
-            is DomainResult.Success ->
+            is DomainResult.Finished ->
                 when (val verification = result.value) {
                     is YubikeyVerification.Succeeded -> Output.Success(verification.mfaHeader)
                     is YubikeyVerification.Unauthorized -> Output.Unauthorized
                     is YubikeyVerification.NotFromCurrentUser -> Output.YubikeyNotFromCurrentUser
                     is YubikeyVerification.OtherFailure -> Output.NetworkFailure(verification.errorCode)
                 }
-            is DomainResult.Failure -> Output.Failure(result)
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     data class Input(
@@ -53,28 +52,23 @@ class VerifyYubikeyUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when (val failure = (this as? Failure)?.failure) {
-                    is DomainResult.Failure.Unauthorized -> AuthenticationState.Unauthenticated(Session)
-                    is DomainResult.Failure.MfaRequired -> AuthenticationState.Unauthenticated(Mfa(failure.providers))
-                    else -> AuthenticationState.Authenticated
-                }
-
         data class Success(
             val mfaHeader: String?,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class NetworkFailure(
             val errorCode: Int,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
-        data object Unauthorized : Output()
+        data object Unauthorized : Output(), CompleteAuthenticatedOutput
 
-        data object YubikeyNotFromCurrentUser : Output()
+        data object YubikeyNotFromCurrentUser : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
-            val failure: DomainResult.Failure,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

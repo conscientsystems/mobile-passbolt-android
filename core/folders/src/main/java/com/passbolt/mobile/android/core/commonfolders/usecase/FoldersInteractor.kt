@@ -12,6 +12,7 @@ import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpdateLocalFold
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpsertLocalFoldersUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.entity.folder.FolderUpdateState.PENDING
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
@@ -85,14 +86,14 @@ class FoldersInteractor(
 
     private suspend fun fetchAndProcessAllPages(pageSize: Int): Output.Failure? {
         when (val firstPageResult = fetchFoldersPage(FIRST_PAGE, pageSize)) {
-            is Failure<*> -> return Output.Failure(firstPageResult.authenticationState)
+            is Failure -> return Output.Failure(firstPageResult.authenticationState)
             is Success -> {
                 processFolders(firstPageResult.folders)
 
                 val totalPages = ceil(firstPageResult.pagination.count.toDouble() / pageSize).toInt()
                 for (page in SECOND_PAGE..totalPages) {
                     when (val pageResult = fetchFoldersPage(page, pageSize)) {
-                        is Failure<*> -> return Output.Failure(pageResult.authenticationState)
+                        is Failure -> return Output.Failure(pageResult.authenticationState)
                         is Success -> processFolders(pageResult.folders)
                     }
                 }
@@ -134,10 +135,7 @@ class FoldersInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
             override val authenticationState: AuthenticationState,

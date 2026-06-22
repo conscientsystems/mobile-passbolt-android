@@ -1,10 +1,11 @@
 package com.passbolt.mobile.android.metadata.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.dto.request.EncryptedDataRequest
 import com.passbolt.mobile.android.passboltapi.metadata.MetadataRepository
 
@@ -35,14 +36,15 @@ class UpdateMetadataPrivateKeyUseCase(
 ) : AsyncUseCase<UpdateMetadataPrivateKeyUseCase.Input, UpdateMetadataPrivateKeyUseCase.Output> {
     override suspend fun execute(input: Input): Output =
         when (
-            val response =
-                metadataRepository.updateMetadataPrivateKey(
-                    input.metadataPrivateKeyId,
-                    EncryptedDataRequest(input.privateKeyPgpMessage),
-                )
+            val result =
+                metadataRepository
+                    .updateMetadataPrivateKey(
+                        input.metadataPrivateKeyId,
+                        EncryptedDataRequest(input.privateKeyPgpMessage),
+                    ).toDomainResult()
         ) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> Output.Success
+            is DomainResult.Finished -> Output.Success
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     data class Input(
@@ -51,24 +53,13 @@ class UpdateMetadataPrivateKeyUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized ->
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> AuthenticationState.Authenticated
-                }
+        data object Success :
+            Output(),
+            CompleteAuthenticatedOutput
 
-        data object Success : Output()
-
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

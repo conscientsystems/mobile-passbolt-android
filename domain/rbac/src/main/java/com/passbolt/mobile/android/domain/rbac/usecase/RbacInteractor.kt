@@ -33,8 +33,8 @@ class RbacInteractor(
 ) {
     suspend fun fetchAndSaveRbacRulesFlags(): Output =
         when (val result = rbacRepository.refreshRbac()) {
-            is DomainResult.Failure -> Output.Failure
-            is DomainResult.Success -> Output.Success(result.value.toUiModel())
+            is DomainResult.Incomplete -> Output.Failure
+            is DomainResult.Finished -> Output.Success(result.value.toUiModel())
         }
 
     sealed class Output {

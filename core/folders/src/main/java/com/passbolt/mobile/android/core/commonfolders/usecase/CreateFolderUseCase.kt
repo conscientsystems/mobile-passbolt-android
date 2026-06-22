@@ -1,10 +1,11 @@
 package com.passbolt.mobile.android.core.commonfolders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.dto.request.CreateFolderRequestDto
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.passboltapi.folders.FoldersRepository
@@ -39,10 +40,13 @@ class CreateFolderUseCase(
     private val permissionsModelMapper: PermissionsModelMapper,
 ) : AsyncUseCase<CreateFolderUseCase.Input, CreateFolderUseCase.Output> {
     override suspend fun execute(input: Input): Output =
-        when (val result = foldersRepository.createFolder(CreateFolderRequestDto(input.parentFolderId, input.name))) {
-            is NetworkResult.Failure.NetworkError -> Output.Failure(result)
-            is NetworkResult.Failure.ServerError -> Output.Failure(result)
-            is NetworkResult.Success ->
+        when (
+            val result =
+                foldersRepository
+                    .createFolder(CreateFolderRequestDto(input.parentFolderId, input.name))
+                    .toDomainResult()
+        ) {
+            is DomainResult.Finished ->
                 Output.Success(
                     FolderModelWithAttributes(
                         FolderModel(
@@ -56,6 +60,7 @@ class CreateFolderUseCase(
                         listOf(permissionsModelMapper.mapToUserPermission(result.value.permission)),
                     ),
                 )
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     data class Input(
@@ -64,29 +69,14 @@ class CreateFolderUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure && this.result.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure && this.result.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.result)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
-                }
-
         data class Success(
             val folderWithAttributes: FolderModelWithAttributes,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
-            val result: NetworkResult.Failure<*>,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

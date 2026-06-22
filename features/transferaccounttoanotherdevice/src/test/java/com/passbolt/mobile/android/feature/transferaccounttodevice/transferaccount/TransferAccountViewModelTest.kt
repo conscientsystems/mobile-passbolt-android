@@ -27,6 +27,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.SERVER
 import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.core.idlingresource.TransferAccountIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
@@ -170,7 +171,7 @@ class TransferAccountViewModelTest : KoinTest {
             createTransferUseCase.stub {
                 onBlocking { execute(any()) } doReturn
                     CreateTransferUseCase.Output.Failure(
-                        DomainResult.Failure.ServerError("Server create error", null, RuntimeException()),
+                        DomainResult.Incomplete.Error(SERVER, "Server create error"),
                     )
             }
 
@@ -300,7 +301,7 @@ class TransferAccountViewModelTest : KoinTest {
             viewTransferUseCase.stub {
                 onBlocking { execute(any()) } doReturn
                     ViewTransferUseCase.Output.Failure(
-                        DomainResult.Failure.ServerError("Server fetch error", null, RuntimeException()),
+                        DomainResult.Incomplete.Error(SERVER, "Server fetch error"),
                     )
             }
 

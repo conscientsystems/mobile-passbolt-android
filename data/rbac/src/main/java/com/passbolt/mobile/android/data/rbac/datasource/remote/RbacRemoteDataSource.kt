@@ -24,10 +24,10 @@
 package com.passbolt.mobile.android.data.rbac.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.rbac.datasource.remote.api.RbacApi
 import com.passbolt.mobile.android.data.rbac.mapper.toDomain
 import com.passbolt.mobile.android.domain.rbac.RbacDataSource
@@ -38,8 +38,7 @@ internal class RbacRemoteDataSource(
     private val responseHandler: ResponseHandler,
 ) : RbacDataSource {
     override suspend fun getRbac(): DomainResult<Rbac> =
-        when (val result = callWithHandler(responseHandler) { rbacApi.getMyRbacPermissions().body }) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) { rbacApi.getMyRbacPermissions().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

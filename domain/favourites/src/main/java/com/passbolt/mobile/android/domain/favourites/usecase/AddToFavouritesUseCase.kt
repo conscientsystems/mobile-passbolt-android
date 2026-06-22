@@ -26,7 +26,8 @@ package com.passbolt.mobile.android.domain.favourites.usecase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.domain.favourites.FavouritesRepository
 
 class AddToFavouritesUseCase(
@@ -34,34 +35,20 @@ class AddToFavouritesUseCase(
 ) : AsyncUseCase<AddToFavouritesUseCase.Input, AddToFavouritesUseCase.Output> {
     override suspend fun execute(input: Input) =
         when (val result = favouritesRepository.addToFavourites(input.resourceId)) {
-            is DomainResult.Success -> Output.Success(result.value)
-            is DomainResult.Failure -> Output.Failure(result)
+            is DomainResult.Finished -> Output.Success(result.value)
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() {
-                val failure = (this as? Failure)?.failure
-                return when (failure) {
-                    is DomainResult.Failure.Unauthorized ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Session,
-                        )
-                    is DomainResult.Failure.MfaRequired ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(failure.providers),
-                        )
-                    else -> AuthenticationState.Authenticated
-                }
-            }
-
         data class Success(
             val favouriteId: String,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
-            val failure: DomainResult.Failure,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 
     data class Input(

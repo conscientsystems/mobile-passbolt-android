@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.data.passwordpolicies.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.passwordpolicies.datasource.remote.api.PasswordPoliciesApi
 import com.passbolt.mobile.android.data.passwordpolicies.mapper.toDomain
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesDataSource
@@ -37,8 +37,7 @@ internal class PasswordPoliciesRemoteDataSource(
     private val responseHandler: ResponseHandler,
 ) : PasswordPoliciesDataSource {
     override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> =
-        when (val result = callWithHandler(responseHandler) { passwordPoliciesApi.getPasswordPolicies().body }) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) { passwordPoliciesApi.getPasswordPolicies().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

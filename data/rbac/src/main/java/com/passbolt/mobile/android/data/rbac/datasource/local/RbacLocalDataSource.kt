@@ -40,7 +40,7 @@ internal class RbacLocalDataSource(
 
     override suspend fun getRbac(): DomainResult<Rbac> =
         sharedPreferences.let {
-            DomainResult.Success(
+            DomainResult.Finished(
                 Rbac(
                     passwordPreviewRule = it.getRule(KEY_PREVIEW_PASSWORD),
                     passwordCopyRule = it.getRule(KEY_COPY_PASSWORD),

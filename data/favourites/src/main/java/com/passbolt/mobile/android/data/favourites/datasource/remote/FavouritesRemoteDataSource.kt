@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.data.favourites.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.favourites.datasource.remote.api.FavouritesApi
 import com.passbolt.mobile.android.domain.favourites.FavouritesDataSource
 
@@ -35,14 +35,11 @@ internal class FavouritesRemoteDataSource(
     private val responseHandler: ResponseHandler,
 ) : FavouritesDataSource {
     override suspend fun addToFavourites(resourceId: String): DomainResult<String> =
-        when (val result = callWithHandler(responseHandler) { favouritesApi.addToFavourites(resourceId).body }) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.favouriteId.toString())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) { favouritesApi.addToFavourites(resourceId).body }
+            .toDomainResult()
+            .map { it.favouriteId.toString() }
 
     override suspend fun removeFromFavourites(favouriteId: String): DomainResult<Unit> =
-        when (val result = callWithHandler(responseHandler) { favouritesApi.removeFromFavourites(favouriteId).body }) {
-            is NetworkResult.Success -> DomainResult.Success(Unit)
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) { favouritesApi.removeFromFavourites(favouriteId).body }
+            .toDomainResult()
 }

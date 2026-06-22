@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.data.passwordexpiry
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryDataSource
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 import kotlinx.coroutines.test.runTest
@@ -81,31 +82,31 @@ class PasswordExpiryRepositoryImplTest : KoinTest {
     @Test
     fun `memory hit returns memory value and never calls remote`() =
         runTest {
-            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Success(settings)) }
+            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Finished(settings)) }
 
             val result = repository.getPasswordExpirySettings()
 
-            assertThat(result).isEqualTo(DomainResult.Success(settings))
+            assertThat(result).isEqualTo(DomainResult.Finished(settings))
             verify(remote, never()).getPasswordExpirySettings()
         }
 
     @Test
     fun `memory miss with remote success returns success and writes to memory`() =
         runTest {
-            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Failure.NotCached) }
-            remote.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Success(settings)) }
+            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Incomplete.NotCached) }
+            remote.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Finished(settings)) }
 
             val result = repository.getPasswordExpirySettings()
 
-            assertThat(result).isEqualTo(DomainResult.Success(settings))
+            assertThat(result).isEqualTo(DomainResult.Finished(settings))
             verify(memory).setPasswordExpirySettings(settings)
         }
 
     @Test
     fun `memory miss with remote failure returns failure and does not write to memory`() =
         runTest {
-            val failure = DomainResult.Failure.Unknown(RuntimeException("boom"))
-            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Failure.NotCached) }
+            val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
+            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Incomplete.NotCached) }
             remote.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(failure) }
 
             val result = repository.getPasswordExpirySettings()

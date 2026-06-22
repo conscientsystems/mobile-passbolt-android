@@ -34,10 +34,10 @@ internal class PasswordExpiryRepositoryImpl(
 ) : PasswordExpiryRepository {
     override suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings> =
         when (val memory = memoryDataSource.getPasswordExpirySettings()) {
-            is DomainResult.Success -> memory
-            is DomainResult.Failure ->
+            is DomainResult.Finished -> memory
+            is DomainResult.Incomplete ->
                 remoteDataSource.getPasswordExpirySettings().also {
-                    if (it is DomainResult.Success) {
+                    if (it is DomainResult.Finished) {
                         setPasswordExpirySettings(it.value)
                     }
                 }

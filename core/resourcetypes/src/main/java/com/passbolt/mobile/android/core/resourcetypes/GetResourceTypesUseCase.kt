@@ -1,10 +1,11 @@
 package com.passbolt.mobile.android.core.resourcetypes
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.dto.response.ResourceTypeDto
 import com.passbolt.mobile.android.passboltapi.resourcetypes.ResourceTypesRepository
 
@@ -34,33 +35,20 @@ class GetResourceTypesUseCase(
     private val resourceTypesRepository: ResourceTypesRepository,
 ) : AsyncUseCase<Unit, GetResourceTypesUseCase.Output> {
     override suspend fun execute(input: Unit): Output =
-        when (val response = resourceTypesRepository.getResourceTypes()) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> Output.Success(response.value.body)
+        when (val result = resourceTypesRepository.getResourceTypes().toDomainResult()) {
+            is DomainResult.Finished -> Output.Success(result.value.body)
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized ->
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> AuthenticationState.Authenticated
-                }
-
         data class Success(
             val resourceTypes: List<ResourceTypeDto>,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

@@ -3,7 +3,8 @@ package com.passbolt.mobile.android.domain.mobiletransfer.usecase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.domain.mobiletransfer.MobileTransferRepository
 import com.passbolt.mobile.android.domain.mobiletransfer.mapper.toUiModel
@@ -40,8 +41,8 @@ class CreateTransferUseCase(
     override suspend fun execute(input: Input): Output =
         withContext(coroutineContext.io) {
             when (val result = mobileTransferRepository.createTransfer(input.totalPagesCount, input.hash)) {
-                is DomainResult.Success -> Output.Success(result.value.toUiModel())
-                is DomainResult.Failure -> Output.Failure(result)
+                is DomainResult.Finished -> Output.Success(result.value.toUiModel())
+                is DomainResult.Incomplete -> Output.Failure(result)
             }
         }
 
@@ -51,28 +52,14 @@ class CreateTransferUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() {
-                val failure = (this as? Failure)?.failure
-                return when (failure) {
-                    is DomainResult.Failure.Unauthorized ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Session,
-                        )
-                    is DomainResult.Failure.MfaRequired ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(failure.providers),
-                        )
-                    else -> AuthenticationState.Authenticated
-                }
-            }
-
         data class Success(
             val transfer: CreateTransferUiModel,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
-            val failure: DomainResult.Failure,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

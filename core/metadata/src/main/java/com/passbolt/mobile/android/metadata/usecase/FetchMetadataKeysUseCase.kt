@@ -1,10 +1,11 @@
 package com.passbolt.mobile.android.metadata.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.mappers.MetadataMapper
 import com.passbolt.mobile.android.passboltapi.metadata.MetadataRepository
 import com.passbolt.mobile.android.ui.MetadataKeyModel
@@ -36,34 +37,20 @@ class FetchMetadataKeysUseCase(
     private val metadataMapper: MetadataMapper,
 ) : AsyncUseCase<Unit, FetchMetadataKeysUseCase.Output> {
     override suspend fun execute(input: Unit): Output =
-        when (val response = metadataRepository.getMetadataKeys()) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> {
-                Output.Success(metadataMapper.map(response.value))
-            }
+        when (val result = metadataRepository.getMetadataKeys().toDomainResult()) {
+            is DomainResult.Finished -> Output.Success(metadataMapper.map(result.value))
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized ->
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> AuthenticationState.Authenticated
-                }
-
         data class Success(
             val metadataKeysModel: List<MetadataKeyModel>,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

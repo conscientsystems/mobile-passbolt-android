@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.data.passwordpolicies
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesDataSource
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 import kotlinx.coroutines.test.runTest
@@ -81,31 +82,31 @@ class PasswordPoliciesRepositoryImplTest : KoinTest {
     @Test
     fun `memory hit returns memory value and never calls remote`() =
         runTest {
-            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Success(policies)) }
+            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies)) }
 
             val result = repository.getPasswordPolicies()
 
-            assertThat(result).isEqualTo(DomainResult.Success(policies))
+            assertThat(result).isEqualTo(DomainResult.Finished(policies))
             verify(remote, never()).getPasswordPolicies()
         }
 
     @Test
     fun `memory miss with remote success returns success and writes to memory`() =
         runTest {
-            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Failure.NotCached) }
-            remote.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Success(policies)) }
+            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.NotCached) }
+            remote.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies)) }
 
             val result = repository.getPasswordPolicies()
 
-            assertThat(result).isEqualTo(DomainResult.Success(policies))
+            assertThat(result).isEqualTo(DomainResult.Finished(policies))
             verify(memory).setPasswordPolicies(policies)
         }
 
     @Test
     fun `memory miss with remote failure returns failure and does not write to memory`() =
         runTest {
-            val failure = DomainResult.Failure.Unknown(RuntimeException("boom"))
-            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Failure.NotCached) }
+            val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
+            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.NotCached) }
             remote.stub { onBlocking { getPasswordPolicies() }.thenReturn(failure) }
 
             val result = repository.getPasswordPolicies()

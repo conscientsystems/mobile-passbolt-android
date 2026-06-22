@@ -3,12 +3,13 @@ package com.passbolt.mobile.android.core.commonfolders.usecase
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.RemoveLocalFoldersWithUpdateStateUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.SetLocalFoldersUpdateStateUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpdateLocalFoldersIsSharedUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.UpsertLocalFoldersUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.dto.response.Pagination
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
@@ -252,10 +253,7 @@ class FoldersInteractorTest : KoinTest {
                 )
             }.doReturn(
                 GetFoldersPaginatedUseCase.Output.Failure(
-                    NetworkResult.Failure.NetworkError(
-                        exception = Exception("Network error"),
-                        headerMessage = "Error",
-                    ),
+                    DomainResult.Incomplete.Error(OFFLINE, null),
                 ),
             )
         }

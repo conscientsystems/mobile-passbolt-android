@@ -26,9 +26,8 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.domain.mfa.MfaRepository
 import com.passbolt.mobile.android.domain.mfa.model.DuoPrompt
 
@@ -37,14 +36,14 @@ class GetDuoPromptUseCase(
 ) : AsyncUseCase<GetDuoPromptUseCase.Input, GetDuoPromptUseCase.Output> {
     override suspend fun execute(input: Input): Output =
         when (val result = mfaRepository.getDuoPrompt(input.jwtHeader)) {
-            is DomainResult.Success ->
+            is DomainResult.Finished ->
                 when (val prompt = result.value) {
                     is DuoPrompt.Found -> Output.Success(prompt.duoPromptUrl, prompt.passboltDuoCookieUuid)
                     is DuoPrompt.NotFound -> Output.DuoPromptUrlNotFound
                     is DuoPrompt.Unauthorized -> Output.Unauthorized
                     is DuoPrompt.OtherFailure -> Output.NetworkFailure(prompt.errorCode)
                 }
-            is DomainResult.Failure -> Output.Failure(result)
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     data class Input(
@@ -52,29 +51,24 @@ class GetDuoPromptUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when (val failure = (this as? Failure)?.failure) {
-                    is DomainResult.Failure.Unauthorized -> AuthenticationState.Unauthenticated(Session)
-                    is DomainResult.Failure.MfaRequired -> AuthenticationState.Unauthenticated(Mfa(failure.providers))
-                    else -> AuthenticationState.Authenticated
-                }
-
         data class Success(
             val duoPromptUrl: String,
             val passboltDuoCookieUuid: String,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class NetworkFailure(
             val errorCode: Int,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
-        data object Unauthorized : Output()
+        data object Unauthorized : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
-            val failure: DomainResult.Failure,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
 
-        data object DuoPromptUrlNotFound : Output()
+        data object DuoPromptUrlNotFound : Output(), CompleteAuthenticatedOutput
     }
 }
