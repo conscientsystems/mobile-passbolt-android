@@ -4,9 +4,8 @@ import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.domain.share.ShareRepository
 import com.passbolt.mobile.android.domain.share.model.ShareChanges
 import com.passbolt.mobile.android.domain.share.model.SharePermission
@@ -38,32 +37,22 @@ class SimulateShareResourceUseCase(
 ) : AsyncUseCase<SimulateShareResourceUseCase.Input, SimulateShareResourceUseCase.Output> {
     override suspend fun execute(input: Input) =
         when (val result = shareRepository.simulateShareResource(input.resourceId, input.simulateSharePermissions)) {
-            is DomainResult.Success -> Output.Success(result.value)
-            is DomainResult.Failure -> Output.Failure(result)
+            is DomainResult.Finished -> Output.Success(result.value)
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when (val output = this) {
-                    is Failure ->
-                        when (val failure = output.failure) {
-                            is DomainResult.Failure.Unauthorized -> AuthenticationState.Unauthenticated(Session)
-                            is DomainResult.Failure.MfaRequired -> AuthenticationState.Unauthenticated(Mfa(failure.providers))
-                            else -> AuthenticationState.Authenticated
-                        }
-                    else -> AuthenticationState.Authenticated
-                }
-
         data class Success(
             val value: ShareChanges,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
-            val failure: DomainResult.Failure,
-        ) : Output() {
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput {
             val message: String?
-                get() = failure.displayMessage()
+                get() = incomplete.displayMessage()
         }
     }
 

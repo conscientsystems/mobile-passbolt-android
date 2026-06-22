@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.data.favourites
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.domain.favourites.FavouritesDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -67,18 +68,18 @@ class FavouritesRepositoryImplTest : KoinTest {
     @Test
     fun `addToFavourites delegates to remote and returns its result`() =
         runTest {
-            remote.stub { onBlocking { addToFavourites(RESOURCE_ID) }.thenReturn(DomainResult.Success(FAVOURITE_ID)) }
+            remote.stub { onBlocking { addToFavourites(RESOURCE_ID) }.thenReturn(DomainResult.Finished(FAVOURITE_ID)) }
 
             val result = repository.addToFavourites(RESOURCE_ID)
 
-            assertThat(result).isEqualTo(DomainResult.Success(FAVOURITE_ID))
+            assertThat(result).isEqualTo(DomainResult.Finished(FAVOURITE_ID))
             verify(remote).addToFavourites(RESOURCE_ID)
         }
 
     @Test
     fun `addToFavourites propagates remote failure`() =
         runTest {
-            val failure = DomainResult.Failure.Unknown(RuntimeException("boom"))
+            val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             remote.stub { onBlocking { addToFavourites(RESOURCE_ID) }.thenReturn(failure) }
 
             val result = repository.addToFavourites(RESOURCE_ID)
@@ -89,22 +90,22 @@ class FavouritesRepositoryImplTest : KoinTest {
     @Test
     fun `removeFromFavourites delegates to remote and returns its result`() =
         runTest {
-            remote.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(DomainResult.Success(Unit)) }
+            remote.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(DomainResult.Finished(Unit)) }
 
             val result = repository.removeFromFavourites(FAVOURITE_ID)
 
-            assertThat(result).isEqualTo(DomainResult.Success(Unit))
+            assertThat(result).isEqualTo(DomainResult.Finished(Unit))
             verify(remote).removeFromFavourites(FAVOURITE_ID)
         }
 
     @Test
     fun `removeFromFavourites propagates remote failure`() =
         runTest {
-            remote.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(DomainResult.Failure.Unauthorized) }
+            remote.stub { onBlocking { removeFromFavourites(FAVOURITE_ID) }.thenReturn(DomainResult.Incomplete.Unauthorized) }
 
             val result = repository.removeFromFavourites(FAVOURITE_ID)
 
-            assertThat(result).isEqualTo(DomainResult.Failure.Unauthorized)
+            assertThat(result).isEqualTo(DomainResult.Incomplete.Unauthorized)
         }
 
     private companion object {

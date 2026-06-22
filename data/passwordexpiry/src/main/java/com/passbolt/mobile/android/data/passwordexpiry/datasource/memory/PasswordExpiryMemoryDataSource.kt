@@ -35,8 +35,8 @@ internal class PasswordExpiryMemoryDataSource(
     override suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings> {
         val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         return perAccountSettings[selectedAccount]
-            ?.let { DomainResult.Success(it) }
-            ?: DomainResult.Failure.NotCached
+            ?.let { DomainResult.Finished(it) }
+            ?: DomainResult.Incomplete.NotCached
     }
 
     override suspend fun setPasswordExpirySettings(passwordExpirySettings: PasswordExpirySettings) {

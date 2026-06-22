@@ -35,8 +35,8 @@ internal class PasswordPoliciesMemoryDataSource(
     override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> {
         val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         return perAccountPolicies[selectedAccount]
-            ?.let { DomainResult.Success(it) }
-            ?: DomainResult.Failure.NotCached
+            ?.let { DomainResult.Finished(it) }
+            ?: DomainResult.Incomplete.NotCached
     }
 
     override suspend fun setPasswordPolicies(passwordPolicies: PasswordPolicies) {

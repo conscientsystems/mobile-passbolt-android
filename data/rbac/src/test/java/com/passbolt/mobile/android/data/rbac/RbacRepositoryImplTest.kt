@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.data.rbac
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.domain.rbac.RbacDataSource
 import com.passbolt.mobile.android.domain.rbac.model.Rbac
 import kotlinx.coroutines.test.runTest
@@ -81,29 +82,29 @@ class RbacRepositoryImplTest : KoinTest {
     @Test
     fun `getRbac returns local value and never calls remote`() =
         runTest {
-            local.stub { onBlocking { getRbac() }.thenReturn(DomainResult.Success(rbac)) }
+            local.stub { onBlocking { getRbac() }.thenReturn(DomainResult.Finished(rbac)) }
 
             val result = repository.getRbac()
 
-            assertThat(result).isEqualTo(DomainResult.Success(rbac))
+            assertThat(result).isEqualTo(DomainResult.Finished(rbac))
             verify(remote, never()).getRbac()
         }
 
     @Test
     fun `refreshRbac with remote success returns success and writes to local`() =
         runTest {
-            remote.stub { onBlocking { getRbac() }.thenReturn(DomainResult.Success(rbac)) }
+            remote.stub { onBlocking { getRbac() }.thenReturn(DomainResult.Finished(rbac)) }
 
             val result = repository.refreshRbac()
 
-            assertThat(result).isEqualTo(DomainResult.Success(rbac))
+            assertThat(result).isEqualTo(DomainResult.Finished(rbac))
             verify(local).setRbac(rbac)
         }
 
     @Test
     fun `refreshRbac with remote failure returns failure and does not write to local`() =
         runTest {
-            val failure = DomainResult.Failure.Unknown(RuntimeException("boom"))
+            val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             remote.stub { onBlocking { getRbac() }.thenReturn(failure) }
 
             val result = repository.refreshRbac()

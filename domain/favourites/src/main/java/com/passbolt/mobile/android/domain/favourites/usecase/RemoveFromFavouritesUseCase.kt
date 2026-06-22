@@ -26,7 +26,8 @@ package com.passbolt.mobile.android.domain.favourites.usecase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.domain.favourites.FavouritesRepository
 
 class RemoveFromFavouritesUseCase(
@@ -34,31 +35,17 @@ class RemoveFromFavouritesUseCase(
 ) : AsyncUseCase<RemoveFromFavouritesUseCase.Input, RemoveFromFavouritesUseCase.Output> {
     override suspend fun execute(input: Input) =
         when (val result = favouritesRepository.removeFromFavourites(input.favouriteId)) {
-            is DomainResult.Success -> Output.Success
-            is DomainResult.Failure -> Output.Failure(result)
+            is DomainResult.Finished -> Output.Success
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() {
-                return when (val failure = (this as? Failure)?.failure) {
-                    is DomainResult.Failure.Unauthorized ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Session,
-                        )
-                    is DomainResult.Failure.MfaRequired ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(failure.providers),
-                        )
-                    else -> AuthenticationState.Authenticated
-                }
-            }
-
-        data object Success : Output()
+        data object Success : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
-            val failure: DomainResult.Failure,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 
     data class Input(

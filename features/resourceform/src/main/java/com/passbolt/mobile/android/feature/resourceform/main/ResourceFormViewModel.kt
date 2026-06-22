@@ -861,7 +861,7 @@ class ResourceFormViewModel(
                     updateViewState { copy(showPasswordWarningDialog = true, passwordWarningType = PasswordWarningType.DATA_BREACH) }
                 is CheckPasswordPropertiesUseCase.Output.Weak ->
                     updateViewState { copy(showPasswordWarningDialog = true, passwordWarningType = PasswordWarningType.LOW_ENTROPY) }
-                is CheckPasswordPropertiesUseCase.Output.Failure<*> -> {
+                is CheckPasswordPropertiesUseCase.Output.Failure -> {
                     Timber.d("Failed to check password status")
                     onProceed()
                 }

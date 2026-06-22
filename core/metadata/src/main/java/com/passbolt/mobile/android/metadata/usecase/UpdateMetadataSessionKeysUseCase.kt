@@ -1,13 +1,14 @@
 package com.passbolt.mobile.android.metadata.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.dto.request.EncryptedDataAndModifiedRequest
 import com.passbolt.mobile.android.passboltapi.metadata.MetadataRepository
-import retrofit2.HttpException
 import java.net.HttpURLConnection.HTTP_CONFLICT
 import java.time.ZonedDateTime
 
@@ -36,27 +37,25 @@ import java.time.ZonedDateTime
 class UpdateMetadataSessionKeysUseCase(
     private val metadataRepository: MetadataRepository,
 ) : AsyncUseCase<UpdateMetadataSessionKeysUseCase.Input, UpdateMetadataSessionKeysUseCase.Output> {
-    override suspend fun execute(input: Input): Output =
-        when (
-            val response =
-                metadataRepository.updateMetadataSessionKeys(
-                    input.metadataBundleId,
-                    EncryptedDataAndModifiedRequest(
-                        data = input.encryptedData,
-                        modified = input.modifiedDate,
-                    ),
-                )
-        ) {
-            is NetworkResult.Failure -> {
-                // 409 means that the bundle has been updated in the meantime by other client
-                if ((response.exception as HttpException).code() == HTTP_CONFLICT) {
-                    Output.Conflict
-                } else {
-                    Output.Failure(response)
-                }
-            }
-            is NetworkResult.Success -> Output.Success
+    override suspend fun execute(input: Input): Output {
+        val response =
+            metadataRepository.updateMetadataSessionKeys(
+                input.metadataBundleId,
+                EncryptedDataAndModifiedRequest(
+                    data = input.encryptedData,
+                    modified = input.modifiedDate,
+                ),
+            )
+        // 409 means that the bundle has been updated in the meantime by other client
+        // TODO once MetadataRepository returns DomainResult, model this 409 as a Conflict result in the data source
+        if (response is NetworkResult.Failure && response.errorCode == HTTP_CONFLICT) {
+            return Output.Conflict
         }
+        return when (val result = response.toDomainResult()) {
+            is DomainResult.Finished -> Output.Success
+            is DomainResult.Incomplete -> Output.Failure(result)
+        }
+    }
 
     data class Input(
         val metadataBundleId: String,
@@ -65,26 +64,17 @@ class UpdateMetadataSessionKeysUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized ->
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> AuthenticationState.Authenticated
-                }
+        data object Success :
+            Output(),
+            CompleteAuthenticatedOutput
 
-        data object Success : Output()
+        data object Conflict :
+            Output(),
+            CompleteAuthenticatedOutput
 
-        data object Conflict : Output()
-
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

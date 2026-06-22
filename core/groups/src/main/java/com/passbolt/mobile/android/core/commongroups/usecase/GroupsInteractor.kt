@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.core.commongroups.usecase
 import android.database.SQLException
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import timber.log.Timber
 
 /**
@@ -46,10 +47,7 @@ class GroupsInteractor(
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
             override val authenticationState: AuthenticationState,

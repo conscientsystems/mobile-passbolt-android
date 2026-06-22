@@ -83,7 +83,7 @@ class GetFoldersPaginatedUseCaseTest : KoinTest {
 
             val result = useCase.execute(GetFoldersPaginatedUseCase.Input(page = 1, limit = 2000))
 
-            assertIs<GetFoldersPaginatedUseCase.Output.Failure<*>>(result)
+            assertIs<GetFoldersPaginatedUseCase.Output.Failure>(result)
             assertThat(result.authenticationState).isEqualTo(AuthenticationState.Authenticated)
         }
 
@@ -102,7 +102,7 @@ class GetFoldersPaginatedUseCaseTest : KoinTest {
 
             val result = useCase.execute(GetFoldersPaginatedUseCase.Input(page = 1, limit = 2000))
 
-            assertIs<GetFoldersPaginatedUseCase.Output.Failure<*>>(result)
+            assertIs<GetFoldersPaginatedUseCase.Output.Failure>(result)
             val unauthenticated = assertIs<AuthenticationState.Unauthenticated>(result.authenticationState)
             assertIs<AuthenticationState.Unauthenticated.Reason.Session>(unauthenticated.reason)
         }
@@ -121,7 +121,7 @@ class GetFoldersPaginatedUseCaseTest : KoinTest {
 
             val result = useCase.execute(GetFoldersPaginatedUseCase.Input(page = 1, limit = 2000))
 
-            assertIs<GetFoldersPaginatedUseCase.Output.Failure<*>>(result)
+            assertIs<GetFoldersPaginatedUseCase.Output.Failure>(result)
             val unauthenticated = assertIs<AuthenticationState.Unauthenticated>(result.authenticationState)
             assertIs<AuthenticationState.Unauthenticated.Reason.Passphrase>(unauthenticated.reason)
         }
@@ -142,7 +142,7 @@ class GetFoldersPaginatedUseCaseTest : KoinTest {
 
             val result = useCase.execute(GetFoldersPaginatedUseCase.Input(page = 1, limit = 2000))
 
-            assertIs<GetFoldersPaginatedUseCase.Output.Failure<*>>(result)
+            assertIs<GetFoldersPaginatedUseCase.Output.Failure>(result)
             val unauthenticated = assertIs<AuthenticationState.Unauthenticated>(result.authenticationState)
             assertIs<AuthenticationState.Unauthenticated.Reason.Mfa>(unauthenticated.reason)
         }

@@ -7,8 +7,9 @@ import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.spi.json.GsonJsonProvider
 import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.AddLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.RemoveLocalResourcePermissionsUseCase
@@ -249,10 +250,7 @@ class ResourceInteractorTest : KoinTest {
                 )
             }.doReturn(
                 GetResourcesPaginatedUseCase.Output.Failure(
-                    NetworkResult.Failure.NetworkError(
-                        exception = Exception("Network error"),
-                        headerMessage = "Error",
-                    ),
+                    DomainResult.Incomplete.Error(OFFLINE, null),
                 ),
             )
         }

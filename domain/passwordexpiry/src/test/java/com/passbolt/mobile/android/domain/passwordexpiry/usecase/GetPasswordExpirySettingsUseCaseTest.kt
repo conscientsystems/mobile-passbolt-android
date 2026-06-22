@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.domain.passwordexpiry.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRepository
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 import kotlinx.coroutines.test.runTest
@@ -74,7 +75,7 @@ class GetPasswordExpirySettingsUseCaseTest : KoinTest {
                     defaultExpiryPeriodDays = 90,
                 )
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Success(settings))
+                onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Finished(settings))
             }
 
             val result = useCase.execute(Unit)
@@ -86,7 +87,7 @@ class GetPasswordExpirySettingsUseCaseTest : KoinTest {
     fun `failure falls back to defaults`() =
         runTest {
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Failure.Unknown(RuntimeException()))
+                onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, null))
             }
 
             val result = useCase.execute(Unit)
@@ -98,7 +99,7 @@ class GetPasswordExpirySettingsUseCaseTest : KoinTest {
     fun `notcached failure also falls back to defaults`() =
         runTest {
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Failure.NotCached)
+                onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Incomplete.NotCached)
             }
 
             val result = useCase.execute(Unit)

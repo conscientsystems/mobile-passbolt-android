@@ -64,16 +64,15 @@ class ResourceCommonActionsInteractor(
 
     suspend fun deleteResource(): Flow<ResourceCommonActionResult> =
         when (
-            val response =
-                runAuthenticatedOperation {
-                    deleteResourceUseCase.execute(DeleteResourceUseCase.Input(resource.resourceId))
-                }
+            runAuthenticatedOperation {
+                deleteResourceUseCase.execute(DeleteResourceUseCase.Input(resource.resourceId))
+            }
         ) {
             is DeleteResourceUseCase.Output.Success -> {
                 flowOf(ResourceCommonActionResult.Success(resource.metadataJsonModel.name))
             }
-            is DeleteResourceUseCase.Output.Failure<*> -> {
-                Timber.e(response.response.exception)
+            is DeleteResourceUseCase.Output.Failure -> {
+                Timber.e("Failed to delete resource")
                 flowOf(ResourceCommonActionResult.Failure)
             }
         }

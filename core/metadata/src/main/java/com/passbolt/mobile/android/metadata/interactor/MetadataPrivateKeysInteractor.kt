@@ -1,6 +1,7 @@
 package com.passbolt.mobile.android.metadata.interactor
 
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
@@ -330,8 +331,8 @@ class MetadataPrivateKeysInteractor(
                     Timber.e("There was a crypto failure during sign and push the key: ${result.error.message}")
                     Output.Failure(result.authenticationState)
                 }
-                is MetadataPrivateKeysHelperInteractor.Output.KeyUploadFailure<*> -> {
-                    Timber.e("There was a failure during upload the key: ${result.response.exception.message}")
+                is MetadataPrivateKeysHelperInteractor.Output.KeyUploadFailure -> {
+                    Timber.e("There was a failure during upload the key: ${result.incomplete.displayMessage()}")
                     Output.Failure(result.authenticationState)
                 }
                 is MetadataPrivateKeysHelperInteractor.Output.Success -> {

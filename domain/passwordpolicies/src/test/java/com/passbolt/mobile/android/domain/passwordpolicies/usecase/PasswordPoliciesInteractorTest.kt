@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.domain.passwordpolicies.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRepository
 import com.passbolt.mobile.android.domain.passwordpolicies.mapper.toUiModel
@@ -77,7 +78,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
         runTest {
             val policies = PasswordPolicies.defaults()
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Success(policies))
+                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies))
             }
             whenever(validator.arePasswordPoliciesValid(policies)).thenReturn(true)
 
@@ -92,7 +93,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
         runTest {
             val policies = PasswordPolicies.defaults()
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Success(policies))
+                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies))
             }
             whenever(validator.arePasswordPoliciesValid(policies)).thenReturn(false)
 
@@ -105,7 +106,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
     @Test
     fun `unauthorized failure surfaces as session re-auth`() =
         runTest {
-            val failure = DomainResult.Failure.Unauthorized
+            val failure = DomainResult.Incomplete.Unauthorized
             repository.stub {
                 onBlocking { getPasswordPolicies() }.thenReturn(failure)
             }
@@ -122,7 +123,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
     fun `mfa-required failure surfaces with mfa providers`() =
         runTest {
             val providers = emptyList<AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider?>()
-            val failure = DomainResult.Failure.MfaRequired(providers)
+            val failure = DomainResult.Incomplete.MfaRequired(providers)
             repository.stub {
                 onBlocking { getPasswordPolicies() }.thenReturn(failure)
             }
@@ -138,7 +139,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
     @Test
     fun `unknown failure stays authenticated`() =
         runTest {
-            val failure = DomainResult.Failure.Unknown(RuntimeException("boom"))
+            val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             repository.stub {
                 onBlocking { getPasswordPolicies() }.thenReturn(failure)
             }
@@ -152,7 +153,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
     @Test
     fun `notcached failure stays authenticated`() =
         runTest {
-            val failure = DomainResult.Failure.NotCached
+            val failure = DomainResult.Incomplete.NotCached
             repository.stub {
                 onBlocking { getPasswordPolicies() }.thenReturn(failure)
             }

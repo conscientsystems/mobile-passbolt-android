@@ -37,8 +37,8 @@ import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountEx
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.OFFLINE
-import com.passbolt.mobile.android.core.architecture.result.DomainResult.Failure.NetworkError.Reason.TIMEOUT
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
@@ -276,27 +276,21 @@ internal class ScanQrViewModel(
             )
         when (response) {
             is UpdateTransferUseCase.Output.Failure -> {
-                Timber.e(
-                    (response.failure as? DomainResult.Failure.Unknown)?.cause,
-                    "There was an error during transfer update. Failure: %s",
-                    response.failure,
-                )
+                Timber.e("There was an error during transfer update. Failure: %s", response.incomplete)
                 if (status == Status.ERROR || status == Status.CANCEL) {
                     // ignoring
                 } else {
-                    when (val failure = response.failure) {
-                        is DomainResult.Failure.NetworkError ->
-                            when (failure.reason) {
-                                TIMEOUT ->
-                                    updateViewState {
-                                        copy(
-                                            showServerNotReachableDialog = true,
-                                            serverDomain = serverDomain,
-                                        )
-                                    }
-                                OFFLINE ->
-                                    emitSideEffect(NavigateToSummary(ResultStatus.NoNetwork()))
+                    val incomplete = response.incomplete
+                    when {
+                        incomplete is DomainResult.Incomplete.Error && incomplete.reason == TIMEOUT ->
+                            updateViewState {
+                                copy(
+                                    showServerNotReachableDialog = true,
+                                    serverDomain = serverDomain,
+                                )
                             }
+                        incomplete is DomainResult.Incomplete.Error && incomplete.reason == OFFLINE ->
+                            emitSideEffect(NavigateToSummary(ResultStatus.NoNetwork()))
                         else ->
                             emitSideEffect(ScanQrSideEffect.ShowToast(ToastType.UPDATE_TRANSFER_ERROR))
                     }

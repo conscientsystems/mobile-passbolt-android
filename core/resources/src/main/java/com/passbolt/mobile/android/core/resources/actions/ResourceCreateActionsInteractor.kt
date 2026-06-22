@@ -237,8 +237,8 @@ class ResourceCreateActionsInteractor(
                     operation()
                 }
         ) {
-            is CreateResourceInteractor.Output.Failure<*> -> {
-                Failure(operationResult.response.exception.message)
+            is CreateResourceInteractor.Output.Failure -> {
+                Failure(operationResult.message)
             }
             is CreateResourceInteractor.Output.OpenPgpError -> {
                 CryptoFailure(operationResult.message)

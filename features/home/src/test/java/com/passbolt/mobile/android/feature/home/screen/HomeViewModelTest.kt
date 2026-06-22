@@ -42,6 +42,7 @@ import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
@@ -255,7 +256,7 @@ class HomeViewModelTest : KoinTest {
             val errorMessage = "profile fetch failed"
             get<UserProfileInteractor>().stub {
                 onBlocking { fetchAndUpdateUserProfile() } doReturn
-                    UserProfileInteractor.Output.Failure(DomainResult.Failure.Unknown(RuntimeException(errorMessage)))
+                    UserProfileInteractor.Output.Failure(DomainResult.Incomplete.Error(UNKNOWN, errorMessage))
             }
 
             viewModel = get()

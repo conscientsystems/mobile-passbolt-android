@@ -35,8 +35,8 @@ class GetRbacRulesUseCase(
 ) : AsyncUseCase<Unit, GetRbacRulesUseCase.Output> {
     override suspend fun execute(input: Unit): Output =
         when (val result = rbacRepository.getRbac()) {
-            is DomainResult.Success -> Output(result.value.toUiModel())
-            is DomainResult.Failure -> Output(Rbac.defaults().toUiModel())
+            is DomainResult.Finished -> Output(result.value.toUiModel())
+            is DomainResult.Incomplete -> Output(Rbac.defaults().toUiModel())
         }
 
     data class Output(

@@ -88,7 +88,7 @@ class ResourceShareInteractor(
             }
             is SimulateShareResourceUseCase.Output.Failure -> {
                 Timber.e("Share simulation failure: %s", simulateShareOutput.message)
-                Output.SimulateShareFailure(simulateShareOutput.failure)
+                Output.SimulateShareFailure(simulateShareOutput.incomplete)
             }
         }
     }
@@ -146,7 +146,7 @@ class ResourceShareInteractor(
                     ) {
                         is ShareResourceUseCase.Output.Failure -> {
                             Timber.e("Share resource failure: %s", shareOutput.message)
-                            Output.ShareFailure(shareOutput.failure)
+                            Output.ShareFailure(shareOutput.incomplete)
                         }
                         is ShareResourceUseCase.Output.Success -> {
                             Timber.d("Share request success")
@@ -202,9 +202,9 @@ class ResourceShareInteractor(
                 when (this) {
                     is SecretFetchFailure if (this.exception as? HttpException)?.code() == HttpURLConnection.HTTP_UNAUTHORIZED ->
                         AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    is ShareFailure if this.failure is DomainResult.Failure.Unauthorized ->
+                    is ShareFailure if this.incomplete is DomainResult.Incomplete.Unauthorized ->
                         AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    is SimulateShareFailure if this.failure is DomainResult.Failure.Unauthorized ->
+                    is SimulateShareFailure if this.incomplete is DomainResult.Incomplete.Unauthorized ->
                         AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
                     is Unauthorized -> AuthenticationState.Unauthenticated(this.reason)
                     else -> AuthenticationState.Authenticated
@@ -223,17 +223,17 @@ class ResourceShareInteractor(
         ) : Output()
 
         data class ShareFailure(
-            val failure: DomainResult.Failure,
+            val incomplete: DomainResult.Incomplete,
         ) : Output() {
             val message: String?
-                get() = failure.displayMessage()
+                get() = incomplete.displayMessage()
         }
 
         data class SimulateShareFailure(
-            val failure: DomainResult.Failure,
+            val incomplete: DomainResult.Incomplete,
         ) : Output() {
             val message: String?
-                get() = failure.displayMessage()
+                get() = incomplete.displayMessage()
         }
 
         class Unauthorized(

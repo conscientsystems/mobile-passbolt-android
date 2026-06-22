@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.core.resourcetypes
 import android.database.SQLException
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.RebuildLocalResourceTypesUseCase
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import timber.log.Timber
@@ -36,7 +37,7 @@ class ResourceTypesInteractor(
 ) {
     suspend fun fetchAndSaveResourceTypes(): Output =
         when (val fetched = fetchResourceTypesUseCase.execute(Unit)) {
-            is GetResourceTypesUseCase.Output.Failure<*> -> Output.Failure(fetched.authenticationState)
+            is GetResourceTypesUseCase.Output.Failure -> Output.Failure(fetched.authenticationState)
             is GetResourceTypesUseCase.Output.Success -> {
                 try {
                     rebuildLocalResourceTypesUseCase.execute(
@@ -54,10 +55,7 @@ class ResourceTypesInteractor(
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
             override val authenticationState: AuthenticationState,

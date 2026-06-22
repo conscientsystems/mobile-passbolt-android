@@ -25,7 +25,8 @@ package com.passbolt.mobile.android.domain.passwordexpiry.usecase
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRepository
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 
@@ -34,35 +35,21 @@ class PasswordExpiryPoliciesInteractor(
 ) {
     suspend fun fetchAndSavePasswordExpiryPolicies(): Output =
         when (val result = passwordExpiryRepository.getPasswordExpirySettings()) {
-            is DomainResult.Failure -> Output.Failure.FetchFailure(result)
-            is DomainResult.Success -> Output.Success(result.value)
+            is DomainResult.Incomplete -> Output.Failure.FetchFailure(result)
+            is DomainResult.Finished -> Output.Success(result.value)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() {
-                val failure = (this as? Failure.FetchFailure)?.failure
-                return when (failure) {
-                    is DomainResult.Failure.Unauthorized ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Session,
-                        )
-                    is DomainResult.Failure.MfaRequired ->
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(failure.providers),
-                        )
-                    else -> AuthenticationState.Authenticated
-                }
-            }
-
         data class Success(
             val passwordExpirySettings: PasswordExpirySettings,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         sealed class Failure : Output() {
             data class FetchFailure(
-                val failure: DomainResult.Failure,
-            ) : Failure()
+                override val incomplete: DomainResult.Incomplete,
+            ) : Failure(),
+                IncompleteAuthenticatedOutput
         }
     }
 }

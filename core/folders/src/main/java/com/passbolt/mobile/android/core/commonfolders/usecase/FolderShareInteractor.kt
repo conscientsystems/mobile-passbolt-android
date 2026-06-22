@@ -54,7 +54,7 @@ class FolderShareInteractor(
             )
 
         return when (val output = shareFolderUseCase.execute(ShareFolderUseCase.Input(folderId, sharePermissions))) {
-            is ShareFolderUseCase.Output.Failure -> Output.ShareFailure(output.failure)
+            is ShareFolderUseCase.Output.Failure -> Output.ShareFailure(output.incomplete)
             is ShareFolderUseCase.Output.Success -> Output.Success
         }
     }
@@ -63,17 +63,17 @@ class FolderShareInteractor(
         override val authenticationState: AuthenticationState
             get() =
                 when (this) {
-                    is ShareFailure if this.failure is DomainResult.Failure.Unauthorized ->
+                    is ShareFailure if this.incomplete is DomainResult.Incomplete.Unauthorized ->
                         AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
                     is Unauthorized -> AuthenticationState.Unauthenticated(this.reason)
                     else -> AuthenticationState.Authenticated
                 }
 
         data class ShareFailure(
-            val failure: DomainResult.Failure,
+            val incomplete: DomainResult.Incomplete,
         ) : Output() {
             val message: String?
-                get() = failure.displayMessage()
+                get() = incomplete.displayMessage()
         }
 
         class Unauthorized(

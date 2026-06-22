@@ -25,11 +25,11 @@ package com.passbolt.mobile.android.data.mfa.datasource.remote
 
 import com.passbolt.mobile.android.common.CookieExtractor
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ErrorHeaderMapper
-import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.mfa.datasource.remote.api.MfaApi
 import com.passbolt.mobile.android.domain.mfa.MfaDataSource
 import com.passbolt.mobile.android.domain.mfa.model.DuoPrompt
@@ -55,54 +55,39 @@ internal class MfaRemoteDataSource(
         otp: String,
         remember: Boolean,
         authToken: String?,
-    ): DomainResult<TotpVerification> {
-        val result = callWithHandler(responseHandler) { mfaApi.verifyTotp(TotpRequest(otp, remember), authToken.toBearer()) }
-        return when (result) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toTotpVerification())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
-    }
+    ): DomainResult<TotpVerification> =
+        callWithHandler(responseHandler) {
+            mfaApi.verifyTotp(TotpRequest(otp, remember), authToken.toBearer())
+        }.toDomainResult().map { it.toTotpVerification() }
 
     override suspend fun verifyYubikeyOtp(
         otp: String,
         remember: Boolean,
         authToken: String?,
-    ): DomainResult<YubikeyVerification> {
-        val result = callWithHandler(responseHandler) { mfaApi.verifyYubikeyOtp(HotpRequest(otp, remember), authToken.toBearer()) }
-        return when (result) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toYubikeyVerification())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
-    }
+    ): DomainResult<YubikeyVerification> =
+        callWithHandler(responseHandler) {
+            mfaApi.verifyYubikeyOtp(HotpRequest(otp, remember), authToken.toBearer())
+        }.toDomainResult().map { it.toYubikeyVerification() }
 
-    override suspend fun getDuoPrompt(authToken: String?): DomainResult<DuoPrompt> {
-        val result = callWithHandler(responseHandler) { mfaApi.getDuoPromptUrl(authToken.toBearer()) }
-        return when (result) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDuoPrompt())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
-    }
+    override suspend fun getDuoPrompt(authToken: String?): DomainResult<DuoPrompt> =
+        callWithHandler(responseHandler) {
+            mfaApi.getDuoPromptUrl(authToken.toBearer())
+        }.toDomainResult().map { it.toDuoPrompt() }
 
     override suspend fun verifyDuoCallback(
         authToken: String?,
         duoStateUuid: String,
         state: String?,
         code: String?,
-    ): DomainResult<DuoVerification> {
-        val result =
-            callWithHandler(responseHandler) {
-                mfaApi.verifyDuoCallback(
-                    authHeader = authToken.toBearer(),
-                    passboltDuoState = DUO_STATE_COOKIE_TEMPLATE.format(duoStateUuid),
-                    state = state,
-                    code = code,
-                )
-            }
-        return when (result) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDuoVerification())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
-    }
+    ): DomainResult<DuoVerification> =
+        callWithHandler(responseHandler) {
+            mfaApi.verifyDuoCallback(
+                authHeader = authToken.toBearer(),
+                passboltDuoState = DUO_STATE_COOKIE_TEMPLATE.format(duoStateUuid),
+                state = state,
+                code = code,
+            )
+        }.toDomainResult().map { it.toDuoVerification() }
 
     private fun Response<Void>.toTotpVerification(): TotpVerification =
         when {

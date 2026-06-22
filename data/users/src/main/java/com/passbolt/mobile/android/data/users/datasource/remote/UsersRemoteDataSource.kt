@@ -24,10 +24,10 @@
 package com.passbolt.mobile.android.data.users.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.users.datasource.remote.api.UsersApi
 import com.passbolt.mobile.android.data.users.mapper.toDomain
 import com.passbolt.mobile.android.domain.users.UsersDataSource
@@ -38,14 +38,12 @@ internal class UsersRemoteDataSource(
     private val responseHandler: ResponseHandler,
 ) : UsersDataSource {
     override suspend fun getMyProfile(): DomainResult<UserProfile> =
-        when (val result = callWithHandler(responseHandler) { usersApi.getMyProfile().body }) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) { usersApi.getMyProfile().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 
     override suspend fun getUsers(hasAccessTo: List<String>?): DomainResult<List<UserProfile>> =
-        when (val result = callWithHandler(responseHandler) { usersApi.getUsers(hasAccessTo).body }) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) { usersApi.getUsers(hasAccessTo).body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

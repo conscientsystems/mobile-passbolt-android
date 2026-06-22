@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.domain.passwordpolicies.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRepository
 import com.passbolt.mobile.android.domain.passwordpolicies.mapper.toUiModel
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
@@ -70,7 +71,7 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
         runTest {
             val policies = PasswordPolicies.defaults()
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Success(policies))
+                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies))
             }
 
             val result = useCase.execute(Unit)
@@ -82,7 +83,7 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
     fun `failure falls back to defaults mapped to ui model`() =
         runTest {
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Failure.Unknown(RuntimeException()))
+                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, null))
             }
 
             val result = useCase.execute(Unit)
@@ -94,7 +95,7 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
     fun `notcached failure also falls back to defaults`() =
         runTest {
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Failure.NotCached)
+                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.NotCached)
             }
 
             val result = useCase.execute(Unit)

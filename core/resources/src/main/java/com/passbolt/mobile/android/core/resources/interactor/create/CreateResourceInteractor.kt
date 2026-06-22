@@ -27,10 +27,12 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.toAuthenticationState
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
@@ -162,16 +164,16 @@ class CreateResourceInteractor(
                 }
             }
 
-        return when (val response = resourceRepository.createResource(createResourceDto)) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success ->
+        return when (val result = resourceRepository.createResource(createResourceDto).toDomainResult()) {
+            is DomainResult.Incomplete -> Output.Failure(result)
+            is DomainResult.Finished ->
                 Output.Success(
                     ResourceModelWithAttributes(
-                        resourceModelMapper.map(response.value.body, slug = resourceInput.contentType.slug),
+                        resourceModelMapper.map(result.value.body, slug = resourceInput.contentType.slug),
                         // cannot add tags during creation
                         emptyList(),
-                        listOf(permissionsModelMapper.mapToUserPermission(response.value.body.permission)),
-                        response.value.body.favorite
+                        listOf(permissionsModelMapper.mapToUserPermission(result.value.body.permission)),
+                        result.value.body.favorite
                             ?.id
                             ?.toString(),
                     ),
@@ -244,32 +246,25 @@ class CreateResourceInteractor(
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    this is PasswordExpired ->
+                when (this) {
+                    is Failure -> incomplete.toAuthenticationState()
+                    is PasswordExpired ->
                         AuthenticationState.Unauthenticated(
                             AuthenticationState.Unauthenticated.Reason.Passphrase,
                         )
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                    else -> AuthenticationState.Authenticated
                 }
 
         data class Success(
             val resource: ResourceModelWithAttributes,
         ) : Output()
 
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            val incomplete: DomainResult.Incomplete,
+        ) : Output() {
+            val message: String?
+                get() = incomplete.displayMessage()
+        }
 
         data object PasswordExpired : Output()
 

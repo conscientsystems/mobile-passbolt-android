@@ -33,7 +33,7 @@ class GetPasswordExpirySettingsUseCase(
 ) : AsyncUseCase<Unit, PasswordExpirySettings> {
     override suspend fun execute(input: Unit): PasswordExpirySettings =
         when (val result = passwordExpiryRepository.getPasswordExpirySettings()) {
-            is DomainResult.Success -> result.value
-            is DomainResult.Failure -> PasswordExpirySettings.defaults()
+            is DomainResult.Finished -> result.value
+            is DomainResult.Incomplete -> PasswordExpirySettings.defaults()
         }
 }

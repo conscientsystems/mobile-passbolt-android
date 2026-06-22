@@ -81,7 +81,7 @@ class PasswordExpiryMemoryDataSourceTest : KoinTest {
         runTest {
             mockSelectedAccount("userA")
 
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Failure.NotCached)
+            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
@@ -90,7 +90,7 @@ class PasswordExpiryMemoryDataSourceTest : KoinTest {
             mockSelectedAccount("userA")
             dataSource.setPasswordExpirySettings(settingsA)
 
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Success(settingsA))
+            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Finished(settingsA))
         }
 
     @Test
@@ -101,7 +101,7 @@ class PasswordExpiryMemoryDataSourceTest : KoinTest {
 
             mockSelectedAccount("userB")
 
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Failure.NotCached)
+            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
@@ -113,8 +113,8 @@ class PasswordExpiryMemoryDataSourceTest : KoinTest {
             dataSource.setPasswordExpirySettings(settingsB)
 
             mockSelectedAccount("userA")
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Success(settingsA))
+            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Finished(settingsA))
             mockSelectedAccount("userB")
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Success(settingsB))
+            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Finished(settingsB))
         }
 }

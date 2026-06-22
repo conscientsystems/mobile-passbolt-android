@@ -1,11 +1,11 @@
 package com.passbolt.mobile.android.core.commonfolders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.dto.response.Pagination
 import com.passbolt.mobile.android.mappers.FolderModelMapper
 import com.passbolt.mobile.android.passboltapi.folders.FoldersRepository
@@ -38,13 +38,13 @@ class GetFoldersPaginatedUseCase(
     private val folderModelMapper: FolderModelMapper,
 ) : AsyncUseCase<GetFoldersPaginatedUseCase.Input, GetFoldersPaginatedUseCase.Output> {
     override suspend fun execute(input: Input): Output =
-        when (val response = foldersRepository.getFoldersPaginated(input.limit, input.page)) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success ->
+        when (val result = foldersRepository.getFoldersPaginated(input.limit, input.page).toDomainResult()) {
+            is DomainResult.Finished ->
                 Output.Success(
-                    pagination = response.value.header.pagination,
-                    folders = response.value.body.map { folderModelMapper.map(it) },
+                    pagination = result.value.header.pagination,
+                    folders = result.value.body.map { folderModelMapper.map(it) },
                 )
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     data class Input(
@@ -53,33 +53,15 @@ class GetFoldersPaginatedUseCase(
     )
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when (this) {
-                    is Failure<*> if this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    is Failure<*> if this.response.exception is PassphraseNotInCacheException -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Passphrase)
-                    }
-                    is Failure<*> if this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
-                }
-
         data class Success(
             val pagination: Pagination,
             val folders: List<FolderModelWithAttributes>,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
-        class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

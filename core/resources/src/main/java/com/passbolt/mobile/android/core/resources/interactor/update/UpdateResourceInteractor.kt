@@ -30,10 +30,8 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.mvp.authentication.toAuthenticationState
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
@@ -99,7 +97,7 @@ class UpdateResourceInteractor(
             val usersWhoHaveAccess =
                 fetchUsersUseCase.execute(FetchUsersUseCase.Input(listOf(resourceInput.resourceId)))
         ) {
-            is FetchUsersUseCase.Output.Failure -> Output.Failure(usersWhoHaveAccess.failure)
+            is FetchUsersUseCase.Output.Failure -> Output.Failure(usersWhoHaveAccess.incomplete)
             is FetchUsersUseCase.Output.Success -> {
                 if (isSecretValid && isResourceValid) {
                     updateResource(secretInput, passphrase, usersWhoHaveAccess.users, resourceInput)
@@ -170,17 +168,18 @@ class UpdateResourceInteractor(
                     }
                 }
 
-            return when (
-                val response =
-                    resourceRepository.updateResource(
-                        resourceInput.resourceId,
-                        createResourceDto,
-                    )
+            when (
+                val result =
+                    resourceRepository
+                        .updateResource(
+                            resourceInput.resourceId,
+                            createResourceDto,
+                        ).toDomainResult()
             ) {
-                is NetworkResult.Failure -> Output.Failure(response.toDomainFailure())
-                is NetworkResult.Success ->
+                is DomainResult.Incomplete -> Output.Failure(result)
+                is DomainResult.Finished ->
                     Output.Success(
-                        resourceModelMapper.map(response.value.body, slug = resourceInput.contentType.slug),
+                        resourceModelMapper.map(result.value.body, slug = resourceInput.contentType.slug),
                     )
             }
         }
@@ -259,18 +258,13 @@ class UpdateResourceInteractor(
     sealed class Output : AuthenticatedUseCaseOutput {
         override val authenticationState: AuthenticationState
             get() =
-                when {
-                    this is Failure && this.failure is DomainResult.Failure.Unauthorized ->
-                        AuthenticationState.Unauthenticated(Session)
-                    this is Failure && this.failure is DomainResult.Failure.MfaRequired ->
-                        AuthenticationState.Unauthenticated(Mfa(this.failure.providers))
-                    this is PasswordExpired ->
+                when (this) {
+                    is Failure -> incomplete.toAuthenticationState()
+                    is PasswordExpired ->
                         AuthenticationState.Unauthenticated(
                             AuthenticationState.Unauthenticated.Reason.Passphrase,
                         )
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
+                    else -> AuthenticationState.Authenticated
                 }
 
         data class Success(
@@ -278,10 +272,10 @@ class UpdateResourceInteractor(
         ) : Output()
 
         data class Failure(
-            val failure: DomainResult.Failure,
+            val incomplete: DomainResult.Incomplete,
         ) : Output() {
             val message: String?
-                get() = failure.displayMessage()
+                get() = incomplete.displayMessage()
         }
 
         data object PasswordExpired : Output()

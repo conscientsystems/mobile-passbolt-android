@@ -27,6 +27,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.commonfolders.usecase.AddLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.FolderShareInteractor
@@ -38,7 +39,6 @@ import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalParentF
 import com.passbolt.mobile.android.core.idlingresource.CreateFolderIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.createfolder.CreateFolderIntent.FolderNameChanged
@@ -466,7 +466,7 @@ class CreateFolderViewModelTest : KoinTest {
 
         whenever(createFolderUseCase.execute(any())) doReturn
             CreateFolderUseCase.Output.Failure(
-                NetworkResult.Failure.NetworkError<Any>(Exception("Network error"), "Network error"),
+                DomainResult.Incomplete.Error(UNKNOWN, "Network error"),
             )
     }
 
@@ -481,7 +481,7 @@ class CreateFolderViewModelTest : KoinTest {
 
         whenever(folderShareInteractor.shareFolder(any(), any())) doReturn
             FolderShareInteractor.Output.ShareFailure(
-                DomainResult.Failure.Unknown(RuntimeException("Share failed")),
+                DomainResult.Incomplete.Error(UNKNOWN, "Share failed"),
             )
     }
 

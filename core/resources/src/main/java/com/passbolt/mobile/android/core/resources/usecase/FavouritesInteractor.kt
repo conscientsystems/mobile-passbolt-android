@@ -1,8 +1,8 @@
 package com.passbolt.mobile.android.core.resources.usecase
 
-import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.resources.usecase.db.UpdateLocalResourceUseCase
 import com.passbolt.mobile.android.domain.favourites.usecase.AddToFavouritesUseCase
 import com.passbolt.mobile.android.domain.favourites.usecase.RemoveFromFavouritesUseCase
@@ -48,11 +48,7 @@ class FavouritesInteractor(
 
         return when (addToFavouritesResult) {
             is AddToFavouritesUseCase.Output.Failure -> {
-                Timber.e(
-                    (addToFavouritesResult.failure as? DomainResult.Failure.Unknown)?.cause,
-                    "Error when adding to favourites. Failure: %s",
-                    addToFavouritesResult.failure,
-                )
+                Timber.e("Error when adding to favourites. Failure: %s", addToFavouritesResult.incomplete)
                 Output.Failure(addToFavouritesResult.authenticationState)
             }
             is AddToFavouritesUseCase.Output.Success ->
@@ -69,11 +65,7 @@ class FavouritesInteractor(
 
         return when (removeFromFavouritesResult) {
             is RemoveFromFavouritesUseCase.Output.Failure -> {
-                Timber.e(
-                    (removeFromFavouritesResult.failure as? DomainResult.Failure.Unknown)?.cause,
-                    "Error when removing from favourites. Failure: %s",
-                    removeFromFavouritesResult.failure,
-                )
+                Timber.e("Error when removing from favourites. Failure: %s", removeFromFavouritesResult.incomplete)
                 Output.Failure(removeFromFavouritesResult.authenticationState)
             }
             is RemoveFromFavouritesUseCase.Output.Success ->
@@ -94,10 +86,7 @@ class FavouritesInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output() {
-            override val authenticationState: AuthenticationState
-                get() = AuthenticationState.Authenticated
-        }
+        data object Success : Output(), CompleteAuthenticatedOutput
 
         class Failure(
             override val authenticationState: AuthenticationState,

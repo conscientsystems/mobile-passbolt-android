@@ -28,6 +28,7 @@ import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.common.validation.StringMaxLength
 import com.passbolt.mobile.android.common.validation.StringNotBlank
 import com.passbolt.mobile.android.common.validation.validation
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.commonfolders.usecase.AddLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase.Output.Failure
@@ -172,7 +173,7 @@ internal class CreateFolderViewModel(
                     }
             ) {
                 is Failure -> {
-                    emitSideEffect(ShowErrorSnackbar(CREATE_FOLDER_ERROR, output.result.headerMessage))
+                    emitSideEffect(ShowErrorSnackbar(CREATE_FOLDER_ERROR, output.incomplete.displayMessage()))
                 }
                 is Success -> {
                     addLocalFolderUseCase.execute(AddLocalFolderUseCase.Input(output.folderWithAttributes.folderModel))

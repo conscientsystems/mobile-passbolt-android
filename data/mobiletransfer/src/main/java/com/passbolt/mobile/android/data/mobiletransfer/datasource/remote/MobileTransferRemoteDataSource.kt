@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.data.mobiletransfer.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.mobiletransfer.datasource.remote.api.MobileTransferApi
 import com.passbolt.mobile.android.data.mobiletransfer.mapper.createTransferRequestDto
 import com.passbolt.mobile.android.data.mobiletransfer.mapper.toCreateTransferModel
@@ -49,50 +49,32 @@ internal class MobileTransferRemoteDataSource(
         currentPage: Int,
         status: Status,
     ): DomainResult<UpdateTransferModel> =
-        when (
-            val result =
-                callWithHandler(responseHandler) {
-                    val requestDto = updateTransferRequestDto(currentPage, status)
-                    val userProfile = if (status == Status.COMPLETE) PROFILE_INFO_REQUIRED else null
-                    mobileTransferApi.updateTransfer(uuid, authToken, requestDto, userProfile).body
-                }
-        ) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toUpdateTransferModel())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) {
+            val requestDto = updateTransferRequestDto(currentPage, status)
+            val userProfile = if (status == Status.COMPLETE) PROFILE_INFO_REQUIRED else null
+            mobileTransferApi.updateTransfer(uuid, authToken, requestDto, userProfile).body
+        }.toDomainResult().map { it.toUpdateTransferModel() }
 
     override suspend fun createTransfer(
         totalPagesCount: Int,
         hash: String,
     ): DomainResult<CreateTransferModel> =
-        when (
-            val result =
-                callWithHandler(responseHandler) {
-                    mobileTransferApi.createTransfer(createTransferRequestDto(totalPagesCount, hash)).body
-                }
-        ) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toCreateTransferModel())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) {
+            mobileTransferApi.createTransfer(createTransferRequestDto(totalPagesCount, hash)).body
+        }.toDomainResult().map { it.toCreateTransferModel() }
 
     override suspend fun viewTransfer(
         authToken: String,
         mfaCookie: String?,
         uuid: String,
     ): DomainResult<TransferModel> =
-        when (
-            val result =
-                callWithHandler(responseHandler) {
-                    if (mfaCookie != null) {
-                        mobileTransferApi.viewTransferWithMfa(authToken, mfaCookie, uuid).body
-                    } else {
-                        mobileTransferApi.viewTransfer(authToken, uuid).body
-                    }
-                }
-        ) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toTransferModel())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) {
+            if (mfaCookie != null) {
+                mobileTransferApi.viewTransferWithMfa(authToken, mfaCookie, uuid).body
+            } else {
+                mobileTransferApi.viewTransfer(authToken, uuid).body
+            }
+        }.toDomainResult().map { it.toTransferModel() }
 
     private companion object {
         private const val PROFILE_INFO_REQUIRED = "1"

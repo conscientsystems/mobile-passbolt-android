@@ -1,10 +1,11 @@
 package com.passbolt.mobile.android.core.commongroups.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.mappers.GroupsModelMapper
 import com.passbolt.mobile.android.passboltapi.groups.GroupsRepository
 import com.passbolt.mobile.android.ui.GroupModelWithUsers
@@ -36,39 +37,20 @@ class FetchUserGroupsUseCase(
     private val groupsModelMapper: GroupsModelMapper,
 ) : AsyncUseCase<Unit, FetchUserGroupsUseCase.Output> {
     override suspend fun execute(input: Unit): Output =
-        when (val result = groupsRepository.getGroups()) {
-            is NetworkResult.Failure.NetworkError -> Output.Failure(result)
-            is NetworkResult.Failure.ServerError -> Output.Failure(result)
-            is NetworkResult.Success ->
-                Output.Success(
-                    result.value.map(groupsModelMapper::map),
-                )
+        when (val result = groupsRepository.getGroups().toDomainResult()) {
+            is DomainResult.Finished -> Output.Success(result.value.map(groupsModelMapper::map))
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure && this.result.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure && this.result.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.result)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
-                }
-
         data class Success(
             val groups: List<GroupModelWithUsers>,
-        ) : Output()
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
-            val result: NetworkResult.Failure<*>,
-        ) : Output()
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

@@ -28,9 +28,8 @@ import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSele
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Session
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.domain.users.UsersRepository
 import timber.log.Timber
 
@@ -43,7 +42,7 @@ class UserProfileInteractor(
     suspend fun fetchAndUpdateUserProfile(): Output {
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         return when (val result = usersRepository.getMyProfile()) {
-            is DomainResult.Success -> {
+            is DomainResult.Finished -> {
                 val profile = result.value
                 updateAccountDataUseCase.execute(
                     UpdateAccountDataUseCase.Input(
@@ -57,7 +56,7 @@ class UserProfileInteractor(
                 )
                 Output.Success
             }
-            is DomainResult.Failure -> {
+            is DomainResult.Incomplete -> {
                 Timber.e("Failed to fetch user profile")
                 Output.Failure(result)
             }
@@ -65,23 +64,14 @@ class UserProfileInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure && this.result is DomainResult.Failure.Unauthorized ->
-                        AuthenticationState.Unauthenticated(Session)
-                    this is Failure && this.result is DomainResult.Failure.MfaRequired ->
-                        AuthenticationState.Unauthenticated(Mfa(this.result.providers))
-                    else -> AuthenticationState.Authenticated
-                }
-
-        data object Success : Output()
+        data object Success : Output(), CompleteAuthenticatedOutput
 
         data class Failure(
-            val result: DomainResult.Failure,
-        ) : Output() {
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput {
             val message: String?
-                get() = result.displayMessage()
+                get() = incomplete.displayMessage()
         }
     }
 }

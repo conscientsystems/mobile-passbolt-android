@@ -35,7 +35,7 @@ class GetPasswordPoliciesUseCase(
 ) : AsyncUseCase<Unit, PasswordPoliciesUiModel> {
     override suspend fun execute(input: Unit): PasswordPoliciesUiModel =
         when (val result = passwordPoliciesRepository.getPasswordPolicies()) {
-            is DomainResult.Success -> result.value.toUiModel()
-            is DomainResult.Failure -> PasswordPolicies.defaults().toUiModel()
+            is DomainResult.Finished -> result.value.toUiModel()
+            is DomainResult.Incomplete -> PasswordPolicies.defaults().toUiModel()
         }
 }

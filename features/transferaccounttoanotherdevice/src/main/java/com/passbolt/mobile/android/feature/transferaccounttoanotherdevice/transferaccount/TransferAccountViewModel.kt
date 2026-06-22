@@ -107,8 +107,8 @@ internal class TransferAccountViewModel(
                 }
         ) {
             is CreateTransferUseCase.Output.Failure -> {
-                emitSideEffect(ShowErrorSnackbar(FAILED_TO_CREATE_TRANSFER, response.failure.displayMessage()))
-                Timber.e("Could not create transfer. Failure: ${response.failure}")
+                emitSideEffect(ShowErrorSnackbar(FAILED_TO_CREATE_TRANSFER, response.incomplete.displayMessage()))
+                Timber.e("Could not create transfer. Failure: ${response.incomplete}")
             }
             is CreateTransferUseCase.Output.Success -> {
                 Timber.d("Transfer created.")
@@ -172,9 +172,9 @@ internal class TransferAccountViewModel(
                             }
                     ) {
                         is ViewTransferUseCase.Output.Failure -> {
-                            Timber.e("Error during transfer details fetch. Failure: %s", response.failure)
+                            Timber.e("Error during transfer details fetch. Failure: %s", response.incomplete)
                             emitSideEffect(
-                                ShowErrorSnackbar(FAILED_TO_FETCH_TRANSFER_DETAILS, response.failure.displayMessage()),
+                                ShowErrorSnackbar(FAILED_TO_FETCH_TRANSFER_DETAILS, response.incomplete.displayMessage()),
                             )
                         }
                         is ViewTransferUseCase.Output.Success -> {

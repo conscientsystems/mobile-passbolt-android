@@ -3,10 +3,12 @@ package com.passbolt.mobile.android.metadata.interactor
 import com.google.gson.Gson
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
@@ -199,7 +201,7 @@ class MetadataPrivateKeysHelperInteractor(
             )
 
         return when (result) {
-            is UpdateMetadataPrivateKeyUseCase.Output.Failure<*> -> Output.KeyUploadFailure(result.response)
+            is UpdateMetadataPrivateKeyUseCase.Output.Failure -> Output.KeyUploadFailure(result.incomplete)
             is UpdateMetadataPrivateKeyUseCase.Output.Success -> {
                 when (metadataKeysInteractor.fetchAndSaveMetadataKeys()) {
                     is MetadataKeysInteractor.Output.Failure -> {
@@ -213,31 +215,20 @@ class MetadataPrivateKeysHelperInteractor(
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is KeyUploadFailure<*> && this.response.isUnauthorized ->
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    this is KeyUploadFailure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    this is CryptoFailure ->
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Passphrase)
-                    else -> AuthenticationState.Authenticated
-                }
-
-        data object Success : Output()
+        data object Success :
+            Output(),
+            CompleteAuthenticatedOutput
 
         data class CryptoFailure(
             val error: OpenPgpError,
-        ) : Output()
+        ) : Output() {
+            override val authenticationState: AuthenticationState
+                get() = AuthenticationState.Unauthenticated(Passphrase)
+        }
 
-        data class KeyUploadFailure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class KeyUploadFailure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 }

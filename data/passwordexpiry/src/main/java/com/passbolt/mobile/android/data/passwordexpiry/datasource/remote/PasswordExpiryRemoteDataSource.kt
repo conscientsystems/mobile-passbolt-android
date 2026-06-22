@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.data.passwordexpiry.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainFailure
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.passwordexpiry.datasource.remote.api.PasswordExpiryApi
 import com.passbolt.mobile.android.data.passwordexpiry.mapper.toDomain
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryDataSource
@@ -37,8 +37,7 @@ internal class PasswordExpiryRemoteDataSource(
     private val responseHandler: ResponseHandler,
 ) : PasswordExpiryDataSource {
     override suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings> =
-        when (val result = callWithHandler(responseHandler) { passwordExpiryApi.getPasswordExpirySettings().body }) {
-            is NetworkResult.Success -> DomainResult.Success(result.value.toDomain())
-            is NetworkResult.Failure -> result.toDomainFailure()
-        }
+        callWithHandler(responseHandler) { passwordExpiryApi.getPasswordExpirySettings().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

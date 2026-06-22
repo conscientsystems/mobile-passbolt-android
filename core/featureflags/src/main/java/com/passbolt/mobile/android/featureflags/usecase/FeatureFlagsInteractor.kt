@@ -33,7 +33,7 @@ class FeatureFlagsInteractor(
         when (val response = fetchFeatureFlagsUseCase.execute(Unit)) {
             is FetchFeatureFlagsUseCase.Output.Success ->
                 saveFeatureFlags(response.featureFlags)
-            is FetchFeatureFlagsUseCase.Output.Failure<*> ->
+            is FetchFeatureFlagsUseCase.Output.Failure ->
                 Output.Failure
         }
 

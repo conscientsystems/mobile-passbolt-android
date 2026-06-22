@@ -1,10 +1,11 @@
 package com.passbolt.mobile.android.core.resources.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.networking.MfaTypeProvider
-import com.passbolt.mobile.android.core.networking.NetworkResult
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.passboltapi.resource.ResourceRepository
 
 /**
@@ -33,34 +34,18 @@ class DeleteResourceUseCase(
     private val resourceRepository: ResourceRepository,
 ) : AsyncUseCase<DeleteResourceUseCase.Input, DeleteResourceUseCase.Output> {
     override suspend fun execute(input: Input) =
-        when (val response = resourceRepository.deleteResource(input.resourceId)) {
-            is NetworkResult.Failure -> Output.Failure(response)
-            is NetworkResult.Success -> Output.Success
+        when (val result = resourceRepository.deleteResource(input.resourceId).toDomainResult()) {
+            is DomainResult.Incomplete -> Output.Failure(result)
+            is DomainResult.Finished -> Output.Success
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        override val authenticationState: AuthenticationState
-            get() =
-                when {
-                    this is Failure<*> && this.response.isUnauthorized -> {
-                        AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
-                    }
-                    this is Failure<*> && this.response.isMfaRequired -> {
-                        val providers = MfaTypeProvider.get(this.response)
-                        AuthenticationState.Unauthenticated(
-                            AuthenticationState.Unauthenticated.Reason.Mfa(providers),
-                        )
-                    }
-                    else -> {
-                        AuthenticationState.Authenticated
-                    }
-                }
+        data object Success : Output(), CompleteAuthenticatedOutput
 
-        data object Success : Output()
-
-        data class Failure<T : Any>(
-            val response: NetworkResult.Failure<T>,
-        ) : Output()
+        data class Failure(
+            override val incomplete: DomainResult.Incomplete,
+        ) : Output(),
+            IncompleteAuthenticatedOutput
     }
 
     data class Input(
