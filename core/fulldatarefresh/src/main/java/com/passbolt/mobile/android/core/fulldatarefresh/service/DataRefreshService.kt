@@ -64,7 +64,7 @@ class DataRefreshService : LifecycleService() {
             refreshJob =
                 lifecycleScope.launch {
                     try {
-                        fullDataRefreshExecutor.susPerformFullDataRefresh()
+                        fullDataRefreshExecutor.performFullDataRefresh()
                     } finally {
                         stopForeground(ServiceCompat.STOP_FOREGROUND_REMOVE)
                         stopSelf()

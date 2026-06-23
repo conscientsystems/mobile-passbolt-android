@@ -8,9 +8,7 @@ import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor.Outpu
 import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor.Output.Success
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 /**
@@ -39,38 +37,17 @@ import timber.log.Timber
 class FullDataRefreshExecutor(
     private val homeDataInteractor: HomeDataInteractor,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
-    coroutineLaunchContext: CoroutineLaunchContext,
+    private val coroutineLaunchContext: CoroutineLaunchContext,
 ) {
-    private val job = SupervisorJob()
-    private val scope = CoroutineScope(job + coroutineLaunchContext.ui)
-
-    fun performFullDataRefresh() {
-        scope.launch {
-            Timber.d("Full data refresh initiated")
-            if (!dataRefreshTrackingFlow.isInProgress()) {
-                dataRefreshTrackingFlow.updateStatus(InProgress)
-                val output =
-                    runAuthenticatedOperation {
-                        homeDataInteractor.refreshAllHomeScreenData()
-                    }
-
-                dataRefreshTrackingFlow.updateStatus(
-                    when (output) {
-                        is Success -> FinishedWithSuccess
-                        is Failure -> FinishedWithFailure
-                    },
-                )
-            }
-        }
-    }
-
-    suspend fun susPerformFullDataRefresh() {
+    suspend fun performFullDataRefresh() {
         Timber.d("Full data refresh initiated")
         if (!dataRefreshTrackingFlow.isInProgress()) {
             dataRefreshTrackingFlow.updateStatus(InProgress)
             val output =
                 runAuthenticatedOperation {
-                    homeDataInteractor.refreshAllHomeScreenData()
+                    withContext(coroutineLaunchContext.default) {
+                        homeDataInteractor.refreshAllHomeScreenData()
+                    }
                 }
 
             dataRefreshTrackingFlow.updateStatus(
