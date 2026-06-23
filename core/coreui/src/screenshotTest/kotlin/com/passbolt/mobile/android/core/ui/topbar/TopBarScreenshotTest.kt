@@ -1,9 +1,9 @@
 package com.passbolt.mobile.android.core.ui.topbar
 
-import PassboltTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.tools.screenshot.PreviewTest
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 
 @PreviewTest
 @Preview(showBackground = true)

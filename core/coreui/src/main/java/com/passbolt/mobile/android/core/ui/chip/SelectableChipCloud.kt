@@ -23,7 +23,6 @@
 
 package com.passbolt.mobile.android.core.ui.chip
 
-import PassboltTheme
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -41,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.R
 
 @OptIn(ExperimentalLayoutApi::class)

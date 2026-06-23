@@ -23,7 +23,6 @@
 
 package com.passbolt.mobile.android.core.ui.dropdown
 
-import PassboltTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +48,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.R
 
 @OptIn(ExperimentalMaterial3Api::class)

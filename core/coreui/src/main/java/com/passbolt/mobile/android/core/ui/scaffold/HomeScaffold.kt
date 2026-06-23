@@ -22,7 +22,6 @@
  */
 package com.passbolt.mobile.android.core.ui.scaffold
 
-import PassboltTheme
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -66,6 +65,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.fab.AddFloatingActionButton
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.testtags.composetags.BackNavigation

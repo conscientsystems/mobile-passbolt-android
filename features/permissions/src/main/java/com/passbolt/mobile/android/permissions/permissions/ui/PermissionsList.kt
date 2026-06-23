@@ -23,13 +23,13 @@
 
 package com.passbolt.mobile.android.permissions.permissions.ui
 
-import PassboltTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.permissions.GroupPermissionRow
 import com.passbolt.mobile.android.core.ui.permissions.UserPermissionRow
 import com.passbolt.mobile.android.ui.GroupModel

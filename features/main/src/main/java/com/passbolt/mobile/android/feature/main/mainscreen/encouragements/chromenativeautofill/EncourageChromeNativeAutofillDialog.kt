@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.main.mainscreen.encouragements.chromenativeautofill
 
-import PassboltTheme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -32,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
 import com.passbolt.mobile.android.core.ui.circlestepsview.CircleStepIcon
 import com.passbolt.mobile.android.core.ui.circlestepsview.CircleStepItemModel

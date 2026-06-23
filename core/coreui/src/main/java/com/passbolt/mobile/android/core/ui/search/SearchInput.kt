@@ -22,7 +22,6 @@
  */
 package com.passbolt.mobile.android.core.ui.search
 
-import PassboltTheme
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,6 +46,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.R
 import com.passbolt.mobile.android.core.ui.circularimage.CircularProfileImage
 import com.passbolt.mobile.android.testtags.composetags.SearchField
