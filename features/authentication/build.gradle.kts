@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":gopenpgp"))
     implementation(project(":navigation"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":database"))
     implementation(project(":uimodel"))
     implementation(project(":security"))

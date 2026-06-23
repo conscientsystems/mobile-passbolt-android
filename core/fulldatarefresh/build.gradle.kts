@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":metadata"))
     implementation(project(":common"))
     implementation(project(":entity"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":accounts"))
     implementation(project(":database"))
     implementation(project(":coreui"))

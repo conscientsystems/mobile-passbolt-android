@@ -6,7 +6,7 @@ dependencies {
     implementation(project(":accounts"))
     implementation(project(":encryptedstorage"))
     implementation(project(":common"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":uimodel"))
     implementation(project(":entity"))
     implementation(project(":rbac-domain"))

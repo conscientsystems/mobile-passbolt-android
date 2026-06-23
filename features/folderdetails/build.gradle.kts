@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":passboltapi"))
     implementation(project(":database"))
     implementation(project(":gopenpgp"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":authentication"))
     implementation(project(":coreui"))
     implementation(project(":permissions"))

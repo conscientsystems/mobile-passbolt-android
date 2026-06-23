@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":coreui"))
     implementation(project(":localization"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":uimodel"))
     implementation(project(":accounts"))
     implementation(project(":architecture"))

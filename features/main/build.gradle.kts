@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":entity"))
     implementation(project(":scanotp"))
     implementation(project(":resourcepicker"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":accounts"))
     implementation(project(":autofillresources"))
     implementation(project(":preferences"))

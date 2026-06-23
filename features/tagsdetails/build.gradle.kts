@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":uimodel"))
     implementation(project(":networking"))
     implementation(project(":database"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":security"))
     implementation(project(":authentication"))
     implementation(project(":mappers"))
