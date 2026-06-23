@@ -1,16 +1,14 @@
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
 import com.passbolt.mobile.android.common.extension.isInFuture
-import com.passbolt.mobile.android.common.search.Searchable
-import com.passbolt.mobile.android.jsonmodel.JsonModel
+import com.passbolt.mobile.android.jsonmodel.CachedJsonModel
+import com.passbolt.mobile.android.jsonmodel.ParsedJson
 import com.passbolt.mobile.android.jsonmodel.delegates.RootRelativeJsonPathNullableStringDelegate
 import com.passbolt.mobile.android.jsonmodel.delegates.RootRelativeJsonPathNullableStringListDelegate
 import com.passbolt.mobile.android.jsonmodel.delegates.RootRelativeJsonPathStringDelegate
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.time.ZonedDateTime
 
 /**
@@ -37,7 +35,6 @@ import java.time.ZonedDateTime
  */
 
 @Serializable
-@Parcelize // TODO remove @Parcelize after full Compose navigation migration
 data class ResourceModel(
     val resourceId: String,
     val resourceTypeId: String,
@@ -52,8 +49,7 @@ data class ResourceModel(
     val metadataKeyId: String?,
     val metadataKeyType: MetadataKeyTypeModel?,
     val metadataJsonModel: MetadataJsonModel,
-) : Parcelable,
-    Searchable by metadataJsonModel
+)
 
 fun ResourceModel.contentType(): ContentType = ContentType.fromSlug(slug)
 
@@ -100,43 +96,29 @@ class UpdateResourceModel(
     )
 
 @Serializable
-@Parcelize // TODO remove @Parcelize after full Compose navigation migration
 data class MetadataJsonModel(
     override var json: String?,
-) : JsonModel,
-    Parcelable,
-    Searchable {
-    @IgnoredOnParcel
+) : CachedJsonModel {
+    @Transient
+    override var parsedCache: ParsedJson? = null
+
     var objectType: String by RootRelativeJsonPathStringDelegate(jsonPath = "object_type")
 
-    @IgnoredOnParcel
     var resourceTypeId: String by RootRelativeJsonPathStringDelegate(jsonPath = "resource_type_id")
 
-    @IgnoredOnParcel
     var name: String by RootRelativeJsonPathStringDelegate(jsonPath = "name")
 
-    @IgnoredOnParcel
     var username: String? by RootRelativeJsonPathNullableStringDelegate(jsonPath = "username")
 
-    @IgnoredOnParcel
     var description: String? by RootRelativeJsonPathNullableStringDelegate(jsonPath = "description")
 
-    @IgnoredOnParcel
     var uri: String? by RootRelativeJsonPathNullableStringDelegate(jsonPath = "uri")
 
-    @IgnoredOnParcel
     var uris: List<String>? by RootRelativeJsonPathNullableStringListDelegate(jsonPath = "uris")
 
-    @IgnoredOnParcel
     var icon: MetadataIconModel? by RootRelativeJsonPathIconDelegate(jsonPath = "icon")
 
-    @IgnoredOnParcel
     var customFields: MetadataCustomFieldsModel? by RootRelativeJsonPathMetadataCustomFieldsDelegate(jsonPath = "custom_fields")
-
-    @IgnoredOnParcel
-    override val searchCriteria: String = "$name${username.orEmpty()}${uri.orEmpty()}${uris.orEmpty().joinToString()}${
-        customFields?.map { it.metadataKey }.orEmpty().joinToString()
-    }"
 
     fun getMainUri(contentType: ContentType) =
         if (contentType.isV5()) {

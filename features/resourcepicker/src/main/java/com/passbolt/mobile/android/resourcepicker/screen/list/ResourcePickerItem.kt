@@ -65,6 +65,7 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
 @Composable
 fun ResourcePickerItem(
     resource: ResourcePickerListItem,
+    isSelected: Boolean,
     resourceIconProvider: ResourceIconProvider,
     onItemClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -171,7 +172,7 @@ fun ResourcePickerItem(
             )
         } else {
             RadioButton(
-                selected = resource.isSelected,
+                selected = isSelected,
                 onClick = null,
             )
         }

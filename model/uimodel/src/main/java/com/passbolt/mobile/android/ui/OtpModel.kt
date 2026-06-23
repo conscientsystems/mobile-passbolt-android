@@ -24,7 +24,6 @@
 package com.passbolt.mobile.android.ui
 
 import android.os.Parcelable
-import com.passbolt.mobile.android.common.search.Searchable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -46,7 +45,7 @@ data class OtpItemWrapper(
     val otpExpirySeconds: Long?,
     val otpValue: String?,
     val remainingSecondsCounter: Long? = otpExpirySeconds,
-) : Searchable by resource
+)
 
 @Parcelize
 data class OtpAdvancedSettingsModel(

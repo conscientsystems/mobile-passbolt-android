@@ -41,7 +41,6 @@ class ResourcePickerMapper {
                 haveWritePermissions = haveWritePermissions(resource),
                 isAllowedResourceType = resource.slug in selectableResourceTypeSlugs,
             ),
-        isSelected = false,
     )
 
     private fun getSelection(
