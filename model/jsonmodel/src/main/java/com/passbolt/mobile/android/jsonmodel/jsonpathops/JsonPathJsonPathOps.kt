@@ -2,9 +2,11 @@ package com.passbolt.mobile.android.jsonmodel.jsonpathops
 
 import com.google.gson.JsonElement
 import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import com.passbolt.mobile.android.jsonmodel.JsonModel
+import com.passbolt.mobile.android.jsonmodel.ParsedJson
 
 class JsonPathJsonPathOps(
     jsonPathConfig: Configuration,
@@ -14,14 +16,14 @@ class JsonPathJsonPathOps(
     override fun read(
         model: JsonModel,
         pathProvider: () -> String,
-    ): JsonElement = parseContext.parse(model.json).read(pathProvider())
+    ): JsonElement = context(model).read(pathProvider())
 
     override fun readOrNull(
         model: JsonModel,
         pathProvider: () -> String,
     ): JsonElement? =
         try {
-            val value = parseContext.parse(model.json).read<JsonElement>(pathProvider())
+            val value = context(model).read<JsonElement>(pathProvider())
             if (value.isJsonNull) null else value
         } catch (e: Exception) {
             null
@@ -32,19 +34,30 @@ class JsonPathJsonPathOps(
         pathProvider: () -> String,
         value: JsonElement,
     ) {
-        model.json =
-            try {
-                parseContext.parse(model.json).set(pathProvider(), value).jsonString()
-            } catch (exception: PathNotFoundException) {
-                parseContext.parse(model.json).put(ROOT_PATH, pathProvider(), value).jsonString()
-            }
+        val document = context(model)
+        try {
+            document.set(pathProvider(), value)
+        } catch (exception: PathNotFoundException) {
+            document.put(ROOT_PATH, pathProvider(), value)
+        }
+        commit(model, document)
     }
 
     override fun delete(
         model: JsonModel,
         pathProvider: () -> String,
     ) {
-        model.json = parseContext.parse(model.json).delete(pathProvider()).jsonString()
+        val document = context(model).delete(pathProvider())
+        commit(model, document)
+    }
+
+    private fun context(model: JsonModel): DocumentContext = model.parsed { ParsedJson(it, parseContext.parse(it)) }.context
+
+    private fun commit(
+        model: JsonModel,
+        document: DocumentContext,
+    ) {
+        model.store(ParsedJson(document.jsonString(), document))
     }
 
     private companion object {

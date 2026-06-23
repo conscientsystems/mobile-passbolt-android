@@ -23,9 +23,12 @@
 
 package com.passbolt.mobile.android.resourcepicker.screen.data
 
+import androidx.paging.PagingData
 import com.passbolt.mobile.android.ui.ResourcePickerListItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 data class ResourcePickerData(
-    val suggestedResources: List<ResourcePickerListItem> = emptyList(),
-    val resources: List<ResourcePickerListItem> = emptyList(),
+    val suggestedResources: Flow<PagingData<ResourcePickerListItem>> = flowOf(PagingData.empty()),
+    val resources: Flow<PagingData<ResourcePickerListItem>> = flowOf(PagingData.empty()),
 )

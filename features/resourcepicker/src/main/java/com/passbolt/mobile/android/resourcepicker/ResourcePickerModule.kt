@@ -28,10 +28,17 @@ import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerViewModel
 import com.passbolt.mobile.android.resourcepicker.screen.data.ResourcePickerDataProvider
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
 
 fun Module.resourcePickerScreenModule() {
     factoryOf(::ResourcePickerDataProvider)
     factoryOf(::ConfirmationModelFactory)
-    viewModelOf(::ResourcePickerViewModel)
+    viewModel { params ->
+        ResourcePickerViewModel(
+            suggestionUri = params.getOrNull(),
+            coroutineLaunchContext = get(),
+            dataRefreshTrackingFlow = get(),
+            resourcePickerDataProvider = get(),
+        )
+    }
 }

@@ -35,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -59,7 +58,6 @@ import com.passbolt.mobile.android.resourcepicker.model.ConfirmationModelFactory
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.CloseConfirmationDialog
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.ConfirmOtpLink
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.GoBack
-import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.Initialize
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.Search
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.SearchEndIconAction
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerSideEffect.NavigateBackWithResult
@@ -67,16 +65,14 @@ import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerSideEffec
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.resourcepicker.screen.list.ResourcePickerList
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 @Composable
 internal fun ResourcePickerScreen(
-    suggestionUri: String?,
+    viewModel: ResourcePickerViewModel,
     modifier: Modifier = Modifier,
-    viewModel: ResourcePickerViewModel = koinViewModel(),
     navigator: AppNavigator = koinInject(),
 ) {
     val context = LocalContext.current
@@ -85,10 +81,6 @@ internal fun ResourcePickerScreen(
     val coroutineScope = rememberCoroutineScope()
     val resultBus = NavigationResultEventBus.current
     val errorColor = colorResource(CoreUiR.color.red)
-
-    LaunchedEffect(suggestionUri) {
-        viewModel.onIntent(Initialize(suggestionUri))
-    }
 
     ResourcePickerScreen(
         state = state.value,

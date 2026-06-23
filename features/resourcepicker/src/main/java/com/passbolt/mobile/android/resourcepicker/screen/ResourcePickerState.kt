@@ -39,9 +39,4 @@ data class ResourcePickerState(
     val showConfirmationDialog: Boolean = false,
     val confirmationType: ConfirmationType? = null,
     val pickAction: PickResourceAction? = null,
-) {
-    val hasResources: Boolean
-        get() =
-            resourcePickerData.suggestedResources.isNotEmpty() ||
-                resourcePickerData.resources.isNotEmpty()
-}
+)
