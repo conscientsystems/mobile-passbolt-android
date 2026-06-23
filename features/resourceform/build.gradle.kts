@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":localization"))
     implementation(project(":passwordexpiry-domain"))
     implementation(project(":passwordpolicies-domain"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":entity"))
     implementation(project(":passwordgenerator"))
     implementation(project(":common"))

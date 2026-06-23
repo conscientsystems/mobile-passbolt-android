@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":networking"))
     implementation(project(":database"))
     implementation(project(":entity"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":security"))
     implementation(project(":authentication"))
     implementation(project(":mappers"))

@@ -23,7 +23,7 @@ dependencies {
     implementation(project(":entity"))
     implementation(project(":rbac-domain"))
     implementation(project(":idlingresource"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":accounts"))
     implementation(project(":jsonmodel"))
 

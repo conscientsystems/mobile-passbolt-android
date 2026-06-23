@@ -20,7 +20,7 @@ dependencies {
     implementation(project(":authentication"))
     implementation(project(":entity"))
     implementation(project(":localization"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":folderdetails"))
     implementation(project(":groupdetails"))
     implementation(project(":users"))

@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":passboltapi"))
     implementation(project(":share-domain"))
     implementation(project(":database"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":accounts"))
     implementation(project(":preferences"))
 

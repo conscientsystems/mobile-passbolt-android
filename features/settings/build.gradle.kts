@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":authentication"))
     implementation(project(":passboltapi"))
     implementation(project(":mappers"))
-    implementation(project(":featureflags"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":uimodel"))
     implementation(project(":logger"))
     implementation(project(":localization"))
