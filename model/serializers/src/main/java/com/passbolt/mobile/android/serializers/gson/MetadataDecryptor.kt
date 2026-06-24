@@ -37,6 +37,8 @@ import com.passbolt.mobile.android.metadata.sessionkeys.SessionKeysMemoryCache
 import com.passbolt.mobile.android.ui.ParsedMetadataKeyModel
 import com.proton.gopenpgp.crypto.Crypto
 import com.proton.gopenpgp.crypto.Key
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
@@ -50,18 +52,13 @@ class MetadataDecryptor(
     private val coroutineLaunchContext: CoroutineLaunchContext,
 ) {
     private val cachedSharedKeys = ConcurrentHashMap<String, Key>()
-    private lateinit var cachedPersonalKey: Key
+
+    @Volatile
+    private var cachedPersonalKey: Key? = null
+    private val personalKeyMutex = Mutex()
 
     suspend fun decryptMetadata(resource: ResourceResponseV5Dto): Output {
         return try {
-            if (!::cachedPersonalKey.isInitialized) {
-                val privateKey = getSelectedUserPrivateKeyUseCase.execute(Unit).privateKey
-                require(privateKey != null) { "Selected user private key not found" }
-                val passphrase = passphraseMemoryCache.get()
-                require(passphrase is PotentialPassphrase.Passphrase) { "Passphrase not present in cache" }
-                cachedPersonalKey = Crypto.newPrivateKeyFromArmored(privateKey, passphrase.passphrase)
-            }
-
             withContext(coroutineLaunchContext.io) {
                 // decrypt using cached session key
                 val cachedSessionKey = sessionKeysCache.getSessionKeyHexString(RESOURCE.value, resource.id)
@@ -98,7 +95,7 @@ class MetadataDecryptor(
         }
     }
 
-    private fun getUnlockedKey(resource: ResourceResponseV5Dto): Key =
+    private suspend fun getUnlockedKey(resource: ResourceResponseV5Dto): Key =
         when (resource.metadataKeyType) {
             SHARED -> {
                 val cachedKey = cachedSharedKeys[resource.metadataKeyId.toString()]
@@ -124,8 +121,21 @@ class MetadataDecryptor(
                         }
                 }
             }
-            PERSONAL -> cachedPersonalKey
+            PERSONAL -> personalKey()
         }
+
+    private suspend fun personalKey(): Key {
+        cachedPersonalKey?.let { return it }
+        return personalKeyMutex.withLock {
+            cachedPersonalKey ?: run {
+                val privateKey = getSelectedUserPrivateKeyUseCase.execute(Unit).privateKey
+                require(privateKey != null) { "Selected user private key not found" }
+                val passphrase = passphraseMemoryCache.get()
+                require(passphrase is PotentialPassphrase.Passphrase) { "Passphrase not present in cache" }
+                Crypto.newPrivateKeyFromArmored(privateKey, passphrase.passphrase).also { cachedPersonalKey = it }
+            }
+        }
+    }
 
     sealed class Output {
         data class Success(
