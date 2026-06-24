@@ -6,6 +6,9 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.mapAsync
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.mapAsyncNotNull
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
@@ -52,6 +55,7 @@ class MetadataKeysInteractor(
     private val openPgp: OpenPgp,
     private val gson: Gson,
     private val metadataPrivateKeysValidator: MetadataPrivateKeysValidator,
+    private val coroutineLaunchContext: CoroutineLaunchContext,
 ) {
     suspend fun fetchAndSaveMetadataKeys(): Output =
         when (val response = fetchMetadataKeysUseCase.execute(Unit)) {
@@ -77,7 +81,7 @@ class MetadataKeysInteractor(
         return when (val passphrase = passphraseMemoryCache.get()) {
             is PotentialPassphrase.Passphrase -> {
                 val decryptedKeysModel =
-                    metadataKeysModel.map {
+                    metadataKeysModel.mapAsync(coroutineLaunchContext) {
                         ParsedMetadataKeyModel(
                             id = it.id,
                             armoredKey = it.armoredKey,
@@ -86,7 +90,7 @@ class MetadataKeysInteractor(
                             expired = it.expired,
                             deleted = it.deleted,
                             metadataPrivateKeys =
-                                it.metadataPrivateKeys.mapNotNull { metadataPrivateKey ->
+                                it.metadataPrivateKeys.mapAsyncNotNull(coroutineLaunchContext) { metadataPrivateKey ->
                                     val decryptedKeyData =
                                         openPgp.decryptMessageArmored(
                                             privateKey,
