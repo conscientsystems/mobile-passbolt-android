@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,35 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
-    module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
-    }
+
+package com.passbolt.mobile.android.data.groups.mapper
+
+import com.passbolt.mobile.android.domain.users.model.GpgKey
+import com.passbolt.mobile.android.domain.users.model.UserProfile
+import com.passbolt.mobile.android.entity.user.User
+import com.passbolt.mobile.android.entity.user.UserGpgKey
+
+internal fun User.toUserProfile(): UserProfile =
+    UserProfile(
+        id = id,
+        username = userName,
+        disabled = disabled,
+        role = null,
+        firstName = profile.firstName,
+        lastName = profile.lastName,
+        avatarUrl = profile.avatarUrl,
+        gpgKey = gpgKey.toDomain(),
+    )
+
+private fun UserGpgKey.toDomain(): GpgKey =
+    GpgKey(
+        id = id,
+        armoredKey = armoredKey,
+        fingerprint = fingerprint,
+        bits = bits,
+        uid = uid,
+        keyId = keyId,
+        type = type,
+        keyExpirationDate = expires,
+        keyCreationDate = created,
+    )

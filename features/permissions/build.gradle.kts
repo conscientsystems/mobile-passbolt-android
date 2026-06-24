@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":fulldatarefresh"))
     implementation(project(":resources"))
-    implementation(project(":groups"))
+    implementation(project(":groups-domain"))
     implementation(project(":users"))
     implementation(project(":folders"))
     implementation(project(":localization"))

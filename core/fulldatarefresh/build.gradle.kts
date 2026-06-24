@@ -7,7 +7,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":groups"))
+    implementation(project(":groups-domain"))
     implementation(project(":users"))
     implementation(project(":architecture"))
     implementation(project(":resources"))

@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,12 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
-    module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
-    }
+
+package com.passbolt.mobile.android.domain.groups.model
+
+import com.passbolt.mobile.android.domain.users.model.UserProfile
+
+data class GroupWithUsers(
+    val group: Group,
+    val users: List<UserProfile>,
+)

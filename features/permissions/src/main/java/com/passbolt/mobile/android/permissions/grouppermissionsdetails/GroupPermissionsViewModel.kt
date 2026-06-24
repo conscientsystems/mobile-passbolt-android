@@ -1,9 +1,9 @@
 package com.passbolt.mobile.android.permissions.grouppermissionsdetails
 
 import androidx.lifecycle.viewModelScope
-import com.passbolt.mobile.android.core.commongroups.usecase.db.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsIntent.CancelPermissionDelete
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsIntent.ConfirmPermissionDelete
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsIntent.DeletePermission
