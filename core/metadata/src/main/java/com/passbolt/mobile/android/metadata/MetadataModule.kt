@@ -93,6 +93,7 @@ val metadataModule =
                 gson = get(),
                 sessionKeysBundleValidator = get(),
                 sessionKeysBundleProcessor = get(),
+                coroutineLaunchContext = get(),
             )
         }
         singleOf(::UpdateMetadataPrivateKeyUseCase)

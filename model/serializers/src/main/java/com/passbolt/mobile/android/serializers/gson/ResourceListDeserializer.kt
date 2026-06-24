@@ -27,6 +27,7 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.mapAsyncNotNull
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
 import com.passbolt.mobile.android.dto.response.ResourceResponseDto
@@ -34,8 +35,6 @@ import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeysUseCase
 import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeysUseCase.MetadataKeyPurpose.DECRYPT
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.allSlugs
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -82,26 +81,23 @@ open class ResourceListDeserializer(
 
             if (json.isJsonArray) {
                 Timber.d("Started resource list deserialization")
-                val jobs =
-                    json.asJsonArray.map { jsonElement ->
-                        async(context = coroutineLaunchContext.io) {
-                            if (!jsonElement.isJsonNull) {
-                                try {
-                                    singleResourceDeserializer.deserialize(jsonElement)
-                                } catch (e: Exception) {
-                                    Timber.e(e, "Failed to deserialize item")
-                                    null
-                                }
-                            } else {
-                                Timber.e("Null json element")
+                val results =
+                    json.asJsonArray.mapAsyncNotNull(coroutineLaunchContext) { jsonElement ->
+                        if (!jsonElement.isJsonNull) {
+                            try {
+                                singleResourceDeserializer.deserialize(jsonElement)
+                            } catch (e: Exception) {
+                                Timber.e(e, "Failed to deserialize item")
                                 null
                             }
+                        } else {
+                            Timber.e("Null json element")
+                            null
                         }
                     }
-                val results = jobs.awaitAll()
                 openPgp.freeMemory()
                 Timber.d("Finished resource list deserialization")
-                results.filterNotNull()
+                results
             } else {
                 emptyList()
             }

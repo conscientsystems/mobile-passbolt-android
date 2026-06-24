@@ -62,7 +62,7 @@ open class ResourceListItemDeserializer(
             Timber.d("Unsupported resource type id: $resourceTypeId, skipping")
             null
         } else {
-            withContext(coroutineLaunchContext.io) {
+            withContext(coroutineLaunchContext.default) {
                 try {
                     if (slug in SupportedContentTypes.v4Slugs) {
                         val resource = gson.fromJson(json, ResourceResponseV4Dto::class.java)

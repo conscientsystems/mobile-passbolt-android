@@ -54,7 +54,7 @@ class OpenPgp(
         message: String,
     ): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val passphraseCopy = passphrase.copyOf()
 
                 val encryptionHandle =
@@ -87,7 +87,7 @@ class OpenPgp(
         message: String,
     ): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val passphraseCopy = passphrase.copyOf()
 
                 val signingKey = Crypto.newPrivateKeyFromArmored(privateKey, passphrase)
@@ -124,7 +124,7 @@ class OpenPgp(
         cipherText: String,
     ): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val passphraseCopy = passphrase.copyOf()
 
                 val decryptionHandle =
@@ -158,7 +158,7 @@ class OpenPgp(
         cipherText: String,
     ): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val passphraseCopy = passphrase.copyOf()
 
                 val decryptionKey = Crypto.newPrivateKeyFromArmored(privateKey, passphrase)
@@ -194,7 +194,7 @@ class OpenPgp(
         passphrase: ByteArray,
     ): OpenPgpResult<Boolean> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val passphraseCopy = passphrase.copyOf()
 
                 val unlockedKey = Key(privateKey).unlock(passphraseCopy)
@@ -216,7 +216,7 @@ class OpenPgp(
         cipherText: String,
     ): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val passphraseCopy = passphrase.copyOf()
 
                 val decryptionHandle =
@@ -249,7 +249,7 @@ class OpenPgp(
         cipherText: String,
     ): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val passphraseCopy = passphrase.copyOf()
 
                 val decryptionHandle =
@@ -276,7 +276,7 @@ class OpenPgp(
 
     suspend fun generatePublicKey(privateKey: String): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 OpenPgpResult.Result(
                     Crypto.newKeyFromArmored(privateKey).armoredPublicKey,
                 )
@@ -290,7 +290,7 @@ class OpenPgp(
 
     suspend fun getKeyFingerprint(key: String): OpenPgpResult<String> =
         try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 OpenPgpResult.Result(
                     Key(key).fingerprint,
                 )
@@ -307,7 +307,7 @@ class OpenPgp(
         pgpMessage: ByteArray,
     ): OpenPgpResult<CleartextSignatureVerification> {
         return try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val keyFingerprint = (getKeyFingerprint(armoredPublicKey) as OpenPgpResult.Result<String>).result
 
                 val verificationHandle =
@@ -351,7 +351,7 @@ class OpenPgp(
         message: String,
     ): OpenPgpResult<String> {
         return try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val pgpSessionKey =
                     Crypto.newSessionKeyFromToken(
                         sessionKeyHexString.decodeHex(),
@@ -382,7 +382,7 @@ class OpenPgp(
         cipherText: String,
     ): OpenPgpResult<DecryptedMessageAndSessionKey> {
         return try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val decryptionHandle =
                     pgpHandle
                         .decryptionWithTimeOffset()
@@ -416,7 +416,7 @@ class OpenPgp(
         pgpMessage: ByteArray,
     ): OpenPgpResult<VerifiedMessage> {
         return try {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Default) {
                 val decryptionHandle =
                     pgpHandle
                         .decryptionWithTimeOffset()

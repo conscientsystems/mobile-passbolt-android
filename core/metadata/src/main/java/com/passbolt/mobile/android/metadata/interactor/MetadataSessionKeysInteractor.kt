@@ -6,6 +6,8 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.mapAsyncNotNull
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
@@ -63,6 +65,7 @@ class MetadataSessionKeysInteractor(
     private val gson: Gson,
     private val sessionKeysBundleValidator: SessionKeysBundleValidator,
     private val sessionKeysBundleProcessor: SessionKeysBundleProcessor,
+    private val coroutineLaunchContext: CoroutineLaunchContext,
 ) {
     suspend fun fetchMetadataSessionKeys(): Output =
         when (val response = fetchMetadataSessionKeysUseCase.execute(Unit)) {
@@ -261,7 +264,7 @@ class MetadataSessionKeysInteractor(
         privateKey: String,
         passphrase: ByteArray,
     ): List<DecryptedMetadataSessionKeysBundleModel> =
-        mapNotNull { metadataSessionKeysBundle ->
+        mapAsyncNotNull(coroutineLaunchContext) { metadataSessionKeysBundle ->
             when (
                 val decryptedBundleResult =
                     openPgp.decryptVerifyMessageArmored(
