@@ -286,7 +286,7 @@ class CachedResourcesSkippedTest : KoinTest {
                     object : TypeToken<List<@JvmSuppressWildcards ResourceResponseDto>>() {}.type,
                 )
 
-            verify(mockJsonSchemaValidationRunner, never()).isResourceValid(any(), any())
+            verify(mockJsonSchemaValidationRunner, never()).isResourceDocumentValid(any(), any())
 
             assertThat(resulList).hasSize(1)
             assertThat((resulList[0] as ResourceResponseV4Dto).name).isEqualTo("backend name")
@@ -342,7 +342,7 @@ class CachedResourcesSkippedTest : KoinTest {
             )
 
             mockJsonSchemaValidationRunner.stub {
-                onBlocking { isResourceValid(any(), any()) }.doReturn(true)
+                onBlocking { isResourceDocumentValid(any(), any()) }.doReturn(true)
             }
 
             val listJson = gson.toJson(backendResource)
@@ -353,7 +353,7 @@ class CachedResourcesSkippedTest : KoinTest {
                 )
 
             verify(mockMetadataDecryptor, never()).decryptMetadata(any())
-            verify(mockJsonSchemaValidationRunner).isResourceValid(any(), any())
+            verify(mockJsonSchemaValidationRunner).isResourceDocumentValid(any(), any())
 
             assertThat(resulList).hasSize(1)
             assertThat((resulList[0] as ResourceResponseV4Dto).name).isEqualTo("backend name")

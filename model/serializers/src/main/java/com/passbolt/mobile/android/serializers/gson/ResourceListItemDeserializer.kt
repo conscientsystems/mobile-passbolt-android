@@ -58,61 +58,65 @@ open class ResourceListItemDeserializer(
         val resourceTypeId = json.asJsonObject[SerializedNames.RESOURCE_TYPE_ID].asString
         val slug = resourceTypeIdToSlugMapping[UUID.fromString(resourceTypeId)]
 
-        return if (!isSupported(resourceTypeId, supportedResourceTypesIds)) {
+        if (!isSupported(resourceTypeId, supportedResourceTypesIds)) {
             Timber.d("Unsupported resource type id: $resourceTypeId, skipping")
-            null
-        } else {
-            withContext(coroutineLaunchContext.default) {
-                try {
-                    if (slug in SupportedContentTypes.v4Slugs) {
-                        val resource = gson.fromJson(json, ResourceResponseV4Dto::class.java)
-                        val cachedResource = resourcesSnapshot.getCachedResource(resource.id.toString())
+            return null
+        }
 
-                        if (canSkipDecryptionAndValidation(resource, cachedResource)) {
-                            resource
-                        } else {
-                            if (isValid(resource.resourceTypeId, json.toString(), resourceTypeIdToSlugMapping)) {
-                                resource
-                            } else {
-                                Timber.d("Invalid resource found id=(${resource.id}, skipping")
-                                null
-                            }
-                        }
-                    } else if (slug in SupportedContentTypes.v5Slugs) {
-                        val resource = gson.fromJson(json, ResourceResponseV5Dto::class.java)
-                        val cachedResource = resourcesSnapshot.getCachedResource(resource.id.toString())
-
-                        if (canSkipDecryptionAndValidation(resource, cachedResource)) {
-                            resource.copy(metadata = cachedResource.metadataJson)
-                        } else {
-                            val decryptedMetadataResult = metadataDecryptor.decryptMetadata(resource)
-
-                            if (decryptedMetadataResult is MetadataDecryptor.Output.Success &&
-                                isValid(
-                                    resource.resourceTypeId,
-                                    decryptedMetadataResult.decryptedMetadata,
-                                    resourceTypeIdToSlugMapping,
-                                )
-                            ) {
-                                resource.copy(metadata = decryptedMetadataResult.decryptedMetadata)
-                            } else {
-                                Timber.d("Invalid resource found id=(${resource.id}, skipping")
-                                null
-                            }
-                        }
-                    } else {
+        return withContext(coroutineLaunchContext.default) {
+            try {
+                when (slug) {
+                    in SupportedContentTypes.v4Slugs -> deserializeV4(json)
+                    in SupportedContentTypes.v5Slugs -> deserializeV5(json)
+                    else -> {
                         @Suppress("UseRequire")
                         throw IllegalArgumentException("Unsupported resource type slug: $slug")
                     }
-                } catch (e: PassphraseNotInCacheException) {
-                    // re-throw this exception for to be mapped to Unauthenticated result
-                    Timber.d("Passphrase not in cache; Re-throwing to show auth screen")
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e("Error when deserializing list item resource: ${e.message}")
-                    null
                 }
+            } catch (e: PassphraseNotInCacheException) {
+                // re-throw this exception for to be mapped to Unauthenticated result
+                Timber.d("Passphrase not in cache; Re-throwing to show auth screen")
+                throw e
+            } catch (e: Exception) {
+                Timber.e("Error when deserializing list item resource: ${e.message}")
+                null
             }
+        }
+    }
+
+    private suspend fun deserializeV4(json: JsonElement): ResourceResponseDto? {
+        val resource = gson.fromJson(json, ResourceResponseV4Dto::class.java)
+        val cachedResource = resourcesSnapshot.getCachedResource(resource.id.toString())
+
+        if (canSkipDecryptionAndValidation(resource, cachedResource)) {
+            return resource
+        }
+
+        val resourceValidationInput = gson.fromJson(json, Any::class.java)
+        return if (isValid(resource.resourceTypeId, resourceValidationInput, resourceTypeIdToSlugMapping)) {
+            resource
+        } else {
+            Timber.d("Invalid resource found id=(${resource.id}, skipping")
+            null
+        }
+    }
+
+    private suspend fun deserializeV5(json: JsonElement): ResourceResponseDto? {
+        val resource = gson.fromJson(json, ResourceResponseV5Dto::class.java)
+        val cachedResource = resourcesSnapshot.getCachedResource(resource.id.toString())
+
+        if (canSkipDecryptionAndValidation(resource, cachedResource)) {
+            return resource.copy(metadata = cachedResource.metadataJson)
+        }
+
+        val decryptedMetadataResult = metadataDecryptor.decryptMetadata(resource)
+        return if (decryptedMetadataResult is MetadataDecryptor.Output.Success &&
+            isValid(resource.resourceTypeId, decryptedMetadataResult.decryptedMetadata, resourceTypeIdToSlugMapping)
+        ) {
+            resource.copy(metadata = decryptedMetadataResult.decryptedMetadata)
+        } else {
+            Timber.d("Invalid resource found id=(${resource.id}, skipping")
+            null
         }
     }
 
@@ -136,7 +140,20 @@ open class ResourceListItemDeserializer(
         return if (resourceTypeSlug != null) {
             jsonSchemaValidationRunner.isResourceValid(resourceJson, resourceTypeSlug)
         } else {
-            return false
+            false
+        }
+    }
+
+    private suspend fun isValid(
+        resourceTypeId: UUID,
+        resourceDocument: Any?,
+        resourceTypeIdToSlugMapping: Map<UUID, String>,
+    ): Boolean {
+        val resourceTypeSlug = resourceTypeIdToSlugMapping[resourceTypeId]
+        return if (resourceTypeSlug != null) {
+            jsonSchemaValidationRunner.isResourceDocumentValid(resourceDocument, resourceTypeSlug)
+        } else {
+            false
         }
     }
 
