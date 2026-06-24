@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.resourcedetails.details.ui
 
-import PassboltTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.localization.R
 import com.passbolt.mobile.android.core.ui.header.ActionIcon
 import com.passbolt.mobile.android.core.ui.header.ItemWithHeader

@@ -23,7 +23,6 @@
 
 package com.passbolt.mobile.android.locationdetails
 
-import PassboltTheme
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -61,6 +60,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.common.extension.toSingleLine
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
