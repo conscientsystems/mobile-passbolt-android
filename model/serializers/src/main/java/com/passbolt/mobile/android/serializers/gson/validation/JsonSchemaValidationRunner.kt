@@ -33,6 +33,11 @@ class JsonSchemaValidationRunner(
         resourceTypeSlug: String,
     ) = jsonSchemaValidator.isResourceValid(resourceTypeSlug, resourceJson)
 
+    suspend fun isResourceDocumentValid(
+        resourceDocument: Any?,
+        resourceTypeSlug: String,
+    ) = jsonSchemaValidator.isResourceDocumentValid(resourceTypeSlug, resourceDocument)
+
     suspend fun isSecretValid(
         secretJson: String?,
         resourceTypeSlug: String,

@@ -36,19 +36,35 @@ class JSFJsonSchemaValidator(
         resourceJson: String?,
     ) = validate(schemaRepository.schemaForResource(resourceSlug), resourceJson, logValidationError = true)
 
+    override suspend fun isResourceDocumentValid(
+        resourceSlug: String,
+        resourceDocument: Any?,
+    ) = validateDocument(schemaRepository.schemaForResource(resourceSlug), resourceDocument, logValidationError = true)
+
     override suspend fun isSecretValid(
         resourceSlug: String,
         secretJson: String?,
     ) = validate(schemaRepository.schemaForSecret(resourceSlug), secretJson)
 
-    // do not log the error by default as log message contains validated field value
-    // which can lead to secret exposure in the internal log file when the secret is invalid
     private fun validate(
         schema: Schema,
         json: String?,
         logValidationError: Boolean = false,
+    ) = runValidation(logValidationError) { validator.validateJson(schema, json) }
+
+    private fun validateDocument(
+        schema: Schema,
+        document: Any?,
+        logValidationError: Boolean = false,
+    ) = runValidation(logValidationError) { validator.validate(schema, document) }
+
+    // do not log the error by default as log message contains validated field value
+    // which can lead to secret exposure in the internal log file when the secret is invalid
+    private inline fun runValidation(
+        logValidationError: Boolean,
+        validate: () -> Unit,
     ) = try {
-        validator.validateJson(schema, json)
+        validate()
         true
     } catch (exception: Exception) {
         if (logValidationError) {

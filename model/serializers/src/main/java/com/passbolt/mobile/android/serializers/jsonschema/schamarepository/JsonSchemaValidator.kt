@@ -29,6 +29,11 @@ interface JsonSchemaValidator {
         resourceJson: String?,
     ): Boolean
 
+    suspend fun isResourceDocumentValid(
+        resourceSlug: String,
+        resourceDocument: Any?,
+    ): Boolean
+
     suspend fun isSecretValid(
         resourceSlug: String,
         secretJson: String?,
