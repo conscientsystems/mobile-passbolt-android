@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,26 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
-    module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
-    }
+
+package com.passbolt.mobile.android.domain.groups
+
+import androidx.paging.PagingData
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.groups.model.Group
+import com.passbolt.mobile.android.domain.groups.model.GroupWithItemsCount
+import com.passbolt.mobile.android.domain.groups.model.GroupWithMembers
+import com.passbolt.mobile.android.domain.groups.model.GroupWithUsers
+import kotlinx.coroutines.flow.Flow
+
+interface GroupsRepository {
+    suspend fun getGroups(excludingIds: List<String>): List<Group>
+
+    fun getGroupsWithItemsCountPaged(
+        searchQuery: String?,
+        pageSize: Int,
+    ): Flow<PagingData<GroupWithItemsCount>>
+
+    suspend fun getGroupWithUsers(groupId: String): GroupWithUsers
+
+    suspend fun refreshGroups(): DomainResult<List<GroupWithMembers>>
+}

@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,29 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
-    module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
-    }
+
+package com.passbolt.mobile.android.domain.groups.usecase
+
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.domain.groups.GroupsRepository
+import com.passbolt.mobile.android.domain.groups.mapper.toUiModel
+import com.passbolt.mobile.android.ui.GroupWithUsersModel
+
+class GetGroupWithUsersUseCase(
+    private val groupsRepository: GroupsRepository,
+) : AsyncUseCase<GetGroupWithUsersUseCase.Input, GetGroupWithUsersUseCase.Output> {
+    override suspend fun execute(input: Input): Output =
+        Output(
+            groupsRepository
+                .getGroupWithUsers(input.groupId)
+                .toUiModel(),
+        )
+
+    data class Input(
+        val groupId: String,
+    )
+
+    data class Output(
+        val groupWithUsers: GroupWithUsersModel,
+    )
+}

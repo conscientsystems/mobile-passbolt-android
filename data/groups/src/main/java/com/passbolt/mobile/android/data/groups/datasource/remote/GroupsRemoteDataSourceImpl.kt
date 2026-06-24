@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,25 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
-    module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
-    }
+
+package com.passbolt.mobile.android.data.groups.datasource.remote
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.map
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.core.networking.toDomainResult
+import com.passbolt.mobile.android.data.groups.datasource.remote.api.GroupsApi
+import com.passbolt.mobile.android.data.groups.mapper.toDomain
+import com.passbolt.mobile.android.domain.groups.datasource.GroupsRemoteDataSource
+import com.passbolt.mobile.android.domain.groups.model.GroupWithMembers
+
+internal class GroupsRemoteDataSourceImpl(
+    private val groupsApi: GroupsApi,
+    private val responseHandler: ResponseHandler,
+) : GroupsRemoteDataSource {
+    override suspend fun getGroups(): DomainResult<List<GroupWithMembers>> =
+        callWithHandler(responseHandler) { groupsApi.getGroups().body }
+            .toDomainResult()
+            .map { groups -> groups.map { it.toDomain() } }
+}

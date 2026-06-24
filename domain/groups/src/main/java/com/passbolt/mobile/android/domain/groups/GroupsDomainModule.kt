@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,20 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
+
+package com.passbolt.mobile.android.domain.groups
+
+import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GetLocalGroupsUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GetLocalGroupsWithShareItemsCountPaginatedUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GroupsInteractor
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+
+val groupsDomainModule =
     module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
+        singleOf(::GetLocalGroupsUseCase)
+        singleOf(::GetLocalGroupsWithShareItemsCountPaginatedUseCase)
+        singleOf(::GetGroupWithUsersUseCase)
+        singleOf(::GroupsInteractor)
     }

@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":gopenpgp"))
     implementation(project(":authentication"))
     implementation(project(":coreui"))
-    implementation(project(":groups"))
+    implementation(project(":groups-domain"))
     implementation(project(":users"))
     implementation(project(":localization"))
 

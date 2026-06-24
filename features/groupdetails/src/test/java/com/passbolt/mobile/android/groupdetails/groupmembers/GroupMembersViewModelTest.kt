@@ -26,8 +26,8 @@ package com.passbolt.mobile.android.groupdetails.groupmembers
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.commongroups.usecase.db.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoBack
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.Initialize

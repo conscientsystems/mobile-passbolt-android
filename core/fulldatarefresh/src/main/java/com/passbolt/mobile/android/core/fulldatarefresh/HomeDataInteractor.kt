@@ -24,7 +24,6 @@
 package com.passbolt.mobile.android.core.fulldatarefresh
 
 import com.passbolt.mobile.android.core.commonfolders.usecase.FoldersInteractor
-import com.passbolt.mobile.android.core.commongroups.usecase.GroupsInteractor
 import com.passbolt.mobile.android.core.idlingresource.ResourcesFullRefreshIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
@@ -33,6 +32,7 @@ import com.passbolt.mobile.android.core.resources.usecase.ResourceInteractor
 import com.passbolt.mobile.android.core.resourcetypes.ResourceTypesInteractor
 import com.passbolt.mobile.android.core.users.UsersInteractor
 import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
+import com.passbolt.mobile.android.domain.groups.usecase.GroupsInteractor
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.metadata.interactor.MetadataKeysInteractor
 import com.passbolt.mobile.android.metadata.interactor.MetadataKeysSettingsInteractor

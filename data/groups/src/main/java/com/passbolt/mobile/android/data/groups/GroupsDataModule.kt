@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,26 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
+
+package com.passbolt.mobile.android.data.groups
+
+import com.passbolt.mobile.android.core.networking.RestService
+import com.passbolt.mobile.android.data.groups.datasource.local.GroupsLocalDataSourceImpl
+import com.passbolt.mobile.android.data.groups.datasource.remote.GroupsRemoteDataSourceImpl
+import com.passbolt.mobile.android.data.groups.datasource.remote.api.GroupsApi
+import com.passbolt.mobile.android.domain.groups.GroupsRepository
+import com.passbolt.mobile.android.domain.groups.datasource.GroupsLocalDataSource
+import com.passbolt.mobile.android.domain.groups.datasource.GroupsRemoteDataSource
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
+
+val groupsDataModule =
     module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
+        single { get<RestService>().service(GroupsApi::class.java) }
+
+        singleOf(::GroupsLocalDataSourceImpl) bind GroupsLocalDataSource::class
+        singleOf(::GroupsRemoteDataSourceImpl) bind GroupsRemoteDataSource::class
+
+        singleOf(::GroupsRepositoryImpl) bind GroupsRepository::class
     }

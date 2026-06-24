@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.passboltapi
-
-import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
-import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,11 +20,23 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val passboltApiModule =
-    module {
-        authApiModule()
-        secretsApiModule()
-        resourceApiModule()
-        foldersApiModule()
-        metadataApiModule()
+
+package com.passbolt.mobile.android.data.groups.datasource.remote.api
+
+import com.passbolt.mobile.android.dto.response.BaseResponse
+import com.passbolt.mobile.android.dto.response.GroupsResponseDto
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+internal interface GroupsApi {
+    @GET(GROUPS)
+    suspend fun getGroups(
+        @Query(QUERY_CONTAIN_USER) containingUser: Int = 1,
+    ): BaseResponse<List<GroupsResponseDto>>
+
+    private companion object {
+        private const val GROUPS = "groups.json"
+
+        private const val QUERY_CONTAIN_USER = "contain[user]"
     }
+}

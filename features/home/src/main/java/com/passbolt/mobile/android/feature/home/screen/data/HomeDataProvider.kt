@@ -29,11 +29,11 @@ import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalResourc
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalSubFolderResourcesFilteredPaginatedUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalSubFoldersForFolderPaginatedUseCase
 import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalSubFoldersForFolderUseCase
-import com.passbolt.mobile.android.core.commongroups.usecase.db.GetLocalGroupsWithShareItemsCountPaginatedUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesPaginatedUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesWithGroupPaginatedUseCase
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesWithTagPaginatedUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.GetLocalTagsPaginatedUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GetLocalGroupsWithShareItemsCountPaginatedUseCase
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
