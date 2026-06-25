@@ -19,6 +19,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.passbolt.mobile.android.core.compose.rememberDebouncedBoolean
 import com.passbolt.mobile.android.core.localization.R
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.HomeNavigationKey
 import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
@@ -260,9 +261,12 @@ private data class HomeListData(
 )
 
 @Composable
-private fun rememberHomeListData(state: HomeState): HomeListData {
-    val suggestedResources = state.homeData.suggestedResourceList.collectAsLazyPagingItems()
-    val resources = state.homeData.resourceList.collectAsLazyPagingItems()
+private fun rememberHomeListData(
+    state: HomeState,
+    coroutineLaunchContext: CoroutineLaunchContext = koinInject(),
+): HomeListData {
+    val suggestedResources = state.homeData.suggestedResourceList.collectAsLazyPagingItems(coroutineLaunchContext.default)
+    val resources = state.homeData.resourceList.collectAsLazyPagingItems(coroutineLaunchContext.default)
     val tags = state.homeData.tagsList.collectAsLazyPagingItems()
     val groups = state.homeData.groupsList.collectAsLazyPagingItems()
     val folders = state.homeData.foldersList.collectAsLazyPagingItems()
