@@ -26,7 +26,7 @@ class RootRelativeJsonPathNullableStringListDelegate(
     ): List<String>? =
         jsonPathsOps.readOrNull(thisRef) { "$.$jsonPath" }?.let {
             val type = TypeToken.getParameterized(List::class.java, String::class.java).type
-            gson.fromJson(it, type)
+            gson.fromJson<List<String?>>(it, type).filterNotNull()
         }
 
     override fun setValue(

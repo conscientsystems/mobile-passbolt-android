@@ -59,6 +59,29 @@ class RootRelativeJsonPathNullableStringListDelegateTest : KoinTest {
     }
 
     @Test
+    fun `read should drop null elements`() {
+        val jsonString =
+            """
+            {
+                "testListField": [
+                    "test1",
+                    null,
+                    "test2"
+                ]
+            }
+            """
+        val jsonModel =
+            object : JsonModel {
+                override var json: String? = jsonString
+
+                var testListField by RootRelativeJsonPathNullableStringListDelegate(jsonPath = "testListField")
+            }
+
+        assertThat(jsonModel.testListField).isNotNull()
+        assertThat(jsonModel.testListField!!).containsExactly("test1", "test2")
+    }
+
+    @Test
     fun `field write should work as expected`() {
         val jsonStringInputs =
             listOf(

@@ -676,6 +676,122 @@ class ResourceListDeserializerTest : KoinTest {
     }
 
     @Test
+    fun `v5 resource with null icon value should not be filtered`() {
+        mockIdToSlugMappingUseCase.stub {
+            onBlocking { execute(Unit) }.doReturn(
+                GetResourceTypeIdToSlugMappingUseCase.Output(
+                    mapOf(testedResourceTypeUuid to V5Default.slug),
+                ),
+            )
+        }
+        val validResources =
+            listOf(
+                ResourceResponseV5Dto(
+                    id = UUID.randomUUID(),
+                    resourceTypeId = testedResourceTypeUuid,
+                    resourceFolderId = null,
+                    permission = PermissionDto(UUID.randomUUID(), 1, "", UUID.randomUUID(), "", UUID.randomUUID(), "", ""),
+                    favorite = null,
+                    modified = "",
+                    tags = emptyList(),
+                    permissions = emptyList(),
+                    expired = null,
+                    metadataKeyType = MetadataKeyTypeDto.SHARED,
+                    metadata = "encrypted metadata",
+                    metadataKeyId = UUID.randomUUID(),
+                ),
+            )
+        mockMetadataDecryptor.stub {
+            onBlocking { decryptMetadata(any()) }.doReturn(
+                MetadataDecryptor.Output.Success(
+                    """
+                    {
+                        "object_type": "PASSBOLT_RESOURCE_METADATA",
+                        "name": "name",
+                        "uris": ["uri1"],
+                        "username": "username",
+                        "description": "description",
+                        "icon": {
+                            "type": "passbolt-icon-set",
+                            "value": null,
+                            "background_color": null
+                        }
+                    }
+                    """.trimIndent(),
+                ),
+            )
+        }
+
+        val listJson = gson.toJson(validResources)
+        val resulList =
+            gson.fromJson<List<ResourceResponseDto>>(
+                listJson,
+                object : TypeToken<List<@JvmSuppressWildcards ResourceResponseDto>>() {}.type,
+            )
+
+        assertThat(resulList).hasSize(1)
+        assertThat(resulList[0].id).isEqualTo(validResources[0].id)
+    }
+
+    @Test
+    fun `v5 resource with integer icon value should not be filtered`() {
+        mockIdToSlugMappingUseCase.stub {
+            onBlocking { execute(Unit) }.doReturn(
+                GetResourceTypeIdToSlugMappingUseCase.Output(
+                    mapOf(testedResourceTypeUuid to V5Default.slug),
+                ),
+            )
+        }
+        val validResources =
+            listOf(
+                ResourceResponseV5Dto(
+                    id = UUID.randomUUID(),
+                    resourceTypeId = testedResourceTypeUuid,
+                    resourceFolderId = null,
+                    permission = PermissionDto(UUID.randomUUID(), 1, "", UUID.randomUUID(), "", UUID.randomUUID(), "", ""),
+                    favorite = null,
+                    modified = "",
+                    tags = emptyList(),
+                    permissions = emptyList(),
+                    expired = null,
+                    metadataKeyType = MetadataKeyTypeDto.SHARED,
+                    metadata = "encrypted metadata",
+                    metadataKeyId = UUID.randomUUID(),
+                ),
+            )
+        mockMetadataDecryptor.stub {
+            onBlocking { decryptMetadata(any()) }.doReturn(
+                MetadataDecryptor.Output.Success(
+                    """
+                    {
+                        "object_type": "PASSBOLT_RESOURCE_METADATA",
+                        "name": "name",
+                        "uris": ["uri1"],
+                        "username": "username",
+                        "description": "description",
+                        "icon": {
+                            "type": "passbolt-icon-set",
+                            "value": 5,
+                            "background_color": null
+                        }
+                    }
+                    """.trimIndent(),
+                ),
+            )
+        }
+
+        val listJson = gson.toJson(validResources)
+        val resulList =
+            gson.fromJson<List<ResourceResponseDto>>(
+                listJson,
+                object : TypeToken<List<@JvmSuppressWildcards ResourceResponseDto>>() {}.type,
+            )
+
+        assertThat(resulList).hasSize(1)
+        assertThat(resulList[0].id).isEqualTo(validResources[0].id)
+    }
+
+    @Test
     fun `resources with valid fields for totp type should not be filtered`() {
         mockIdToSlugMappingUseCase.stub {
             onBlocking { execute(Unit) }.doReturn(
