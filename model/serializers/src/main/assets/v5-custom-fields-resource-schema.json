@@ -48,8 +48,15 @@
           ]
         },
         "value": {
-          "type": "integer",
-          "minimum": 0
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "background_color": {
           "anyOf": [

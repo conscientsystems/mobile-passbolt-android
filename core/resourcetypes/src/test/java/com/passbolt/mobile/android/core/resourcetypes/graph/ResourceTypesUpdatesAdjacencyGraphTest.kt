@@ -211,7 +211,7 @@ class ResourceTypesUpdatesAdjacencyGraphTest {
     fun `actions are correct for v5-pin-code`() {
         val actions = graph.getUpdateActionsMetadata(ContentType.V5PinCodeStandalone.slug)
 
-        assertThat(actions).hasSize(9)
+        assertThat(actions).hasSize(8)
         assertThat(actions.map { it.action }).containsExactly(
             UpdateAction.EDIT_METADATA,
             UpdateAction.ADD_PIN_CODE,
@@ -220,7 +220,6 @@ class ResourceTypesUpdatesAdjacencyGraphTest {
             UpdateAction.REMOVE_NOTE,
             UpdateAction.ADD_METADATA_DESCRIPTION,
             UpdateAction.REMOVE_METADATA_DESCRIPTION,
-            UpdateAction.EDIT_ADDITIONAL_URIS,
             UpdateAction.EDIT_APPEARANCE,
         )
     }

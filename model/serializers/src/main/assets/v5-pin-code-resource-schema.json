@@ -9,20 +9,6 @@
       "type": "string",
       "maxLength": 255
     },
-    "uris": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "maxLength": 1024
-          }
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
     "description": {
       "anyOf": [
         {
@@ -33,6 +19,41 @@
           "type": "null"
         }
       ]
+    },
+    "icon": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "keepass-icon-set",
+            "passbolt-icon-set"
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "background_color": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     }
   }
 }
