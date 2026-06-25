@@ -23,7 +23,7 @@
 
 package com.passbolt.mobile.android.locationdetails.data
 
-import com.passbolt.mobile.android.ui.FolderModel
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.ui.ResourcePermission
 import java.time.ZonedDateTime
 

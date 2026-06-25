@@ -23,9 +23,9 @@
 package com.passbolt.mobile.android.feature.home.screen
 
 import androidx.paging.compose.LazyPagingItems
+import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel.Show
 import com.passbolt.mobile.android.feature.home.screen.data.HeaderSectionConfiguration
-import com.passbolt.mobile.android.ui.FolderWithCountAndPath
 import com.passbolt.mobile.android.ui.GroupWithCount
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Folders

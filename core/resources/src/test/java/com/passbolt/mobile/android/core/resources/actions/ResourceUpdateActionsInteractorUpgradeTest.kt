@@ -23,7 +23,6 @@
 
 package com.passbolt.mobile.android.core.resources.actions
 
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
 import com.passbolt.mobile.android.core.resources.interactor.update.UpdateResourceInteractor
 import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
@@ -31,6 +30,7 @@ import com.passbolt.mobile.android.core.resources.usecase.db.UpdateLocalResource
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.ResourceTypesUpdatesAdjacencyGraph
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.jsonmodel.jsonModelModule
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysInteractor
 import com.passbolt.mobile.android.metadata.usecase.GetMetadataKeysSettingsUseCase

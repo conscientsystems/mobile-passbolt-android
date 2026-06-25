@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":users"))
     implementation(project(":architecture"))
     implementation(project(":resources"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
     implementation(project(":idlingresource"))
     implementation(project(":authentication"))
     implementation(project(":resourcetypes"))

@@ -1,7 +1,6 @@
 package com.passbolt.mobile.android.passboltapi
 
 import com.passbolt.mobile.android.passboltapi.auth.authApiModule
-import com.passbolt.mobile.android.passboltapi.folders.foldersApiModule
 import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
 import com.passbolt.mobile.android.passboltapi.resource.resourceApiModule
 import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
@@ -34,6 +33,5 @@ val passboltApiModule =
         authApiModule()
         secretsApiModule()
         resourceApiModule()
-        foldersApiModule()
         metadataApiModule()
     }

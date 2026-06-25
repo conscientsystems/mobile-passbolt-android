@@ -23,7 +23,7 @@
 
 package com.passbolt.mobile.android.folderdetails
 
-import com.passbolt.mobile.android.ui.FolderModel
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 
 data class FolderDetailsState(

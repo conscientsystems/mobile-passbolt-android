@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":users"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
