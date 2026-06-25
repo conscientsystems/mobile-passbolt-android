@@ -24,7 +24,7 @@ dependencies {
     implementation(project(":serializers"))
     implementation(project(":passwordexpiry-domain"))
     implementation(project(":supportedresourcetypes"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
     implementation(project(":accounts"))
     implementation(project(":preferences"))
     implementation(project(":passphrasememorycache"))

@@ -33,7 +33,7 @@ dependencies {
     implementation(project(":idlingresource"))
     implementation(project(":otpcore"))
     implementation(project(":supportedresourcetypes"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
     implementation(project(":otpmoremenu"))
     implementation(project(":scanotp"))
     implementation(project(":rbac-domain"))

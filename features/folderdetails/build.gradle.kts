@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":locationdetails"))
     implementation(project(":navigation"))
     implementation(project(":fulldatarefresh"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
     implementation(project(":localization"))
     implementation(project(":rbac-domain"))
     implementation(project(":accounts"))

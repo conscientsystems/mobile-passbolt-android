@@ -23,9 +23,6 @@
 
 package com.passbolt.mobile.android.core.resources.actions
 
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.ItemIdResourceId
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult.CannotCreateWithCurrentConfig
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult.CryptoFailure
 import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult.Failure
@@ -44,6 +41,9 @@ import com.passbolt.mobile.android.core.resources.usecase.db.AddLocalResourceUse
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.ItemIdResourceId
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysInteractor
 import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysInteractor.Output.TrustedKeyDeleted

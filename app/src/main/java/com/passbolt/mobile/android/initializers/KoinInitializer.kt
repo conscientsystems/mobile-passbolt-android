@@ -32,7 +32,6 @@ import com.passbolt.mobile.android.core.accounts.accountsCoreModule
 import com.passbolt.mobile.android.core.authenticationcore.authenticationCoreModule
 import com.passbolt.mobile.android.core.autofill.autofillModule
 import com.passbolt.mobile.android.core.clipboard.clipboardModule
-import com.passbolt.mobile.android.core.commonfolders.foldersModule
 import com.passbolt.mobile.android.core.coreUiModule
 import com.passbolt.mobile.android.core.envinfo.envInfoModule
 import com.passbolt.mobile.android.core.fulldatarefresh.fullDataRefreshModule
@@ -58,6 +57,7 @@ import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
 import com.passbolt.mobile.android.data.favourites.favouritesDataModule
 import com.passbolt.mobile.android.data.featureflags.featureFlagsDataModule
+import com.passbolt.mobile.android.data.folders.foldersDataModule
 import com.passbolt.mobile.android.data.groups.groupsDataModule
 import com.passbolt.mobile.android.data.mfa.mfaDataModule
 import com.passbolt.mobile.android.data.mobiletransfer.mobileTransferDataModule
@@ -69,6 +69,7 @@ import com.passbolt.mobile.android.data.share.shareDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
 import com.passbolt.mobile.android.domain.favourites.favouritesDomainModule
+import com.passbolt.mobile.android.domain.folders.foldersDomainModule
 import com.passbolt.mobile.android.domain.groups.groupsDomainModule
 import com.passbolt.mobile.android.domain.mobiletransfer.mobileTransferDomainModule
 import com.passbolt.mobile.android.domain.passwordexpiry.passwordExpiryDomainModule
@@ -152,7 +153,8 @@ class KoinInitializer : Initializer<Unit> {
                 usersModule,
                 loggerModule,
                 accountDetailsModule,
-                foldersModule,
+                foldersDomainModule,
+                foldersDataModule,
                 folderDetailsModule,
                 mainModule,
                 groupsDomainModule,

@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":permissions"))
     implementation(project(":folderdetails"))
     implementation(project(":networking"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
     implementation(project(":idlingresource"))
     implementation(project(":users"))
     implementation(project(":localization"))

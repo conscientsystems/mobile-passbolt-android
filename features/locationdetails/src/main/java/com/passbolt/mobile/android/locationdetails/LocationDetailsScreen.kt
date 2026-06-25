@@ -68,6 +68,7 @@ import com.passbolt.mobile.android.core.ui.pulltorefresh.PullToRefreshIndicatorB
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.locationdetails.LocationDetailsIntent.GoBack
 import com.passbolt.mobile.android.locationdetails.LocationDetailsIntent.ToggleExpanded
 import com.passbolt.mobile.android.locationdetails.LocationDetailsSideEffect.NavigateToHome
@@ -78,7 +79,6 @@ import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTreeCrea
 import com.passbolt.mobile.android.locationdetails.data.flattenTree
 import com.passbolt.mobile.android.locationdetails.ui.ExpandableFolderItem
 import com.passbolt.mobile.android.locationdetails.ui.LocationItem
-import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.ResourcePermission
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel

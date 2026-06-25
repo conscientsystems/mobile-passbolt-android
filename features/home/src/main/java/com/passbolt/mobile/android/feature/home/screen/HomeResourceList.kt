@@ -24,6 +24,7 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.HomeNavigationKe
 import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.empty.EmptyResourceListState
 import com.passbolt.mobile.android.core.ui.lists.HeaderItem
+import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.data.HeaderSectionConfiguration
 import com.passbolt.mobile.android.feature.home.screen.list.FolderItem
@@ -33,7 +34,6 @@ import com.passbolt.mobile.android.feature.home.screen.list.ResourceItem
 import com.passbolt.mobile.android.feature.home.screen.list.ResourceItemPlaceholder
 import com.passbolt.mobile.android.feature.home.screen.list.TagItem
 import com.passbolt.mobile.android.ui.Folder.Child
-import com.passbolt.mobile.android.ui.FolderWithCountAndPath
 import com.passbolt.mobile.android.ui.GroupWithCount
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Folders
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Groups

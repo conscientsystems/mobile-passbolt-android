@@ -24,7 +24,7 @@ package com.passbolt.mobile.android.locationdetails.data
  */
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.ui.FolderModel
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.ui.ResourcePermission
 import org.junit.Test
 import java.time.ZonedDateTime

@@ -23,8 +23,8 @@
 
 package com.passbolt.mobile.android.locationdetails
 
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTree
-import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.ResourceModel
 
 data class LocationDetailsState(

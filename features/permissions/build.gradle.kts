@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":resources"))
     implementation(project(":groups-domain"))
     implementation(project(":users"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
     implementation(project(":localization"))
     implementation(project(":jsonmodel"))
     implementation(project(":resourcetypes"))
