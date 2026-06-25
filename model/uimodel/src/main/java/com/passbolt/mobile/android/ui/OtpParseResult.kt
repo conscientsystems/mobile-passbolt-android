@@ -1,8 +1,5 @@
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
 // Check details in the documentation
 // intro: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 // totp https://www.rfc-editor.org/rfc/rfc6238
@@ -15,7 +12,6 @@ sealed class OtpParseResult {
         open val algorithm: Algorithm,
         open val digits: Int,
     ) : OtpParseResult() {
-        @Parcelize
         data class TotpQr(
             override val label: String,
             override val secret: String,
@@ -23,8 +19,7 @@ sealed class OtpParseResult {
             override val algorithm: Algorithm,
             override val digits: Int,
             val period: Long,
-        ) : OtpQr(label, secret, issuer, algorithm, digits),
-            Parcelable {
+        ) : OtpQr(label, secret, issuer, algorithm, digits) {
             companion object {
                 const val DEFAULT_PERIOD_SECONDS = 30L
                 const val DEFAULT_DIGITS = 6

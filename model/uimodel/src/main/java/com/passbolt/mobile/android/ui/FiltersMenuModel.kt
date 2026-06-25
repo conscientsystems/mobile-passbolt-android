@@ -1,8 +1,5 @@
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,7 +23,6 @@ import kotlinx.parcelize.Parcelize
  * @since v1.0
  */
 
-@Parcelize
 data class FiltersMenuModel(
     val activeDisplayView: HomeDisplayViewModel,
-) : Parcelable
+)

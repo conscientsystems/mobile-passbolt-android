@@ -1,6 +1,5 @@
 plugins {
     id("passbolt.android.library")
-    id(libs.plugins.kotlin.parcelize.get().pluginId)
     id(libs.plugins.kotlin.serialization.get().pluginId)
 }
 

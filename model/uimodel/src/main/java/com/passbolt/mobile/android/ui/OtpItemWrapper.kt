@@ -23,21 +23,6 @@
 
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
-data class OtpResourceModel(
-    val resourceId: String,
-    val parentFolderId: String?,
-    val label: String,
-    val secret: String,
-    val issuer: String?,
-    val algorithm: String,
-    val digits: Int,
-    val period: Long,
-) : Parcelable
-
 data class OtpItemWrapper(
     val resource: ResourceModel,
     val isVisible: Boolean,
@@ -46,13 +31,6 @@ data class OtpItemWrapper(
     val otpValue: String?,
     val remainingSecondsCounter: Long? = otpExpirySeconds,
 )
-
-@Parcelize
-data class OtpAdvancedSettingsModel(
-    val period: Long,
-    val algorithm: String,
-    val digits: Int,
-) : Parcelable
 
 fun List<OtpItemWrapper>.refreshingOnly(resourceId: String) =
     map { otp ->

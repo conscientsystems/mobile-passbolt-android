@@ -24,23 +24,20 @@
 package com.passbolt.mobile.android.ui
 
 import android.annotation.SuppressLint
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 /**
  * Ui model class representing currently chosen folder.
  */
 @Serializable
-sealed class Folder : Parcelable {
+sealed class Folder {
     abstract val folderId: String?
 
     /**
      * Root folder is currently chosen
      */
     @Serializable
-    @Parcelize
-    object Root : Folder(), Parcelable {
+    object Root : Folder() {
         override val folderId: String?
             get() = null
     }
@@ -51,9 +48,7 @@ sealed class Folder : Parcelable {
      */
     @SuppressLint("UnsafeOptInUsageError") // false positive in K2
     @Serializable
-    @Parcelize
     data class Child(
         override val folderId: String,
-    ) : Folder(),
-        Parcelable
+    ) : Folder()
 }

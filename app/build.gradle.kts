@@ -3,7 +3,6 @@ import com.github.triplet.gradle.play.PlayPublisherExtension
 
 plugins {
     id("passbolt.android.application")
-    id(libs.plugins.kotlin.parcelize.get().pluginId)
     id(libs.plugins.app.distribution.get().pluginId)
     alias(libs.plugins.playstore.publisher)
     id(libs.plugins.easylauncher.get().pluginId)
