@@ -148,6 +148,17 @@ data class MetadataJsonModel(
         }
     }
 
+    /**
+     * Warms the JsonPath parse cache for the fields the resource list row reads ([icon], [name],
+     * [username]). The first access parses the whole document (cached via [parsedCache]); the rest warm
+     * their per-path reads. Call off the main thread so UI composition reads the warm cache instead of
+     * parsing inline.
+     */
+    fun warmCache(): MetadataJsonModel =
+        apply {
+            runCatching { listOf(icon, name, username) }
+        }
+
     companion object {
         const val OBJECT_TYPE = "PASSBOLT_RESOURCE_METADATA"
 

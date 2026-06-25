@@ -73,7 +73,7 @@ class GetLocalResourcesPaginatedUseCase(
                 },
             ).flow.map { pagingData ->
                 pagingData.map {
-                    resourceModelMapper.map(it)
+                    resourceModelMapper.map(it).also { model -> model.metadataJsonModel.warmCache() }
                 }
             },
         )
