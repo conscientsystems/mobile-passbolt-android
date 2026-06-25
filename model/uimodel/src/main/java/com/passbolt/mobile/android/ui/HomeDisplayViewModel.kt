@@ -1,8 +1,6 @@
 package com.passbolt.mobile.android.ui
 
 import android.annotation.SuppressLint
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 /**
@@ -29,63 +27,50 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-sealed class HomeDisplayViewModel : Parcelable {
+sealed class HomeDisplayViewModel {
     @Serializable
-    @Parcelize
-    object AllItems : HomeDisplayViewModel(), Parcelable
+    object AllItems : HomeDisplayViewModel()
 
     @Serializable
-    @Parcelize
-    object Favourites : HomeDisplayViewModel(), Parcelable
+    object Favourites : HomeDisplayViewModel()
 
     @Serializable
-    @Parcelize
-    object RecentlyModified : HomeDisplayViewModel(), Parcelable
+    object RecentlyModified : HomeDisplayViewModel()
 
     @Serializable
-    @Parcelize
-    object SharedWithMe : HomeDisplayViewModel(), Parcelable
+    object SharedWithMe : HomeDisplayViewModel()
 
     @Serializable
-    @Parcelize
-    object OwnedByMe : HomeDisplayViewModel(), Parcelable
+    object OwnedByMe : HomeDisplayViewModel()
 
     @Serializable
-    @Parcelize
-    object Expiry : HomeDisplayViewModel(), Parcelable
+    object Expiry : HomeDisplayViewModel()
 
     @Serializable
-    @Parcelize
-    object NotLoaded : HomeDisplayViewModel(), Parcelable
+    object NotLoaded : HomeDisplayViewModel()
 
     @SuppressLint("UnsafeOptInUsageError") // false positive in K2
     @Serializable
-    @Parcelize
     data class Folders(
         val activeFolder: Folder,
         val activeFolderName: String? = null,
         val isActiveFolderShared: Boolean? = null,
-    ) : HomeDisplayViewModel(),
-        Parcelable
+    ) : HomeDisplayViewModel()
 
     @SuppressLint("UnsafeOptInUsageError") // false positive in K2
     @Serializable
-    @Parcelize
     data class Tags(
         val activeTagId: String? = null,
         val activeTagName: String? = null,
         val isActiveTagShared: Boolean? = null,
-    ) : HomeDisplayViewModel(),
-        Parcelable
+    ) : HomeDisplayViewModel()
 
     @SuppressLint("UnsafeOptInUsageError") // false positive in K2
     @Serializable
-    @Parcelize
     data class Groups(
         val activeGroupId: String? = null,
         val activeGroupName: String? = null,
-    ) : HomeDisplayViewModel(),
-        Parcelable
+    ) : HomeDisplayViewModel()
 
     companion object {
         fun folderRoot() = Folders(Folder.Root)

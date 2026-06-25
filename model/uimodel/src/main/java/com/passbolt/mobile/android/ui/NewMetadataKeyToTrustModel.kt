@@ -23,11 +23,8 @@ package com.passbolt.mobile.android.ui
  * @since v1.0
  */
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import java.util.UUID
 
-@Parcelize
 data class NewMetadataKeyToTrustModel(
     val id: UUID,
     val signedUsername: String,
@@ -36,4 +33,4 @@ data class NewMetadataKeyToTrustModel(
     val signatureKeyFingerprint: String,
     val metadataPrivateKey: ParsedMetadataPrivateKeyModel,
     val modificationKind: MetadataKeyModification,
-) : Parcelable
+)

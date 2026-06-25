@@ -246,7 +246,6 @@ org.jetbrains.compose.ui:ui-text:1.10.2=releaseRuntimeClasspath
 org.jetbrains.compose.ui:ui-unit:1.10.2=releaseRuntimeClasspath
 org.jetbrains.compose.ui:ui-util:1.10.2=releaseRuntimeClasspath
 org.jetbrains.compose.ui:ui:1.10.2=releaseRuntimeClasspath
-org.jetbrains.kotlin:kotlin-parcelize-runtime:2.3.20=releaseRuntimeClasspath
 org.jetbrains.kotlin:kotlin-stdlib-common:2.3.20=releaseRuntimeClasspath
 org.jetbrains.kotlin:kotlin-stdlib:2.3.20=releaseRuntimeClasspath
 org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2=releaseRuntimeClasspath

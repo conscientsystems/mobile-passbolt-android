@@ -1,8 +1,6 @@
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
 import com.passbolt.mobile.android.common.search.Searchable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 /**
@@ -45,35 +43,28 @@ sealed class PermissionModel(
 }
 
 @Serializable
-sealed class PermissionModelUi :
-    Searchable,
-    Parcelable {
+sealed class PermissionModelUi : Searchable {
     abstract val permission: ResourcePermission
     abstract val permissionId: String
 
     @Serializable
-    @Parcelize
     data class UserPermissionModel(
         override val permission: ResourcePermission,
         override val permissionId: String,
         val user: UserWithAvatar,
         override val searchCriteria: String = user.searchCriteria,
-    ) : PermissionModelUi(),
-        Parcelable
+    ) : PermissionModelUi()
 
     @Serializable
-    @Parcelize
     data class GroupPermissionModel(
         override val permission: ResourcePermission,
         override val permissionId: String,
         val group: GroupModel,
         override val searchCriteria: String = group.searchCriteria,
-    ) : PermissionModelUi(),
-        Parcelable
+    ) : PermissionModelUi()
 }
 
 @Serializable
-@Parcelize
 data class UserWithAvatar(
     val userId: String,
     val firstName: String,
@@ -82,8 +73,7 @@ data class UserWithAvatar(
     val isDisabled: Boolean,
     val avatarUrl: String?,
     override val searchCriteria: String = "$userName$firstName$lastName",
-) : Searchable,
-    Parcelable {
+) : Searchable {
     val fullName: String
         get() = "$firstName $lastName"
 }

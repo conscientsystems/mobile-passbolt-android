@@ -1,7 +1,5 @@
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 /**
@@ -28,8 +26,7 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-@Parcelize
-sealed class ResourceFormMode : Parcelable {
+sealed class ResourceFormMode {
     @Serializable
     data class Edit(
         val resourceId: String,

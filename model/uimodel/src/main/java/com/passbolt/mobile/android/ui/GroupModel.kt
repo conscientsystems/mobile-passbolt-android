@@ -1,8 +1,6 @@
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
 import com.passbolt.mobile.android.common.search.Searchable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 /**
@@ -29,13 +27,11 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-@Parcelize
 data class GroupModel(
     val groupId: String,
     val groupName: String,
     override val searchCriteria: String = groupName,
-) : Searchable,
-    Parcelable
+) : Searchable
 
 data class GroupWithCount(
     val groupId: String,

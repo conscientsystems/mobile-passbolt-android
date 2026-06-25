@@ -23,14 +23,13 @@
 
 package com.passbolt.mobile.android.core.navigation
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 /**
  * This class is used as data transfer object of account data (private key, user data, etc) which is injected via the
  * launch arguments.
  */
-@Parcelize
+@Serializable
 data class AccountSetupDataModel(
     val serverUserId: String,
     val domain: String,
@@ -40,7 +39,7 @@ data class AccountSetupDataModel(
     val avatarUrl: String?,
     val keyFingerprint: String,
     val armoredKey: String,
-) : Parcelable {
+) {
     companion object {
         fun withRequiredValues(
             serverUserId: String,

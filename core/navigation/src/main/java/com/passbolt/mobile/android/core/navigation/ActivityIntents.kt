@@ -7,6 +7,7 @@ import com.passbolt.mobile.android.core.navigation.constants.Autofillresources
 import com.passbolt.mobile.android.core.navigation.constants.Main
 import com.passbolt.mobile.android.core.navigation.constants.Setup
 import com.passbolt.mobile.android.core.navigation.constants.Startup
+import kotlinx.serialization.json.Json
 import java.io.Serializable
 
 /**
@@ -45,7 +46,7 @@ object ActivityIntents {
         accountSetupData: AccountSetupDataModel? = null,
     ) = Intent().apply {
         setClassName(context, Setup.SET_UP_ACTIVITY)
-        putExtra(EXTRA_ACCOUNT_SETUP_DATA, accountSetupData)
+        accountSetupData?.let { putExtra(EXTRA_ACCOUNT_SETUP_DATA, Json.encodeToString(it)) }
     }
 
     fun home(context: Context) =

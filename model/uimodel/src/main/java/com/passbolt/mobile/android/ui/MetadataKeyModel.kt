@@ -23,9 +23,7 @@
 
 package com.passbolt.mobile.android.ui
 
-import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
-import kotlinx.parcelize.Parcelize
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -70,7 +68,6 @@ data class DecryptedMetadataPrivateKeyJsonModel(
     val domain: String,
 )
 
-@Parcelize
 data class ParsedMetadataPrivateKeyModel(
     val id: UUID,
     val userId: UUID,
@@ -83,4 +80,4 @@ data class ParsedMetadataPrivateKeyModel(
     val fingerprint: String,
     val domain: String,
     val pgpMessage: String,
-) : Parcelable
+)

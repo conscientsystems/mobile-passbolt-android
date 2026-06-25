@@ -26,7 +26,6 @@ package com.passbolt.mobile.android.feature.setup
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.content.IntentCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation3.runtime.NavKey
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
@@ -43,6 +42,7 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.SetupNavigationK
 import com.passbolt.mobile.android.core.ui.orientation.LockCompactScreenOrientation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 import org.koin.compose.scope.KoinScope
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -57,11 +57,9 @@ class SetUpActivity :
     private var currentBackStackItem: StateFlow<NavKey?> = MutableStateFlow(Welcome)
 
     override val bundledAccountSetupData: AccountSetupDataModel? by lazy {
-        IntentCompat.getParcelableExtra(
-            intent,
-            ActivityIntents.EXTRA_ACCOUNT_SETUP_DATA,
-            AccountSetupDataModel::class.java,
-        )
+        intent
+            .getStringExtra(ActivityIntents.EXTRA_ACCOUNT_SETUP_DATA)
+            ?.let { Json.decodeFromString<AccountSetupDataModel>(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
