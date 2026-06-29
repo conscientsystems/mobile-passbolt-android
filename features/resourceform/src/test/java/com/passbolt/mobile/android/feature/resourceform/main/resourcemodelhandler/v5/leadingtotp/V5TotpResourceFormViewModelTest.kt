@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.feature.resourceform.main.resourcemodelhandler.v5.leadingtotp
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DescriptionResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged

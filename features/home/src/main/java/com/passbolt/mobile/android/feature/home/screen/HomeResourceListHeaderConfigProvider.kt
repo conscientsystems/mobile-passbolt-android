@@ -29,18 +29,18 @@ import com.passbolt.mobile.android.feature.home.screen.data.HeaderSectionConfigu
 import com.passbolt.mobile.android.ui.GroupWithCount
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Folders
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.TagWithCount
 
 @Suppress("LongParameterList")
 internal fun getHeaderConfig(
-    resources: LazyPagingItems<ResourceModel>,
+    resources: LazyPagingItems<ResourceUiModel>,
     folders: LazyPagingItems<FolderWithCountAndPath>,
     tags: LazyPagingItems<TagWithCount>,
     groups: LazyPagingItems<GroupWithCount>,
     filteredSubfolders: LazyPagingItems<FolderWithCountAndPath>,
-    filteredSubfoldersResources: LazyPagingItems<ResourceModel>,
-    suggestedResources: LazyPagingItems<ResourceModel>,
+    filteredSubfoldersResources: LazyPagingItems<ResourceUiModel>,
+    suggestedResources: LazyPagingItems<ResourceUiModel>,
     searchQuery: String?,
     homeView: HomeDisplayViewModel,
     showSuggestedModel: ShowSuggestedModel,

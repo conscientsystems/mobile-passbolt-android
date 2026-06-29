@@ -29,14 +29,11 @@ import com.passbolt.mobile.android.domain.folders.usecase.CreateFolderUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.FolderShareInteractor
 import com.passbolt.mobile.android.domain.folders.usecase.FoldersInteractor
 import com.passbolt.mobile.android.domain.folders.usecase.GetFoldersPaginatedUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalDirectChildFoldersPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
-import com.passbolt.mobile.android.domain.folders.usecase.GetLocalResourcesAndFoldersPaginatedUseCase
-import com.passbolt.mobile.android.domain.folders.usecase.GetLocalResourcesAndFoldersUseCase
-import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFolderResourcesFilteredPaginatedUseCase
-import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFolderResourcesFilteredUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.RemoveLocalFolderPermissionsUseCase
@@ -61,12 +58,9 @@ val foldersDomainModule =
         singleOf(::SetLocalFoldersUpdateStateUseCase)
         singleOf(::UpsertLocalFoldersUseCase)
         singleOf(::RemoveLocalFoldersWithUpdateStateUseCase)
-        singleOf(::GetLocalResourcesAndFoldersUseCase)
-        singleOf(::GetLocalResourcesAndFoldersPaginatedUseCase)
+        singleOf(::GetLocalDirectChildFoldersPaginatedUseCase)
         singleOf(::GetLocalSubFoldersForFolderUseCase)
         singleOf(::GetLocalSubFoldersForFolderPaginatedUseCase)
-        singleOf(::GetLocalSubFolderResourcesFilteredUseCase)
-        singleOf(::GetLocalSubFolderResourcesFilteredPaginatedUseCase)
         singleOf(::GetLocalFolderDetailsUseCase)
         singleOf(::GetLocalFolderLocationUseCase)
         singleOf(::GetLocalFolderPermissionsUseCase)

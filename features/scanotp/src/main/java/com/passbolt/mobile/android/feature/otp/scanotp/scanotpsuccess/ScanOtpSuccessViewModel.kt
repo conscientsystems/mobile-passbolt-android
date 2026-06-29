@@ -1,15 +1,15 @@
 package com.passbolt.mobile.android.feature.otp.scanotp.scanotpsuccess
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.performResourceCreateAction
-import com.passbolt.mobile.android.core.resources.actions.performResourceUpdateAction
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.performResourceCreateAction
+import com.passbolt.mobile.android.domain.resources.actions.performResourceUpdateAction
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.otp.scanotp.scanotpsuccess.ScanOtpSuccessIntent.CreateStandaloneOtpClick
 import com.passbolt.mobile.android.feature.otp.scanotp.scanotpsuccess.ScanOtpSuccessIntent.DismissNewMetadataTrustDialog
@@ -34,7 +34,7 @@ import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpParseResult
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.koin.core.component.KoinComponent
@@ -126,7 +126,7 @@ internal class ScanOtpSuccessViewModel(
         }
     }
 
-    private fun linkedResourceReceived(resource: ResourceModel) {
+    private fun linkedResourceReceived(resource: ResourceUiModel) {
         launch {
             updateViewState { copy(showProgress = true) }
             val updateOperation = createLinkTotpOperation(resource)
@@ -135,7 +135,7 @@ internal class ScanOtpSuccessViewModel(
         }
     }
 
-    private suspend fun createLinkTotpOperation(resource: ResourceModel): suspend () -> Flow<ResourceUpdateActionResult> {
+    private suspend fun createLinkTotpOperation(resource: ResourceUiModel): suspend () -> Flow<ResourceUpdateActionResult> {
         val slug =
             idToSlugMappingProvider.provideMappingForSelectedAccount()[UUID.fromString(resource.resourceTypeId)]
                 ?: return { emptyFlow() }

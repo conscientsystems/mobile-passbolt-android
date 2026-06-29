@@ -39,9 +39,9 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.passbolt.mobile.android.common.extension.toSingleLine
 import com.passbolt.mobile.android.core.compose.Inconsolata
 import com.passbolt.mobile.android.core.formatter.OtpFormatter
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.R
 import com.passbolt.mobile.android.core.ui.controller.TotpComposeController
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.feature.otp.screen.ui.ProgressSource
 import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.isExpired

@@ -3,14 +3,14 @@ package com.passbolt.mobile.android.feature.otp.screen
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.feature.home.screen.ResourceHandlingStrategy
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 class OtpResourceHandlingStrategy(
-    private val onItemClick: (ResourceModel) -> Unit,
+    private val onItemClick: (ResourceUiModel) -> Unit,
 ) : ResourceHandlingStrategy {
     override val appContext: AppContext = AppContext.APP
 
-    override fun resourceItemClick(resourceModel: ResourceModel) {
+    override fun resourceItemClick(resourceModel: ResourceUiModel) {
         onItemClick(resourceModel)
     }
 

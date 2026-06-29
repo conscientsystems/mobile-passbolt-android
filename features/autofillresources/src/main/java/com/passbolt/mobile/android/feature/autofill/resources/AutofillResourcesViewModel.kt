@@ -7,10 +7,10 @@ import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchCont
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.InvalidTotpInput
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.NewResourceCreated
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.SelectAutofillItem
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.UserAuthenticated
@@ -23,7 +23,7 @@ import com.passbolt.mobile.android.feature.autofill.resources.ToastType.FETCH_FA
 import com.passbolt.mobile.android.feature.autofill.resources.ToastType.INVALID_TOTP_PARAMETERS
 import com.passbolt.mobile.android.feature.autofill.resources.datasetstrategy.AutofillPayload
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -59,7 +59,7 @@ class AutofillResourcesViewModel(
         updateViewState { copy(showHome = true) }
     }
 
-    private fun selectAutofillItem(resource: ResourceModel) {
+    private fun selectAutofillItem(resource: ResourceUiModel) {
         updateViewState { copy(showProgress = true) }
         viewModelScope.launch(coroutineLaunchContext.io) {
             val payload = buildPayload(resource)
@@ -70,7 +70,7 @@ class AutofillResourcesViewModel(
         }
     }
 
-    private suspend fun buildPayload(resource: ResourceModel): AutofillPayload? {
+    private suspend fun buildPayload(resource: ResourceUiModel): AutofillPayload? {
         val contentType = resource.contentType()
         val username = resource.metadataJsonModel.username
         val secret = fetchDecryptedSecret(resource)
@@ -90,7 +90,7 @@ class AutofillResourcesViewModel(
         }
     }
 
-    private suspend fun fetchDecryptedSecret(resource: ResourceModel): SecretJsonModel? {
+    private suspend fun fetchDecryptedSecret(resource: ResourceUiModel): SecretJsonModel? {
         val interactor: SecretPropertiesActionsInteractor = get { parametersOf(resource) }
         var secret: SecretJsonModel? = null
         performSecretPropertyAction(

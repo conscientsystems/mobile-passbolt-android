@@ -3,14 +3,14 @@ package com.passbolt.mobile.android.feature.home.screen
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceDetailsNavigationKey.ResourceDetails
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 class DefaultResourceHandlingStrategy(
     private val navigator: AppNavigator,
 ) : ResourceHandlingStrategy {
     override val appContext: AppContext = AppContext.APP
 
-    override fun resourceItemClick(resourceModel: ResourceModel) {
+    override fun resourceItemClick(resourceModel: ResourceUiModel) {
         navigator.navigateToKey(ResourceDetails(resourceModel))
     }
 

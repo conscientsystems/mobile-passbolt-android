@@ -56,7 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.ui.ResourcePickerListItem
 import com.passbolt.mobile.android.ui.isExpired
 import com.passbolt.mobile.android.core.localization.R as LocalizationR

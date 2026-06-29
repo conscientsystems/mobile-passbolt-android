@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.ui
 
 data class ResourcePickerListItem(
-    val resourceModel: ResourceModel,
+    val resourceModel: ResourceUiModel,
     val selection: Selection,
 ) {
     val isSelectable = selection == Selection.SELECTABLE

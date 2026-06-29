@@ -34,10 +34,10 @@ import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAccountsUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.NewResourceCreated
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.SelectAutofillItem
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.UserAuthenticated
@@ -50,8 +50,8 @@ import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -523,7 +523,7 @@ class AutofillResourcesViewModelTest : KoinTest {
             )
 
         private val testResource by lazy {
-            ResourceModel(
+            ResourceUiModel(
                 resourceId = TEST_RESOURCE_ID,
                 resourceTypeId = "resTypeId",
                 slug = "password-and-description",
@@ -549,7 +549,7 @@ class AutofillResourcesViewModelTest : KoinTest {
         }
 
         private val testTotpResource by lazy {
-            ResourceModel(
+            ResourceUiModel(
                 resourceId = TEST_RESOURCE_ID,
                 resourceTypeId = "resTypeId",
                 slug = "totp",
@@ -575,7 +575,7 @@ class AutofillResourcesViewModelTest : KoinTest {
         }
 
         private val testPasswordDescriptionTotpResource by lazy {
-            ResourceModel(
+            ResourceUiModel(
                 resourceId = TEST_RESOURCE_ID,
                 resourceTypeId = "resTypeId",
                 slug = "password-description-totp",

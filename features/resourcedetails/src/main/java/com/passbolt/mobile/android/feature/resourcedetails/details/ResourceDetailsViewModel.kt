@@ -36,17 +36,17 @@ import com.passbolt.mobile.android.core.idlingresource.ResourceDetailActionIdlin
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.performCommonResourceAction
-import com.passbolt.mobile.android.core.resources.actions.performResourcePropertyAction
-import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.performCommonResourceAction
+import com.passbolt.mobile.android.domain.resources.actions.performResourcePropertyAction
+import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceTagsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.CANNOT_PERFORM_ACTION
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.DECRYPTION_FAILURE
@@ -110,8 +110,8 @@ import com.passbolt.mobile.android.ui.CustomFieldModel.UriCustomField
 import com.passbolt.mobile.android.ui.PermissionsMode
 import com.passbolt.mobile.android.ui.RbacModel
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.isExpired
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -161,7 +161,7 @@ class ResourceDetailsViewModel(
     private var dataRefreshJob: Job? = null
     private var otpTimerJob: Job? = null
 
-    private val resource: ResourceModel
+    private val resource: ResourceUiModel
         get() = viewState.value.requiredResourceModel
 
     @Suppress("CyclomaticComplexMethod")
@@ -200,7 +200,7 @@ class ResourceDetailsViewModel(
         }
     }
 
-    private fun initialize(resourceModel: ResourceModel) {
+    private fun initialize(resourceModel: ResourceUiModel) {
         updateViewState { copy(resourceData = resourceData.copy(resourceModel = resourceModel)) }
 
         viewModelScope.launch(coroutineLaunchContext.io + missingItemExceptionHandler) {

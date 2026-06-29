@@ -23,13 +23,13 @@
 
 package com.passbolt.mobile.android.feature.resourcedetails.details
 
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import java.util.UUID
 
 sealed class ResourceDetailsIntent {
     data class Initialize(
-        val resourceModel: ResourceModel,
+        val resourceModel: ResourceUiModel,
     ) : ResourceDetailsIntent()
 
     data object GoBack : ResourceDetailsIntent()

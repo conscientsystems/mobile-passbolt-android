@@ -3,7 +3,7 @@ package com.passbolt.mobile.android.core.tags
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.AddLocalTagsUseCase
-import com.passbolt.mobile.android.ui.ResourceModelWithAttributes
+import com.passbolt.mobile.android.ui.ResourceUiModelWithAttributes
 
 // TODO MOB-3051 do not delete existing when rebuilding
 class RebuildTagsTablesUseCase(
@@ -22,6 +22,6 @@ class RebuildTagsTablesUseCase(
     }
 
     data class Input(
-        val tags: List<ResourceModelWithAttributes>,
+        val tags: List<ResourceUiModelWithAttributes>,
     )
 }

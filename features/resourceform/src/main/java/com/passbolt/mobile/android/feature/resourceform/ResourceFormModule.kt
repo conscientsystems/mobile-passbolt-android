@@ -2,8 +2,8 @@ package com.passbolt.mobile.android.feature.resourceform
 
 import com.passbolt.mobile.android.core.navigation.compose.base.Feature
 import com.passbolt.mobile.android.core.navigation.compose.base.FeatureModuleNavigation
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
-import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetEditContentTypeUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.customfields.customFieldsFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.noteFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.passwordFormModule

@@ -23,16 +23,16 @@
 
 package com.passbolt.mobile.android.mappers
 
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.ui.ResourcePickerListItem
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_NO_PERMISSION
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_UNSUPPORTED_RESOURCE_TYPE
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.SELECTABLE
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 class ResourcePickerMapper {
     fun map(
-        resource: ResourceModel,
+        resource: ResourceUiModel,
         selectableResourceTypeSlugs: Set<String>,
     ) = ResourcePickerListItem(
         resourceModel = resource,
@@ -58,7 +58,7 @@ class ResourcePickerMapper {
             }
         }
 
-    private fun haveWritePermissions(resource: ResourceModel) = resource.permission in WRITE_PERMISSIONS
+    private fun haveWritePermissions(resource: ResourceUiModel) = resource.permission in WRITE_PERMISSIONS
 
     private companion object {
         private val WRITE_PERMISSIONS =

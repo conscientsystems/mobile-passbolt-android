@@ -24,7 +24,7 @@ dependencies {
     implementation(project(":permissions"))
     implementation(project(":locationdetails"))
     implementation(project(":resourcemoremenu"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":passwordgenerator"))
     implementation(project(":resourcetypes"))
     implementation(project(":tagsdetails"))

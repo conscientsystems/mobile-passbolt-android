@@ -23,7 +23,7 @@ dependencies {
     implementation(project(":locationdetails"))
     implementation(project(":fulldatarefresh"))
     implementation(project(":navigation"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":jsonmodel"))
 
     implementation(platform(libs.koin.bom))

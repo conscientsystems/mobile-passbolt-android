@@ -62,12 +62,12 @@ import com.passbolt.mobile.android.resourcepicker.screen.data.ResourcePickerData
 import com.passbolt.mobile.android.resourcepicker.screen.data.ResourcePickerDataProvider
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.ui.ResourcePickerListItem
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_NO_PERMISSION
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_UNSUPPORTED_RESOURCE_TYPE
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.SELECTABLE
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -506,7 +506,7 @@ class ResourcePickerViewModelTest : KoinTest {
         id: String,
         name: String,
         slug: String = ContentType.PasswordAndDescription.slug,
-    ) = ResourceModel(
+    ) = ResourceUiModel(
         resourceId = id,
         resourceTypeId = testResourceTypeIdString,
         slug = slug,

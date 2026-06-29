@@ -25,7 +25,7 @@ dependencies {
     implementation(project(":secrets"))
     implementation(project(":jsonmodel"))
     implementation(project(":resourcetypes"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":serializers"))
     implementation(project(":metadatakeytrust"))
     implementation(project(":idlingresource"))

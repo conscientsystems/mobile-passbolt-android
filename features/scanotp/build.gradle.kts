@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":authentication"))
     implementation(project(":resourcetypes"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":serializers"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":jsonmodel"))

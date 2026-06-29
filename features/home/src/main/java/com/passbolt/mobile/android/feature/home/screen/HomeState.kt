@@ -32,7 +32,7 @@ import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Folders
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Groups
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Tags
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 data class HomeState(
     val homeData: HomeData = HomeData(),
@@ -46,7 +46,7 @@ data class HomeState(
     val userAvatar: String? = null,
     val showCreateResourceBottomSheet: Boolean = false,
     val showResourceMoreBottomSheet: Boolean = false,
-    val moreMenuResource: ResourceModel? = null,
+    val moreMenuResource: ResourceUiModel? = null,
     val showAccountSwitchBottomSheet: Boolean = false,
     val showDeleteResourceConfirmationDialog: Boolean = false,
     val showFiltersBottomSheet: Boolean = false,
@@ -68,7 +68,7 @@ data class HomeState(
     val showMoreMenu: Boolean
         get() = homeView is Folders && homeView.activeFolder is Child
 
-    val requireMoreMenuResource: ResourceModel
+    val requireMoreMenuResource: ResourceUiModel
         get() = requireNotNull(moreMenuResource)
 
     val currentFolderId: String?

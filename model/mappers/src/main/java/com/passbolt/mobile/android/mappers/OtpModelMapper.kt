@@ -24,10 +24,10 @@
 package com.passbolt.mobile.android.mappers
 
 import com.passbolt.mobile.android.ui.OtpItemWrapper
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 class OtpModelMapper {
-    fun map(otpModel: ResourceModel): OtpItemWrapper =
+    fun map(otpModel: ResourceUiModel): OtpItemWrapper =
         OtpItemWrapper(
             resource = otpModel,
             isVisible = false,

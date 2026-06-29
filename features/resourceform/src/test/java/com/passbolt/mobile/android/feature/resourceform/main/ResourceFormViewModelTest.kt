@@ -8,20 +8,20 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCa
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionResult.Failure
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
-import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 import com.passbolt.mobile.android.domain.passwordexpiry.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.domain.passwordpolicies.usecase.PasswordPoliciesInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult.Failure
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetEditContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
@@ -98,8 +98,8 @@ import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.DESCRIPTION
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.NOTE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PASSWORD
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.TOTP
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission.OWNER
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -2326,8 +2326,8 @@ class ResourceFormViewModelTest : KoinTest {
         }
     }
 
-    private fun createResourceModel(slug: String): ResourceModel =
-        ResourceModel(
+    private fun createResourceModel(slug: String): ResourceUiModel =
+        ResourceUiModel(
             resourceId = "resourceId",
             resourceTypeId = "resourceTypeId",
             slug = slug,

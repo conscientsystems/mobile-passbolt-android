@@ -24,13 +24,13 @@
 package com.passbolt.mobile.android.feature.resourcedetails.details
 
 import com.passbolt.mobile.android.ui.PermissionsMode
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 sealed class ResourceDetailsSideEffect {
     data object NavigateBack : ResourceDetailsSideEffect()
 
     data class NavigateToEditResource(
-        val resourceModel: ResourceModel,
+        val resourceModel: ResourceUiModel,
     ) : ResourceDetailsSideEffect()
 
     data class NavigateToResourcePermissions(

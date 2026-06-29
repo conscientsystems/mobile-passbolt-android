@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.core.navigation.compose.results
 
 import com.passbolt.mobile.android.ui.OtpParseResult
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 data class OtpScanCompleteResult(
     val otpCreated: Boolean,
@@ -16,7 +16,7 @@ data class ResourceFormCompleteResult(
 
 data class ResourcePickerResultEvent(
     val pickAction: String,
-    val resource: ResourceModel,
+    val resource: ResourceUiModel,
 )
 
 data class ScanOtpResultEvent(

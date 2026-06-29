@@ -25,11 +25,11 @@ package com.passbolt.mobile.android.feature.resources.details
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionResult
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertyActionResult
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertyActionResult
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseMoreMenu

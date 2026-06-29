@@ -15,7 +15,7 @@ import com.passbolt.mobile.android.entity.resource.ResourceUri
 import com.passbolt.mobile.android.entity.resource.ResourceWithMetadata
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import java.time.ZonedDateTime
 
 /**
@@ -46,10 +46,10 @@ class ResourceModelMapper(
     fun map(
         resource: ResourceResponseDto,
         slug: String,
-    ): ResourceModel =
+    ): ResourceUiModel =
         when (resource) {
             is ResourceResponseV4Dto -> {
-                ResourceModel(
+                ResourceUiModel(
                     resourceId = resource.id.toString(),
                     resourceTypeId = resource.resourceTypeId.toString(),
                     slug = slug,
@@ -64,7 +64,7 @@ class ResourceModelMapper(
                 )
             }
             is ResourceResponseV5Dto -> {
-                ResourceModel(
+                ResourceUiModel(
                     resourceId = resource.id.toString(),
                     resourceTypeId = resource.resourceTypeId.toString(),
                     slug = slug,
@@ -101,7 +101,7 @@ class ResourceModelMapper(
         }
 
     fun map(
-        resourceModel: ResourceModel,
+        resourceModel: ResourceUiModel,
         resourceUpdateState: ResourceUpdateState,
     ): Resource =
         Resource(
@@ -117,7 +117,7 @@ class ResourceModelMapper(
             updateState = resourceUpdateState,
         )
 
-    fun mapResourceMetadata(resourceModel: ResourceModel): ResourceMetadata =
+    fun mapResourceMetadata(resourceModel: ResourceUiModel): ResourceMetadata =
         ResourceMetadata(
             resourceId = resourceModel.resourceId,
             metadataJson = requireNotNull(resourceModel.metadataJsonModel.json),
@@ -127,7 +127,7 @@ class ResourceModelMapper(
             customFieldsKeys = resourceModel.metadataJsonModel.customFields?.joinToString(),
         )
 
-    fun mapResourceUris(resourceModel: ResourceModel): List<ResourceUri> =
+    fun mapResourceUris(resourceModel: ResourceUiModel): List<ResourceUri> =
         resourceModel.metadataJsonModel.uri
             ?.let {
                 listOf(ResourceUri(resourceId = resourceModel.resourceId, uri = it))
@@ -137,8 +137,8 @@ class ResourceModelMapper(
                     ResourceUri(resourceId = resourceModel.resourceId, uri = it)
                 }.orEmpty()
 
-    fun map(resourceEntity: ResourceWithMetadata): ResourceModel =
-        ResourceModel(
+    fun map(resourceEntity: ResourceWithMetadata): ResourceUiModel =
+        ResourceUiModel(
             resourceId = resourceEntity.resourceId,
             resourceTypeId = resourceEntity.resourceTypeId,
             slug = resourceEntity.slug,

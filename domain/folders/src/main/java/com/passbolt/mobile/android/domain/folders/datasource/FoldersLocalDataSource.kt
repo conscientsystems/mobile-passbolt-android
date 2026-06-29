@@ -29,11 +29,8 @@ import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttribute
 import com.passbolt.mobile.android.domain.folders.model.FolderUpdateState
 import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import com.passbolt.mobile.android.domain.folders.model.ParentPermissionItemId
-import com.passbolt.mobile.android.domain.folders.model.ResourcesAndFolders
-import com.passbolt.mobile.android.domain.folders.model.ResourcesAndFoldersPaged
 import com.passbolt.mobile.android.ui.Folder
 import com.passbolt.mobile.android.ui.PermissionModelUi
-import com.passbolt.mobile.android.ui.ResourceModel
 import kotlinx.coroutines.flow.Flow
 
 interface FoldersLocalDataSource {
@@ -63,18 +60,12 @@ interface FoldersLocalDataSource {
         currentUserServerId: String,
     ): List<PermissionModelUi>
 
-    suspend fun getResourcesAndFolders(
+    fun getDirectChildFoldersPaged(
         folderId: String?,
-        slugs: Set<String>,
-    ): ResourcesAndFolders
-
-    fun getResourcesAndFoldersPaged(
-        folderId: String?,
-        slugs: Set<String>,
         searchQuery: String?,
         pageSize: Int,
         enablePlaceholders: Boolean,
-    ): ResourcesAndFoldersPaged
+    ): Flow<PagingData<FolderWithCountAndPath>>
 
     suspend fun getSubFoldersForFolder(
         folder: Folder,
@@ -86,17 +77,4 @@ interface FoldersLocalDataSource {
         searchQuery: String?,
         pageSize: Int,
     ): Flow<PagingData<FolderWithCountAndPath>>
-
-    suspend fun getSubFolderResourcesFiltered(
-        containingFolders: List<String>,
-        containingQuery: String,
-        slugs: Set<String>,
-    ): List<ResourceModel>
-
-    fun getSubFolderResourcesFilteredPaged(
-        containingFolders: List<String>,
-        containingQuery: String,
-        slugs: Set<String>,
-        pageSize: Int,
-    ): Flow<PagingData<ResourceModel>>
 }

@@ -26,7 +26,7 @@ package com.passbolt.mobile.android.feature.resourcedetails.details
 import com.passbolt.mobile.android.ui.CustomFieldModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
 import com.passbolt.mobile.android.ui.PermissionModelUi
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import java.util.UUID
 
 data class ResourceDetailsState(
@@ -43,7 +43,7 @@ data class ResourceDetailsState(
     val showDeleteResourceConfirmationDialog: Boolean = false,
     val showMoreMenu: Boolean = false,
 ) {
-    val requiredResourceModel: ResourceModel
+    val requiredResourceModel: ResourceUiModel
         get() = requireNotNull(resourceData.resourceModel)
 
     val showPasswordSection: Boolean
@@ -64,7 +64,7 @@ data class ResourceDetailsState(
 }
 
 data class ResourceData(
-    val resourceModel: ResourceModel? = null,
+    val resourceModel: ResourceUiModel? = null,
 )
 
 data class TotpData(
