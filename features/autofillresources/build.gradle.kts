@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":secrets"))
     implementation(project(":authentication"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":localization"))
     implementation(project(":home"))
     implementation(project(":security"))

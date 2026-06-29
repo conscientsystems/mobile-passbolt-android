@@ -38,17 +38,13 @@ import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttribute
 import com.passbolt.mobile.android.domain.folders.model.FolderUpdateState
 import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import com.passbolt.mobile.android.domain.folders.model.ParentPermissionItemId
-import com.passbolt.mobile.android.domain.folders.model.ResourcesAndFolders
-import com.passbolt.mobile.android.domain.folders.model.ResourcesAndFoldersPaged
 import com.passbolt.mobile.android.entity.folder.FolderAndUsersCrossRef
 import com.passbolt.mobile.android.entity.group.FolderAndGroupsCrossRef
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
-import com.passbolt.mobile.android.mappers.ResourceModelMapper
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper
 import com.passbolt.mobile.android.ui.Folder
 import com.passbolt.mobile.android.ui.PermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
-import com.passbolt.mobile.android.ui.ResourceModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import com.passbolt.mobile.android.domain.folders.model.FolderUpdateState.UPDATED as DOMAIN_UPDATED
@@ -57,7 +53,6 @@ internal class FoldersLocalDataSourceImpl(
     private val databaseProvider: DatabaseProvider,
     private val querySanitizer: QuerySanitizer,
     private val permissionsModelMapper: PermissionsModelMapper,
-    private val resourceModelMapper: ResourceModelMapper,
 ) : FoldersLocalDataSource,
     SelectedAccountUseCase {
     override suspend fun addFolder(folder: FolderModel) {
@@ -209,49 +204,22 @@ internal class FoldersLocalDataSourceImpl(
         return permissionsModelMapper.map(groupsPermissions, usersPermissions)
     }
 
-    override suspend fun getResourcesAndFolders(
+    override fun getDirectChildFoldersPaged(
         folderId: String?,
-        slugs: Set<String>,
-    ): ResourcesAndFolders {
-        val db = databaseProvider.get(selectedAccountId)
-        val resourcesInFolder = db.resourcesDao().getResourcesForFolderWithId(folderId, slugs)
-        val foldersInFolder = db.foldersDao().getFolderDirectChildFolders(folderId)
-        return ResourcesAndFolders(
-            folders = foldersInFolder.map { it.toDomain(permissionsModelMapper) },
-            resources = resourcesInFolder.map { resourceModelMapper.map(it) },
-        )
-    }
-
-    override fun getResourcesAndFoldersPaged(
-        folderId: String?,
-        slugs: Set<String>,
         searchQuery: String?,
         pageSize: Int,
         enablePlaceholders: Boolean,
-    ): ResourcesAndFoldersPaged {
+    ): Flow<PagingData<FolderWithCountAndPath>> {
         val ftsQuery = querySanitizer.sanitize(searchQuery)
-        return ResourcesAndFoldersPaged(
-            folders =
-                Pager(
-                    config = PagingConfig(pageSize = pageSize, enablePlaceholders = enablePlaceholders),
-                    pagingSourceFactory = {
-                        databaseProvider
-                            .get(selectedAccountId)
-                            .paginatedFoldersDao()
-                            .getFolderDirectChildFolders(folderId, ftsQuery)
-                    },
-                ).flow.map { pagingData -> pagingData.map { it.toDomain(permissionsModelMapper) } },
-            resources =
-                Pager(
-                    config = PagingConfig(pageSize = pageSize, enablePlaceholders = enablePlaceholders),
-                    pagingSourceFactory = {
-                        databaseProvider
-                            .get(selectedAccountId)
-                            .paginatedResourcesDao()
-                            .getResourcesForFolderWithId(folderId, slugs, ftsQuery)
-                    },
-                ).flow.map { pagingData -> pagingData.map { resourceModelMapper.map(it) } },
-        )
+        return Pager(
+            config = PagingConfig(pageSize = pageSize, enablePlaceholders = enablePlaceholders),
+            pagingSourceFactory = {
+                databaseProvider
+                    .get(selectedAccountId)
+                    .paginatedFoldersDao()
+                    .getFolderDirectChildFolders(folderId, ftsQuery)
+            },
+        ).flow.map { pagingData -> pagingData.map { it.toDomain(permissionsModelMapper) } }
     }
 
     override suspend fun getSubFoldersForFolder(
@@ -284,33 +252,4 @@ internal class FoldersLocalDataSourceImpl(
                 }
             },
         ).flow.map { pagingData -> pagingData.map { it.toDomain(permissionsModelMapper) } }
-
-    override suspend fun getSubFolderResourcesFiltered(
-        containingFolders: List<String>,
-        containingQuery: String,
-        slugs: Set<String>,
-    ): List<ResourceModel> {
-        val resources =
-            databaseProvider
-                .get(selectedAccountId)
-                .resourcesDao()
-                .getFilteredForChildFolders(containingFolders, slugs, querySanitizer.sanitize(containingQuery))
-        return resources.map { resourceModelMapper.map(it) }
-    }
-
-    override fun getSubFolderResourcesFilteredPaged(
-        containingFolders: List<String>,
-        containingQuery: String,
-        slugs: Set<String>,
-        pageSize: Int,
-    ): Flow<PagingData<ResourceModel>> =
-        Pager(
-            config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
-            pagingSourceFactory = {
-                databaseProvider
-                    .get(selectedAccountId)
-                    .paginatedResourcesDao()
-                    .getFilteredForChildFolders(containingFolders, slugs, querySanitizer.sanitize(containingQuery))
-            },
-        ).flow.map { pagingData -> pagingData.map { resourceModelMapper.map(it) } }
 }

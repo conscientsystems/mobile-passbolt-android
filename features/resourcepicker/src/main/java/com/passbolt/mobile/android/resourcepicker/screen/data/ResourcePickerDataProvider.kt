@@ -27,11 +27,11 @@ import androidx.paging.PagingData
 import androidx.paging.filter
 import androidx.paging.map
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesPaginatedUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesPaginatedUseCase
 import com.passbolt.mobile.android.mappers.ResourcePickerMapper
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerViewModel.Companion.SELECTABLE_RESOURCE_TYPES_SLUGS
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.allSlugs
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -83,7 +83,7 @@ class ResourcePickerDataProvider(
         )
     }
 
-    private fun Flow<PagingData<ResourceModel>>.mapToPickerItems() =
+    private fun Flow<PagingData<ResourceUiModel>>.mapToPickerItems() =
         map { pagingData ->
             pagingData.map { resourcePickerMapper.map(it, SELECTABLE_RESOURCE_TYPES_SLUGS) }
         }

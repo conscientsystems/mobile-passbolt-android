@@ -93,8 +93,8 @@ import com.passbolt.mobile.android.ui.HomeDisplayViewModel.NotLoaded
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -723,7 +723,7 @@ class HomeViewModelTest : KoinTest {
     private fun mockResourceModel(
         id: String,
         name: String,
-    ) = ResourceModel(
+    ) = ResourceUiModel(
         resourceId = id,
         resourceTypeId = "resTypeId",
         slug = "password-and-description",

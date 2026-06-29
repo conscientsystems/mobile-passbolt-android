@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.feature.otp.scanotp.scanotpsuccess
 
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 sealed interface ScanOtpSuccessIntent {
     data object CreateStandaloneOtpClick : ScanOtpSuccessIntent
@@ -8,7 +8,7 @@ sealed interface ScanOtpSuccessIntent {
     data object LinkToResourceClick : ScanOtpSuccessIntent
 
     data class LinkedResourceReceived(
-        val resource: ResourceModel,
+        val resource: ResourceUiModel,
     ) : ScanOtpSuccessIntent
 
     data object TrustNewMetadataKey : ScanOtpSuccessIntent

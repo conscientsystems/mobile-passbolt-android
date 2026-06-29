@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":fulldatarefresh"))
     implementation(project(":folders-domain"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":localization"))
     implementation(project(":jsonmodel"))
 

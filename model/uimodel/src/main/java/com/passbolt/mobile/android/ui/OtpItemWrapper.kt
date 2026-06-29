@@ -24,7 +24,7 @@
 package com.passbolt.mobile.android.ui
 
 data class OtpItemWrapper(
-    val resource: ResourceModel,
+    val resource: ResourceUiModel,
     val isVisible: Boolean,
     val isRefreshing: Boolean,
     val otpExpirySeconds: Long?,

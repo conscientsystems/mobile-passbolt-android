@@ -63,16 +63,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.pulltorefresh.PullToRefreshIndicatorBox
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsIntent.GoBack
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsSideEffect.NavigateBack
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsSideEffect.NavigateToHome
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsSideEffect.ShowContentNotAvailable
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.isFavourite
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -212,7 +212,7 @@ private fun ResourceTagsContent(
 
 @Composable
 private fun ResourceHeader(
-    resourceModel: ResourceModel?,
+    resourceModel: ResourceUiModel?,
     modifier: Modifier = Modifier,
     resourceIconProvider: ResourceIconProvider = koinInject(),
 ) {

@@ -2,7 +2,7 @@ package com.passbolt.mobile.android.feature.resourceform.main.resourcemodelhandl
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePinCode
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged

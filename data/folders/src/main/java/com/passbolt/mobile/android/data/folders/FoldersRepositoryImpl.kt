@@ -34,11 +34,8 @@ import com.passbolt.mobile.android.domain.folders.model.FolderUpdateState
 import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import com.passbolt.mobile.android.domain.folders.model.FoldersPage
 import com.passbolt.mobile.android.domain.folders.model.ParentPermissionItemId
-import com.passbolt.mobile.android.domain.folders.model.ResourcesAndFolders
-import com.passbolt.mobile.android.domain.folders.model.ResourcesAndFoldersPaged
 import com.passbolt.mobile.android.ui.Folder
 import com.passbolt.mobile.android.ui.PermissionModelUi
-import com.passbolt.mobile.android.ui.ResourceModel
 import kotlinx.coroutines.flow.Flow
 
 internal class FoldersRepositoryImpl(
@@ -83,18 +80,13 @@ internal class FoldersRepositoryImpl(
         currentUserServerId: String,
     ): List<PermissionModelUi> = localDataSource.getParentFolderPermissionsToApplyToNewItem(parentFolderId, itemId, currentUserServerId)
 
-    override suspend fun getResourcesAndFolders(
+    override fun getDirectChildFoldersPaged(
         folderId: String?,
-        slugs: Set<String>,
-    ): ResourcesAndFolders = localDataSource.getResourcesAndFolders(folderId, slugs)
-
-    override fun getResourcesAndFoldersPaged(
-        folderId: String?,
-        slugs: Set<String>,
         searchQuery: String?,
         pageSize: Int,
         enablePlaceholders: Boolean,
-    ): ResourcesAndFoldersPaged = localDataSource.getResourcesAndFoldersPaged(folderId, slugs, searchQuery, pageSize, enablePlaceholders)
+    ): Flow<PagingData<FolderWithCountAndPath>> =
+        localDataSource.getDirectChildFoldersPaged(folderId, searchQuery, pageSize, enablePlaceholders)
 
     override suspend fun getSubFoldersForFolder(
         folder: Folder,
@@ -106,18 +98,4 @@ internal class FoldersRepositoryImpl(
         searchQuery: String?,
         pageSize: Int,
     ): Flow<PagingData<FolderWithCountAndPath>> = localDataSource.getSubFoldersForFolderPaged(folder, searchQuery, pageSize)
-
-    override suspend fun getSubFolderResourcesFiltered(
-        containingFolders: List<String>,
-        containingQuery: String,
-        slugs: Set<String>,
-    ): List<ResourceModel> = localDataSource.getSubFolderResourcesFiltered(containingFolders, containingQuery, slugs)
-
-    override fun getSubFolderResourcesFilteredPaged(
-        containingFolders: List<String>,
-        containingQuery: String,
-        slugs: Set<String>,
-        pageSize: Int,
-    ): Flow<PagingData<ResourceModel>> =
-        localDataSource.getSubFolderResourcesFilteredPaged(containingFolders, containingQuery, slugs, pageSize)
 }

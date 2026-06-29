@@ -3,16 +3,16 @@ package com.passbolt.mobile.android.feature.autofill.resources
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.feature.home.screen.ResourceHandlingStrategy
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 class AutofillResourceHandlingStrategy(
     private val autofillUri: String?,
-    private val onItemClick: (ResourceModel) -> Unit,
+    private val onItemClick: (ResourceUiModel) -> Unit,
     private val onResourceCreated: (String) -> Unit,
 ) : ResourceHandlingStrategy {
     override val appContext: AppContext = AppContext.AUTOFILL
 
-    override fun resourceItemClick(resourceModel: ResourceModel) {
+    override fun resourceItemClick(resourceModel: ResourceUiModel) {
         onItemClick(resourceModel)
     }
 

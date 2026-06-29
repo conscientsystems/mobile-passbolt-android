@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":architecture"))
     implementation(project(":common"))
     implementation(project(":uimodel"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":authentication"))
     implementation(project(":fulldatarefresh"))
     implementation(project(":coreui"))

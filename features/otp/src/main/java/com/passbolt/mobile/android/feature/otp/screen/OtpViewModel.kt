@@ -38,18 +38,18 @@ import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchCont
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.InvalidTotpInput
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
-import com.passbolt.mobile.android.core.resources.actions.performCommonResourceAction
-import com.passbolt.mobile.android.core.resources.actions.performResourceUpdateAction
-import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.resources.actions.performCommonResourceAction
+import com.passbolt.mobile.android.domain.resources.actions.performResourceUpdateAction
+import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseDeleteConfirmationDialog
@@ -109,7 +109,7 @@ import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.allReset
 import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.findVisible
@@ -320,7 +320,7 @@ internal class OtpViewModel(
         }
     }
 
-    private suspend fun deleteStandaloneTotpResource(otpResource: ResourceModel) {
+    private suspend fun deleteStandaloneTotpResource(otpResource: ResourceUiModel) {
         val resourceCommonActionsInteractor = get<ResourceCommonActionsInteractor> { parametersOf(otpResource) }
         performCommonResourceAction(
             action = { resourceCommonActionsInteractor.deleteResource() },
@@ -332,7 +332,7 @@ internal class OtpViewModel(
         )
     }
 
-    private suspend fun downgradeToPasswordAndDescriptionResource(otpResource: ResourceModel) {
+    private suspend fun downgradeToPasswordAndDescriptionResource(otpResource: ResourceUiModel) {
         val resourceUpdateActionInteractor = resourceUpdateActionsInteractorFactory.create(otpResource)
         performResourceUpdateAction(
             action = {
@@ -430,7 +430,7 @@ internal class OtpViewModel(
         }
     }
 
-    private fun otpClick(resource: ResourceModel) {
+    private fun otpClick(resource: ResourceUiModel) {
         updateViewState { copy(showOtpMoreBottomSheet = false) }
         fetchTotp(resource) {
             showTotp(it, resource.resourceId)
@@ -438,7 +438,7 @@ internal class OtpViewModel(
     }
 
     private fun fetchTotp(
-        resource: ResourceModel,
+        resource: ResourceUiModel,
         afterFetchAction: (SecretPropertyActionResult.Success<TotpSecret>) -> Unit,
     ) {
         viewModelScope.launch(coroutineLaunchContext.io) {

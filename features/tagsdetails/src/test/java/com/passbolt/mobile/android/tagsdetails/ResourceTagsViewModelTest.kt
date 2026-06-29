@@ -35,8 +35,8 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgre
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceTagsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsIntent.GoBack
@@ -46,8 +46,8 @@ import com.passbolt.mobile.android.tagsdetails.ResourceTagsSideEffect.ShowConten
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.tagsdetails.SnackbarErrorType.FAILED_TO_REFRESH_DATA
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.TagModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -251,7 +251,7 @@ class ResourceTagsViewModelTest : KoinTest {
 
     private companion object {
         private val testResource by lazy {
-            ResourceModel(
+            ResourceUiModel(
                 resourceId = "resId",
                 resourceTypeId = "resTypeId",
                 slug = "password-and-description",

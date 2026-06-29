@@ -29,8 +29,8 @@ import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.RbacModel
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.TagModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 import java.time.ZonedDateTime
@@ -45,7 +45,7 @@ internal val RESOURCE_TYPE_ID: UUID = UUID.randomUUID()
 internal const val FOLDER_ID = "folderId"
 
 internal val DEFAULT_RESOURCE_MODEL by lazy {
-    ResourceModel(
+    ResourceUiModel(
         resourceId = ID,
         resourceTypeId = RESOURCE_TYPE_ID.toString(),
         slug = "password-and-description",

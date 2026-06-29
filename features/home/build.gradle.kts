@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":networking"))
     implementation(project(":passboltapi"))
     implementation(project(":mappers"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":database"))
     implementation(project(":secrets"))
     implementation(project(":authentication"))

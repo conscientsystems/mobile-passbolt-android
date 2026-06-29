@@ -25,16 +25,17 @@ package com.passbolt.mobile.android.feature.home.screen.data
 import androidx.paging.PagingData
 import androidx.paging.filter
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesPaginatedUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesWithGroupPaginatedUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesWithTagPaginatedUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.GetLocalTagsPaginatedUseCase
-import com.passbolt.mobile.android.domain.folders.usecase.GetLocalResourcesAndFoldersPaginatedUseCase
-import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFolderResourcesFilteredPaginatedUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalDirectChildFoldersPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderUseCase
 import com.passbolt.mobile.android.domain.groups.usecase.GetLocalGroupsWithShareItemsCountPaginatedUseCase
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesPaginatedUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesWithGroupPaginatedUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesWithTagPaginatedUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalSubFolderResourcesFilteredPaginatedUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetResourcesInFolderPaginatedUseCase
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.Folder
@@ -50,7 +51,7 @@ import com.passbolt.mobile.android.ui.HomeDisplayViewModel.RecentlyModified
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.SharedWithMe
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Tags
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -61,7 +62,8 @@ class HomeDataProvider(
     private val getLocalResourcesWithLocalTagsPaginatedUseCase: GetLocalResourcesWithTagPaginatedUseCase,
     private val getLocalGroupsWithShareItemsCountPaginatedUseCase: GetLocalGroupsWithShareItemsCountPaginatedUseCase,
     private val getLocalResourcesWithGroupsPaginatedUseCase: GetLocalResourcesWithGroupPaginatedUseCase,
-    private val getLocalResourcesAndFoldersPaginatedUseCase: GetLocalResourcesAndFoldersPaginatedUseCase,
+    private val getLocalDirectChildFoldersPaginatedUseCase: GetLocalDirectChildFoldersPaginatedUseCase,
+    private val getResourcesInFolderPaginatedUseCase: GetResourcesInFolderPaginatedUseCase,
     private val getLocalSubFolderResourcesFilteredPaginatedUseCase: GetLocalSubFolderResourcesFilteredPaginatedUseCase,
     private val getLocalSubFoldersForFolderUseCase: GetLocalSubFoldersForFolderUseCase,
     private val getLocalSubFoldersForFolderPaginatedUseCase: GetLocalSubFoldersForFolderPaginatedUseCase,
@@ -99,20 +101,31 @@ class HomeDataProvider(
             return HomeData()
         }
 
-        val data =
-            getLocalResourcesAndFoldersPaginatedUseCase.execute(
-                GetLocalResourcesAndFoldersPaginatedUseCase.Input(
-                    foldersView.activeFolder,
-                    slugs,
-                    searchQuery,
-                    enablePlaceholders = true,
-                ),
-            ) as GetLocalResourcesAndFoldersPaginatedUseCase.Output.Success
+        val folders =
+            getLocalDirectChildFoldersPaginatedUseCase
+                .execute(
+                    GetLocalDirectChildFoldersPaginatedUseCase.Input(
+                        foldersView.activeFolder.folderId,
+                        searchQuery,
+                        enablePlaceholders = true,
+                    ),
+                ).folders
+
+        val resources =
+            getResourcesInFolderPaginatedUseCase
+                .execute(
+                    GetResourcesInFolderPaginatedUseCase.Input(
+                        foldersView.activeFolder.folderId,
+                        slugs,
+                        searchQuery,
+                        enablePlaceholders = true,
+                    ),
+                ).resources
 
         return if (searchQuery.isNullOrBlank()) {
             HomeData(
-                resourceList = data.resources,
-                foldersList = data.folders,
+                resourceList = resources,
+                foldersList = folders,
             )
         } else {
             // resources need to be shown for all child folders
@@ -139,11 +152,11 @@ class HomeDataProvider(
                     ).resources
 
             HomeData(
-                resourceList = data.resources,
-                foldersList = data.folders,
+                resourceList = resources,
+                foldersList = folders,
                 filteredSubFolderResources = filteredSubFolderResources,
                 filteredSubFolders = allSubFoldersPaginated,
-                suggestedResourceList = getSuggestedList(data.resources, searchQuery, foldersView, showSuggestedModel),
+                suggestedResourceList = getSuggestedList(resources, searchQuery, foldersView, showSuggestedModel),
             )
         }
     }
@@ -213,11 +226,11 @@ class HomeDataProvider(
     }
 
     private fun getSuggestedList(
-        resourceList: Flow<PagingData<ResourceModel>>,
+        resourceList: Flow<PagingData<ResourceUiModel>>,
         searchQuery: String?,
         homeView: HomeDisplayViewModel,
         showSuggestedModel: ShowSuggestedModel,
-    ): Flow<PagingData<ResourceModel>> =
+    ): Flow<PagingData<ResourceUiModel>> =
         if (showSuggestedModel is ShowSuggestedModel.Show && shouldShowSuggested(homeView, searchQuery)) {
             resourceList.map { pagingData ->
                 pagingData.filter {

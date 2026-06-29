@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.feature.home.screen
 
 import com.passbolt.mobile.android.core.navigation.AppContext
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 /**
  * Passbolt - Open source password manager for teams
@@ -32,7 +32,7 @@ interface ResourceHandlingStrategyProvider {
 interface ResourceHandlingStrategy {
     val appContext: AppContext
 
-    fun resourceItemClick(resourceModel: ResourceModel)
+    fun resourceItemClick(resourceModel: ResourceUiModel)
 
     fun shouldShowResourceMoreMenu(): Boolean
 

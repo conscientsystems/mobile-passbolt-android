@@ -42,11 +42,11 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelected
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
@@ -71,8 +71,8 @@ import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -426,7 +426,7 @@ class OtpViewModelTest : KoinTest {
 
         private val otpResources by lazy {
             listOf(
-                ResourceModel(
+                ResourceUiModel(
                     resourceId = "resId",
                     resourceTypeId = "resTypeId",
                     slug = "password-and-description",
@@ -449,7 +449,7 @@ class OtpViewModelTest : KoinTest {
                     metadataKeyId = null,
                     metadataKeyType = null,
                 ),
-                ResourceModel(
+                ResourceUiModel(
                     resourceId = "resId2",
                     resourceTypeId = "resTypeId",
                     slug = "password-and-description",

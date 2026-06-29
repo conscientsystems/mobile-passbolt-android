@@ -40,15 +40,15 @@ import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSele
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionResult
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertyActionResult
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertyActionResult
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.entity.home.HomeDisplayView
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyPassword
@@ -76,10 +76,10 @@ import com.passbolt.mobile.android.ui.DefaultFilterModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.AllItems
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.NotLoaded
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.ADD_TO_FAVOURITES
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.REMOVE_FROM_FAVOURITES
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -495,7 +495,7 @@ class HomeViewModelMenuTest : KoinTest {
         }
 
     private fun mockResourceModel(name: String) =
-        ResourceModel(
+        ResourceUiModel(
             resourceId = "id1",
             resourceTypeId = "resTypeId",
             slug = "password-and-description",

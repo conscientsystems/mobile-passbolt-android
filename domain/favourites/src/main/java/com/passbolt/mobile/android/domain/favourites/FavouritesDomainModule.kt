@@ -32,4 +32,5 @@ val favouritesDomainModule =
     module {
         singleOf(::AddToFavouritesUseCase)
         singleOf(::RemoveFromFavouritesUseCase)
+        singleOf(::FavouritesInteractor)
     }

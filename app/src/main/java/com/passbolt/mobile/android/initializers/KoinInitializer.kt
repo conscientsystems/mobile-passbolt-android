@@ -47,7 +47,6 @@ import com.passbolt.mobile.android.core.passphrasememorycache.passphraseMemoryCa
 import com.passbolt.mobile.android.core.passwordgenerator.passwordGeneratorModule
 import com.passbolt.mobile.android.core.preferences.preferencesModule
 import com.passbolt.mobile.android.core.qrscan.barcodeScanModule
-import com.passbolt.mobile.android.core.resources.resourcesModule
 import com.passbolt.mobile.android.core.resourcetypes.resourceTypesModule
 import com.passbolt.mobile.android.core.secrets.secretsModule
 import com.passbolt.mobile.android.core.security.securityModule
@@ -64,6 +63,7 @@ import com.passbolt.mobile.android.data.mobiletransfer.mobileTransferDataModule
 import com.passbolt.mobile.android.data.passwordexpiry.passwordExpiryDataModule
 import com.passbolt.mobile.android.data.passwordpolicies.passwordPoliciesDataModule
 import com.passbolt.mobile.android.data.rbac.rbacDataModule
+import com.passbolt.mobile.android.data.resources.resourcesDataModule
 import com.passbolt.mobile.android.data.resourcetypes.resourceTypesDataModule
 import com.passbolt.mobile.android.data.share.shareDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
@@ -75,6 +75,7 @@ import com.passbolt.mobile.android.domain.mobiletransfer.mobileTransferDomainMod
 import com.passbolt.mobile.android.domain.passwordexpiry.passwordExpiryDomainModule
 import com.passbolt.mobile.android.domain.passwordpolicies.passwordPoliciesDomainModule
 import com.passbolt.mobile.android.domain.rbac.rbacDomainModule
+import com.passbolt.mobile.android.domain.resources.resourcesDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
 import com.passbolt.mobile.android.feature.accountdetails.accountDetailsModule
 import com.passbolt.mobile.android.feature.authenticationModule
@@ -142,7 +143,8 @@ class KoinInitializer : Initializer<Unit> {
                 homeModule,
                 settingsModule,
                 startUpModule,
-                resourcesModule,
+                resourcesDomainModule,
+                resourcesDataModule,
                 featureFlagsDomainModule,
                 featureFlagsDataModule,
                 databaseModule,

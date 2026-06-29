@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":qrscan"))
     implementation(project(":database"))
     implementation(project(":mappers"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":secrets"))
     implementation(project(":resourcetypes"))
     implementation(project(":otpcore"))

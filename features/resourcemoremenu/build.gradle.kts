@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":database"))
     implementation(project(":gopenpgp"))
     implementation(project(":localization"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":fulldatarefresh"))

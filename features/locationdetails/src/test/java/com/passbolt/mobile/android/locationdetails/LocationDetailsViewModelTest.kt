@@ -35,10 +35,10 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgre
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.locationdetails.LocationDetailsIntent.GoBack
@@ -55,8 +55,8 @@ import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTreeCrea
 import com.passbolt.mobile.android.locationdetails.ui.LocationItem.FOLDER
 import com.passbolt.mobile.android.locationdetails.ui.LocationItem.RESOURCE
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -356,7 +356,7 @@ class LocationDetailsViewModelTest : KoinTest {
 
     private companion object {
         private val testResource by lazy {
-            ResourceModel(
+            ResourceUiModel(
                 resourceId = "resource-id-123",
                 resourceTypeId = "resource-type-id",
                 slug = "password-and-description",
