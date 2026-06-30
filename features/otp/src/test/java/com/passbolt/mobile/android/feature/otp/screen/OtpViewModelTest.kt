@@ -226,7 +226,7 @@ class OtpViewModelTest : KoinTest {
 
             viewModel.onIntent(Search("abc"))
 
-            viewModel.viewState.drop(1).test {
+            viewModel.viewState.test {
                 assertThat(awaitItem().searchInputEndIconMode).isEqualTo(CLEAR)
 
                 viewModel.onIntent(SearchEndIconAction)
@@ -243,7 +243,7 @@ class OtpViewModelTest : KoinTest {
 
             viewModel.onIntent(Search("resource 2"))
 
-            viewModel.viewState.drop(1).test {
+            viewModel.viewState.test {
                 val state = awaitItem()
                 assertThat(state.searchQuery).isEqualTo("resource 2")
                 assertThat(state.searchInputEndIconMode).isEqualTo(CLEAR)

@@ -1,15 +1,11 @@
-package com.passbolt.mobile.android.core.users
+package com.passbolt.mobile.android.database.migrations
 
-import com.passbolt.mobile.android.core.users.profile.userProfileModule
-import com.passbolt.mobile.android.core.users.usecase.FetchUsersUseCase
-import com.passbolt.mobile.android.core.users.usecase.db.usersDbModule
-import com.passbolt.mobile.android.core.users.user.FetchCurrentUserUseCase
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  * Passbolt - Open source password manager for teams
- * Copyright (c) 2021 Passbolt SA
+ * Copyright (c) 2026 Passbolt SA
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
  * Public License (AGPL) as published by the Free Software Foundation version 3.
@@ -30,12 +26,12 @@ import org.koin.dsl.module
  * @since v1.0
  */
 
-val usersModule =
-    module {
-        userProfileModule()
-        usersDbModule()
+@Suppress("MagicNumber")
+object Migration25to26 : Migration(25, 26) {
+    private const val ADD_USER_UPDATE_STATE_COLUMN =
+        "ALTER TABLE User ADD COLUMN updateState TEXT NOT NULL DEFAULT 'UPDATED'"
 
-        singleOf(::FetchCurrentUserUseCase)
-        singleOf(::FetchUsersUseCase)
-        singleOf(::UsersInteractor)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(ADD_USER_UPDATE_STATE_COLUMN)
     }
+}

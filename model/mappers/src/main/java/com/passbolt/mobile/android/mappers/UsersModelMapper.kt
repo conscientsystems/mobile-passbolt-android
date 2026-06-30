@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.mappers
 import com.passbolt.mobile.android.entity.user.User
 import com.passbolt.mobile.android.entity.user.UserGpgKey
 import com.passbolt.mobile.android.entity.user.UserProfile
+import com.passbolt.mobile.android.entity.user.UserUpdateState
 import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.UserProfileUiModel
 import com.passbolt.mobile.android.ui.UserUiModel
@@ -32,6 +33,7 @@ class UsersModelMapper {
                     expires = input.gpgKey.keyExpirationDate,
                     created = input.gpgKey.keyCreationDate,
                 ),
+            updateState = UserUpdateState.UPDATED,
         )
 
     fun map(input: User) =

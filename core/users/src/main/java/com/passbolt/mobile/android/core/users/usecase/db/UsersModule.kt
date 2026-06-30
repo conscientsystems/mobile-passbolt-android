@@ -27,8 +27,9 @@ import org.koin.core.module.dsl.singleOf
  */
 
 internal fun Module.usersDbModule() {
-    singleOf(::RemoveLocalUsersUseCase)
-    singleOf(::AddLocalUsersUseCase)
+    singleOf(::UpsertLocalUsersUseCase)
+    singleOf(::SetLocalUsersUpdateStateUseCase)
+    singleOf(::RemoveLocalUsersWithUpdateStateUseCase)
     singleOf(::GetLocalUsersUseCase)
     singleOf(::GetLocalUserUseCase)
     singleOf(::GetLocalCurrentUserUseCase)

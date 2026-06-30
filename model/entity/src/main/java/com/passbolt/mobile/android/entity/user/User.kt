@@ -38,7 +38,13 @@ data class User(
     val profile: UserProfile,
     @Embedded
     val gpgKey: UserGpgKey,
+    val updateState: UserUpdateState,
 )
+
+enum class UserUpdateState {
+    PENDING,
+    UPDATED,
+}
 
 data class UserProfile(
     val firstName: String?,

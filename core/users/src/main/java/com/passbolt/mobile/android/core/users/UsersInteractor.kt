@@ -5,7 +5,10 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.users.usecase.FetchUsersUseCase
-import com.passbolt.mobile.android.core.users.usecase.RebuildUsersTablesUseCase
+import com.passbolt.mobile.android.core.users.usecase.db.RemoveLocalUsersWithUpdateStateUseCase
+import com.passbolt.mobile.android.core.users.usecase.db.SetLocalUsersUpdateStateUseCase
+import com.passbolt.mobile.android.core.users.usecase.db.UpsertLocalUsersUseCase
+import com.passbolt.mobile.android.entity.user.UserUpdateState.PENDING
 import timber.log.Timber
 
 /**
@@ -32,20 +35,27 @@ import timber.log.Timber
  */
 class UsersInteractor(
     private val fetchUsersUseCase: FetchUsersUseCase,
-    private val rebuildLocalUsersUseCase: RebuildUsersTablesUseCase,
+    private val setLocalUsersUpdateStateUseCase: SetLocalUsersUpdateStateUseCase,
+    private val upsertLocalUsersUseCase: UpsertLocalUsersUseCase,
+    private val removeLocalUsersWithUpdateStateUseCase: RemoveLocalUsersWithUpdateStateUseCase,
 ) {
     suspend fun fetchAndSaveUsers(): Output =
-        when (val fetched = fetchUsersUseCase.execute(FetchUsersUseCase.Input())) {
-            is FetchUsersUseCase.Output.Failure -> Output.Failure(fetched.authenticationState)
-            is FetchUsersUseCase.Output.Success -> {
-                try {
-                    rebuildLocalUsersUseCase.execute(RebuildUsersTablesUseCase.Input(fetched.users))
+        try {
+            setLocalUsersUpdateStateUseCase.execute(SetLocalUsersUpdateStateUseCase.Input(PENDING))
+
+            when (val fetched = fetchUsersUseCase.execute(FetchUsersUseCase.Input())) {
+                is FetchUsersUseCase.Output.Failure -> Output.Failure(fetched.authenticationState)
+                is FetchUsersUseCase.Output.Success -> {
+                    upsertLocalUsersUseCase.execute(UpsertLocalUsersUseCase.Input(fetched.users))
+                    removeLocalUsersWithUpdateStateUseCase.execute(
+                        RemoveLocalUsersWithUpdateStateUseCase.Input(PENDING),
+                    )
                     Output.Success
-                } catch (exception: SQLException) {
-                    Timber.e(exception, "There was an error during users db insert")
-                    Output.Failure(fetched.authenticationState)
                 }
             }
+        } catch (exception: SQLException) {
+            Timber.e(exception, "There was an error during users db insert")
+            Output.Failure(AuthenticationState.Authenticated)
         }
 
     sealed class Output : AuthenticatedUseCaseOutput {

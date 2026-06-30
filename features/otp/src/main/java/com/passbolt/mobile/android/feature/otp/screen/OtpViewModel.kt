@@ -418,7 +418,7 @@ internal class OtpViewModel(
 
     private fun searchQueryChanged(searchQuery: String) {
         val searchEndIcon = if (searchQuery.isNotBlank()) CLEAR else AVATAR
-        viewModelScope.launch {
+        viewModelScope.launch(coroutineLaunchContext.io) {
             val filteredOtps = getOtpResources(searchQuery)
             updateViewState {
                 copy(

@@ -44,6 +44,7 @@ import com.passbolt.mobile.android.database.migrations.Migration21to22
 import com.passbolt.mobile.android.database.migrations.Migration22to23
 import com.passbolt.mobile.android.database.migrations.Migration23to24
 import com.passbolt.mobile.android.database.migrations.Migration24to25
+import com.passbolt.mobile.android.database.migrations.Migration25to26
 import com.passbolt.mobile.android.database.migrations.Migration2to3
 import com.passbolt.mobile.android.database.migrations.Migration3to4
 import com.passbolt.mobile.android.database.migrations.Migration4to5
@@ -690,6 +691,35 @@ class DatabaseMigrationsTest {
     }
 
     @Test
+    fun migrate25To26() {
+        helper
+            .createDatabase(TEST_DB, 25)
+            .apply {
+                execSQL(
+                    "INSERT INTO User VALUES('id','username',1,'fName','lName','avatar','userKeyId','armoredKey'," +
+                        "4096,'uid','keyId','fingerprint','type',1644909225833, 1644909225830)",
+                )
+                close()
+            }
+
+        helper
+            .runMigrationsAndValidate(TEST_DB, 26, true, Migration25to26)
+            .apply {
+                val cursor = query("SELECT updateState FROM User WHERE id = 'id'")
+                cursor.moveToFirst()
+                assertThat(cursor.getString(0)).isEqualTo("UPDATED")
+                cursor.close()
+
+                execSQL(
+                    "INSERT INTO User VALUES('id2','username',1,'fName','lName','avatar','userKeyId','armoredKey'," +
+                        "4096,'uid','keyId','fingerprint','type',1644909225833, 1644909225830, 'PENDING')",
+                )
+
+                close()
+            }
+    }
+
+    @Test
     fun migrateAll() {
         helper.createDatabase(TEST_DB, 1).apply {
             close()
@@ -725,6 +755,7 @@ class DatabaseMigrationsTest {
                 Migration22to23,
                 Migration23to24,
                 Migration24to25,
+                Migration25to26,
             ).build()
             .apply {
                 openHelper.writableDatabase
