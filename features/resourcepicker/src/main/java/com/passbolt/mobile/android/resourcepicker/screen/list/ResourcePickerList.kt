@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.passbolt.mobile.android.core.compose.rememberDebouncedBoolean
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.ui.empty.EmptyResourceListState
 import com.passbolt.mobile.android.core.ui.lists.HeaderItem
 import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
@@ -48,9 +49,10 @@ fun ResourcePickerList(
     onIntent: (ResourcePickerIntent) -> Unit,
     modifier: Modifier = Modifier,
     resourceIconProvider: ResourceIconProvider = koinInject(),
+    coroutineLaunchContext: CoroutineLaunchContext = koinInject(),
 ) {
-    val suggestedResources = state.resourcePickerData.suggestedResources.collectAsLazyPagingItems()
-    val resources = state.resourcePickerData.resources.collectAsLazyPagingItems()
+    val suggestedResources = state.resourcePickerData.suggestedResources.collectAsLazyPagingItems(coroutineLaunchContext.default)
+    val resources = state.resourcePickerData.resources.collectAsLazyPagingItems(coroutineLaunchContext.default)
     val pickedResourceId = state.pickedResource?.resourceModel?.resourceId
 
     val isSuggestedSectionVisible = suggestedResources.itemSnapshotList.isNotEmpty()

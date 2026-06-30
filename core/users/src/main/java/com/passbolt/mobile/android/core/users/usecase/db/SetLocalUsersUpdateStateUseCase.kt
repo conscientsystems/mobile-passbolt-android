@@ -1,11 +1,9 @@
-package com.passbolt.mobile.android.core.users
+package com.passbolt.mobile.android.core.users.usecase.db
 
-import com.passbolt.mobile.android.core.users.profile.userProfileModule
-import com.passbolt.mobile.android.core.users.usecase.FetchUsersUseCase
-import com.passbolt.mobile.android.core.users.usecase.db.usersDbModule
-import com.passbolt.mobile.android.core.users.user.FetchCurrentUserUseCase
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.database.DatabaseProvider
+import com.passbolt.mobile.android.entity.user.UserUpdateState
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,13 +27,19 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-val usersModule =
-    module {
-        userProfileModule()
-        usersDbModule()
-
-        singleOf(::FetchCurrentUserUseCase)
-        singleOf(::FetchUsersUseCase)
-        singleOf(::UsersInteractor)
+class SetLocalUsersUpdateStateUseCase(
+    private val databaseProvider: DatabaseProvider,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : AsyncUseCase<SetLocalUsersUpdateStateUseCase.Input, Unit> {
+    override suspend fun execute(input: Input) {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        databaseProvider
+            .get(userId)
+            .usersDao()
+            .setAllUpdateState(input.updateState)
     }
+
+    data class Input(
+        val updateState: UserUpdateState,
+    )
+}

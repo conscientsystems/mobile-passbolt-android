@@ -3,8 +3,7 @@ package com.passbolt.mobile.android.core.users.usecase.db
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.ui.UserUiModel
+import com.passbolt.mobile.android.entity.user.UserUpdateState
 
 /**
  * Passbolt - Open source password manager for teams
@@ -28,22 +27,19 @@ import com.passbolt.mobile.android.ui.UserUiModel
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class AddLocalUsersUseCase(
+class RemoveLocalUsersWithUpdateStateUseCase(
     private val databaseProvider: DatabaseProvider,
-    private val userModelMapper: UsersModelMapper,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<AddLocalUsersUseCase.Input, Unit> {
+) : AsyncUseCase<RemoveLocalUsersWithUpdateStateUseCase.Input, Unit> {
     override suspend fun execute(input: Input) {
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         databaseProvider
             .get(userId)
             .usersDao()
-            .insertAll(
-                input.users.map(userModelMapper::map),
-            )
+            .removeWithUpdateState(input.updateState)
     }
 
     data class Input(
-        val users: List<UserUiModel>,
+        val updateState: UserUpdateState,
     )
 }
