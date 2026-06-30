@@ -22,7 +22,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":metadata"))
     implementation(project(":supportedresourcetypes"))
-    implementation(project(":secrets"))
+    implementation(project(":secrets-domain"))
     implementation(project(":jsonmodel"))
     implementation(project(":resourcetypes"))
     implementation(project(":resources-domain"))

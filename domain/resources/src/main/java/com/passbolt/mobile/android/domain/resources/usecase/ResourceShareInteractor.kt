@@ -10,18 +10,16 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.UnauthenticatedReason
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.secrets.usecase.decrypt.SecretInteractor
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
+import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.SecretInteractor
 import com.passbolt.mobile.android.domain.share.model.ShareRecipient
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper
 import com.passbolt.mobile.android.ui.EncryptedSecretOrError
 import com.passbolt.mobile.android.ui.PermissionModelUi
-import retrofit2.HttpException
 import timber.log.Timber
-import java.net.HttpURLConnection
 
 /**
  * Passbolt - Open source password manager for teams
@@ -106,8 +104,8 @@ class ResourceShareInteractor(
                 Output.SecretDecryptFailure(secretOutput.error.message)
             }
             is SecretInteractor.Output.FetchFailure -> {
-                Timber.e(secretOutput.exception, "Secret fetch failure")
-                Output.SecretFetchFailure(secretOutput.exception)
+                Timber.e("Secret fetch failure: %s", secretOutput.incomplete.displayMessage())
+                Output.SecretFetchFailure(secretOutput.incomplete)
             }
             is SecretInteractor.Output.Unauthorized -> {
                 Timber.d("Unauthorized during secret fetch")
@@ -200,7 +198,7 @@ class ResourceShareInteractor(
         override val authenticationState: AuthenticationState
             get() =
                 when (this) {
-                    is SecretFetchFailure if (this.exception as? HttpException)?.code() == HttpURLConnection.HTTP_UNAUTHORIZED ->
+                    is SecretFetchFailure if this.incomplete is DomainResult.Incomplete.Unauthorized ->
                         AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
                     is ShareFailure if this.incomplete is DomainResult.Incomplete.Unauthorized ->
                         AuthenticationState.Unauthenticated(AuthenticationState.Unauthenticated.Reason.Session)
@@ -211,7 +209,7 @@ class ResourceShareInteractor(
                 }
 
         data class SecretFetchFailure(
-            val exception: Exception,
+            val incomplete: DomainResult.Incomplete,
         ) : Output()
 
         data class SecretDecryptFailure(

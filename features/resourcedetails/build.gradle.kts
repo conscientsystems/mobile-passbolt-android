@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":navigation"))
     implementation(project(":coreui"))
     implementation(project(":common"))
-    implementation(project(":secrets"))
+    implementation(project(":secrets-domain"))
     implementation(project(":uimodel"))
     implementation(project(":networking"))
     implementation(project(":database"))

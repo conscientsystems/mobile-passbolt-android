@@ -3,13 +3,13 @@ package com.passbolt.mobile.android.feature.otp.scanotp.scanotpsuccess
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
-import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.domain.resources.actions.performResourceCreateAction
 import com.passbolt.mobile.android.domain.resources.actions.performResourceUpdateAction
 import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.otp.scanotp.scanotpsuccess.ScanOtpSuccessIntent.CreateStandaloneOtpClick
 import com.passbolt.mobile.android.feature.otp.scanotp.scanotpsuccess.ScanOtpSuccessIntent.DismissNewMetadataTrustDialog

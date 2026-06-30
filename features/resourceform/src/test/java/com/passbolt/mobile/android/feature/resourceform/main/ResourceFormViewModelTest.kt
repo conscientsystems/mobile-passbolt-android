@@ -8,7 +8,6 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCa
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
-import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 import com.passbolt.mobile.android.domain.passwordexpiry.usecase.PasswordExpiryPoliciesInteractor
 import com.passbolt.mobile.android.domain.passwordpolicies.usecase.PasswordPoliciesInteractor
@@ -22,6 +21,7 @@ import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyAction
 import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.GetEditContentTypeUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
