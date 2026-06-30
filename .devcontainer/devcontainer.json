@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu@sha256:d1fc409bd576f7b6f81c5cfd7399ac8b26d0fd80ba0d2eb269b1e6e1f151d22b",
   "service": "devcontainer",
   "features": {
-    "ghcr.io/devcontainers/features/git:1@sha256:27905dc196c01f77d6ba8709cb82eeaf330b3b108772e2f02d1cd0d826de1251": {},
+    "ghcr.io/devcontainers/features/git:1@sha256:93b1cb77ac61b53dc987c1ae77f5dc9bb1ba73cb0b82204141a5b120e0d62860": {},
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0@sha256:cfc2e7d3e9fd3b9b01f8d5cb158508a884c8c0ede2e23ed10f32dea5d4ffe69a": {}
   },
   "mounts": [
