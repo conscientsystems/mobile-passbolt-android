@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":networking"))
     implementation(project(":uimodel"))
     implementation(project(":mappers"))
-    implementation(project(":secrets"))
+    implementation(project(":secrets-domain"))
     implementation(project(":authentication"))
     implementation(project(":resources-domain"))
     implementation(project(":localization"))

@@ -2,7 +2,6 @@ package com.passbolt.mobile.android.passboltapi
 
 import com.passbolt.mobile.android.passboltapi.auth.authApiModule
 import com.passbolt.mobile.android.passboltapi.metadata.metadataApiModule
-import com.passbolt.mobile.android.passboltapi.secrets.secretsApiModule
 import org.koin.dsl.module
 
 /**
@@ -30,6 +29,5 @@ import org.koin.dsl.module
 val passboltApiModule =
     module {
         authApiModule()
-        secretsApiModule()
         metadataApiModule()
     }

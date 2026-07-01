@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":share-domain"))
     implementation(project(":favourites-domain"))
     implementation(project(":gopenpgp"))
-    implementation(project(":secrets"))
+    implementation(project(":secrets-domain"))
     implementation(project(":resourcetypes"))
     implementation(project(":authentication"))
     implementation(project(":users"))

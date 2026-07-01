@@ -20,7 +20,7 @@ dependencies {
     implementation(project(":serializers"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":jsonmodel"))
-    implementation(project(":secrets"))
+    implementation(project(":secrets-domain"))
     implementation(project(":metadatakeytrust"))
     implementation(project(":metadata"))
 

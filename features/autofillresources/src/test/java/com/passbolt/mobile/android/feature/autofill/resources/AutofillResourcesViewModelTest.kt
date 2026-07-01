@@ -34,10 +34,10 @@ import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAccountsUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
-import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.NewResourceCreated
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.SelectAutofillItem
 import com.passbolt.mobile.android.feature.autofill.resources.AutofillResourcesIntent.UserAuthenticated

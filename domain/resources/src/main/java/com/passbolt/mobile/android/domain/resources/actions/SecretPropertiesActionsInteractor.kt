@@ -24,9 +24,9 @@
 package com.passbolt.mobile.android.domain.resources.actions
 
 import androidx.annotation.VisibleForTesting
-import com.passbolt.mobile.android.core.secrets.usecase.decrypt.SecretInteractor
-import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretJsonModel
-import com.passbolt.mobile.android.core.secrets.usecase.decrypt.parser.SecretParser
+import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
+import com.passbolt.mobile.android.domain.secrets.parser.SecretParser
+import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.SecretInteractor
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.jsonmodel.delegates.SecretCustomFieldsModel
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret

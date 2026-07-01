@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":database"))
     implementation(project(":mappers"))
     implementation(project(":resources-domain"))
-    implementation(project(":secrets"))
+    implementation(project(":secrets-domain"))
     implementation(project(":resourcetypes"))
     implementation(project(":otpcore"))
     implementation(project(":users"))
