@@ -1,6 +1,7 @@
 package com.passbolt.mobile.android.mappers
 
 import com.passbolt.mobile.android.dto.response.PermissionGroupDto
+import com.passbolt.mobile.android.entity.group.GroupUpdateState
 import com.passbolt.mobile.android.entity.group.UsersGroup
 import com.passbolt.mobile.android.entity.group.UsersGroupWithChildItemsCount
 import com.passbolt.mobile.android.entity.permission.GroupPermission
@@ -34,6 +35,7 @@ class GroupsModelMapper {
         UsersGroup(
             groupId = group.groupId,
             name = group.groupName,
+            updateState = GroupUpdateState.UPDATED,
         )
 
     fun map(group: UsersGroupWithChildItemsCount) =

@@ -26,6 +26,7 @@ package com.passbolt.mobile.android.data.groups.mapper
 import com.passbolt.mobile.android.domain.groups.model.Group
 import com.passbolt.mobile.android.domain.groups.model.GroupWithItemsCount
 import com.passbolt.mobile.android.domain.groups.model.GroupWithUsers
+import com.passbolt.mobile.android.entity.group.GroupUpdateState
 import com.passbolt.mobile.android.entity.group.UsersGroup
 import com.passbolt.mobile.android.entity.group.UsersGroupWithChildItemsCount
 import com.passbolt.mobile.android.entity.group.GroupWithUsers as GroupWithUsersEntity
@@ -40,6 +41,7 @@ internal fun Group.toEntity(): UsersGroup =
     UsersGroup(
         groupId = id,
         name = name,
+        updateState = GroupUpdateState.UPDATED,
     )
 
 internal fun UsersGroupWithChildItemsCount.toDomain(): GroupWithItemsCount =

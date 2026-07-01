@@ -40,5 +40,5 @@ interface GroupsLocalDataSource {
 
     suspend fun getGroupWithUsers(groupId: String): GroupWithUsers
 
-    suspend fun rebuildGroups(groups: List<GroupWithMembers>)
+    suspend fun upsertGroups(groups: List<GroupWithMembers>)
 }

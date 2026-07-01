@@ -1,16 +1,11 @@
-package com.passbolt.mobile.android.entity.group
+package com.passbolt.mobile.android.database.migrations
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.Junction
-import androidx.room.PrimaryKey
-import androidx.room.Relation
-import com.passbolt.mobile.android.entity.user.User
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  * Passbolt - Open source password manager for teams
- * Copyright (c) 2021 Passbolt SA
+ * Copyright (c) 2026 Passbolt SA
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
  * Public License (AGPL) as published by the Free Software Foundation version 3.
@@ -30,32 +25,13 @@ import com.passbolt.mobile.android.entity.user.User
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-@Entity
-data class UsersGroup(
-    @PrimaryKey
-    val groupId: String,
-    @ColumnInfo(collate = ColumnInfo.NOCASE)
-    val name: String,
-    val updateState: GroupUpdateState,
-)
 
-enum class GroupUpdateState {
-    PENDING,
-    UPDATED,
+@Suppress("MagicNumber")
+object Migration26to27 : Migration(26, 27) {
+    private const val ADD_GROUP_UPDATE_STATE_COLUMN =
+        "ALTER TABLE UsersGroup ADD COLUMN updateState TEXT NOT NULL DEFAULT 'UPDATED'"
+
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(ADD_GROUP_UPDATE_STATE_COLUMN)
+    }
 }
-
-data class UsersGroupWithChildItemsCount(
-    val groupId: String,
-    val name: String,
-    val childItemsCount: Int,
-)
-
-data class GroupWithUsers(
-    @Embedded val group: UsersGroup,
-    @Relation(
-        parentColumn = "groupId",
-        entityColumn = "id",
-        associateBy = Junction(UsersAndGroupCrossRef::class, parentColumn = "groupId", entityColumn = "userId"),
-    )
-    val users: List<User>,
-)

@@ -50,7 +50,7 @@ internal class GroupsRepositoryImpl(
     override suspend fun refreshGroups(): DomainResult<List<GroupWithMembers>> =
         remoteDataSource.getGroups().also {
             if (it is DomainResult.Finished) {
-                localDataSource.rebuildGroups(it.value)
+                localDataSource.upsertGroups(it.value)
             }
         }
 }
