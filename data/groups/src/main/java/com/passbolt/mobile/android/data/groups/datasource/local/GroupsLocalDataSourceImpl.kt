@@ -37,6 +37,7 @@ import com.passbolt.mobile.android.domain.groups.model.Group
 import com.passbolt.mobile.android.domain.groups.model.GroupWithItemsCount
 import com.passbolt.mobile.android.domain.groups.model.GroupWithMembers
 import com.passbolt.mobile.android.domain.groups.model.GroupWithUsers
+import com.passbolt.mobile.android.entity.group.GroupUpdateState.PENDING
 import com.passbolt.mobile.android.entity.group.UsersAndGroupCrossRef
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -74,15 +75,15 @@ internal class GroupsLocalDataSourceImpl(
             .getGroupWithUsers(groupId)
             .toDomain()
 
-    override suspend fun rebuildGroups(groups: List<GroupWithMembers>) {
+    override suspend fun upsertGroups(groups: List<GroupWithMembers>) {
         val database = databaseProvider.get(selectedAccountId)
         val groupsDao = database.groupsDao()
         val usersAndGroupsCrossRefDao = database.usersAndGroupsCrossRefDao()
 
-        groupsDao.deleteAll()
+        groupsDao.setAllUpdateState(PENDING)
         usersAndGroupsCrossRefDao.deleteAll()
 
-        groupsDao.insertAll(groups.map { it.group.toEntity() })
+        groupsDao.upsertAll(groups.map { it.group.toEntity() })
 
         val usersAndGroupsCrossRefs =
             groups.flatMap { group ->
@@ -91,5 +92,7 @@ internal class GroupsLocalDataSourceImpl(
                 }
             }
         usersAndGroupsCrossRefDao.insertAll(usersAndGroupsCrossRefs)
+
+        groupsDao.removeWithUpdateState(PENDING)
     }
 }
