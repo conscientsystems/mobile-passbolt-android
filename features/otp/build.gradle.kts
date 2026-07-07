@@ -34,7 +34,7 @@ dependencies {
     implementation(project(":jsonmodel"))
     implementation(project(":resourceform"))
     implementation(project(":metadatakeytrust"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":clipboard"))
     implementation(project(":testtags"))
 

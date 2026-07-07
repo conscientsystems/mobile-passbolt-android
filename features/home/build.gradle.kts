@@ -47,7 +47,7 @@ dependencies {
     implementation(project(":resourceform"))
     implementation(project(":permissions"))
     implementation(project(":clipboard"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":testtags"))
 
     implementation(platform(libs.koin.bom))

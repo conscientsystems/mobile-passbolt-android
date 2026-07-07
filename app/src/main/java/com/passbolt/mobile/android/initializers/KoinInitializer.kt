@@ -57,6 +57,7 @@ import com.passbolt.mobile.android.data.favourites.favouritesDataModule
 import com.passbolt.mobile.android.data.featureflags.featureFlagsDataModule
 import com.passbolt.mobile.android.data.folders.foldersDataModule
 import com.passbolt.mobile.android.data.groups.groupsDataModule
+import com.passbolt.mobile.android.data.metadata.metadataDataModule
 import com.passbolt.mobile.android.data.mfa.mfaDataModule
 import com.passbolt.mobile.android.data.mobiletransfer.mobileTransferDataModule
 import com.passbolt.mobile.android.data.passwordexpiry.passwordExpiryDataModule
@@ -71,6 +72,7 @@ import com.passbolt.mobile.android.database.databaseModule
 import com.passbolt.mobile.android.domain.favourites.favouritesDomainModule
 import com.passbolt.mobile.android.domain.folders.foldersDomainModule
 import com.passbolt.mobile.android.domain.groups.groupsDomainModule
+import com.passbolt.mobile.android.domain.metadata.metadataDomainModule
 import com.passbolt.mobile.android.domain.mobiletransfer.mobileTransferDomainModule
 import com.passbolt.mobile.android.domain.passwordexpiry.passwordExpiryDomainModule
 import com.passbolt.mobile.android.domain.passwordpolicies.passwordPoliciesDomainModule
@@ -101,7 +103,6 @@ import com.passbolt.mobile.android.linksapi.linksApiModule
 import com.passbolt.mobile.android.locationDetailsModule
 import com.passbolt.mobile.android.logsModule
 import com.passbolt.mobile.android.mappersModule
-import com.passbolt.mobile.android.metadata.metadataModule
 import com.passbolt.mobile.android.otpMoreMenuModule
 import com.passbolt.mobile.android.passboltapi.passboltApiModule
 import com.passbolt.mobile.android.permissions.permissionsModule
@@ -204,7 +205,8 @@ class KoinInitializer : Initializer<Unit> {
                 mfaDataModule,
                 pwnedPasswordsApiModule,
                 passwordGeneratorModule,
-                metadataModule,
+                metadataDataModule,
+                metadataDomainModule,
                 encryptedStorageModule,
                 authenticationCoreModule,
                 preferencesModule,

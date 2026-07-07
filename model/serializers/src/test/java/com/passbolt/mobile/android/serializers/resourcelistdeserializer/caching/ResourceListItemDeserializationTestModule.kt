@@ -32,9 +32,9 @@ import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetLocalResourc
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
+import com.passbolt.mobile.android.domain.metadata.usecase.db.GetLocalMetadataKeysUseCase
 import com.passbolt.mobile.android.dto.response.ResourceResponseDto
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
-import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeysUseCase
 import com.passbolt.mobile.android.serializers.STRICT_ADAPTERS_ONLY_GSON
 import com.passbolt.mobile.android.serializers.gson.MetadataDecryptor
 import com.passbolt.mobile.android.serializers.gson.ResourceListDeserializer

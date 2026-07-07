@@ -41,7 +41,7 @@ dependencies {
     implementation(project(":jsonmodel"))
     implementation(project(":resourceform"))
     implementation(project(":clipboard"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":testtags"))
 
     implementation(platform(libs.koin.bom))
