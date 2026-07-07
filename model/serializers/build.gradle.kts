@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":gopenpgp"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":uimodel"))
     implementation(project(":accounts"))
     implementation(project(":passphrasememorycache"))

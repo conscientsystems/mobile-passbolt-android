@@ -22,7 +22,7 @@ dependencies {
     implementation(project(":jsonmodel"))
     implementation(project(":secrets-domain"))
     implementation(project(":metadatakeytrust"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

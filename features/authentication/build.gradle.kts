@@ -27,7 +27,6 @@ dependencies {
     implementation(project(":inappreview"))
     implementation(project(":idlingresource"))
     implementation(project(":rbac-domain"))
-    implementation(project(":metadata"))
     implementation(project(":accounts"))
     implementation(project(":testtags"))
     implementation(project(":authenticationcore"))

@@ -20,7 +20,7 @@ dependencies {
     implementation(project(":accounts"))
     implementation(project(":mappers"))
     implementation(project(":navigation"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":secrets-domain"))
     implementation(project(":jsonmodel"))

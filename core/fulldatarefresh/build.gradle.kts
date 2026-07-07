@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":idlingresource"))
     implementation(project(":authentication"))
     implementation(project(":resourcetypes"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":common"))
     implementation(project(":entity"))
     implementation(project(":featureflags-domain"))

@@ -43,6 +43,8 @@ import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor.Outp
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor.Output.Success
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
@@ -112,8 +114,6 @@ import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOU
 import com.passbolt.mobile.android.feature.home.screen.ToastType.WAIT_FOR_DATA_REFRESH_FINISH
 import com.passbolt.mobile.android.feature.home.screen.data.HomeDataProvider
 import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
-import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.autofillSlugs
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.Folder.Child

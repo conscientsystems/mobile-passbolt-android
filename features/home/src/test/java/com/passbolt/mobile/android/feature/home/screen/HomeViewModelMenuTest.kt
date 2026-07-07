@@ -43,6 +43,8 @@ import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPr
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionResult
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
@@ -70,8 +72,6 @@ import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
-import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.ui.DefaultFilterModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.AllItems
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.NotLoaded

@@ -28,6 +28,12 @@ import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseC
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.ItemIdResourceId
+import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysInteractor
+import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysInteractor.Output.TrustedKeyDeleted
+import com.passbolt.mobile.android.domain.metadata.model.MetadataKeyPurpose.ENCRYPT
+import com.passbolt.mobile.android.domain.metadata.usecase.GetMetadataKeysSettingsUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.GetMetadataTypesSettingsUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.db.GetLocalMetadataKeysUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionResult.CannotCreateWithCurrentConfig
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionResult.CryptoFailure
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionResult.Failure
@@ -45,12 +51,6 @@ import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourceP
 import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourceUseCase
 import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
-import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysInteractor
-import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysInteractor.Output.TrustedKeyDeleted
-import com.passbolt.mobile.android.metadata.usecase.GetMetadataKeysSettingsUseCase
-import com.passbolt.mobile.android.metadata.usecase.GetMetadataTypesSettingsUseCase
-import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeysUseCase
-import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeysUseCase.MetadataKeyPurpose.ENCRYPT
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.CreateResourceModel

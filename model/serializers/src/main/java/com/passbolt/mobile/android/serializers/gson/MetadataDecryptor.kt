@@ -27,13 +27,13 @@ import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedU
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.metadata.sessionkeys.ForeignModel.RESOURCE
+import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysMemoryCache
 import com.passbolt.mobile.android.dto.response.MetadataKeyTypeDto.PERSONAL
 import com.passbolt.mobile.android.dto.response.MetadataKeyTypeDto.SHARED
 import com.passbolt.mobile.android.dto.response.ResourceResponseV5Dto
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
-import com.passbolt.mobile.android.metadata.sessionkeys.ForeignModel.RESOURCE
-import com.passbolt.mobile.android.metadata.sessionkeys.SessionKeysMemoryCache
 import com.passbolt.mobile.android.ui.ParsedMetadataKeyModel
 import com.proton.gopenpgp.crypto.Crypto
 import com.proton.gopenpgp.crypto.Key

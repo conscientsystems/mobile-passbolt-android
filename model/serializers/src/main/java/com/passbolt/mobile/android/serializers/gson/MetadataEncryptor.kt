@@ -1,9 +1,9 @@
 package com.passbolt.mobile.android.serializers.gson
 
 import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.db.GetLocalMetadataKeyUseCase
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
-import com.passbolt.mobile.android.metadata.usecase.db.GetLocalMetadataKeyUseCase
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
 import timber.log.Timber
 

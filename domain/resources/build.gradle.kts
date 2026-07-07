@@ -25,7 +25,7 @@ dependencies {
     implementation(project(":accounts"))
     implementation(project(":preferences"))
     implementation(project(":passphrasememorycache"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":jsonmodel"))
     implementation(project(":coreui"))
 
