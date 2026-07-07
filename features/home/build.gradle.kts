@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":common"))
     implementation(project(":networking"))
-    implementation(project(":passboltapi"))
     implementation(project(":mappers"))
     implementation(project(":resources-domain"))
     implementation(project(":database"))

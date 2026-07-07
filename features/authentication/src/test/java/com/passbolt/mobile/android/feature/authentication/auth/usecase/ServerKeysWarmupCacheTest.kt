@@ -25,6 +25,8 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before

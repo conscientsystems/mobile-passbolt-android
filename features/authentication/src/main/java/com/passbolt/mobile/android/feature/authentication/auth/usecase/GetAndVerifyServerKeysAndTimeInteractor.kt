@@ -3,6 +3,11 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.IsServerFingerprintCorrectUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.SaveServerPublicRsaKeyUseCase
 import timber.log.Timber
 
 /**
@@ -65,13 +70,9 @@ class GetAndVerifyServerKeysAndTimeInteractor(
                 onSuccess(Success(pgpKey.publicKey, pgpKey.fingerprint, rsaKey.rsaKey))
             }
         } else {
-            if ((pgpKey as? FetchServerPublicPgpKeyUseCase.Output.Failure)
-                    ?.error
-                    ?.isServerNotReachable == true ||
-                (rsaKey as? FetchServerPublicRsaKeyUseCase.Output.Failure)
-                    ?.error
-                    ?.isServerNotReachable == true
-            ) {
+            val pgpIncomplete = (pgpKey as? FetchServerPublicPgpKeyUseCase.Output.Failure)?.incomplete
+            val rsaIncomplete = (rsaKey as? FetchServerPublicRsaKeyUseCase.Output.Failure)?.incomplete
+            if (pgpIncomplete.isServerNotReachable() || rsaIncomplete.isServerNotReachable()) {
                 Timber.d("Server is not reachable")
                 val accountData = getAccountDataUseCase.execute(UserIdInput(userId))
                 onError(Error.ServerNotReachable(accountData.url))
@@ -102,3 +103,5 @@ class GetAndVerifyServerKeysAndTimeInteractor(
         data object Generic : Error()
     }
 }
+
+private fun DomainResult.Incomplete?.isServerNotReachable(): Boolean = this is DomainResult.Incomplete.Error && reason == TIMEOUT

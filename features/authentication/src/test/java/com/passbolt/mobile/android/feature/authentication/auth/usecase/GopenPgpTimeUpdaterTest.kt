@@ -24,25 +24,38 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.common.time.TimeProvider
+import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
+import org.koin.core.module.dsl.factoryOf
+import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.inject
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 class GopenPgpTimeUpdaterTest : KoinTest {
+    private val mockOpenPgp = mock<OpenPgp>()
+    private val mockTimeProvider = mock<TimeProvider>()
     private val gopenPgpTimeUpdater: GopenPgpTimeUpdater by inject()
 
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
             printLogger(Level.ERROR)
-            modules(testSignInUseCaseModule)
+            modules(
+                module {
+                    factory { mockOpenPgp }
+                    factory { mockTimeProvider }
+                    factoryOf(::GopenPgpTimeUpdater)
+                },
+            )
         }
 
     @Before

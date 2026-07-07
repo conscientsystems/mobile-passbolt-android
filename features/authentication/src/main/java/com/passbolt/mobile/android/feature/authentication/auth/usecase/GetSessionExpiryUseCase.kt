@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.SessionFileName
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.session.ACCESS_TOKEN_KEY
+import com.passbolt.mobile.android.domain.auth.usecase.GetServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
 import io.fusionauth.jwt.JWTExpiredException
 import io.fusionauth.jwt.Verifier

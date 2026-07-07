@@ -53,6 +53,7 @@ import com.passbolt.mobile.android.core.tags.tagsModule
 import com.passbolt.mobile.android.core.users.usersModule
 import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
+import com.passbolt.mobile.android.data.auth.authDataModule
 import com.passbolt.mobile.android.data.favourites.favouritesDataModule
 import com.passbolt.mobile.android.data.featureflags.featureFlagsDataModule
 import com.passbolt.mobile.android.data.folders.foldersDataModule
@@ -69,6 +70,7 @@ import com.passbolt.mobile.android.data.secrets.secretsDataModule
 import com.passbolt.mobile.android.data.share.shareDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
+import com.passbolt.mobile.android.domain.auth.authDomainModule
 import com.passbolt.mobile.android.domain.favourites.favouritesDomainModule
 import com.passbolt.mobile.android.domain.folders.foldersDomainModule
 import com.passbolt.mobile.android.domain.groups.groupsDomainModule
@@ -104,7 +106,6 @@ import com.passbolt.mobile.android.locationDetailsModule
 import com.passbolt.mobile.android.logsModule
 import com.passbolt.mobile.android.mappersModule
 import com.passbolt.mobile.android.otpMoreMenuModule
-import com.passbolt.mobile.android.passboltapi.passboltApiModule
 import com.passbolt.mobile.android.permissions.permissionsModule
 import com.passbolt.mobile.android.pwnedpasswordsapi.pwnedPasswordsApiModule
 import com.passbolt.mobile.android.resourceMoreMenuModule
@@ -139,7 +140,8 @@ class KoinInitializer : Initializer<Unit> {
                 architectureModule,
                 networkingModule,
                 barcodeScanModule,
-                passboltApiModule,
+                authDomainModule,
+                authDataModule,
                 autofillResourcesModule,
                 authenticationModule,
                 homeModule,

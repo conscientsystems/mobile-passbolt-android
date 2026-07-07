@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":autofill"))
     implementation(project(":autofillresources"))
     implementation(project(":authentication"))
-    implementation(project(":passboltapi"))
     implementation(project(":mappers"))
     implementation(project(":featureflags-domain"))
     implementation(project(":uimodel"))

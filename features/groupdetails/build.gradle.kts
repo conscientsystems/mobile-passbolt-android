@@ -10,7 +10,6 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":uimodel"))
     implementation(project(":networking"))
-    implementation(project(":passboltapi"))
     implementation(project(":database"))
     implementation(project(":gopenpgp"))
     implementation(project(":authentication"))

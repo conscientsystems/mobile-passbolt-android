@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":passboltapi"))
     implementation(project(":mappers"))
     implementation(project(":common"))
     implementation(project(":uimodel"))

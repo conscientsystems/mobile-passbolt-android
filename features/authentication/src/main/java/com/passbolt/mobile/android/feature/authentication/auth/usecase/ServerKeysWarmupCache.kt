@@ -1,6 +1,8 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.SupervisorJob

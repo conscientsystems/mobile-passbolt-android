@@ -1,5 +1,7 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
 import kotlin.time.TimedValue
 
 /**
