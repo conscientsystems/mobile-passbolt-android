@@ -9,6 +9,7 @@ import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSele
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.RemoveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemovePassphraseUseCase
 import com.passbolt.mobile.android.core.authenticationcore.session.RemoveSessionUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase
 
 /**
  * Passbolt - Open source password manager for teams

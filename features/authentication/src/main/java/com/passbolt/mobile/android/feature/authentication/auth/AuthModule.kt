@@ -7,17 +7,12 @@ import com.passbolt.mobile.android.feature.authentication.auth.challenge.Challen
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.ChallengeVerifier
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.MfaStatusProvider
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor
-import com.passbolt.mobile.android.feature.authentication.auth.usecase.FetchServerPublicPgpKeyUseCase
-import com.passbolt.mobile.android.feature.authentication.auth.usecase.FetchServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor
-import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GopenPgpTimeUpdater
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RemoveAllAccountDataUseCase
-import com.passbolt.mobile.android.feature.authentication.auth.usecase.RemoveServerPublicRsaKeyUseCase
-import com.passbolt.mobile.android.feature.authentication.auth.usecase.SaveServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmup
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmupCache
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInUseCase
@@ -66,8 +61,6 @@ fun Module.authModule() {
     factoryOf(::MfaStatusProvider)
     factoryOf(::MfaProvidersHandler)
 
-    singleOf(::FetchServerPublicPgpKeyUseCase)
-    singleOf(::FetchServerPublicRsaKeyUseCase)
     singleOf(::SignInUseCase)
     singleOf(::ChallengeProvider)
     singleOf(::ChallengeDecryptor)
@@ -82,9 +75,6 @@ fun Module.authModule() {
     singleOf(::SignOutUseCase)
     singleOf(::BiometryInteractor)
     singleOf(::SignInIdlingResource)
-    singleOf(::SaveServerPublicRsaKeyUseCase)
-    singleOf(::GetServerPublicRsaKeyUseCase)
-    singleOf(::RemoveServerPublicRsaKeyUseCase)
     singleOf(::GetSessionExpiryUseCase)
     singleOf(::RemoveAllAccountDataUseCase)
 }

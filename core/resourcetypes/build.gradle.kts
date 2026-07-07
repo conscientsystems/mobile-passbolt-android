@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":database"))
     implementation(project(":entity"))
     implementation(project(":networking"))
-    implementation(project(":passboltapi"))
     implementation(project(":architecture"))
     implementation(project(":dto"))
     implementation(project(":mappers"))

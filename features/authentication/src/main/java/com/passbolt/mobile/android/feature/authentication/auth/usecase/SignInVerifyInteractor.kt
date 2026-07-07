@@ -3,6 +3,8 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
+import com.passbolt.mobile.android.domain.auth.model.SignInFailureType
+import com.passbolt.mobile.android.domain.auth.model.SignInResult
 import com.passbolt.mobile.android.dto.response.ChallengeResponseDto
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.ChallengeDecryptor
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.ChallengeProvider
@@ -108,7 +110,7 @@ class SignInVerifyInteractor(
             )
 
         when (val result = signInUseCase.execute(signInInput)) {
-            is SignInUseCase.Output.Failure -> {
+            is SignInResult.Failure -> {
                 Timber.e("Failure during sign in: ${result.message}")
                 val error =
                     when (result.type) {
@@ -129,7 +131,7 @@ class SignInVerifyInteractor(
                     }
                 onError(error)
             }
-            is SignInUseCase.Output.Success -> {
+            is SignInResult.Success -> {
                 Timber.d("Sign in success")
                 decryptChallenge(
                     input =
@@ -234,7 +236,7 @@ class SignInVerifyInteractor(
     private data class DecryptChallengeInput(
         val config: SignInConfigInput,
         val currentMfaToken: String?,
-        val signInResult: SignInUseCase.Output.Success,
+        val signInResult: SignInResult.Success,
     )
 
     private data class VerifyChallengeInput(
