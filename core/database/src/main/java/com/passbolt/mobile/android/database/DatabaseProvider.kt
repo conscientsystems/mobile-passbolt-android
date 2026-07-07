@@ -30,10 +30,11 @@ import com.passbolt.mobile.android.database.migrations.Migration7to8
 import com.passbolt.mobile.android.database.migrations.Migration8to9
 import com.passbolt.mobile.android.database.migrations.Migration9to10
 import com.passbolt.mobile.android.database.usecase.GetResourcesDatabasePassphraseUseCase
+import kotlinx.coroutines.suspendCancellableCoroutine
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Passbolt - Open source password manager for teams
@@ -62,18 +63,14 @@ class DatabaseProvider(
     private val context: Context,
     private val messageDigestHash: MessageDigestHash,
 ) {
-    @Volatile
-    private var instance: HashMap<String, ResourceDatabase?> = hashMapOf()
+    private val instance = ConcurrentHashMap<String, ResourceDatabase>()
 
     fun get(userId: String): ResourceDatabase {
         System.loadLibrary("sqlcipher")
         val currentUser = messageDigestHash.sha256(userId)
-        instance[currentUser]?.let {
-            return it
-        }
-        val passphrase = getResourcesDatabasePassphraseUseCase.execute(Unit).passphrase
-        val factory = SupportOpenHelperFactory(passphrase.toByteArray(StandardCharsets.UTF_8))
-        val newInstance =
+        return instance.computeIfAbsent(currentUser) {
+            val passphrase = getResourcesDatabasePassphraseUseCase.execute(Unit).passphrase
+            val factory = SupportOpenHelperFactory(passphrase.toByteArray(StandardCharsets.UTF_8))
             Room
                 .databaseBuilder(
                     context,
@@ -108,15 +105,13 @@ class DatabaseProvider(
                     Migration26to27,
                 ).openHelperFactory(factory)
                 .build()
-
-        instance[currentUser] = newInstance
-        return newInstance
+        }
     }
 
     suspend fun delete(userId: String) {
         val currentUser = messageDigestHash.sha256(userId)
         if (currentUser in instance.keys) {
-            suspendCoroutine { continuation ->
+            suspendCancellableCoroutine { continuation ->
                 Thread {
                     instance[currentUser]?.clearAllTables()
                     continuation.resume(Unit)
