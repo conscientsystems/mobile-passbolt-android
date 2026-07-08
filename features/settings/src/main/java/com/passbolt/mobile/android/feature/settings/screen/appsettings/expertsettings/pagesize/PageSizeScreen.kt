@@ -39,7 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,7 +56,6 @@ import com.passbolt.mobile.android.testtags.composetags.PageSize
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.text.NumberFormat
-import java.util.Locale
 import kotlin.math.roundToInt
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
@@ -129,7 +128,7 @@ private fun PageSizeSlider(
     onSliderIndexChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val locale = LocalLocale.current.platformLocale
     val numberFormat = remember(locale) { NumberFormat.getNumberInstance(locale) }
 
     Column(modifier = modifier.fillMaxWidth()) {
