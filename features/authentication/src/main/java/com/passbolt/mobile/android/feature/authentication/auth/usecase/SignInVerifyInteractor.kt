@@ -125,6 +125,12 @@ class SignInVerifyInteractor(
                                 serverUrl = input.accountData.url,
                             )
                         }
+                        SignInFailureType.SERVER_NOT_REACHABLE -> {
+                            Error.ServerNotReachable(input.accountData.url)
+                        }
+                        SignInFailureType.NO_NETWORK -> {
+                            Error.NoNetwork
+                        }
                         SignInFailureType.OTHER -> {
                             Error.SignInFailure(result.message)
                         }
@@ -256,6 +262,12 @@ class SignInVerifyInteractor(
 
     sealed class Error {
         data object IncorrectPassphrase : Error()
+
+        data object NoNetwork : Error()
+
+        data class ServerNotReachable(
+            val serverUrl: String,
+        ) : Error()
 
         data class AccountDoesNotExist(
             val label: String,

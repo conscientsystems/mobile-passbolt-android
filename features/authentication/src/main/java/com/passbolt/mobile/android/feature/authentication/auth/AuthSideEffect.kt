@@ -38,6 +38,7 @@ sealed interface AuthSideEffect {
     enum class SnackbarErrorType {
         WRONG_PASSPHRASE,
         GENERIC,
+        CONNECTION_FAILURE,
         BIOMETRIC_CHANGED,
         AUTHENTICATION_ERROR,
         DECRYPTION_ERROR,

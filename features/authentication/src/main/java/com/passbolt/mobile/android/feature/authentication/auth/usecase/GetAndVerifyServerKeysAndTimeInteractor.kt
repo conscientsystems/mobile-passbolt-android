@@ -4,6 +4,7 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.IsServerFingerprintCorrectUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
@@ -45,8 +46,9 @@ class GetAndVerifyServerKeysAndTimeInteractor(
         onSuccess: suspend (Success) -> Unit,
     ) {
         Timber.d("Getting server pgp and rsa keys")
-        val (timedPgpResult, rsaKey) = serverKeysWarmup.fetchOrAwait(userId)
-        val (pgpKey, getTimeRequestDuration) = timedPgpResult
+        val serverKeys = serverKeysWarmup.fetchOrAwait(userId)
+        val (pgpKey, getTimeRequestDuration) = serverKeys.timedPgp
+        val rsaKey = serverKeys.rsa
 
         if (pgpKey is FetchServerPublicPgpKeyUseCase.Output.Success &&
             rsaKey is FetchServerPublicRsaKeyUseCase.Output.Success
@@ -55,7 +57,11 @@ class GetAndVerifyServerKeysAndTimeInteractor(
             Timber.d("Getting server pgp and rsa keys succeeded")
             Timber.d("Checking if time adjustment is needed")
             val timeUpdateResult =
-                gopenPgpTimeUpdater.updateTimeIfNeeded(pgpKey.serverTime, getTimeRequestDuration.inWholeSeconds)
+                gopenPgpTimeUpdater.updateTimeIfNeeded(
+                    pgpKey.serverTime,
+                    serverKeys.deviceTimeAtFetchSeconds,
+                    getTimeRequestDuration.inWholeSeconds,
+                )
             if (timeUpdateResult == GopenPgpTimeUpdater.Result.TIME_DELTA_TOO_BIG_FOR_SYNC) {
                 onError(Error.TimeIsOutOfSync)
                 return
@@ -72,13 +78,20 @@ class GetAndVerifyServerKeysAndTimeInteractor(
         } else {
             val pgpIncomplete = (pgpKey as? FetchServerPublicPgpKeyUseCase.Output.Failure)?.incomplete
             val rsaIncomplete = (rsaKey as? FetchServerPublicRsaKeyUseCase.Output.Failure)?.incomplete
-            if (pgpIncomplete.isServerNotReachable() || rsaIncomplete.isServerNotReachable()) {
-                Timber.d("Server is not reachable")
-                val accountData = getAccountDataUseCase.execute(UserIdInput(userId))
-                onError(Error.ServerNotReachable(accountData.url))
-            } else {
-                Timber.d("Generic error occurred")
-                onError(Error.Generic)
+            when {
+                pgpIncomplete.isNoNetwork() || rsaIncomplete.isNoNetwork() -> {
+                    Timber.d("No network connection")
+                    onError(Error.NoNetwork)
+                }
+                pgpIncomplete.isServerNotReachable() || rsaIncomplete.isServerNotReachable() -> {
+                    Timber.d("Server is not reachable")
+                    val accountData = getAccountDataUseCase.execute(UserIdInput(userId))
+                    onError(Error.ServerNotReachable(accountData.url))
+                }
+                else -> {
+                    Timber.d("Generic error occurred")
+                    onError(Error.Generic)
+                }
             }
         }
     }
@@ -98,6 +111,8 @@ class GetAndVerifyServerKeysAndTimeInteractor(
             val serverUrl: String,
         ) : Error()
 
+        data object NoNetwork : Error()
+
         data object TimeIsOutOfSync : Error()
 
         data object Generic : Error()
@@ -105,3 +120,5 @@ class GetAndVerifyServerKeysAndTimeInteractor(
 }
 
 private fun DomainResult.Incomplete?.isServerNotReachable(): Boolean = this is DomainResult.Incomplete.Error && reason == TIMEOUT
+
+private fun DomainResult.Incomplete?.isNoNetwork(): Boolean = this is DomainResult.Incomplete.Error && reason == OFFLINE

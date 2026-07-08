@@ -1,21 +1,23 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import androidx.annotation.VisibleForTesting
-import com.passbolt.mobile.android.common.time.TimeProvider
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import timber.log.Timber
 import kotlin.math.abs
 
 class GopenPgpTimeUpdater(
     private val openPgp: OpenPgp,
-    private val timeProvider: TimeProvider,
 ) {
     fun updateTimeIfNeeded(
         serverTimeSeconds: Long,
+        deviceTimeAtFetchSeconds: Long,
         getTimeRequestDurationSeconds: Long,
     ): Result {
-        val deviceTimeSeconds = timeProvider.getCurrentEpochSeconds()
-        val timeDeltaSeconds = serverTimeSeconds - deviceTimeSeconds - getTimeRequestDurationSeconds
+        // The server timestamp is already stale by the time the phone reads it - the response still had
+        // to travel back, roughly half the round-trip. Adding that half (instead of subtracting the whole
+        // request duration) stops a slow connection from looking like a wrong device clock.
+        val timeDeltaSeconds =
+            serverTimeSeconds - deviceTimeAtFetchSeconds + getTimeRequestDurationSeconds / 2
 
         return if (abs(timeDeltaSeconds) <= TIME_DELTA_FOR_LOCAL_SYNC_SECS) {
             Timber.d("Local time sync needed. Adjusted: $timeDeltaSeconds")

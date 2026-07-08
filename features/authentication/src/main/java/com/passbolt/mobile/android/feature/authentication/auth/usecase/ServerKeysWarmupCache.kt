@@ -1,5 +1,6 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
+import com.passbolt.mobile.android.common.time.TimeProvider
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
@@ -38,6 +39,7 @@ import kotlin.time.measureTimedValue
 class ServerKeysWarmupCache(
     private val fetchServerPublicPgpKeyUseCase: FetchServerPublicPgpKeyUseCase,
     private val fetchServerPublicRsaKeyUseCase: FetchServerPublicRsaKeyUseCase,
+    private val timeProvider: TimeProvider,
     coroutineLaunchContext: CoroutineLaunchContext,
 ) : ServerKeysWarmup {
     private val scope = CoroutineScope(SupervisorJob() + coroutineLaunchContext.io)
@@ -82,6 +84,8 @@ class ServerKeysWarmupCache(
         coroutineScope {
             val pgp = async { measureTimedValue { fetchServerPublicPgpKeyUseCase.execute(Unit) } }
             val rsa = async { fetchServerPublicRsaKeyUseCase.execute(Unit) }
-            ServerKeysResult(pgp.await(), rsa.await())
+            val timedPgp = pgp.await()
+            val deviceTimeAtFetchSeconds = timeProvider.getCurrentEpochSeconds()
+            ServerKeysResult(timedPgp, rsa.await(), deviceTimeAtFetchSeconds)
         }
 }

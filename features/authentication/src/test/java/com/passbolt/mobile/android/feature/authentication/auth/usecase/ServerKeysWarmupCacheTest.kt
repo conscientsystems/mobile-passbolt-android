@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.common.time.TimeProvider
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
@@ -44,11 +45,13 @@ import kotlin.test.assertFailsWith
 class ServerKeysWarmupCacheTest {
     private val pgpUseCase = mock<FetchServerPublicPgpKeyUseCase>()
     private val rsaUseCase = mock<FetchServerPublicRsaKeyUseCase>()
+    private val timeProvider = mock<TimeProvider>()
     private lateinit var cache: ServerKeysWarmupCache
 
     @Before
     fun setUp() {
-        cache = ServerKeysWarmupCache(pgpUseCase, rsaUseCase, TestCoroutineLaunchContext())
+        whenever(timeProvider.getCurrentEpochSeconds()) doReturn DEVICE_TIME
+        cache = ServerKeysWarmupCache(pgpUseCase, rsaUseCase, timeProvider, TestCoroutineLaunchContext())
     }
 
     @Test
@@ -143,6 +146,16 @@ class ServerKeysWarmupCacheTest {
             }
         }
 
+    @Test
+    fun `fetchOrAwait captures the device time at fetch`() =
+        runTest {
+            stubSuccess()
+
+            val result = cache.fetchOrAwait(USER_ID)
+
+            assertThat(result.deviceTimeAtFetchSeconds).isEqualTo(DEVICE_TIME)
+        }
+
     private suspend fun stubSuccess() {
         whenever(pgpUseCase.execute(any())) doReturn
             FetchServerPublicPgpKeyUseCase.Output.Success(PGP_KEY, FINGERPRINT, SERVER_TIME)
@@ -157,5 +170,6 @@ class ServerKeysWarmupCacheTest {
         const val RSA_KEY = "rsa-key"
         const val FINGERPRINT = "fingerprint"
         const val SERVER_TIME = 1_700_000_000L
+        const val DEVICE_TIME = 1_700_000_050L
     }
 }
