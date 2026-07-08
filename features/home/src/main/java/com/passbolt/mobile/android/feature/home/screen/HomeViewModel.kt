@@ -609,7 +609,11 @@ internal class HomeViewModel(
                     }
                 }
                 NotCompleted -> {
-                    // do nothing
+                    // autofill does not perform automatic data refresh - evaluate from local data
+                    if (viewState.value.appContext == AppContext.AUTOFILL) {
+                        val showCreateResourceButton = shouldShowCreateButton()
+                        updateViewState { copy(canCreateResource = showCreateResourceButton) }
+                    }
                 }
             }
         }

@@ -45,6 +45,7 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
@@ -445,6 +446,25 @@ class HomeViewModelTest : KoinTest {
                 val finished = awaitItem()
                 assertThat(finished.isRefreshing).isFalse()
                 assertThat(finished.canCreateResource).isTrue()
+            }
+        }
+
+    @Test
+    fun `should show create button from local data without refresh in autofill context`() =
+        runTest {
+            mockHomeData()
+            mockCanCreateResource(true)
+
+            viewModel = get()
+
+            viewModel.viewState.test {
+                viewModel.onIntent(Initialize(DoNotShow, NotLoaded, appContext = AppContext.AUTOFILL))
+
+                var state = awaitItem()
+                while (!state.canCreateResource) {
+                    state = awaitItem()
+                }
+                assertThat(state.isRefreshing).isFalse()
             }
         }
 
