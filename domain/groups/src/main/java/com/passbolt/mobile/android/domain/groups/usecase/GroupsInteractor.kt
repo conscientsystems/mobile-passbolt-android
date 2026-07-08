@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.domain.groups.usecase
 
 import android.database.SQLException
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
@@ -34,10 +35,12 @@ import timber.log.Timber
 
 class GroupsInteractor(
     private val groupsRepository: GroupsRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
-    suspend fun fetchAndSaveGroups(): Output =
-        try {
-            when (val result = groupsRepository.refreshGroups()) {
+    suspend fun fetchAndSaveGroups(): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return try {
+            when (val result = groupsRepository.refreshGroups(userId)) {
                 is DomainResult.Incomplete -> Output.Failure(result)
                 is DomainResult.Finished -> Output.Success
             }
@@ -45,6 +48,7 @@ class GroupsInteractor(
             Timber.e(exception, "There was an error during groups db insert")
             Output.Failure(DomainResult.Incomplete.Error(UNKNOWN, exception.message))
         }
+    }
 
     sealed class Output : AuthenticatedUseCaseOutput {
         data object Success : Output(), CompleteAuthenticatedOutput

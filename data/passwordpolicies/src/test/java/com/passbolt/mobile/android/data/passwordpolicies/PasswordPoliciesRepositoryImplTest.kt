@@ -26,14 +26,14 @@ package com.passbolt.mobile.android.data.passwordpolicies
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
-import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesLocalDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRemoteDataSource
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
@@ -44,9 +44,6 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
 class PasswordPoliciesRepositoryImplTest : KoinTest {
-    private val memoryQualifier = named("memoryPasswordPoliciesDataSource")
-    private val remoteQualifier = named("remotePasswordPoliciesDataSource")
-
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
@@ -54,12 +51,12 @@ class PasswordPoliciesRepositoryImplTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single<PasswordPoliciesDataSource>(memoryQualifier) { mock<PasswordPoliciesDataSource>() }
-                        single<PasswordPoliciesDataSource>(remoteQualifier) { mock<PasswordPoliciesDataSource>() }
+                        single<PasswordPoliciesLocalDataSource> { mock<PasswordPoliciesLocalDataSource>() }
+                        single<PasswordPoliciesRemoteDataSource> { mock<PasswordPoliciesRemoteDataSource>() }
                         factory {
                             PasswordPoliciesRepositoryImpl(
-                                memoryDataSource = get(memoryQualifier),
-                                remoteDataSource = get(remoteQualifier),
+                                memoryDataSource = get(),
+                                remoteDataSource = get(),
                             )
                         }
                     },
@@ -67,24 +64,24 @@ class PasswordPoliciesRepositoryImplTest : KoinTest {
             )
         }
 
-    private lateinit var memory: PasswordPoliciesDataSource
-    private lateinit var remote: PasswordPoliciesDataSource
+    private lateinit var memory: PasswordPoliciesLocalDataSource
+    private lateinit var remote: PasswordPoliciesRemoteDataSource
     private lateinit var repository: PasswordPoliciesRepositoryImpl
     private val policies = PasswordPolicies.defaults()
 
     @Before
     fun setUp() {
-        memory = get(memoryQualifier)
-        remote = get(remoteQualifier)
+        memory = get()
+        remote = get()
         repository = get()
     }
 
     @Test
     fun `memory hit returns memory value and never calls remote`() =
         runTest {
-            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies)) }
+            memory.stub { onBlocking { getPasswordPolicies(USER_ID) }.thenReturn(DomainResult.Finished(policies)) }
 
-            val result = repository.getPasswordPolicies()
+            val result = repository.getPasswordPolicies(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(policies))
             verify(remote, never()).getPasswordPolicies()
@@ -93,33 +90,37 @@ class PasswordPoliciesRepositoryImplTest : KoinTest {
     @Test
     fun `memory miss with remote success returns success and writes to memory`() =
         runTest {
-            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.NotCached) }
+            memory.stub { onBlocking { getPasswordPolicies(USER_ID) }.thenReturn(DomainResult.Incomplete.NotCached) }
             remote.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies)) }
 
-            val result = repository.getPasswordPolicies()
+            val result = repository.getPasswordPolicies(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(policies))
-            verify(memory).setPasswordPolicies(policies)
+            verify(memory).setPasswordPolicies(USER_ID, policies)
         }
 
     @Test
     fun `memory miss with remote failure returns failure and does not write to memory`() =
         runTest {
             val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
-            memory.stub { onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.NotCached) }
+            memory.stub { onBlocking { getPasswordPolicies(USER_ID) }.thenReturn(DomainResult.Incomplete.NotCached) }
             remote.stub { onBlocking { getPasswordPolicies() }.thenReturn(failure) }
 
-            val result = repository.getPasswordPolicies()
+            val result = repository.getPasswordPolicies(USER_ID)
 
             assertThat(result).isEqualTo(failure)
-            verify(memory, never()).setPasswordPolicies(policies)
+            verify(memory, never()).setPasswordPolicies(USER_ID, policies)
         }
 
     @Test
     fun `setPasswordPolicies writes through to memory`() =
         runTest {
-            repository.setPasswordPolicies(policies)
+            repository.setPasswordPolicies(USER_ID, policies)
 
-            verify(memory).setPasswordPolicies(policies)
+            verify(memory).setPasswordPolicies(USER_ID, policies)
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

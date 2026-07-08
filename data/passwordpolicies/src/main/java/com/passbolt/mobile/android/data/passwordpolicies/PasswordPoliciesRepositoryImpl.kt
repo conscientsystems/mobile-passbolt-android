@@ -24,26 +24,30 @@
 package com.passbolt.mobile.android.data.passwordpolicies
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesLocalDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRemoteDataSource
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRepository
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 
 internal class PasswordPoliciesRepositoryImpl(
-    private val memoryDataSource: PasswordPoliciesDataSource,
-    private val remoteDataSource: PasswordPoliciesDataSource,
+    private val memoryDataSource: PasswordPoliciesLocalDataSource,
+    private val remoteDataSource: PasswordPoliciesRemoteDataSource,
 ) : PasswordPoliciesRepository {
-    override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> =
-        when (val memory = memoryDataSource.getPasswordPolicies()) {
+    override suspend fun getPasswordPolicies(userId: String): DomainResult<PasswordPolicies> =
+        when (val memory = memoryDataSource.getPasswordPolicies(userId)) {
             is DomainResult.Finished -> memory
             is DomainResult.Incomplete ->
                 remoteDataSource.getPasswordPolicies().also {
                     if (it is DomainResult.Finished) {
-                        setPasswordPolicies(it.value)
+                        setPasswordPolicies(userId, it.value)
                     }
                 }
         }
 
-    override suspend fun setPasswordPolicies(passwordPolicies: PasswordPolicies) {
-        memoryDataSource.setPasswordPolicies(passwordPolicies)
+    override suspend fun setPasswordPolicies(
+        userId: String,
+        passwordPolicies: PasswordPolicies,
+    ) {
+        memoryDataSource.setPasswordPolicies(userId, passwordPolicies)
     }
 }

@@ -24,14 +24,17 @@
 package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 import com.passbolt.mobile.android.domain.folders.model.FolderModel
 
 class UpsertLocalFoldersUseCase(
     private val foldersRepository: FoldersRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<UpsertLocalFoldersUseCase.Input, Unit> {
     override suspend fun execute(input: Input) {
-        foldersRepository.upsertFolders(input.folderModels)
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        foldersRepository.upsertFolders(input.folderModels, userId)
     }
 
     data class Input(

@@ -21,23 +21,24 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.domain.folders.usecase
+package com.passbolt.mobile.android.data.rbac.datasource.remote
 
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.domain.folders.FoldersRepository
-import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttributes
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.map
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.core.networking.toDomainResult
+import com.passbolt.mobile.android.data.rbac.datasource.remote.api.RbacApi
+import com.passbolt.mobile.android.data.rbac.mapper.toDomain
+import com.passbolt.mobile.android.domain.rbac.RbacRemoteDataSource
+import com.passbolt.mobile.android.domain.rbac.model.Rbac
 
-class AddLocalFolderPermissionsUseCase(
-    private val foldersRepository: FoldersRepository,
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<AddLocalFolderPermissionsUseCase.Input, Unit> {
-    override suspend fun execute(input: Input) {
-        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        foldersRepository.addFolderPermissions(input.foldersWithAttributes, userId)
-    }
-
-    data class Input(
-        val foldersWithAttributes: List<FolderModelWithAttributes>,
-    )
+internal class RbacRemoteDataSourceImpl(
+    private val rbacApi: RbacApi,
+    private val responseHandler: ResponseHandler,
+) : RbacRemoteDataSource {
+    override suspend fun getRbac(): DomainResult<Rbac> =
+        callWithHandler(responseHandler) { rbacApi.getMyRbacPermissions().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

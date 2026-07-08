@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.featureflags.usecase
 
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
@@ -30,12 +31,15 @@ import com.passbolt.mobile.android.featureflags.mapper.toFeatureFlagsModel
 
 class FeatureFlagsInteractor(
     private val featureFlagsRepository: FeatureFlagsRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
-    suspend fun fetchAndSaveFeatureFlags(): Output =
-        when (val result = featureFlagsRepository.refreshFeatureFlags()) {
+    suspend fun fetchAndSaveFeatureFlags(): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = featureFlagsRepository.refreshFeatureFlags(userId)) {
             is DomainResult.Incomplete -> Output.Failure
             is DomainResult.Finished -> Output.Success(result.value.toFeatureFlagsModel())
         }
+    }
 
     sealed class Output {
         data class Success(

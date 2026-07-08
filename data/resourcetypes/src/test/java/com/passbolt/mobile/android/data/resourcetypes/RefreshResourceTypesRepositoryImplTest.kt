@@ -26,14 +26,14 @@ package com.passbolt.mobile.android.data.resourcetypes
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesLocalDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRemoteDataSource
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
@@ -45,9 +45,6 @@ import org.mockito.kotlin.verify
 import java.util.UUID
 
 class RefreshResourceTypesRepositoryImplTest : KoinTest {
-    private val localQualifier = named("localResourceTypesDataSource")
-    private val remoteQualifier = named("remoteResourceTypesDataSource")
-
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
@@ -55,12 +52,12 @@ class RefreshResourceTypesRepositoryImplTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single<ResourceTypesDataSource>(localQualifier) { mock<ResourceTypesDataSource>() }
-                        single<ResourceTypesDataSource>(remoteQualifier) { mock<ResourceTypesDataSource>() }
+                        single<ResourceTypesLocalDataSource> { mock<ResourceTypesLocalDataSource>() }
+                        single<ResourceTypesRemoteDataSource> { mock<ResourceTypesRemoteDataSource>() }
                         factory {
                             RefreshResourceTypesRepositoryImpl(
-                                localDataSource = get(localQualifier),
-                                remoteDataSource = get(remoteQualifier),
+                                localDataSource = get(),
+                                remoteDataSource = get(),
                             )
                         }
                     },
@@ -68,8 +65,8 @@ class RefreshResourceTypesRepositoryImplTest : KoinTest {
             )
         }
 
-    private lateinit var local: ResourceTypesDataSource
-    private lateinit var remote: ResourceTypesDataSource
+    private lateinit var local: ResourceTypesLocalDataSource
+    private lateinit var remote: ResourceTypesRemoteDataSource
     private lateinit var repository: RefreshResourceTypesRepositoryImpl
 
     private val resourceTypes =
@@ -84,8 +81,8 @@ class RefreshResourceTypesRepositoryImplTest : KoinTest {
 
     @Before
     fun setUp() {
-        local = get(localQualifier)
-        remote = get(remoteQualifier)
+        local = get()
+        remote = get()
         repository = get()
     }
 
@@ -94,10 +91,10 @@ class RefreshResourceTypesRepositoryImplTest : KoinTest {
         runTest {
             remote.stub { onBlocking { getResourceTypes() }.thenReturn(DomainResult.Finished(resourceTypes)) }
 
-            val result = repository.refreshResourceTypes()
+            val result = repository.refreshResourceTypes(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(resourceTypes))
-            verify(local).setResourceTypes(resourceTypes)
+            verify(local).setResourceTypes(USER_ID, resourceTypes)
         }
 
     @Test
@@ -106,9 +103,13 @@ class RefreshResourceTypesRepositoryImplTest : KoinTest {
             val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             remote.stub { onBlocking { getResourceTypes() }.thenReturn(failure) }
 
-            val result = repository.refreshResourceTypes()
+            val result = repository.refreshResourceTypes(USER_ID)
 
             assertThat(result).isEqualTo(failure)
-            verify(local, never()).setResourceTypes(resourceTypes)
+            verify(local, never()).setResourceTypes(USER_ID, resourceTypes)
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

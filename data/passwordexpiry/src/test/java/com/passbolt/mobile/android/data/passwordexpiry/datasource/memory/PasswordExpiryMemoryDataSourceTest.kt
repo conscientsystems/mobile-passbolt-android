@@ -24,39 +24,13 @@
 package com.passbolt.mobile.android.data.passwordexpiry.datasource.memory
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.koin.core.logger.Level
-import org.koin.core.module.dsl.factoryOf
-import org.koin.dsl.module
-import org.koin.test.KoinTest
-import org.koin.test.KoinTestRule
-import org.koin.test.get
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
-class PasswordExpiryMemoryDataSourceTest : KoinTest {
-    @get:Rule
-    val koinTestRule =
-        KoinTestRule.create {
-            printLogger(Level.ERROR)
-            modules(
-                listOf(
-                    module {
-                        single { mock<GetSelectedAccountUseCase>() }
-                        factoryOf(::PasswordExpiryMemoryDataSource)
-                    },
-                ),
-            )
-        }
-
-    private lateinit var getSelectedAccountUseCase: GetSelectedAccountUseCase
-    private lateinit var dataSource: PasswordExpiryMemoryDataSource
+class PasswordExpiryMemoryDataSourceTest {
+    private val dataSource = PasswordExpiryMemoryDataSource()
     private val settingsA = PasswordExpirySettings.defaults()
     private val settingsB =
         PasswordExpirySettings(
@@ -65,56 +39,40 @@ class PasswordExpiryMemoryDataSourceTest : KoinTest {
             defaultExpiryPeriodDays = 30,
         )
 
-    @Before
-    fun setUp() {
-        getSelectedAccountUseCase = get()
-        dataSource = get()
-    }
-
-    private fun mockSelectedAccount(userId: String) {
-        whenever(getSelectedAccountUseCase.execute(Unit))
-            .thenReturn(GetSelectedAccountUseCase.Output(userId))
-    }
-
     @Test
     fun `get on an empty cache is a miss`() =
         runTest {
-            mockSelectedAccount("userA")
-
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Incomplete.NotCached)
+            assertThat(dataSource.getPasswordExpirySettings(USER_A)).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
     fun `cached value is returned for the same account`() =
         runTest {
-            mockSelectedAccount("userA")
-            dataSource.setPasswordExpirySettings(settingsA)
+            dataSource.setPasswordExpirySettings(USER_A, settingsA)
 
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Finished(settingsA))
+            assertThat(dataSource.getPasswordExpirySettings(USER_A)).isEqualTo(DomainResult.Finished(settingsA))
         }
 
     @Test
     fun `cached value of one account is not served to another account`() =
         runTest {
-            mockSelectedAccount("userA")
-            dataSource.setPasswordExpirySettings(settingsA)
+            dataSource.setPasswordExpirySettings(USER_A, settingsA)
 
-            mockSelectedAccount("userB")
-
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Incomplete.NotCached)
+            assertThat(dataSource.getPasswordExpirySettings(USER_B)).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
     fun `each account retains its own cached value`() =
         runTest {
-            mockSelectedAccount("userA")
-            dataSource.setPasswordExpirySettings(settingsA)
-            mockSelectedAccount("userB")
-            dataSource.setPasswordExpirySettings(settingsB)
+            dataSource.setPasswordExpirySettings(USER_A, settingsA)
+            dataSource.setPasswordExpirySettings(USER_B, settingsB)
 
-            mockSelectedAccount("userA")
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Finished(settingsA))
-            mockSelectedAccount("userB")
-            assertThat(dataSource.getPasswordExpirySettings()).isEqualTo(DomainResult.Finished(settingsB))
+            assertThat(dataSource.getPasswordExpirySettings(USER_A)).isEqualTo(DomainResult.Finished(settingsA))
+            assertThat(dataSource.getPasswordExpirySettings(USER_B)).isEqualTo(DomainResult.Finished(settingsB))
         }
+
+    private companion object {
+        const val USER_A = "userA"
+        const val USER_B = "userB"
+    }
 }

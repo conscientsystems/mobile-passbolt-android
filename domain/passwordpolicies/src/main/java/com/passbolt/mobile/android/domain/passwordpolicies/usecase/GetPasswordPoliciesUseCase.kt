@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.domain.passwordpolicies.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRepository
 import com.passbolt.mobile.android.domain.passwordpolicies.mapper.toUiModel
@@ -32,10 +33,13 @@ import com.passbolt.mobile.android.ui.PasswordPoliciesUiModel
 
 class GetPasswordPoliciesUseCase(
     private val passwordPoliciesRepository: PasswordPoliciesRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, PasswordPoliciesUiModel> {
-    override suspend fun execute(input: Unit): PasswordPoliciesUiModel =
-        when (val result = passwordPoliciesRepository.getPasswordPolicies()) {
+    override suspend fun execute(input: Unit): PasswordPoliciesUiModel {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = passwordPoliciesRepository.getPasswordPolicies(userId)) {
             is DomainResult.Finished -> result.value.toUiModel()
             is DomainResult.Incomplete -> PasswordPolicies.defaults().toUiModel()
         }
+    }
 }

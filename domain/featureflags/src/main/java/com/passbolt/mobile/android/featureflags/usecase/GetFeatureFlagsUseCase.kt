@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.featureflags.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
@@ -32,12 +33,15 @@ import com.passbolt.mobile.android.featureflags.model.FeatureFlags
 
 class GetFeatureFlagsUseCase(
     private val featureFlagsRepository: FeatureFlagsRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, GetFeatureFlagsUseCase.Output> {
-    override suspend fun execute(input: Unit): Output =
-        when (val result = featureFlagsRepository.getFeatureFlags()) {
+    override suspend fun execute(input: Unit): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = featureFlagsRepository.getFeatureFlags(userId)) {
             is DomainResult.Finished -> Output(result.value.toFeatureFlagsModel())
             is DomainResult.Incomplete -> Output(FeatureFlags.defaults().toFeatureFlagsModel())
         }
+    }
 
     data class Output(
         val featureFlags: FeatureFlagsModel,

@@ -1,3 +1,15 @@
+package com.passbolt.mobile.android.data.passwordexpiry.datasource.remote
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.map
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.core.networking.toDomainResult
+import com.passbolt.mobile.android.data.passwordexpiry.datasource.remote.api.PasswordExpiryApi
+import com.passbolt.mobile.android.data.passwordexpiry.mapper.toDomain
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRemoteDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,14 +32,12 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.domain.rbac
-
-import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.rbac.model.Rbac
-
-interface RbacDataSource {
-    suspend fun getRbac(): DomainResult<Rbac>
-
-    suspend fun setRbac(rbac: Rbac) {}
+internal class PasswordExpiryRemoteDataSourceImpl(
+    private val passwordExpiryApi: PasswordExpiryApi,
+    private val responseHandler: ResponseHandler,
+) : PasswordExpiryRemoteDataSource {
+    override suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings> =
+        callWithHandler(responseHandler) { passwordExpiryApi.getPasswordExpirySettings().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

@@ -24,15 +24,19 @@
 package com.passbolt.mobile.android.domain.metadata.usecase.db
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.MetadataRepository
 import com.passbolt.mobile.android.domain.metadata.mapper.toUiModel
 import com.passbolt.mobile.android.ui.ParsedMetadataKeyModel
 
 class GetLocalMetadataKeyUseCase(
     private val metadataRepository: MetadataRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<GetLocalMetadataKeyUseCase.Input, ParsedMetadataKeyModel> {
-    override suspend fun execute(input: Input): ParsedMetadataKeyModel =
-        metadataRepository.getLocalMetadataKey(input.metadataKeyId).toUiModel()
+    override suspend fun execute(input: Input): ParsedMetadataKeyModel {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return metadataRepository.getLocalMetadataKey(input.metadataKeyId, userId).toUiModel()
+    }
 
     data class Input(
         val metadataKeyId: String,

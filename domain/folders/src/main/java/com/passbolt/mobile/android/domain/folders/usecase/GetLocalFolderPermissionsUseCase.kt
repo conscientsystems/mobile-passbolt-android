@@ -24,13 +24,18 @@
 package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 import com.passbolt.mobile.android.ui.PermissionModelUi
 
 class GetLocalFolderPermissionsUseCase(
     private val foldersRepository: FoldersRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<GetLocalFolderPermissionsUseCase.Input, GetLocalFolderPermissionsUseCase.Output> {
-    override suspend fun execute(input: Input): Output = Output(foldersRepository.getFolderPermissions(input.folderId))
+    override suspend fun execute(input: Input): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return Output(foldersRepository.getFolderPermissions(input.folderId, userId))
+    }
 
     data class Input(
         val folderId: String,

@@ -26,14 +26,14 @@ package com.passbolt.mobile.android.data.passwordexpiry
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
-import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryLocalDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRemoteDataSource
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
@@ -44,9 +44,6 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
 class PasswordExpiryRepositoryImplTest : KoinTest {
-    private val memoryQualifier = named("memoryPasswordExpiryDataSource")
-    private val remoteQualifier = named("remotePasswordExpiryDataSource")
-
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
@@ -54,12 +51,12 @@ class PasswordExpiryRepositoryImplTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single<PasswordExpiryDataSource>(memoryQualifier) { mock<PasswordExpiryDataSource>() }
-                        single<PasswordExpiryDataSource>(remoteQualifier) { mock<PasswordExpiryDataSource>() }
+                        single<PasswordExpiryLocalDataSource> { mock<PasswordExpiryLocalDataSource>() }
+                        single<PasswordExpiryRemoteDataSource> { mock<PasswordExpiryRemoteDataSource>() }
                         factory {
                             PasswordExpiryRepositoryImpl(
-                                memoryDataSource = get(memoryQualifier),
-                                remoteDataSource = get(remoteQualifier),
+                                memoryDataSource = get(),
+                                remoteDataSource = get(),
                             )
                         }
                     },
@@ -67,24 +64,24 @@ class PasswordExpiryRepositoryImplTest : KoinTest {
             )
         }
 
-    private lateinit var memory: PasswordExpiryDataSource
-    private lateinit var remote: PasswordExpiryDataSource
+    private lateinit var memory: PasswordExpiryLocalDataSource
+    private lateinit var remote: PasswordExpiryRemoteDataSource
     private lateinit var repository: PasswordExpiryRepositoryImpl
     private val settings = PasswordExpirySettings.defaults()
 
     @Before
     fun setUp() {
-        memory = get(memoryQualifier)
-        remote = get(remoteQualifier)
+        memory = get()
+        remote = get()
         repository = get()
     }
 
     @Test
     fun `memory hit returns memory value and never calls remote`() =
         runTest {
-            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Finished(settings)) }
+            memory.stub { onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(DomainResult.Finished(settings)) }
 
-            val result = repository.getPasswordExpirySettings()
+            val result = repository.getPasswordExpirySettings(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(settings))
             verify(remote, never()).getPasswordExpirySettings()
@@ -93,33 +90,37 @@ class PasswordExpiryRepositoryImplTest : KoinTest {
     @Test
     fun `memory miss with remote success returns success and writes to memory`() =
         runTest {
-            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Incomplete.NotCached) }
+            memory.stub { onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(DomainResult.Incomplete.NotCached) }
             remote.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Finished(settings)) }
 
-            val result = repository.getPasswordExpirySettings()
+            val result = repository.getPasswordExpirySettings(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(settings))
-            verify(memory).setPasswordExpirySettings(settings)
+            verify(memory).setPasswordExpirySettings(USER_ID, settings)
         }
 
     @Test
     fun `memory miss with remote failure returns failure and does not write to memory`() =
         runTest {
             val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
-            memory.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Incomplete.NotCached) }
+            memory.stub { onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(DomainResult.Incomplete.NotCached) }
             remote.stub { onBlocking { getPasswordExpirySettings() }.thenReturn(failure) }
 
-            val result = repository.getPasswordExpirySettings()
+            val result = repository.getPasswordExpirySettings(USER_ID)
 
             assertThat(result).isEqualTo(failure)
-            verify(memory, never()).setPasswordExpirySettings(settings)
+            verify(memory, never()).setPasswordExpirySettings(USER_ID, settings)
         }
 
     @Test
     fun `setPasswordExpirySettings writes through to memory`() =
         runTest {
-            repository.setPasswordExpirySettings(settings)
+            repository.setPasswordExpirySettings(USER_ID, settings)
 
-            verify(memory).setPasswordExpirySettings(settings)
+            verify(memory).setPasswordExpirySettings(USER_ID, settings)
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

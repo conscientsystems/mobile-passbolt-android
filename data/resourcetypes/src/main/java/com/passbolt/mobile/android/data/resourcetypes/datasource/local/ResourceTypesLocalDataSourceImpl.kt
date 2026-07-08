@@ -23,33 +23,32 @@
 
 package com.passbolt.mobile.android.data.resourcetypes.datasource.local
 
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.data.resourcetypes.mapper.toDomain
 import com.passbolt.mobile.android.data.resourcetypes.mapper.toEntity
 import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesLocalDataSource
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 import java.util.UUID
 
-internal class ResourceTypesLocalDataSource(
+internal class ResourceTypesLocalDataSourceImpl(
     private val databaseProvider: DatabaseProvider,
-) : ResourceTypesDataSource,
-    SelectedAccountUseCase {
-    private val resourceTypesDao
-        get() = databaseProvider.get(selectedAccountId).resourceTypesDao()
+) : ResourceTypesLocalDataSource {
+    override suspend fun getResourceTypes(userId: String): DomainResult<List<ResourceType>> =
+        DomainResult.Finished(resourceTypesDao(userId).getAll().map { it.toDomain() })
 
-    override suspend fun getResourceTypes(): DomainResult<List<ResourceType>> =
-        DomainResult.Finished(resourceTypesDao.getAll().map { it.toDomain() })
-
-    override suspend fun getResourceTypeIdToSlugMapping(): DomainResult<Map<UUID, String>> =
+    override suspend fun getResourceTypeIdToSlugMapping(userId: String): DomainResult<Map<UUID, String>> =
         DomainResult.Finished(
-            resourceTypesDao
+            resourceTypesDao(userId)
                 .getResourceTypesIdToSlugMapping()
                 .associate { UUID.fromString(it.resourceTypeId) to it.slug },
         )
 
-    override suspend fun setResourceTypes(resourceTypes: List<ResourceType>) {
+    override suspend fun setResourceTypes(
+        userId: String,
+        resourceTypes: List<ResourceType>,
+    ) {
+        val resourceTypesDao = resourceTypesDao(userId)
         val entities = resourceTypes.map { it.toEntity() }
         // Types are static; rewriting them invalidates every query that JOINs ResourceType (the whole
         // home list) and jumps the scroll, so skip the write when nothing changed.
@@ -57,4 +56,6 @@ internal class ResourceTypesLocalDataSource(
             resourceTypesDao.upsertAll(entities)
         }
     }
+
+    private fun resourceTypesDao(userId: String) = databaseProvider.get(userId).resourceTypesDao()
 }

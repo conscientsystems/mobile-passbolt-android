@@ -27,5 +27,5 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 
 interface RefreshResourceTypesRepository {
-    suspend fun refreshResourceTypes(): DomainResult<List<ResourceType>>
+    suspend fun refreshResourceTypes(userId: String): DomainResult<List<ResourceType>>
 }

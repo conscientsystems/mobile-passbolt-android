@@ -21,13 +21,11 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.domain.passwordexpiry
+package com.passbolt.mobile.android.domain.rbac
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
+import com.passbolt.mobile.android.domain.rbac.model.Rbac
 
-interface PasswordExpiryDataSource {
-    suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings>
-
-    suspend fun setPasswordExpirySettings(passwordExpirySettings: PasswordExpirySettings) {}
+interface RbacRemoteDataSource {
+    suspend fun getRbac(): DomainResult<Rbac>
 }

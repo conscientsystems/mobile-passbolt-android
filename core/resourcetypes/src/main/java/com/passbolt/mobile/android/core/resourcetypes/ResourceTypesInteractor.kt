@@ -1,6 +1,7 @@
 package com.passbolt.mobile.android.core.resourcetypes
 
 import android.database.SQLException
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
@@ -35,10 +36,12 @@ import timber.log.Timber
 class ResourceTypesInteractor(
     private val refreshResourceTypesRepository: RefreshResourceTypesRepository,
     private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
     suspend fun fetchAndSaveResourceTypes(): Output =
         try {
-            when (val result = refreshResourceTypesRepository.refreshResourceTypes()) {
+            val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+            when (val result = refreshResourceTypesRepository.refreshResourceTypes(userId)) {
                 is DomainResult.Incomplete -> Output.Failure(result)
                 is DomainResult.Finished -> {
                     resourceTypeIdToSlugMappingProvider.invalidateSelectedUserMapping()

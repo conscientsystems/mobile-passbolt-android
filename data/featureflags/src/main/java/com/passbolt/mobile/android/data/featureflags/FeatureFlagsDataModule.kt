@@ -24,28 +24,21 @@
 package com.passbolt.mobile.android.data.featureflags
 
 import com.passbolt.mobile.android.core.networking.RestService
-import com.passbolt.mobile.android.data.featureflags.datasource.local.FeatureFlagsLocalDataSource
-import com.passbolt.mobile.android.data.featureflags.datasource.remote.FeatureFlagsRemoteDataSource
+import com.passbolt.mobile.android.data.featureflags.datasource.local.FeatureFlagsLocalDataSourceImpl
+import com.passbolt.mobile.android.data.featureflags.datasource.remote.FeatureFlagsRemoteDataSourceImpl
 import com.passbolt.mobile.android.data.featureflags.datasource.remote.api.FeatureFlagsApi
-import com.passbolt.mobile.android.featureflags.FeatureFlagsDataSource
+import com.passbolt.mobile.android.featureflags.FeatureFlagsLocalDataSource
+import com.passbolt.mobile.android.featureflags.FeatureFlagsRemoteDataSource
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
-import org.koin.core.qualifier.named
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
-
-private val DATA_SOURCE_LOCAL = named("localFeatureFlagsDataSource")
-private val DATA_SOURCE_REMOTE = named("remoteFeatureFlagsDataSource")
 
 val featureFlagsDataModule =
     module {
         single { get<RestService>().service(FeatureFlagsApi::class.java) }
 
-        single<FeatureFlagsDataSource>(DATA_SOURCE_LOCAL) { FeatureFlagsLocalDataSource(get()) }
-        single<FeatureFlagsDataSource>(DATA_SOURCE_REMOTE) { FeatureFlagsRemoteDataSource(get(), get()) }
-
-        single<FeatureFlagsRepository> {
-            FeatureFlagsRepositoryImpl(
-                localDataSource = get(DATA_SOURCE_LOCAL),
-                remoteDataSource = get(DATA_SOURCE_REMOTE),
-            )
-        }
+        singleOf(::FeatureFlagsLocalDataSourceImpl) bind FeatureFlagsLocalDataSource::class
+        singleOf(::FeatureFlagsRemoteDataSourceImpl) bind FeatureFlagsRemoteDataSource::class
+        singleOf(::FeatureFlagsRepositoryImpl) bind FeatureFlagsRepository::class
     }

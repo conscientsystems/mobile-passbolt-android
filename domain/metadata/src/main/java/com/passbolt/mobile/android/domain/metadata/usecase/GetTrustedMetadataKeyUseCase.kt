@@ -24,15 +24,18 @@
 package com.passbolt.mobile.android.domain.metadata.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.MetadataRepository
 import java.time.ZonedDateTime
 import java.util.UUID
 
 class GetTrustedMetadataKeyUseCase(
     private val metadataRepository: MetadataRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, GetTrustedMetadataKeyUseCase.Output> {
-    override suspend fun execute(input: Unit): Output =
-        metadataRepository.getTrustedMetadataKey()?.let { trustedKey ->
+    override suspend fun execute(input: Unit): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return metadataRepository.getTrustedMetadataKey(userId)?.let { trustedKey ->
             Output.TrustedKey(
                 id = trustedKey.id,
                 userId = trustedKey.userId,
@@ -49,6 +52,7 @@ class GetTrustedMetadataKeyUseCase(
                 signedName = trustedKey.signedName,
             )
         } ?: Output.NoTrustedKey
+    }
 
     sealed class Output {
         data class TrustedKey(

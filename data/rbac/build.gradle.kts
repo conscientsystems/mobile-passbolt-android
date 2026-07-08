@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":networking"))
     implementation(project(":dto"))
     implementation(project(":encryptedstorage"))
-    implementation(project(":accounts"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

@@ -47,5 +47,7 @@ sealed interface AuthSideEffect {
         TIME_OUT_OF_SYNC,
         BIOMETRIC_DECRYPT_ERROR,
         BIOMETRIC_NO_CRYPTO_CIPHER,
+        BIOMETRIC_LOCKOUT,
+        BIOMETRIC_LOCKOUT_PERMANENT,
     }
 }

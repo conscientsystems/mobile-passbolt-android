@@ -27,7 +27,10 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 
 interface PasswordExpiryRepository {
-    suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings>
+    suspend fun getPasswordExpirySettings(userId: String): DomainResult<PasswordExpirySettings>
 
-    suspend fun setPasswordExpirySettings(passwordExpirySettings: PasswordExpirySettings)
+    suspend fun setPasswordExpirySettings(
+        userId: String,
+        passwordExpirySettings: PasswordExpirySettings,
+    )
 }

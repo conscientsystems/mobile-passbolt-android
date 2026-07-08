@@ -26,14 +26,14 @@ package com.passbolt.mobile.android.data.featureflags
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
-import com.passbolt.mobile.android.featureflags.FeatureFlagsDataSource
+import com.passbolt.mobile.android.featureflags.FeatureFlagsLocalDataSource
+import com.passbolt.mobile.android.featureflags.FeatureFlagsRemoteDataSource
 import com.passbolt.mobile.android.featureflags.model.FeatureFlags
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
@@ -44,9 +44,6 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
 class FeatureFlagsRepositoryImplTest : KoinTest {
-    private val localQualifier = named("localFeatureFlagsDataSource")
-    private val remoteQualifier = named("remoteFeatureFlagsDataSource")
-
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
@@ -54,12 +51,12 @@ class FeatureFlagsRepositoryImplTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single<FeatureFlagsDataSource>(localQualifier) { mock<FeatureFlagsDataSource>() }
-                        single<FeatureFlagsDataSource>(remoteQualifier) { mock<FeatureFlagsDataSource>() }
+                        single<FeatureFlagsLocalDataSource> { mock<FeatureFlagsLocalDataSource>() }
+                        single<FeatureFlagsRemoteDataSource> { mock<FeatureFlagsRemoteDataSource>() }
                         factory {
                             FeatureFlagsRepositoryImpl(
-                                localDataSource = get(localQualifier),
-                                remoteDataSource = get(remoteQualifier),
+                                localDataSource = get(),
+                                remoteDataSource = get(),
                             )
                         }
                     },
@@ -67,24 +64,24 @@ class FeatureFlagsRepositoryImplTest : KoinTest {
             )
         }
 
-    private lateinit var local: FeatureFlagsDataSource
-    private lateinit var remote: FeatureFlagsDataSource
+    private lateinit var local: FeatureFlagsLocalDataSource
+    private lateinit var remote: FeatureFlagsRemoteDataSource
     private lateinit var repository: FeatureFlagsRepositoryImpl
     private val featureFlags = FeatureFlags.defaults()
 
     @Before
     fun setUp() {
-        local = get(localQualifier)
-        remote = get(remoteQualifier)
+        local = get()
+        remote = get()
         repository = get()
     }
 
     @Test
     fun `getFeatureFlags returns local value and never calls remote`() =
         runTest {
-            local.stub { onBlocking { getFeatureFlags() }.thenReturn(DomainResult.Finished(featureFlags)) }
+            local.stub { onBlocking { getFeatureFlags(USER_ID) }.thenReturn(DomainResult.Finished(featureFlags)) }
 
-            val result = repository.getFeatureFlags()
+            val result = repository.getFeatureFlags(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(featureFlags))
             verify(remote, never()).getFeatureFlags()
@@ -95,10 +92,10 @@ class FeatureFlagsRepositoryImplTest : KoinTest {
         runTest {
             remote.stub { onBlocking { getFeatureFlags() }.thenReturn(DomainResult.Finished(featureFlags)) }
 
-            val result = repository.refreshFeatureFlags()
+            val result = repository.refreshFeatureFlags(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(featureFlags))
-            verify(local).setFeatureFlags(featureFlags)
+            verify(local).setFeatureFlags(USER_ID, featureFlags)
         }
 
     @Test
@@ -107,9 +104,13 @@ class FeatureFlagsRepositoryImplTest : KoinTest {
             val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             remote.stub { onBlocking { getFeatureFlags() }.thenReturn(failure) }
 
-            val result = repository.refreshFeatureFlags()
+            val result = repository.refreshFeatureFlags(USER_ID)
 
             assertThat(result).isEqualTo(failure)
-            verify(local, never()).setFeatureFlags(featureFlags)
+            verify(local, never()).setFeatureFlags(USER_ID, featureFlags)
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

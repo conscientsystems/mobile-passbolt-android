@@ -24,11 +24,13 @@
 package com.passbolt.mobile.android.core.resourcetypes
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.domain.resourcetypes.RefreshResourceTypesRepository
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
@@ -52,6 +54,7 @@ class ResourceTypesInteractorTest : KoinTest {
                 module {
                     single { mock<RefreshResourceTypesRepository>() }
                     single { mock<ResourceTypeIdToSlugMappingProvider>() }
+                    single { mock<GetSelectedAccountUseCase>() }
                     singleOf(::ResourceTypesInteractor)
                 },
             )
@@ -59,6 +62,7 @@ class ResourceTypesInteractorTest : KoinTest {
 
     private val refreshResourceTypesRepository: RefreshResourceTypesRepository by inject()
     private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider by inject()
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase by inject()
     private val interactor: ResourceTypesInteractor by inject()
 
     private val resourceTypes =
@@ -71,11 +75,18 @@ class ResourceTypesInteractorTest : KoinTest {
             ),
         )
 
+    @Before
+    fun setUp() {
+        getSelectedAccountUseCase.stub {
+            on { execute(Unit) }.thenReturn(GetSelectedAccountUseCase.Output(SELECTED_ACCOUNT_ID))
+        }
+    }
+
     @Test
     fun `fetchAndSaveResourceTypes returns Success and invalidates the cached mapping on refresh success`() =
         runTest {
             refreshResourceTypesRepository.stub {
-                onBlocking { refreshResourceTypes() }.thenReturn(DomainResult.Finished(resourceTypes))
+                onBlocking { refreshResourceTypes(SELECTED_ACCOUNT_ID) }.thenReturn(DomainResult.Finished(resourceTypes))
             }
 
             val result = interactor.fetchAndSaveResourceTypes()
@@ -88,11 +99,15 @@ class ResourceTypesInteractorTest : KoinTest {
     fun `fetchAndSaveResourceTypes returns Failure and keeps the cached mapping on refresh failure`() =
         runTest {
             val failure = DomainResult.Incomplete.NotCached
-            refreshResourceTypesRepository.stub { onBlocking { refreshResourceTypes() }.thenReturn(failure) }
+            refreshResourceTypesRepository.stub { onBlocking { refreshResourceTypes(SELECTED_ACCOUNT_ID) }.thenReturn(failure) }
 
             val result = interactor.fetchAndSaveResourceTypes()
 
             assertThat(result).isEqualTo(ResourceTypesInteractor.Output.Failure(failure))
             verify(resourceTypeIdToSlugMappingProvider, never()).invalidateSelectedUserMapping()
         }
+
+    private companion object {
+        const val SELECTED_ACCOUNT_ID = "selected-account-id"
+    }
 }

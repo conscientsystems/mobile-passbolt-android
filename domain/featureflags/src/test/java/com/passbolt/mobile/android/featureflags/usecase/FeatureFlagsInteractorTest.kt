@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.featureflags.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
@@ -41,6 +42,7 @@ import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.whenever
 
 class FeatureFlagsInteractorTest : KoinTest {
     @get:Rule
@@ -51,6 +53,7 @@ class FeatureFlagsInteractorTest : KoinTest {
                 listOf(
                     module {
                         single { mock<FeatureFlagsRepository>() }
+                        single { mock<GetSelectedAccountUseCase>() }
                         factoryOf(::FeatureFlagsInteractor)
                     },
                 ),
@@ -58,11 +61,14 @@ class FeatureFlagsInteractorTest : KoinTest {
         }
 
     private lateinit var repository: FeatureFlagsRepository
+    private lateinit var getSelectedAccountUseCase: GetSelectedAccountUseCase
     private lateinit var interactor: FeatureFlagsInteractor
 
     @Before
     fun setUp() {
         repository = get()
+        getSelectedAccountUseCase = get()
+        whenever(getSelectedAccountUseCase.execute(Unit)).thenReturn(GetSelectedAccountUseCase.Output(USER_ID))
         interactor = get()
     }
 
@@ -71,7 +77,7 @@ class FeatureFlagsInteractorTest : KoinTest {
         runTest {
             val featureFlags = FeatureFlags.defaults().copy(isRbacAvailable = true)
             repository.stub {
-                onBlocking { refreshFeatureFlags() }.thenReturn(DomainResult.Finished(featureFlags))
+                onBlocking { refreshFeatureFlags(USER_ID) }.thenReturn(DomainResult.Finished(featureFlags))
             }
 
             val result = interactor.fetchAndSaveFeatureFlags()
@@ -83,11 +89,15 @@ class FeatureFlagsInteractorTest : KoinTest {
     fun `refresh failure returns failure`() =
         runTest {
             repository.stub {
-                onBlocking { refreshFeatureFlags() }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, "boom"))
+                onBlocking { refreshFeatureFlags(USER_ID) }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, "boom"))
             }
 
             val result = interactor.fetchAndSaveFeatureFlags()
 
             assertThat(result).isEqualTo(FeatureFlagsInteractor.Output.Failure)
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

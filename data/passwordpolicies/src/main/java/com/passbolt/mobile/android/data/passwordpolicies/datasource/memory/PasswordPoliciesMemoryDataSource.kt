@@ -1,8 +1,7 @@
 package com.passbolt.mobile.android.data.passwordpolicies.datasource.memory
 
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesLocalDataSource
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 
 /**
@@ -27,20 +26,18 @@ import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicie
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class PasswordPoliciesMemoryDataSource(
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : PasswordPoliciesDataSource {
+internal class PasswordPoliciesMemoryDataSource : PasswordPoliciesLocalDataSource {
     private val perAccountPolicies = hashMapOf<String, PasswordPolicies>()
 
-    override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> {
-        val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        return perAccountPolicies[selectedAccount]
+    override suspend fun getPasswordPolicies(userId: String): DomainResult<PasswordPolicies> =
+        perAccountPolicies[userId]
             ?.let { DomainResult.Finished(it) }
             ?: DomainResult.Incomplete.NotCached
-    }
 
-    override suspend fun setPasswordPolicies(passwordPolicies: PasswordPolicies) {
-        val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        perAccountPolicies[selectedAccount] = passwordPolicies
+    override suspend fun setPasswordPolicies(
+        userId: String,
+        passwordPolicies: PasswordPolicies,
+    ) {
+        perAccountPolicies[userId] = passwordPolicies
     }
 }

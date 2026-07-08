@@ -21,23 +21,24 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.domain.folders.usecase
+package com.passbolt.mobile.android.data.resourcetypes.datasource.remote
 
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.domain.folders.FoldersRepository
-import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttributes
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.map
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.core.networking.toDomainResult
+import com.passbolt.mobile.android.data.resourcetypes.datasource.remote.api.ResourceTypesApi
+import com.passbolt.mobile.android.data.resourcetypes.mapper.toDomain
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRemoteDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 
-class AddLocalFolderPermissionsUseCase(
-    private val foldersRepository: FoldersRepository,
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<AddLocalFolderPermissionsUseCase.Input, Unit> {
-    override suspend fun execute(input: Input) {
-        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        foldersRepository.addFolderPermissions(input.foldersWithAttributes, userId)
-    }
-
-    data class Input(
-        val foldersWithAttributes: List<FolderModelWithAttributes>,
-    )
+internal class ResourceTypesRemoteDataSourceImpl(
+    private val resourceTypesApi: ResourceTypesApi,
+    private val responseHandler: ResponseHandler,
+) : ResourceTypesRemoteDataSource {
+    override suspend fun getResourceTypes(): DomainResult<List<ResourceType>> =
+        callWithHandler(responseHandler) { resourceTypesApi.getResourceTypes().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

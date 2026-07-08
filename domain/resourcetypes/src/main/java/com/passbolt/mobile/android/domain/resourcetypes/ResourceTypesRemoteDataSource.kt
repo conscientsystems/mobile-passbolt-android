@@ -21,13 +21,11 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.featureflags
+package com.passbolt.mobile.android.domain.resourcetypes
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.featureflags.model.FeatureFlags
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 
-interface FeatureFlagsDataSource {
-    suspend fun getFeatureFlags(): DomainResult<FeatureFlags>
-
-    suspend fun setFeatureFlags(featureFlags: FeatureFlags) {}
+interface ResourceTypesRemoteDataSource {
+    suspend fun getResourceTypes(): DomainResult<List<ResourceType>>
 }

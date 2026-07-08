@@ -24,20 +24,21 @@
 package com.passbolt.mobile.android.data.featureflags
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.featureflags.FeatureFlagsDataSource
+import com.passbolt.mobile.android.featureflags.FeatureFlagsLocalDataSource
+import com.passbolt.mobile.android.featureflags.FeatureFlagsRemoteDataSource
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
 import com.passbolt.mobile.android.featureflags.model.FeatureFlags
 
 internal class FeatureFlagsRepositoryImpl(
-    private val localDataSource: FeatureFlagsDataSource,
-    private val remoteDataSource: FeatureFlagsDataSource,
+    private val localDataSource: FeatureFlagsLocalDataSource,
+    private val remoteDataSource: FeatureFlagsRemoteDataSource,
 ) : FeatureFlagsRepository {
-    override suspend fun getFeatureFlags(): DomainResult<FeatureFlags> = localDataSource.getFeatureFlags()
+    override suspend fun getFeatureFlags(userId: String): DomainResult<FeatureFlags> = localDataSource.getFeatureFlags(userId)
 
-    override suspend fun refreshFeatureFlags(): DomainResult<FeatureFlags> =
+    override suspend fun refreshFeatureFlags(userId: String): DomainResult<FeatureFlags> =
         remoteDataSource.getFeatureFlags().also {
             if (it is DomainResult.Finished) {
-                localDataSource.setFeatureFlags(it.value)
+                localDataSource.setFeatureFlags(userId, it.value)
             }
         }
 }

@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.domain.passwordexpiry.usecase
 
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
@@ -32,12 +33,15 @@ import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySet
 
 class PasswordExpiryPoliciesInteractor(
     private val passwordExpiryRepository: PasswordExpiryRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
-    suspend fun fetchAndSavePasswordExpiryPolicies(): Output =
-        when (val result = passwordExpiryRepository.getPasswordExpirySettings()) {
+    suspend fun fetchAndSavePasswordExpiryPolicies(): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = passwordExpiryRepository.getPasswordExpirySettings(userId)) {
             is DomainResult.Incomplete -> Output.Failure.FetchFailure(result)
             is DomainResult.Finished -> Output.Success(result.value)
         }
+    }
 
     sealed class Output : AuthenticatedUseCaseOutput {
         data class Success(

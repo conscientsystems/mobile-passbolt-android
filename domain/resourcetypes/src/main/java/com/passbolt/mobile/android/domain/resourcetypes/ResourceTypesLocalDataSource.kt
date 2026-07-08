@@ -21,23 +21,19 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.domain.folders.usecase
+package com.passbolt.mobile.android.domain.resourcetypes
 
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.domain.folders.FoldersRepository
-import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttributes
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
+import java.util.UUID
 
-class AddLocalFolderPermissionsUseCase(
-    private val foldersRepository: FoldersRepository,
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<AddLocalFolderPermissionsUseCase.Input, Unit> {
-    override suspend fun execute(input: Input) {
-        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        foldersRepository.addFolderPermissions(input.foldersWithAttributes, userId)
-    }
+interface ResourceTypesLocalDataSource {
+    suspend fun getResourceTypes(userId: String): DomainResult<List<ResourceType>>
 
-    data class Input(
-        val foldersWithAttributes: List<FolderModelWithAttributes>,
+    suspend fun getResourceTypeIdToSlugMapping(userId: String): DomainResult<Map<UUID, String>>
+
+    suspend fun setResourceTypes(
+        userId: String,
+        resourceTypes: List<ResourceType>,
     )
 }

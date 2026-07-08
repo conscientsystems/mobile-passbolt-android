@@ -24,12 +24,15 @@
 package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 
 class RemoveLocalFolderPermissionsUseCase(
     private val foldersRepository: FoldersRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, Unit> {
     override suspend fun execute(input: Unit) {
-        foldersRepository.clearFolderPermissions()
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        foldersRepository.clearFolderPermissions(userId)
     }
 }

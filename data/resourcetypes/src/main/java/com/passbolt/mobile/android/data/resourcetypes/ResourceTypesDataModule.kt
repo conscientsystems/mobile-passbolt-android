@@ -24,35 +24,23 @@
 package com.passbolt.mobile.android.data.resourcetypes
 
 import com.passbolt.mobile.android.core.networking.RestService
-import com.passbolt.mobile.android.data.resourcetypes.datasource.local.ResourceTypesLocalDataSource
-import com.passbolt.mobile.android.data.resourcetypes.datasource.remote.ResourceTypesRemoteDataSource
+import com.passbolt.mobile.android.data.resourcetypes.datasource.local.ResourceTypesLocalDataSourceImpl
+import com.passbolt.mobile.android.data.resourcetypes.datasource.remote.ResourceTypesRemoteDataSourceImpl
 import com.passbolt.mobile.android.data.resourcetypes.datasource.remote.api.ResourceTypesApi
 import com.passbolt.mobile.android.domain.resourcetypes.RefreshResourceTypesRepository
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesLocalDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRemoteDataSource
 import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRepository
-import org.koin.core.qualifier.named
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
-
-private val DATA_SOURCE_LOCAL = named("localResourceTypesDataSource")
-private val DATA_SOURCE_REMOTE = named("remoteResourceTypesDataSource")
 
 val resourceTypesDataModule =
     module {
         single { get<RestService>().service(ResourceTypesApi::class.java) }
 
-        single<ResourceTypesDataSource>(DATA_SOURCE_LOCAL) { ResourceTypesLocalDataSource(get()) }
-        single<ResourceTypesDataSource>(DATA_SOURCE_REMOTE) { ResourceTypesRemoteDataSource(get(), get()) }
-
-        single<ResourceTypesRepository> {
-            ResourceTypesRepositoryImpl(
-                localDataSource = get(DATA_SOURCE_LOCAL),
-            )
-        }
-
-        single<RefreshResourceTypesRepository> {
-            RefreshResourceTypesRepositoryImpl(
-                localDataSource = get(DATA_SOURCE_LOCAL),
-                remoteDataSource = get(DATA_SOURCE_REMOTE),
-            )
-        }
+        singleOf(::ResourceTypesLocalDataSourceImpl) bind ResourceTypesLocalDataSource::class
+        singleOf(::ResourceTypesRemoteDataSourceImpl) bind ResourceTypesRemoteDataSource::class
+        singleOf(::ResourceTypesRepositoryImpl) bind ResourceTypesRepository::class
+        singleOf(::RefreshResourceTypesRepositoryImpl) bind RefreshResourceTypesRepository::class
     }

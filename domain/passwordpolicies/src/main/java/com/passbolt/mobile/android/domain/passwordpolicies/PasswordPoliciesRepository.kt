@@ -27,7 +27,10 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 
 interface PasswordPoliciesRepository {
-    suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies>
+    suspend fun getPasswordPolicies(userId: String): DomainResult<PasswordPolicies>
 
-    suspend fun setPasswordPolicies(passwordPolicies: PasswordPolicies)
+    suspend fun setPasswordPolicies(
+        userId: String,
+        passwordPolicies: PasswordPolicies,
+    )
 }

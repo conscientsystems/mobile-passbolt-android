@@ -9,7 +9,6 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":database"))
     implementation(project(":entity"))
-    implementation(project(":accounts"))
     implementation(project(":users-domain"))
 
     implementation(platform(libs.koin.bom))

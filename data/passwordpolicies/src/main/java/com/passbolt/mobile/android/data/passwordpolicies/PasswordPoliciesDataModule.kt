@@ -25,27 +25,21 @@ package com.passbolt.mobile.android.data.passwordpolicies
 
 import com.passbolt.mobile.android.core.networking.RestService
 import com.passbolt.mobile.android.data.passwordpolicies.datasource.memory.PasswordPoliciesMemoryDataSource
-import com.passbolt.mobile.android.data.passwordpolicies.datasource.remote.PasswordPoliciesRemoteDataSource
+import com.passbolt.mobile.android.data.passwordpolicies.datasource.remote.PasswordPoliciesRemoteDataSourceImpl
 import com.passbolt.mobile.android.data.passwordpolicies.datasource.remote.api.PasswordPoliciesApi
-import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesLocalDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRemoteDataSource
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRepository
-import org.koin.core.qualifier.named
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
-
-private val DATA_SOURCE_MEMORY = named("memoryPasswordPoliciesDataSource")
-private val DATA_SOURCE_REMOTE = named("remotePasswordPoliciesDataSource")
 
 val passwordPoliciesDataModule =
     module {
         single { get<RestService>().service(PasswordPoliciesApi::class.java) }
 
-        single<PasswordPoliciesDataSource>(DATA_SOURCE_MEMORY) { PasswordPoliciesMemoryDataSource(get()) }
-        single<PasswordPoliciesDataSource>(DATA_SOURCE_REMOTE) { PasswordPoliciesRemoteDataSource(get(), get()) }
+        single<PasswordPoliciesLocalDataSource> { PasswordPoliciesMemoryDataSource() }
+        singleOf(::PasswordPoliciesRemoteDataSourceImpl) bind PasswordPoliciesRemoteDataSource::class
 
-        single<PasswordPoliciesRepository> {
-            PasswordPoliciesRepositoryImpl(
-                memoryDataSource = get(DATA_SOURCE_MEMORY),
-                remoteDataSource = get(DATA_SOURCE_REMOTE),
-            )
-        }
+        singleOf(::PasswordPoliciesRepositoryImpl) bind PasswordPoliciesRepository::class
     }

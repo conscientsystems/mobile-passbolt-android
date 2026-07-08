@@ -25,27 +25,20 @@ package com.passbolt.mobile.android.data.passwordexpiry
 
 import com.passbolt.mobile.android.core.networking.RestService
 import com.passbolt.mobile.android.data.passwordexpiry.datasource.memory.PasswordExpiryMemoryDataSource
-import com.passbolt.mobile.android.data.passwordexpiry.datasource.remote.PasswordExpiryRemoteDataSource
+import com.passbolt.mobile.android.data.passwordexpiry.datasource.remote.PasswordExpiryRemoteDataSourceImpl
 import com.passbolt.mobile.android.data.passwordexpiry.datasource.remote.api.PasswordExpiryApi
-import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryLocalDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRemoteDataSource
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRepository
-import org.koin.core.qualifier.named
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
-
-private val DATA_SOURCE_MEMORY = named("memoryPasswordExpiryDataSource")
-private val DATA_SOURCE_REMOTE = named("remotePasswordExpiryDataSource")
 
 val passwordExpiryDataModule =
     module {
         single { get<RestService>().service(PasswordExpiryApi::class.java) }
 
-        single<PasswordExpiryDataSource>(DATA_SOURCE_MEMORY) { PasswordExpiryMemoryDataSource(get()) }
-        single<PasswordExpiryDataSource>(DATA_SOURCE_REMOTE) { PasswordExpiryRemoteDataSource(get(), get()) }
-
-        single<PasswordExpiryRepository> {
-            PasswordExpiryRepositoryImpl(
-                memoryDataSource = get(DATA_SOURCE_MEMORY),
-                remoteDataSource = get(DATA_SOURCE_REMOTE),
-            )
-        }
+        single<PasswordExpiryLocalDataSource> { PasswordExpiryMemoryDataSource() }
+        singleOf(::PasswordExpiryRemoteDataSourceImpl) bind PasswordExpiryRemoteDataSource::class
+        singleOf(::PasswordExpiryRepositoryImpl) bind PasswordExpiryRepository::class
     }

@@ -24,92 +24,51 @@
 package com.passbolt.mobile.android.data.passwordpolicies.datasource.memory
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.koin.core.logger.Level
-import org.koin.core.module.dsl.factoryOf
-import org.koin.dsl.module
-import org.koin.test.KoinTest
-import org.koin.test.KoinTestRule
-import org.koin.test.get
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
-class PasswordPoliciesMemoryDataSourceTest : KoinTest {
-    @get:Rule
-    val koinTestRule =
-        KoinTestRule.create {
-            printLogger(Level.ERROR)
-            modules(
-                listOf(
-                    module {
-                        single { mock<GetSelectedAccountUseCase>() }
-                        factoryOf(::PasswordPoliciesMemoryDataSource)
-                    },
-                ),
-            )
-        }
-
-    private lateinit var getSelectedAccountUseCase: GetSelectedAccountUseCase
-    private lateinit var dataSource: PasswordPoliciesMemoryDataSource
+class PasswordPoliciesMemoryDataSourceTest {
+    private val dataSource = PasswordPoliciesMemoryDataSource()
     private val defaultPolicies = PasswordPolicies.defaults()
     private val policiesWithDisabledExternalCheck = defaultPolicies.copy(isExternalDictionaryCheckEnabled = false)
-
-    @Before
-    fun setUp() {
-        getSelectedAccountUseCase = get()
-        dataSource = get()
-    }
-
-    private fun mockSelectedAccount(userId: String) {
-        whenever(getSelectedAccountUseCase.execute(Unit))
-            .thenReturn(GetSelectedAccountUseCase.Output(userId))
-    }
 
     @Test
     fun `get on an empty cache is a miss`() =
         runTest {
-            mockSelectedAccount("userA")
-
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Incomplete.NotCached)
+            assertThat(dataSource.getPasswordPolicies(USER_A)).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
     fun `cached value is returned for the same account`() =
         runTest {
-            mockSelectedAccount("userA")
-            dataSource.setPasswordPolicies(defaultPolicies)
+            dataSource.setPasswordPolicies(USER_A, defaultPolicies)
 
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Finished(defaultPolicies))
+            assertThat(dataSource.getPasswordPolicies(USER_A)).isEqualTo(DomainResult.Finished(defaultPolicies))
         }
 
     @Test
     fun `cached value of one account is not served to another account`() =
         runTest {
-            mockSelectedAccount("userA")
-            dataSource.setPasswordPolicies(defaultPolicies)
+            dataSource.setPasswordPolicies(USER_A, defaultPolicies)
 
-            mockSelectedAccount("userB")
-
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Incomplete.NotCached)
+            assertThat(dataSource.getPasswordPolicies(USER_B)).isEqualTo(DomainResult.Incomplete.NotCached)
         }
 
     @Test
     fun `each account retains its own cached value`() =
         runTest {
-            mockSelectedAccount("userA")
-            dataSource.setPasswordPolicies(defaultPolicies)
-            mockSelectedAccount("userB")
-            dataSource.setPasswordPolicies(policiesWithDisabledExternalCheck)
+            dataSource.setPasswordPolicies(USER_A, defaultPolicies)
+            dataSource.setPasswordPolicies(USER_B, policiesWithDisabledExternalCheck)
 
-            mockSelectedAccount("userA")
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Finished(defaultPolicies))
-            mockSelectedAccount("userB")
-            assertThat(dataSource.getPasswordPolicies()).isEqualTo(DomainResult.Finished(policiesWithDisabledExternalCheck))
+            assertThat(dataSource.getPasswordPolicies(USER_A)).isEqualTo(DomainResult.Finished(defaultPolicies))
+            assertThat(dataSource.getPasswordPolicies(USER_B))
+                .isEqualTo(DomainResult.Finished(policiesWithDisabledExternalCheck))
         }
+
+    private companion object {
+        const val USER_A = "userA"
+        const val USER_B = "userB"
+    }
 }

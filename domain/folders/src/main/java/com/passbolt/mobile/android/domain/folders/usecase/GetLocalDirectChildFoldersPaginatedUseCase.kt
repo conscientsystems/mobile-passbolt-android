@@ -25,22 +25,27 @@ package com.passbolt.mobile.android.domain.folders.usecase
 
 import androidx.paging.PagingData
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import kotlinx.coroutines.flow.Flow
 
 class GetLocalDirectChildFoldersPaginatedUseCase(
     private val foldersRepository: FoldersRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<GetLocalDirectChildFoldersPaginatedUseCase.Input, GetLocalDirectChildFoldersPaginatedUseCase.Output> {
-    override suspend fun execute(input: Input): Output =
-        Output(
+    override suspend fun execute(input: Input): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return Output(
             foldersRepository.getDirectChildFoldersPaged(
                 input.folderId,
                 input.searchQuery,
                 input.pageSize,
                 input.enablePlaceholders,
+                userId,
             ),
         )
+    }
 
     data class Input(
         val folderId: String?,

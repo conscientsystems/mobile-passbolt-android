@@ -23,7 +23,6 @@
 
 package com.passbolt.mobile.android.data.metadata.datasource.local
 
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.data.metadata.mapper.toDomain
 import com.passbolt.mobile.android.data.metadata.mapper.toEntity
 import com.passbolt.mobile.android.database.DatabaseProvider
@@ -33,12 +32,14 @@ import com.passbolt.mobile.android.domain.metadata.model.ParsedMetadataKey
 
 internal class MetadataKeysLocalDataSourceImpl(
     private val databaseProvider: DatabaseProvider,
-) : MetadataKeysLocalDataSource,
-    SelectedAccountUseCase {
-    override suspend fun getMetadataKeys(purpose: MetadataKeyPurpose): List<ParsedMetadataKey> {
+) : MetadataKeysLocalDataSource {
+    override suspend fun getMetadataKeys(
+        purpose: MetadataKeyPurpose,
+        userId: String,
+    ): List<ParsedMetadataKey> {
         val metadataKeysDao =
             databaseProvider
-                .get(selectedAccountId)
+                .get(userId)
                 .metadataKeysDao()
 
         return when (purpose) {
@@ -47,27 +48,36 @@ internal class MetadataKeysLocalDataSourceImpl(
         }.map { it.toDomain() }
     }
 
-    override suspend fun getMetadataKey(metadataKeyId: String): ParsedMetadataKey =
+    override suspend fun getMetadataKey(
+        metadataKeyId: String,
+        userId: String,
+    ): ParsedMetadataKey =
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .metadataKeysDao()
             .getMetadataKey(metadataKeyId)
             .toDomain()
 
-    override suspend fun rebuildMetadataKeys(metadataKeys: List<ParsedMetadataKey>) {
-        removeMetadataKeys(selectedAccountId)
-        addMetadataKeys(metadataKeys)
+    override suspend fun rebuildMetadataKeys(
+        metadataKeys: List<ParsedMetadataKey>,
+        userId: String,
+    ) {
+        removeMetadataKeys(userId)
+        addMetadataKeys(metadataKeys, userId)
     }
 
-    private suspend fun addMetadataKeys(metadataKeys: List<ParsedMetadataKey>) {
+    private suspend fun addMetadataKeys(
+        metadataKeys: List<ParsedMetadataKey>,
+        userId: String,
+    ) {
         val metadataKeysDao =
             databaseProvider
-                .get(selectedAccountId)
+                .get(userId)
                 .metadataKeysDao()
 
         val metadataPrivateKeysDao =
             databaseProvider
-                .get(selectedAccountId)
+                .get(userId)
                 .metadataPrivateKeysDao()
 
         val keys = metadataKeys.map { it.toEntity() }

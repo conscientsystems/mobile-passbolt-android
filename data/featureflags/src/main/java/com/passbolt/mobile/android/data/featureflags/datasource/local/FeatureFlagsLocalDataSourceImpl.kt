@@ -24,7 +24,6 @@
 package com.passbolt.mobile.android.data.featureflags.datasource.local
 
 import android.content.SharedPreferences
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.data.featureflags.datasource.local.StorageConstants.FOLDERS_KEY
 import com.passbolt.mobile.android.data.featureflags.datasource.local.StorageConstants.PASSWORD_EXPIRY_KEY
@@ -38,19 +37,15 @@ import com.passbolt.mobile.android.data.featureflags.datasource.local.StorageCon
 import com.passbolt.mobile.android.data.featureflags.datasource.local.StorageConstants.TOTP_KEY
 import com.passbolt.mobile.android.data.featureflags.datasource.local.StorageConstants.V5_METADATA
 import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
-import com.passbolt.mobile.android.featureflags.FeatureFlagsDataSource
+import com.passbolt.mobile.android.featureflags.FeatureFlagsLocalDataSource
 import com.passbolt.mobile.android.featureflags.model.FeatureFlags
 
-internal class FeatureFlagsLocalDataSource(
+internal class FeatureFlagsLocalDataSourceImpl(
     private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : FeatureFlagsDataSource,
-    SelectedAccountUseCase {
-    private val sharedPreferences: SharedPreferences
-        get() = encryptedSharedPreferencesFactory.get("${FeatureFlagsFileName(selectedAccountId).name}.xml")
-
-    override suspend fun getFeatureFlags(): DomainResult<FeatureFlags> {
+) : FeatureFlagsLocalDataSource {
+    override suspend fun getFeatureFlags(userId: String): DomainResult<FeatureFlags> {
         val defaults = FeatureFlags.defaults()
-        return sharedPreferences.let {
+        return sharedPreferences(userId).let {
             DomainResult.Finished(
                 FeatureFlags(
                     privacyPolicyUrl = it.getString(PRIVACY_POLICY_KEY, defaults.privacyPolicyUrl),
@@ -69,8 +64,11 @@ internal class FeatureFlagsLocalDataSource(
         }
     }
 
-    override suspend fun setFeatureFlags(featureFlags: FeatureFlags) {
-        with(sharedPreferences.edit()) {
+    override suspend fun setFeatureFlags(
+        userId: String,
+        featureFlags: FeatureFlags,
+    ) {
+        with(sharedPreferences(userId).edit()) {
             putString(PRIVACY_POLICY_KEY, featureFlags.privacyPolicyUrl)
             putString(TERMS_AND_CONDITIONS_KEY, featureFlags.termsAndConditionsUrl)
             putBoolean(PREVIEW_PASSWORD_KEY, featureFlags.isPreviewPasswordAvailable)
@@ -85,4 +83,7 @@ internal class FeatureFlagsLocalDataSource(
             apply()
         }
     }
+
+    private fun sharedPreferences(userId: String): SharedPreferences =
+        encryptedSharedPreferencesFactory.get("${FeatureFlagsFileName(userId).name}.xml")
 }

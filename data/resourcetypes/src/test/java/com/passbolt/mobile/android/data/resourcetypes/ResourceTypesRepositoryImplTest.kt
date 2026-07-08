@@ -25,14 +25,13 @@ package com.passbolt.mobile.android.data.resourcetypes
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesLocalDataSource
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
@@ -42,8 +41,6 @@ import org.mockito.kotlin.stub
 import java.util.UUID
 
 class ResourceTypesRepositoryImplTest : KoinTest {
-    private val localQualifier = named("localResourceTypesDataSource")
-
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
@@ -51,10 +48,10 @@ class ResourceTypesRepositoryImplTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single<ResourceTypesDataSource>(localQualifier) { mock<ResourceTypesDataSource>() }
+                        single<ResourceTypesLocalDataSource> { mock<ResourceTypesLocalDataSource>() }
                         factory {
                             ResourceTypesRepositoryImpl(
-                                localDataSource = get(localQualifier),
+                                localDataSource = get(),
                             )
                         }
                     },
@@ -62,7 +59,7 @@ class ResourceTypesRepositoryImplTest : KoinTest {
             )
         }
 
-    private lateinit var local: ResourceTypesDataSource
+    private lateinit var local: ResourceTypesLocalDataSource
     private lateinit var repository: ResourceTypesRepositoryImpl
 
     private val resourceTypes =
@@ -78,16 +75,16 @@ class ResourceTypesRepositoryImplTest : KoinTest {
 
     @Before
     fun setUp() {
-        local = get(localQualifier)
+        local = get()
         repository = get()
     }
 
     @Test
     fun `getResourceTypes returns the local value`() =
         runTest {
-            local.stub { onBlocking { getResourceTypes() }.thenReturn(DomainResult.Finished(resourceTypes)) }
+            local.stub { onBlocking { getResourceTypes(USER_ID) }.thenReturn(DomainResult.Finished(resourceTypes)) }
 
-            val result = repository.getResourceTypes()
+            val result = repository.getResourceTypes(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(resourceTypes))
         }
@@ -96,11 +93,15 @@ class ResourceTypesRepositoryImplTest : KoinTest {
     fun `getResourceTypeIdToSlugMapping returns the local mapping`() =
         runTest {
             local.stub {
-                onBlocking { getResourceTypeIdToSlugMapping() }.thenReturn(DomainResult.Finished(idToSlugMapping))
+                onBlocking { getResourceTypeIdToSlugMapping(USER_ID) }.thenReturn(DomainResult.Finished(idToSlugMapping))
             }
 
-            val result = repository.getResourceTypeIdToSlugMapping()
+            val result = repository.getResourceTypeIdToSlugMapping(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(idToSlugMapping))
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

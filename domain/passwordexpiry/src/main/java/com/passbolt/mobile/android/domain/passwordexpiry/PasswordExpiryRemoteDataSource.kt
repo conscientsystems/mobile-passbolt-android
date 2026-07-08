@@ -21,24 +21,11 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.data.featureflags.datasource.remote
+package com.passbolt.mobile.android.domain.passwordexpiry
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.architecture.result.map
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainResult
-import com.passbolt.mobile.android.data.featureflags.datasource.remote.api.FeatureFlagsApi
-import com.passbolt.mobile.android.data.featureflags.mapper.toDomain
-import com.passbolt.mobile.android.featureflags.FeatureFlagsDataSource
-import com.passbolt.mobile.android.featureflags.model.FeatureFlags
+import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 
-internal class FeatureFlagsRemoteDataSource(
-    private val featureFlagsApi: FeatureFlagsApi,
-    private val responseHandler: ResponseHandler,
-) : FeatureFlagsDataSource {
-    override suspend fun getFeatureFlags(): DomainResult<FeatureFlags> =
-        callWithHandler(responseHandler) { featureFlagsApi.getSettings().body }
-            .toDomainResult()
-            .map { it.toDomain() }
+interface PasswordExpiryRemoteDataSource {
+    suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings>
 }

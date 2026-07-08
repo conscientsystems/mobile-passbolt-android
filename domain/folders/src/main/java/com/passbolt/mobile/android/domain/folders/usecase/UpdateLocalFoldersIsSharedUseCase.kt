@@ -25,14 +25,17 @@ package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 
 class UpdateLocalFoldersIsSharedUseCase(
     private val foldersRepository: FoldersRepository,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, Unit> {
     override suspend fun execute(input: Unit) {
         val currentUserServerId = requireNotNull(getSelectedAccountDataUseCase.execute(Unit).serverId)
-        foldersRepository.updateFoldersIsShared(currentUserServerId)
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        foldersRepository.updateFoldersIsShared(currentUserServerId, userId)
     }
 }

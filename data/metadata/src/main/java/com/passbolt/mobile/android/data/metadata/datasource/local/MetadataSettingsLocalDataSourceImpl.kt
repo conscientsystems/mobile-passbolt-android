@@ -24,7 +24,6 @@
 package com.passbolt.mobile.android.data.metadata.datasource.local
 
 import android.content.SharedPreferences
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.data.metadata.datasource.local.MetadataTypesStorageConstants.ALLOW_CREATION_OF_V4_FOLDERS
 import com.passbolt.mobile.android.data.metadata.datasource.local.MetadataTypesStorageConstants.ALLOW_CREATION_OF_V4_RESOURCES
 import com.passbolt.mobile.android.data.metadata.datasource.local.MetadataTypesStorageConstants.ALLOW_CREATION_OF_V4_TAGS
@@ -63,32 +62,34 @@ import java.util.UUID
 
 internal class MetadataSettingsLocalDataSourceImpl(
     private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : MetadataSettingsLocalDataSource,
-    SelectedAccountUseCase {
-    private val settingsPreferences: SharedPreferences
-        get() = encryptedSharedPreferencesFactory.get("${MetadataSettingsFileName(selectedAccountId).name}.xml")
+) : MetadataSettingsLocalDataSource {
+    private fun settingsPreferences(userId: String): SharedPreferences =
+        encryptedSharedPreferencesFactory.get("${MetadataSettingsFileName(userId).name}.xml")
 
-    private val trustedKeyPreferences: SharedPreferences
-        get() = encryptedSharedPreferencesFactory.get("${TrustedMetadataKeyFileName(selectedAccountId).name}.xml")
+    private fun trustedKeyPreferences(userId: String): SharedPreferences =
+        encryptedSharedPreferencesFactory.get("${TrustedMetadataKeyFileName(userId).name}.xml")
 
-    override suspend fun getMetadataKeysSettings(): MetadataKeysSettings =
-        settingsPreferences.let {
+    override suspend fun getMetadataKeysSettings(userId: String): MetadataKeysSettings =
+        settingsPreferences(userId).let {
             MetadataKeysSettings(
                 allowUsageOfPersonalKeys = it.getBoolean(ALLOW_USAGE_OF_PERSONAL_KEYS, true),
                 zeroKnowledgeKeyShare = it.getBoolean(ZERO_KNOWLEDGE_KEY_SHARE, false),
             )
         }
 
-    override suspend fun saveMetadataKeysSettings(metadataKeysSettings: MetadataKeysSettings) {
-        with(settingsPreferences.edit()) {
+    override suspend fun saveMetadataKeysSettings(
+        metadataKeysSettings: MetadataKeysSettings,
+        userId: String,
+    ) {
+        with(settingsPreferences(userId).edit()) {
             putBoolean(ALLOW_USAGE_OF_PERSONAL_KEYS, metadataKeysSettings.allowUsageOfPersonalKeys)
             putBoolean(ZERO_KNOWLEDGE_KEY_SHARE, metadataKeysSettings.zeroKnowledgeKeyShare)
             apply()
         }
     }
 
-    override suspend fun getMetadataTypesSettings(): MetadataTypesSettings =
-        settingsPreferences.let {
+    override suspend fun getMetadataTypesSettings(userId: String): MetadataTypesSettings =
+        settingsPreferences(userId).let {
             MetadataTypesSettings(
                 defaultMetadataType = MetadataType.valueOf(it.getString(DEFAULT_METADATA_TYPE, MetadataType.V4.name)!!),
                 defaultFolderType = MetadataType.valueOf(it.getString(DEFAULT_FOLDER_TYPE, MetadataType.V4.name)!!),
@@ -104,8 +105,11 @@ internal class MetadataSettingsLocalDataSourceImpl(
             )
         }
 
-    override suspend fun saveMetadataTypesSettings(metadataTypesSettings: MetadataTypesSettings) {
-        with(settingsPreferences.edit()) {
+    override suspend fun saveMetadataTypesSettings(
+        metadataTypesSettings: MetadataTypesSettings,
+        userId: String,
+    ) {
+        with(settingsPreferences(userId).edit()) {
             putString(DEFAULT_METADATA_TYPE, metadataTypesSettings.defaultMetadataType.name)
             putString(DEFAULT_FOLDER_TYPE, metadataTypesSettings.defaultFolderType.name)
             putString(DEFAULT_TAG_TYPE, metadataTypesSettings.defaultTagType.name)
@@ -122,8 +126,8 @@ internal class MetadataSettingsLocalDataSourceImpl(
     }
 
     @Suppress("LongMethod")
-    override suspend fun getTrustedMetadataKey(): TrustedMetadataKey? {
-        val preferences = trustedKeyPreferences
+    override suspend fun getTrustedMetadataKey(userId: String): TrustedMetadataKey? {
+        val preferences = trustedKeyPreferences(userId)
 
         return if (preferences.contains(TRUSTED_MD_KEY_KEY_PGP_MESSAGE)) {
             try {
@@ -161,8 +165,11 @@ internal class MetadataSettingsLocalDataSourceImpl(
         }
     }
 
-    override suspend fun saveTrustedMetadataKey(trustedMetadataKey: TrustedMetadataKey) {
-        with(trustedKeyPreferences.edit()) {
+    override suspend fun saveTrustedMetadataKey(
+        trustedMetadataKey: TrustedMetadataKey,
+        userId: String,
+    ) {
+        with(trustedKeyPreferences(userId).edit()) {
             putString(TRUSTED_MD_KEY_ID, trustedMetadataKey.id.toString())
             putString(TRUSTED_MD_KEY_USER_ID, trustedMetadataKey.userId.toString())
             putString(TRUSTED_MD_KEY_KEY_DATA, trustedMetadataKey.keyData)
@@ -180,8 +187,8 @@ internal class MetadataSettingsLocalDataSourceImpl(
         }
     }
 
-    override suspend fun deleteTrustedMetadataKey() {
-        with(trustedKeyPreferences.edit()) {
+    override suspend fun deleteTrustedMetadataKey(userId: String) {
+        with(trustedKeyPreferences(userId).edit()) {
             clear()
             apply()
         }

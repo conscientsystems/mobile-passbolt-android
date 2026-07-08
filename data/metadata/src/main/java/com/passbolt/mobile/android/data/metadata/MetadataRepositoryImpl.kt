@@ -36,28 +36,43 @@ internal class MetadataRepositoryImpl(
     private val settingsLocalDataSource: MetadataSettingsLocalDataSource,
     private val keysLocalDataSource: MetadataKeysLocalDataSource,
 ) : MetadataRepository {
-    override suspend fun getMetadataKeysSettings(): MetadataKeysSettings = settingsLocalDataSource.getMetadataKeysSettings()
+    override suspend fun getMetadataKeysSettings(userId: String): MetadataKeysSettings =
+        settingsLocalDataSource.getMetadataKeysSettings(userId)
 
-    override suspend fun saveMetadataKeysSettings(metadataKeysSettings: MetadataKeysSettings) =
-        settingsLocalDataSource.saveMetadataKeysSettings(metadataKeysSettings)
+    override suspend fun saveMetadataKeysSettings(
+        metadataKeysSettings: MetadataKeysSettings,
+        userId: String,
+    ) = settingsLocalDataSource.saveMetadataKeysSettings(metadataKeysSettings, userId)
 
-    override suspend fun getMetadataTypesSettings(): MetadataTypesSettings = settingsLocalDataSource.getMetadataTypesSettings()
+    override suspend fun getMetadataTypesSettings(userId: String): MetadataTypesSettings =
+        settingsLocalDataSource.getMetadataTypesSettings(userId)
 
-    override suspend fun saveMetadataTypesSettings(metadataTypesSettings: MetadataTypesSettings) =
-        settingsLocalDataSource.saveMetadataTypesSettings(metadataTypesSettings)
+    override suspend fun saveMetadataTypesSettings(
+        metadataTypesSettings: MetadataTypesSettings,
+        userId: String,
+    ) = settingsLocalDataSource.saveMetadataTypesSettings(metadataTypesSettings, userId)
 
-    override suspend fun getTrustedMetadataKey(): TrustedMetadataKey? = settingsLocalDataSource.getTrustedMetadataKey()
+    override suspend fun getTrustedMetadataKey(userId: String): TrustedMetadataKey? = settingsLocalDataSource.getTrustedMetadataKey(userId)
 
-    override suspend fun saveTrustedMetadataKey(trustedMetadataKey: TrustedMetadataKey) =
-        settingsLocalDataSource.saveTrustedMetadataKey(trustedMetadataKey)
+    override suspend fun saveTrustedMetadataKey(
+        trustedMetadataKey: TrustedMetadataKey,
+        userId: String,
+    ) = settingsLocalDataSource.saveTrustedMetadataKey(trustedMetadataKey, userId)
 
-    override suspend fun deleteTrustedMetadataKey() = settingsLocalDataSource.deleteTrustedMetadataKey()
+    override suspend fun deleteTrustedMetadataKey(userId: String) = settingsLocalDataSource.deleteTrustedMetadataKey(userId)
 
-    override suspend fun getLocalMetadataKeys(purpose: MetadataKeyPurpose): List<ParsedMetadataKey> =
-        keysLocalDataSource.getMetadataKeys(purpose)
+    override suspend fun getLocalMetadataKeys(
+        purpose: MetadataKeyPurpose,
+        userId: String,
+    ): List<ParsedMetadataKey> = keysLocalDataSource.getMetadataKeys(purpose, userId)
 
-    override suspend fun getLocalMetadataKey(metadataKeyId: String): ParsedMetadataKey = keysLocalDataSource.getMetadataKey(metadataKeyId)
+    override suspend fun getLocalMetadataKey(
+        metadataKeyId: String,
+        userId: String,
+    ): ParsedMetadataKey = keysLocalDataSource.getMetadataKey(metadataKeyId, userId)
 
-    override suspend fun rebuildMetadataKeysTables(metadataKeys: List<ParsedMetadataKey>) =
-        keysLocalDataSource.rebuildMetadataKeys(metadataKeys)
+    override suspend fun rebuildMetadataKeysTables(
+        metadataKeys: List<ParsedMetadataKey>,
+        userId: String,
+    ) = keysLocalDataSource.rebuildMetadataKeys(metadataKeys, userId)
 }
