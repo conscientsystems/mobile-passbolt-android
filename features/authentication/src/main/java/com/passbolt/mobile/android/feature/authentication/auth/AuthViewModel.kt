@@ -72,6 +72,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Sn
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_INVALID_SIGNATURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_TOKEN_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_VERIFICATION_FAILURE
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CONNECTION_FAILURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.DECRYPTION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.GENERIC
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.TIME_OUT_OF_SYNC
@@ -97,6 +98,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVer
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ChallengeVerificationError.Type.INVALID_SIGNATURE
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ChallengeVerificationError.Type.TOKEN_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.IncorrectPassphrase
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.NoNetwork
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.SignInFailure
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyPassphraseUseCase
@@ -108,6 +110,8 @@ import com.passbolt.mobile.android.mappers.AccountModelMapper
 import com.passbolt.mobile.android.ui.BiometricAuthError
 import timber.log.Timber
 import javax.crypto.Cipher
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor.Error.NoNetwork as ServerKeysNoNetwork
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ServerNotReachable as SignInServerNotReachable
 
 @Suppress("LongParameterList", "TooManyFunctions")
 class AuthViewModel(
@@ -377,6 +381,9 @@ class AuthViewModel(
                                 copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl)
                             }
                         }
+                        is ServerKeysNoNetwork -> {
+                            emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+                        }
                         is TimeIsOutOfSync -> {
                             emitSideEffect(ShowErrorSnackbar(TIME_OUT_OF_SYNC))
                         }
@@ -422,6 +429,9 @@ class AuthViewModel(
                             FAILURE -> emitSideEffect(ShowErrorSnackbar(CHALLENGE_VERIFICATION_FAILURE))
                         }
                     }
+                    is NoNetwork -> emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+                    is SignInServerNotReachable ->
+                        updateViewState { copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl) }
                     is IncorrectPassphrase -> emitSideEffect(ShowErrorSnackbar(WRONG_PASSPHRASE))
                     is SignInFailure -> emitSideEffect(ShowErrorSnackbar(AUTHENTICATION_ERROR, it.message))
                 }

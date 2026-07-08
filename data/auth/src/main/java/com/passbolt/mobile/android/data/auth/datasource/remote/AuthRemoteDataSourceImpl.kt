@@ -70,10 +70,8 @@ internal class AuthRemoteDataSourceImpl(
                     authApi.signIn(SignInRequestDto(userId, challenge), mfaToken)
                 }
         ) {
-            is NetworkResult.Failure.NetworkError ->
-                SignInResult.Failure(result.headerMessage, SignInFailureType.OTHER)
-            is NetworkResult.Failure.ServerError ->
-                SignInResult.Failure(result.headerMessage, failureType(result.errorCode))
+            is NetworkResult.Failure ->
+                SignInResult.Failure(result.headerMessage, failureType(result))
             is NetworkResult.Success ->
                 result.value
                     .body()
@@ -112,10 +110,15 @@ internal class AuthRemoteDataSourceImpl(
             is DomainResult.Incomplete -> result
         }
 
-    private fun failureType(errorCode: Int?) =
-        if (errorCode == HttpURLConnection.HTTP_NOT_FOUND) {
-            SignInFailureType.ACCOUNT_DOES_NOT_EXIST
-        } else {
-            SignInFailureType.OTHER
+    private fun failureType(failure: NetworkResult.Failure<*>): SignInFailureType =
+        when {
+            failure.isNoNetworkException || failure is NetworkResult.Failure.NetworkError ->
+                SignInFailureType.NO_NETWORK
+            failure.isServerNotReachable ->
+                SignInFailureType.SERVER_NOT_REACHABLE
+            failure.errorCode == HttpURLConnection.HTTP_NOT_FOUND ->
+                SignInFailureType.ACCOUNT_DOES_NOT_EXIST
+            else ->
+                SignInFailureType.OTHER
         }
 }

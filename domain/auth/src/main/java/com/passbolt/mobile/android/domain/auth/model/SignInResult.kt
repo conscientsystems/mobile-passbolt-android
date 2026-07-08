@@ -35,6 +35,8 @@ sealed class SignInResult {
     ) : SignInResult() {
         enum class FailureType {
             ACCOUNT_DOES_NOT_EXIST,
+            SERVER_NOT_REACHABLE,
+            NO_NETWORK,
             OTHER,
         }
     }
