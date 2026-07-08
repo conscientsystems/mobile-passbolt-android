@@ -26,14 +26,14 @@ package com.passbolt.mobile.android.data.rbac
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
-import com.passbolt.mobile.android.domain.rbac.RbacDataSource
+import com.passbolt.mobile.android.domain.rbac.RbacLocalDataSource
+import com.passbolt.mobile.android.domain.rbac.RbacRemoteDataSource
 import com.passbolt.mobile.android.domain.rbac.model.Rbac
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
@@ -44,9 +44,6 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
 class RbacRepositoryImplTest : KoinTest {
-    private val localQualifier = named("localRbacDataSource")
-    private val remoteQualifier = named("remoteRbacDataSource")
-
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
@@ -54,12 +51,12 @@ class RbacRepositoryImplTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single<RbacDataSource>(localQualifier) { mock<RbacDataSource>() }
-                        single<RbacDataSource>(remoteQualifier) { mock<RbacDataSource>() }
+                        single<RbacLocalDataSource> { mock<RbacLocalDataSource>() }
+                        single<RbacRemoteDataSource> { mock<RbacRemoteDataSource>() }
                         factory {
                             RbacRepositoryImpl(
-                                localDataSource = get(localQualifier),
-                                remoteDataSource = get(remoteQualifier),
+                                localDataSource = get(),
+                                remoteDataSource = get(),
                             )
                         }
                     },
@@ -67,24 +64,24 @@ class RbacRepositoryImplTest : KoinTest {
             )
         }
 
-    private lateinit var local: RbacDataSource
-    private lateinit var remote: RbacDataSource
+    private lateinit var local: RbacLocalDataSource
+    private lateinit var remote: RbacRemoteDataSource
     private lateinit var repository: RbacRepositoryImpl
     private val rbac = Rbac.defaults()
 
     @Before
     fun setUp() {
-        local = get(localQualifier)
-        remote = get(remoteQualifier)
+        local = get()
+        remote = get()
         repository = get()
     }
 
     @Test
     fun `getRbac returns local value and never calls remote`() =
         runTest {
-            local.stub { onBlocking { getRbac() }.thenReturn(DomainResult.Finished(rbac)) }
+            local.stub { onBlocking { getRbac(USER_ID) }.thenReturn(DomainResult.Finished(rbac)) }
 
-            val result = repository.getRbac()
+            val result = repository.getRbac(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(rbac))
             verify(remote, never()).getRbac()
@@ -95,10 +92,10 @@ class RbacRepositoryImplTest : KoinTest {
         runTest {
             remote.stub { onBlocking { getRbac() }.thenReturn(DomainResult.Finished(rbac)) }
 
-            val result = repository.refreshRbac()
+            val result = repository.refreshRbac(USER_ID)
 
             assertThat(result).isEqualTo(DomainResult.Finished(rbac))
-            verify(local).setRbac(rbac)
+            verify(local).setRbac(USER_ID, rbac)
         }
 
     @Test
@@ -107,9 +104,13 @@ class RbacRepositoryImplTest : KoinTest {
             val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             remote.stub { onBlocking { getRbac() }.thenReturn(failure) }
 
-            val result = repository.refreshRbac()
+            val result = repository.refreshRbac(USER_ID)
 
             assertThat(result).isEqualTo(failure)
-            verify(local, never()).setRbac(rbac)
+            verify(local, never()).setRbac(USER_ID, rbac)
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

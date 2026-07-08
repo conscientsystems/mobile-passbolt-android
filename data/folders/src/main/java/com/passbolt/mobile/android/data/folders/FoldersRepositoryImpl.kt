@@ -52,50 +52,80 @@ internal class FoldersRepositoryImpl(
         parentFolderId: String?,
     ): DomainResult<FolderModelWithAttributes> = remoteDataSource.createFolder(name, parentFolderId)
 
-    override suspend fun addFolder(folder: FolderModel) = localDataSource.addFolder(folder)
+    override suspend fun addFolder(
+        folder: FolderModel,
+        userId: String,
+    ) = localDataSource.addFolder(folder, userId)
 
-    override suspend fun upsertFolders(folders: List<FolderModel>) = localDataSource.upsertFolders(folders)
+    override suspend fun upsertFolders(
+        folders: List<FolderModel>,
+        userId: String,
+    ) = localDataSource.upsertFolders(folders, userId)
 
-    override suspend fun setAllFoldersUpdateState(updateState: FolderUpdateState) = localDataSource.setAllFoldersUpdateState(updateState)
+    override suspend fun setAllFoldersUpdateState(
+        updateState: FolderUpdateState,
+        userId: String,
+    ) = localDataSource.setAllFoldersUpdateState(updateState, userId)
 
-    override suspend fun removeFoldersWithUpdateState(updateState: FolderUpdateState) =
-        localDataSource.removeFoldersWithUpdateState(updateState)
+    override suspend fun removeFoldersWithUpdateState(
+        updateState: FolderUpdateState,
+        userId: String,
+    ) = localDataSource.removeFoldersWithUpdateState(updateState, userId)
 
-    override suspend fun updateFoldersIsShared(currentUserServerId: String) = localDataSource.updateFoldersIsShared(currentUserServerId)
+    override suspend fun updateFoldersIsShared(
+        currentUserServerId: String,
+        userId: String,
+    ) = localDataSource.updateFoldersIsShared(currentUserServerId, userId)
 
-    override suspend fun addFolderPermissions(foldersWithAttributes: List<FolderModelWithAttributes>) =
-        localDataSource.addFolderPermissions(foldersWithAttributes)
+    override suspend fun addFolderPermissions(
+        foldersWithAttributes: List<FolderModelWithAttributes>,
+        userId: String,
+    ) = localDataSource.addFolderPermissions(foldersWithAttributes, userId)
 
-    override suspend fun clearFolderPermissions() = localDataSource.clearFolderPermissions()
+    override suspend fun clearFolderPermissions(userId: String) = localDataSource.clearFolderPermissions(userId)
 
-    override suspend fun getFolderDetails(folderId: String): FolderModel = localDataSource.getFolderDetails(folderId)
+    override suspend fun getFolderDetails(
+        folderId: String,
+        userId: String,
+    ): FolderModel = localDataSource.getFolderDetails(folderId, userId)
 
-    override suspend fun getFolderLocation(folderId: String): List<FolderModel> = localDataSource.getFolderLocation(folderId)
+    override suspend fun getFolderLocation(
+        folderId: String,
+        userId: String,
+    ): List<FolderModel> = localDataSource.getFolderLocation(folderId, userId)
 
-    override suspend fun getFolderPermissions(folderId: String): List<PermissionModelUi> = localDataSource.getFolderPermissions(folderId)
+    override suspend fun getFolderPermissions(
+        folderId: String,
+        userId: String,
+    ): List<PermissionModelUi> = localDataSource.getFolderPermissions(folderId, userId)
 
     override suspend fun getParentFolderPermissionsToApplyToNewItem(
         parentFolderId: String,
         itemId: ParentPermissionItemId,
         currentUserServerId: String,
-    ): List<PermissionModelUi> = localDataSource.getParentFolderPermissionsToApplyToNewItem(parentFolderId, itemId, currentUserServerId)
+        userId: String,
+    ): List<PermissionModelUi> =
+        localDataSource.getParentFolderPermissionsToApplyToNewItem(parentFolderId, itemId, currentUserServerId, userId)
 
     override fun getDirectChildFoldersPaged(
         folderId: String?,
         searchQuery: String?,
         pageSize: Int,
         enablePlaceholders: Boolean,
+        userId: String,
     ): Flow<PagingData<FolderWithCountAndPath>> =
-        localDataSource.getDirectChildFoldersPaged(folderId, searchQuery, pageSize, enablePlaceholders)
+        localDataSource.getDirectChildFoldersPaged(folderId, searchQuery, pageSize, enablePlaceholders, userId)
 
     override suspend fun getSubFoldersForFolder(
         folder: Folder,
         searchQuery: String?,
-    ): List<FolderWithCountAndPath> = localDataSource.getSubFoldersForFolder(folder, searchQuery)
+        userId: String,
+    ): List<FolderWithCountAndPath> = localDataSource.getSubFoldersForFolder(folder, searchQuery, userId)
 
     override fun getSubFoldersForFolderPaged(
         folder: Folder,
         searchQuery: String?,
         pageSize: Int,
-    ): Flow<PagingData<FolderWithCountAndPath>> = localDataSource.getSubFoldersForFolderPaged(folder, searchQuery, pageSize)
+        userId: String,
+    ): Flow<PagingData<FolderWithCountAndPath>> = localDataSource.getSubFoldersForFolderPaged(folder, searchQuery, pageSize, userId)
 }

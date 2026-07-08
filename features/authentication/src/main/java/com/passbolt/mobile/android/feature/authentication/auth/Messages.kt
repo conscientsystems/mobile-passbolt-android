@@ -4,6 +4,8 @@ import android.content.Context
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.AUTHENTICATION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_CHANGED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_DECRYPT_ERROR
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT_PERMANENT
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_NO_CRYPTO_CIPHER
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_INVALID_SIGNATURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_TOKEN_EXPIRED
@@ -48,4 +50,6 @@ internal fun getSnackBarMessage(
         TIME_OUT_OF_SYNC -> context.getString(LocalizationR.string.common_time_is_out_of_sync)
         BIOMETRIC_DECRYPT_ERROR -> context.getString(LocalizationR.string.biometric_decrypt_error_message)
         BIOMETRIC_NO_CRYPTO_CIPHER -> context.getString(LocalizationR.string.biometric_no_crypto_cipher)
+        BIOMETRIC_LOCKOUT -> context.getString(LocalizationR.string.biometric_error_blocked)
+        BIOMETRIC_LOCKOUT_PERMANENT -> context.getString(LocalizationR.string.biometric_error_too_many_attempts)
     }

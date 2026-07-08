@@ -21,24 +21,24 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.data.rbac.datasource.remote
+package com.passbolt.mobile.android.data.passwordpolicies.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
 import com.passbolt.mobile.android.core.networking.toDomainResult
-import com.passbolt.mobile.android.data.rbac.datasource.remote.api.RbacApi
-import com.passbolt.mobile.android.data.rbac.mapper.toDomain
-import com.passbolt.mobile.android.domain.rbac.RbacDataSource
-import com.passbolt.mobile.android.domain.rbac.model.Rbac
+import com.passbolt.mobile.android.data.passwordpolicies.datasource.remote.api.PasswordPoliciesApi
+import com.passbolt.mobile.android.data.passwordpolicies.mapper.toDomain
+import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRemoteDataSource
+import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 
-internal class RbacRemoteDataSource(
-    private val rbacApi: RbacApi,
+internal class PasswordPoliciesRemoteDataSourceImpl(
+    private val passwordPoliciesApi: PasswordPoliciesApi,
     private val responseHandler: ResponseHandler,
-) : RbacDataSource {
-    override suspend fun getRbac(): DomainResult<Rbac> =
-        callWithHandler(responseHandler) { rbacApi.getMyRbacPermissions().body }
+) : PasswordPoliciesRemoteDataSource {
+    override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> =
+        callWithHandler(responseHandler) { passwordPoliciesApi.getPasswordPolicies().body }
             .toDomainResult()
             .map { it.toDomain() }
 }

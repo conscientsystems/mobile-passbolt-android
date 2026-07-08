@@ -28,7 +28,7 @@ import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 import java.util.UUID
 
 interface ResourceTypesRepository {
-    suspend fun getResourceTypes(): DomainResult<List<ResourceType>>
+    suspend fun getResourceTypes(userId: String): DomainResult<List<ResourceType>>
 
-    suspend fun getResourceTypeIdToSlugMapping(): DomainResult<Map<UUID, String>>
+    suspend fun getResourceTypeIdToSlugMapping(userId: String): DomainResult<Map<UUID, String>>
 }

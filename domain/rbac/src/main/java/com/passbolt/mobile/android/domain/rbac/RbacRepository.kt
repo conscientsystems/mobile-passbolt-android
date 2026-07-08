@@ -27,7 +27,7 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.rbac.model.Rbac
 
 interface RbacRepository {
-    suspend fun getRbac(): DomainResult<Rbac>
+    suspend fun getRbac(userId: String): DomainResult<Rbac>
 
-    suspend fun refreshRbac(): DomainResult<Rbac>
+    suspend fun refreshRbac(userId: String): DomainResult<Rbac>
 }

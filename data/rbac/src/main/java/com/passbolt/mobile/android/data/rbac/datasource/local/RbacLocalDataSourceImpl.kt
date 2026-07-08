@@ -24,22 +24,17 @@
 package com.passbolt.mobile.android.data.rbac.datasource.local
 
 import android.content.SharedPreferences
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.rbac.RbacDataSource
+import com.passbolt.mobile.android.domain.rbac.RbacLocalDataSource
 import com.passbolt.mobile.android.domain.rbac.model.Rbac
 import com.passbolt.mobile.android.domain.rbac.model.RbacRule
 import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
 
-internal class RbacLocalDataSource(
+internal class RbacLocalDataSourceImpl(
     private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : RbacDataSource,
-    SelectedAccountUseCase {
-    private val sharedPreferences: SharedPreferences
-        get() = encryptedSharedPreferencesFactory.get("${RbacRulesFileName(selectedAccountId).name}.xml")
-
-    override suspend fun getRbac(): DomainResult<Rbac> =
-        sharedPreferences.let {
+) : RbacLocalDataSource {
+    override suspend fun getRbac(userId: String): DomainResult<Rbac> =
+        sharedPreferences(userId).let {
             DomainResult.Finished(
                 Rbac(
                     passwordPreviewRule = it.getRule(KEY_PREVIEW_PASSWORD),
@@ -51,8 +46,11 @@ internal class RbacLocalDataSource(
             )
         }
 
-    override suspend fun setRbac(rbac: Rbac) {
-        with(sharedPreferences.edit()) {
+    override suspend fun setRbac(
+        userId: String,
+        rbac: Rbac,
+    ) {
+        with(sharedPreferences(userId).edit()) {
             putString(KEY_PREVIEW_PASSWORD, rbac.passwordPreviewRule.name)
             putString(KEY_COPY_PASSWORD, rbac.passwordCopyRule.name)
             putString(KEY_USE_TAGS, rbac.tagsUseRule.name)
@@ -61,6 +59,9 @@ internal class RbacLocalDataSource(
             apply()
         }
     }
+
+    private fun sharedPreferences(userId: String): SharedPreferences =
+        encryptedSharedPreferencesFactory.get("${RbacRulesFileName(userId).name}.xml")
 
     private fun SharedPreferences.getRule(key: String): RbacRule = RbacRule.valueOf(getString(key, RbacRule.ALLOW.name)!!)
 }

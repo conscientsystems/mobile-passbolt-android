@@ -27,7 +27,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.data.folders.mapper.toDomain
 import com.passbolt.mobile.android.data.folders.mapper.toEntity
 import com.passbolt.mobile.android.database.DatabaseProvider
@@ -53,46 +52,63 @@ internal class FoldersLocalDataSourceImpl(
     private val databaseProvider: DatabaseProvider,
     private val querySanitizer: QuerySanitizer,
     private val permissionsModelMapper: PermissionsModelMapper,
-) : FoldersLocalDataSource,
-    SelectedAccountUseCase {
-    override suspend fun addFolder(folder: FolderModel) {
+) : FoldersLocalDataSource {
+    override suspend fun addFolder(
+        folder: FolderModel,
+        userId: String,
+    ) {
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .foldersDao()
             .insert(folder.toEntity(DOMAIN_UPDATED.toEntity(), permissionsModelMapper))
     }
 
-    override suspend fun upsertFolders(folders: List<FolderModel>) {
+    override suspend fun upsertFolders(
+        folders: List<FolderModel>,
+        userId: String,
+    ) {
         val entities = folders.map { it.toEntity(DOMAIN_UPDATED.toEntity(), permissionsModelMapper) }
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .foldersDao()
             .upsertAll(entities)
     }
 
-    override suspend fun setAllFoldersUpdateState(updateState: FolderUpdateState) {
+    override suspend fun setAllFoldersUpdateState(
+        updateState: FolderUpdateState,
+        userId: String,
+    ) {
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .foldersDao()
             .setAllUpdateState(updateState.toEntity())
     }
 
-    override suspend fun removeFoldersWithUpdateState(updateState: FolderUpdateState) {
+    override suspend fun removeFoldersWithUpdateState(
+        updateState: FolderUpdateState,
+        userId: String,
+    ) {
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .foldersDao()
             .removeWithUpdateState(updateState.toEntity())
     }
 
-    override suspend fun updateFoldersIsShared(currentUserServerId: String) {
+    override suspend fun updateFoldersIsShared(
+        currentUserServerId: String,
+        userId: String,
+    ) {
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .foldersDao()
             .updateIsShared(currentUserServerId)
     }
 
-    override suspend fun addFolderPermissions(foldersWithAttributes: List<FolderModelWithAttributes>) {
-        val db = databaseProvider.get(selectedAccountId)
+    override suspend fun addFolderPermissions(
+        foldersWithAttributes: List<FolderModelWithAttributes>,
+        userId: String,
+    ) {
+        val db = databaseProvider.get(userId)
         val foldersAndGroupsCrossRefDao = db.folderAndGroupsCrossRefDao()
         val foldersAndUsersCrossRefDao = db.folderAndUsersCrossRefDao()
 
@@ -133,31 +149,40 @@ internal class FoldersLocalDataSourceImpl(
         foldersAndUsersCrossRefDao.insertAll(folderAndUsersCrossRefs)
     }
 
-    override suspend fun clearFolderPermissions() {
+    override suspend fun clearFolderPermissions(userId: String) {
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .apply {
                 folderAndGroupsCrossRefDao().deleteAll()
                 folderAndUsersCrossRefDao().deleteAll()
             }
     }
 
-    override suspend fun getFolderDetails(folderId: String): FolderModel =
+    override suspend fun getFolderDetails(
+        folderId: String,
+        userId: String,
+    ): FolderModel =
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .foldersDao()
             .get(folderId)
             .toDomain(permissionsModelMapper)
 
-    override suspend fun getFolderLocation(folderId: String): List<FolderModel> =
+    override suspend fun getFolderLocation(
+        folderId: String,
+        userId: String,
+    ): List<FolderModel> =
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .foldersDao()
             .getFolderLocation(folderId)
             .map { it.toDomain(permissionsModelMapper) }
 
-    override suspend fun getFolderPermissions(folderId: String): List<PermissionModelUi> {
-        val foldersDao = databaseProvider.get(selectedAccountId).foldersDao()
+    override suspend fun getFolderPermissions(
+        folderId: String,
+        userId: String,
+    ): List<PermissionModelUi> {
+        val foldersDao = databaseProvider.get(userId).foldersDao()
         val groupsPermissions = foldersDao.getFolderGroupsPermissions(folderId)
         val usersPermissions = foldersDao.getFolderUsersPermissions(folderId)
         return permissionsModelMapper.map(groupsPermissions, usersPermissions)
@@ -167,8 +192,9 @@ internal class FoldersLocalDataSourceImpl(
         parentFolderId: String,
         itemId: ParentPermissionItemId,
         currentUserServerId: String,
+        userId: String,
     ): List<PermissionModelUi> {
-        val db = databaseProvider.get(selectedAccountId)
+        val db = databaseProvider.get(userId)
         val foldersDao = db.foldersDao()
         val resourcesDao = db.resourcesDao()
 
@@ -209,13 +235,14 @@ internal class FoldersLocalDataSourceImpl(
         searchQuery: String?,
         pageSize: Int,
         enablePlaceholders: Boolean,
+        userId: String,
     ): Flow<PagingData<FolderWithCountAndPath>> {
         val ftsQuery = querySanitizer.sanitize(searchQuery)
         return Pager(
             config = PagingConfig(pageSize = pageSize, enablePlaceholders = enablePlaceholders),
             pagingSourceFactory = {
                 databaseProvider
-                    .get(selectedAccountId)
+                    .get(userId)
                     .paginatedFoldersDao()
                     .getFolderDirectChildFolders(folderId, ftsQuery)
             },
@@ -225,8 +252,9 @@ internal class FoldersLocalDataSourceImpl(
     override suspend fun getSubFoldersForFolder(
         folder: Folder,
         searchQuery: String?,
+        userId: String,
     ): List<FolderWithCountAndPath> {
-        val foldersDao = databaseProvider.get(selectedAccountId).foldersDao()
+        val foldersDao = databaseProvider.get(userId).foldersDao()
         val ftsQuery = querySanitizer.sanitize(searchQuery)
         val folders =
             when (folder) {
@@ -240,11 +268,12 @@ internal class FoldersLocalDataSourceImpl(
         folder: Folder,
         searchQuery: String?,
         pageSize: Int,
+        userId: String,
     ): Flow<PagingData<FolderWithCountAndPath>> =
         Pager(
             config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
             pagingSourceFactory = {
-                val foldersDao = databaseProvider.get(selectedAccountId).paginatedFoldersDao()
+                val foldersDao = databaseProvider.get(userId).paginatedFoldersDao()
                 val ftsQuery = querySanitizer.sanitize(searchQuery)
                 when (folder) {
                     is Folder.Child -> foldersDao.getFolderAllChildFoldersRecursively(folder.folderId, ftsQuery)

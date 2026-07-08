@@ -27,7 +27,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.data.groups.mapper.toDomain
 import com.passbolt.mobile.android.data.groups.mapper.toEntity
 import com.passbolt.mobile.android.database.DatabaseProvider
@@ -45,11 +44,13 @@ import kotlinx.coroutines.flow.map
 internal class GroupsLocalDataSourceImpl(
     private val databaseProvider: DatabaseProvider,
     private val querySanitizer: QuerySanitizer,
-) : GroupsLocalDataSource,
-    SelectedAccountUseCase {
-    override suspend fun getGroups(excludingIds: List<String>): List<Group> =
+) : GroupsLocalDataSource {
+    override suspend fun getGroups(
+        excludingIds: List<String>,
+        userId: String,
+    ): List<Group> =
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .groupsDao()
             .getAllExcluding(excludingIds)
             .map { it.toDomain() }
@@ -57,26 +58,33 @@ internal class GroupsLocalDataSourceImpl(
     override fun getGroupsWithItemsCountPaged(
         searchQuery: String?,
         pageSize: Int,
+        userId: String,
     ): Flow<PagingData<GroupWithItemsCount>> =
         Pager(
             config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
             pagingSourceFactory = {
                 databaseProvider
-                    .get(selectedAccountId)
+                    .get(userId)
                     .paginatedGroupsDao()
                     .getAllWithSharedItemsCount(querySanitizer.sanitize(searchQuery))
             },
         ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
 
-    override suspend fun getGroupWithUsers(groupId: String): GroupWithUsers =
+    override suspend fun getGroupWithUsers(
+        groupId: String,
+        userId: String,
+    ): GroupWithUsers =
         databaseProvider
-            .get(selectedAccountId)
+            .get(userId)
             .groupsDao()
             .getGroupWithUsers(groupId)
             .toDomain()
 
-    override suspend fun upsertGroups(groups: List<GroupWithMembers>) {
-        val database = databaseProvider.get(selectedAccountId)
+    override suspend fun upsertGroups(
+        groups: List<GroupWithMembers>,
+        userId: String,
+    ) {
+        val database = databaseProvider.get(userId)
         val groupsDao = database.groupsDao()
         val usersAndGroupsCrossRefDao = database.usersAndGroupsCrossRefDao()
 

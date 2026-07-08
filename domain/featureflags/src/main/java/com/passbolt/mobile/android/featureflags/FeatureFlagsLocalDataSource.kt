@@ -1,15 +1,3 @@
-package com.passbolt.mobile.android.data.passwordpolicies.datasource.remote
-
-import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.architecture.result.map
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainResult
-import com.passbolt.mobile.android.data.passwordpolicies.datasource.remote.api.PasswordPoliciesApi
-import com.passbolt.mobile.android.data.passwordpolicies.mapper.toDomain
-import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesDataSource
-import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -32,12 +20,17 @@ import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicie
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class PasswordPoliciesRemoteDataSource(
-    private val passwordPoliciesApi: PasswordPoliciesApi,
-    private val responseHandler: ResponseHandler,
-) : PasswordPoliciesDataSource {
-    override suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies> =
-        callWithHandler(responseHandler) { passwordPoliciesApi.getPasswordPolicies().body }
-            .toDomainResult()
-            .map { it.toDomain() }
+
+package com.passbolt.mobile.android.featureflags
+
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.featureflags.model.FeatureFlags
+
+interface FeatureFlagsLocalDataSource {
+    suspend fun getFeatureFlags(userId: String): DomainResult<FeatureFlags>
+
+    suspend fun setFeatureFlags(
+        userId: String,
+        featureFlags: FeatureFlags,
+    )
 }

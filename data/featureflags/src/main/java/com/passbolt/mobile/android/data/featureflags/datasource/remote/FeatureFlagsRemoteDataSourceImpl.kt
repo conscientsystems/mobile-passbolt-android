@@ -21,16 +21,24 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.domain.resourcetypes
+package com.passbolt.mobile.android.data.featureflags.datasource.remote
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
-import java.util.UUID
+import com.passbolt.mobile.android.core.architecture.result.map
+import com.passbolt.mobile.android.core.networking.ResponseHandler
+import com.passbolt.mobile.android.core.networking.callWithHandler
+import com.passbolt.mobile.android.core.networking.toDomainResult
+import com.passbolt.mobile.android.data.featureflags.datasource.remote.api.FeatureFlagsApi
+import com.passbolt.mobile.android.data.featureflags.mapper.toDomain
+import com.passbolt.mobile.android.featureflags.FeatureFlagsRemoteDataSource
+import com.passbolt.mobile.android.featureflags.model.FeatureFlags
 
-interface ResourceTypesDataSource {
-    suspend fun getResourceTypes(): DomainResult<List<ResourceType>>
-
-    suspend fun getResourceTypeIdToSlugMapping(): DomainResult<Map<UUID, String>> = DomainResult.Incomplete.NotCached
-
-    suspend fun setResourceTypes(resourceTypes: List<ResourceType>) {}
+internal class FeatureFlagsRemoteDataSourceImpl(
+    private val featureFlagsApi: FeatureFlagsApi,
+    private val responseHandler: ResponseHandler,
+) : FeatureFlagsRemoteDataSource {
+    override suspend fun getFeatureFlags(): DomainResult<FeatureFlags> =
+        callWithHandler(responseHandler) { featureFlagsApi.getSettings().body }
+            .toDomainResult()
+            .map { it.toDomain() }
 }

@@ -27,7 +27,7 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.featureflags.model.FeatureFlags
 
 interface FeatureFlagsRepository {
-    suspend fun getFeatureFlags(): DomainResult<FeatureFlags>
+    suspend fun getFeatureFlags(userId: String): DomainResult<FeatureFlags>
 
-    suspend fun refreshFeatureFlags(): DomainResult<FeatureFlags>
+    suspend fun refreshFeatureFlags(userId: String): DomainResult<FeatureFlags>
 }

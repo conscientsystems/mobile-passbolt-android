@@ -30,23 +30,41 @@ import com.passbolt.mobile.android.domain.metadata.model.ParsedMetadataKey
 import com.passbolt.mobile.android.domain.metadata.model.TrustedMetadataKey
 
 interface MetadataRepository {
-    suspend fun getMetadataKeysSettings(): MetadataKeysSettings
+    suspend fun getMetadataKeysSettings(userId: String): MetadataKeysSettings
 
-    suspend fun saveMetadataKeysSettings(metadataKeysSettings: MetadataKeysSettings)
+    suspend fun saveMetadataKeysSettings(
+        metadataKeysSettings: MetadataKeysSettings,
+        userId: String,
+    )
 
-    suspend fun getMetadataTypesSettings(): MetadataTypesSettings
+    suspend fun getMetadataTypesSettings(userId: String): MetadataTypesSettings
 
-    suspend fun saveMetadataTypesSettings(metadataTypesSettings: MetadataTypesSettings)
+    suspend fun saveMetadataTypesSettings(
+        metadataTypesSettings: MetadataTypesSettings,
+        userId: String,
+    )
 
-    suspend fun getTrustedMetadataKey(): TrustedMetadataKey?
+    suspend fun getTrustedMetadataKey(userId: String): TrustedMetadataKey?
 
-    suspend fun saveTrustedMetadataKey(trustedMetadataKey: TrustedMetadataKey)
+    suspend fun saveTrustedMetadataKey(
+        trustedMetadataKey: TrustedMetadataKey,
+        userId: String,
+    )
 
-    suspend fun deleteTrustedMetadataKey()
+    suspend fun deleteTrustedMetadataKey(userId: String)
 
-    suspend fun getLocalMetadataKeys(purpose: MetadataKeyPurpose): List<ParsedMetadataKey>
+    suspend fun getLocalMetadataKeys(
+        purpose: MetadataKeyPurpose,
+        userId: String,
+    ): List<ParsedMetadataKey>
 
-    suspend fun getLocalMetadataKey(metadataKeyId: String): ParsedMetadataKey
+    suspend fun getLocalMetadataKey(
+        metadataKeyId: String,
+        userId: String,
+    ): ParsedMetadataKey
 
-    suspend fun rebuildMetadataKeysTables(metadataKeys: List<ParsedMetadataKey>)
+    suspend fun rebuildMetadataKeysTables(
+        metadataKeys: List<ParsedMetadataKey>,
+        userId: String,
+    )
 }

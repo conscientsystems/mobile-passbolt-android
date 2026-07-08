@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.core.resourcetypes.usecase.db
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRepository
 import com.passbolt.mobile.android.domain.resourcetypes.mapper.toUiModel
@@ -31,12 +32,15 @@ import com.passbolt.mobile.android.ui.ResourceTypeModel
 
 class GetLocalResourceTypesUseCase(
     private val resourceTypesRepository: ResourceTypesRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, GetLocalResourceTypesUseCase.Output> {
-    override suspend fun execute(input: Unit): Output =
-        when (val result = resourceTypesRepository.getResourceTypes()) {
+    override suspend fun execute(input: Unit): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = resourceTypesRepository.getResourceTypes(userId)) {
             is DomainResult.Finished -> Output(result.value.map { it.toUiModel() })
             is DomainResult.Incomplete -> Output(emptyList())
         }
+    }
 
     data class Output(
         val resourceTypes: List<ResourceTypeModel>,

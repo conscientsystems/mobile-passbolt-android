@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.domain.passwordexpiry.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
@@ -41,6 +42,7 @@ import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.whenever
 import kotlin.test.assertIs
 
 class PasswordExpiryPoliciesInteractorTest : KoinTest {
@@ -52,6 +54,7 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
                 listOf(
                     module {
                         single { mock<PasswordExpiryRepository>() }
+                        single { mock<GetSelectedAccountUseCase>() }
                         factoryOf(::PasswordExpiryPoliciesInteractor)
                     },
                 ),
@@ -59,12 +62,16 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
         }
 
     private lateinit var repository: PasswordExpiryRepository
+    private lateinit var getSelectedAccountUseCase: GetSelectedAccountUseCase
     private lateinit var interactor: PasswordExpiryPoliciesInteractor
 
     @Before
     fun setUp() {
         repository = get()
+        getSelectedAccountUseCase = get()
         interactor = get()
+        whenever(getSelectedAccountUseCase.execute(Unit))
+            .thenReturn(GetSelectedAccountUseCase.Output(USER_ID))
     }
 
     @Test
@@ -72,7 +79,7 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
         runTest {
             val settings = PasswordExpirySettings.defaults()
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(DomainResult.Finished(settings))
+                onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(DomainResult.Finished(settings))
             }
 
             val output = interactor.fetchAndSavePasswordExpiryPolicies()
@@ -86,7 +93,7 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
         runTest {
             val failure = DomainResult.Incomplete.Unauthorized
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(failure)
+                onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordExpiryPolicies()
@@ -103,7 +110,7 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
             val providers = emptyList<AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider?>()
             val failure = DomainResult.Incomplete.MfaRequired(providers)
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(failure)
+                onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordExpiryPolicies()
@@ -119,7 +126,7 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
         runTest {
             val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(failure)
+                onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordExpiryPolicies()
@@ -133,7 +140,7 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
         runTest {
             val failure = DomainResult.Incomplete.NotCached
             repository.stub {
-                onBlocking { getPasswordExpirySettings() }.thenReturn(failure)
+                onBlocking { getPasswordExpirySettings(USER_ID) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordExpiryPolicies()
@@ -141,4 +148,8 @@ class PasswordExpiryPoliciesInteractorTest : KoinTest {
             assertThat(output).isEqualTo(PasswordExpiryPoliciesInteractor.Output.Failure.FetchFailure(failure))
             assertThat(output.authenticationState).isEqualTo(AuthenticationState.Authenticated)
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

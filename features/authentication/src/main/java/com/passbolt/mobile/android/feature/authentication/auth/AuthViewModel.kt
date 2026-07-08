@@ -66,6 +66,9 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Sh
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.AUTHENTICATION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_CHANGED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_DECRYPT_ERROR
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT_PERMANENT
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_NO_CRYPTO_CIPHER
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_INVALID_SIGNATURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_TOKEN_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_VERIFICATION_FAILURE
@@ -542,8 +545,10 @@ class AuthViewModel(
     private fun biometricAuthenticationError(error: BiometricAuthError) {
         val errorType =
             when (error) {
-                BiometricAuthError.NO_CRYPTO_CIPHER -> AuthSideEffect.SnackbarErrorType.BIOMETRIC_NO_CRYPTO_CIPHER
-                else -> AUTHENTICATION_ERROR
+                BiometricAuthError.ERROR_LOCKOUT -> BIOMETRIC_LOCKOUT
+                BiometricAuthError.ERROR_LOCKOUT_PERMANENT -> BIOMETRIC_LOCKOUT_PERMANENT
+                BiometricAuthError.NO_CRYPTO_CIPHER -> BIOMETRIC_NO_CRYPTO_CIPHER
+                BiometricAuthError.GENERIC -> BIOMETRIC_DECRYPT_ERROR
             }
         emitSideEffect(ShowErrorSnackbar(errorType))
     }

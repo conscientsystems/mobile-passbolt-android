@@ -21,24 +21,11 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.data.resourcetypes.datasource.remote
+package com.passbolt.mobile.android.domain.passwordpolicies
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.architecture.result.map
-import com.passbolt.mobile.android.core.networking.ResponseHandler
-import com.passbolt.mobile.android.core.networking.callWithHandler
-import com.passbolt.mobile.android.core.networking.toDomainResult
-import com.passbolt.mobile.android.data.resourcetypes.datasource.remote.api.ResourceTypesApi
-import com.passbolt.mobile.android.data.resourcetypes.mapper.toDomain
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
-import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
+import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies
 
-internal class ResourceTypesRemoteDataSource(
-    private val resourceTypesApi: ResourceTypesApi,
-    private val responseHandler: ResponseHandler,
-) : ResourceTypesDataSource {
-    override suspend fun getResourceTypes(): DomainResult<List<ResourceType>> =
-        callWithHandler(responseHandler) { resourceTypesApi.getResourceTypes().body }
-            .toDomainResult()
-            .map { it.toDomain() }
+interface PasswordPoliciesRemoteDataSource {
+    suspend fun getPasswordPolicies(): DomainResult<PasswordPolicies>
 }

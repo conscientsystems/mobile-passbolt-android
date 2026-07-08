@@ -24,26 +24,30 @@
 package com.passbolt.mobile.android.data.passwordexpiry
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryLocalDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRemoteDataSource
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRepository
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 
 internal class PasswordExpiryRepositoryImpl(
-    private val memoryDataSource: PasswordExpiryDataSource,
-    private val remoteDataSource: PasswordExpiryDataSource,
+    private val memoryDataSource: PasswordExpiryLocalDataSource,
+    private val remoteDataSource: PasswordExpiryRemoteDataSource,
 ) : PasswordExpiryRepository {
-    override suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings> =
-        when (val memory = memoryDataSource.getPasswordExpirySettings()) {
+    override suspend fun getPasswordExpirySettings(userId: String): DomainResult<PasswordExpirySettings> =
+        when (val memory = memoryDataSource.getPasswordExpirySettings(userId)) {
             is DomainResult.Finished -> memory
             is DomainResult.Incomplete ->
                 remoteDataSource.getPasswordExpirySettings().also {
                     if (it is DomainResult.Finished) {
-                        setPasswordExpirySettings(it.value)
+                        setPasswordExpirySettings(userId, it.value)
                     }
                 }
         }
 
-    override suspend fun setPasswordExpirySettings(passwordExpirySettings: PasswordExpirySettings) {
-        memoryDataSource.setPasswordExpirySettings(passwordExpirySettings)
+    override suspend fun setPasswordExpirySettings(
+        userId: String,
+        passwordExpirySettings: PasswordExpirySettings,
+    ) {
+        memoryDataSource.setPasswordExpirySettings(userId, passwordExpirySettings)
     }
 }

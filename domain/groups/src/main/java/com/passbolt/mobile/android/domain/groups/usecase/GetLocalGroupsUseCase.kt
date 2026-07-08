@@ -24,19 +24,23 @@
 package com.passbolt.mobile.android.domain.groups.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.groups.GroupsRepository
 import com.passbolt.mobile.android.domain.groups.mapper.toUiModel
 import com.passbolt.mobile.android.ui.GroupModel
 
 class GetLocalGroupsUseCase(
     private val groupsRepository: GroupsRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<GetLocalGroupsUseCase.Input, GetLocalGroupsUseCase.Output> {
-    override suspend fun execute(input: Input): Output =
-        Output(
+    override suspend fun execute(input: Input): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return Output(
             groupsRepository
-                .getGroups(input.excludeByIds)
+                .getGroups(input.excludeByIds, userId)
                 .map { it.toUiModel() },
         )
+    }
 
     data class Input(
         val excludeByIds: List<String> = emptyList(),

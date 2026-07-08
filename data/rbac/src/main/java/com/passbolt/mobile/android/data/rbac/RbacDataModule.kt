@@ -24,28 +24,21 @@
 package com.passbolt.mobile.android.data.rbac
 
 import com.passbolt.mobile.android.core.networking.RestService
-import com.passbolt.mobile.android.data.rbac.datasource.local.RbacLocalDataSource
-import com.passbolt.mobile.android.data.rbac.datasource.remote.RbacRemoteDataSource
+import com.passbolt.mobile.android.data.rbac.datasource.local.RbacLocalDataSourceImpl
+import com.passbolt.mobile.android.data.rbac.datasource.remote.RbacRemoteDataSourceImpl
 import com.passbolt.mobile.android.data.rbac.datasource.remote.api.RbacApi
-import com.passbolt.mobile.android.domain.rbac.RbacDataSource
+import com.passbolt.mobile.android.domain.rbac.RbacLocalDataSource
+import com.passbolt.mobile.android.domain.rbac.RbacRemoteDataSource
 import com.passbolt.mobile.android.domain.rbac.RbacRepository
-import org.koin.core.qualifier.named
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
-
-private val DATA_SOURCE_LOCAL = named("localRbacDataSource")
-private val DATA_SOURCE_REMOTE = named("remoteRbacDataSource")
 
 val rbacDataModule =
     module {
         single { get<RestService>().service(RbacApi::class.java) }
 
-        single<RbacDataSource>(DATA_SOURCE_LOCAL) { RbacLocalDataSource(get()) }
-        single<RbacDataSource>(DATA_SOURCE_REMOTE) { RbacRemoteDataSource(get(), get()) }
-
-        single<RbacRepository> {
-            RbacRepositoryImpl(
-                localDataSource = get(DATA_SOURCE_LOCAL),
-                remoteDataSource = get(DATA_SOURCE_REMOTE),
-            )
-        }
+        singleOf(::RbacLocalDataSourceImpl) bind RbacLocalDataSource::class
+        singleOf(::RbacRemoteDataSourceImpl) bind RbacRemoteDataSource::class
+        singleOf(::RbacRepositoryImpl) bind RbacRepository::class
     }

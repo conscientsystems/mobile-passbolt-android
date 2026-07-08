@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.domain.passwordpolicies.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRepository
@@ -39,8 +40,10 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.whenever
 
 class GetPasswordPoliciesUseCaseTest : KoinTest {
     @get:Rule
@@ -51,6 +54,7 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
                 listOf(
                     module {
                         single { mock<PasswordPoliciesRepository>() }
+                        single { mock<GetSelectedAccountUseCase>() }
                         factoryOf(::GetPasswordPoliciesUseCase)
                     },
                 ),
@@ -58,11 +62,14 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
         }
 
     private lateinit var repository: PasswordPoliciesRepository
+    private lateinit var getSelectedAccountUseCase: GetSelectedAccountUseCase
     private lateinit var useCase: GetPasswordPoliciesUseCase
 
     @Before
     fun setUp() {
         repository = get()
+        getSelectedAccountUseCase = get()
+        whenever(getSelectedAccountUseCase.execute(Unit)).thenReturn(GetSelectedAccountUseCase.Output("userId"))
         useCase = get()
     }
 
@@ -71,7 +78,7 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
         runTest {
             val policies = PasswordPolicies.defaults()
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies))
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(DomainResult.Finished(policies))
             }
 
             val result = useCase.execute(Unit)
@@ -83,7 +90,7 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
     fun `failure falls back to defaults mapped to ui model`() =
         runTest {
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, null))
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, null))
             }
 
             val result = useCase.execute(Unit)
@@ -95,7 +102,7 @@ class GetPasswordPoliciesUseCaseTest : KoinTest {
     fun `notcached failure also falls back to defaults`() =
         runTest {
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Incomplete.NotCached)
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(DomainResult.Incomplete.NotCached)
             }
 
             val result = useCase.execute(Unit)

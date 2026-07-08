@@ -38,19 +38,26 @@ internal class GroupsRepositoryImpl(
     private val localDataSource: GroupsLocalDataSource,
     private val remoteDataSource: GroupsRemoteDataSource,
 ) : GroupsRepository {
-    override suspend fun getGroups(excludingIds: List<String>): List<Group> = localDataSource.getGroups(excludingIds)
+    override suspend fun getGroups(
+        excludingIds: List<String>,
+        userId: String,
+    ): List<Group> = localDataSource.getGroups(excludingIds, userId)
 
     override fun getGroupsWithItemsCountPaged(
         searchQuery: String?,
         pageSize: Int,
-    ): Flow<PagingData<GroupWithItemsCount>> = localDataSource.getGroupsWithItemsCountPaged(searchQuery, pageSize)
+        userId: String,
+    ): Flow<PagingData<GroupWithItemsCount>> = localDataSource.getGroupsWithItemsCountPaged(searchQuery, pageSize, userId)
 
-    override suspend fun getGroupWithUsers(groupId: String): GroupWithUsers = localDataSource.getGroupWithUsers(groupId)
+    override suspend fun getGroupWithUsers(
+        groupId: String,
+        userId: String,
+    ): GroupWithUsers = localDataSource.getGroupWithUsers(groupId, userId)
 
-    override suspend fun refreshGroups(): DomainResult<List<GroupWithMembers>> =
+    override suspend fun refreshGroups(userId: String): DomainResult<List<GroupWithMembers>> =
         remoteDataSource.getGroups().also {
             if (it is DomainResult.Finished) {
-                localDataSource.upsertGroups(it.value)
+                localDataSource.upsertGroups(it.value, userId)
             }
         }
 }

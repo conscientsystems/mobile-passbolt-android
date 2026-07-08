@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 import com.passbolt.mobile.android.domain.folders.model.ParentPermissionItemId
 import com.passbolt.mobile.android.ui.PermissionModelUi
@@ -35,6 +36,7 @@ typealias ItemIdFolderId = ParentPermissionItemId.FolderId
 class GetLocalParentFolderPermissionsToApplyToNewItemUseCase(
     private val foldersRepository: FoldersRepository,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<
         GetLocalParentFolderPermissionsToApplyToNewItemUseCase.Input,
         GetLocalParentFolderPermissionsToApplyToNewItemUseCase.Output,
@@ -46,11 +48,13 @@ class GetLocalParentFolderPermissionsToApplyToNewItemUseCase(
      */
     override suspend fun execute(input: Input): Output {
         val currentUserServerId = requireNotNull(getSelectedAccountDataUseCase.execute(Unit).serverId)
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         return Output(
             foldersRepository.getParentFolderPermissionsToApplyToNewItem(
                 input.parentFolderId,
                 input.itemId,
                 currentUserServerId,
+                userId,
             ),
         )
     }

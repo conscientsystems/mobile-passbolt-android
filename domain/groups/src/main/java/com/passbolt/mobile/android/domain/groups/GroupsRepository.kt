@@ -32,14 +32,21 @@ import com.passbolt.mobile.android.domain.groups.model.GroupWithUsers
 import kotlinx.coroutines.flow.Flow
 
 interface GroupsRepository {
-    suspend fun getGroups(excludingIds: List<String>): List<Group>
+    suspend fun getGroups(
+        excludingIds: List<String>,
+        userId: String,
+    ): List<Group>
 
     fun getGroupsWithItemsCountPaged(
         searchQuery: String?,
         pageSize: Int,
+        userId: String,
     ): Flow<PagingData<GroupWithItemsCount>>
 
-    suspend fun getGroupWithUsers(groupId: String): GroupWithUsers
+    suspend fun getGroupWithUsers(
+        groupId: String,
+        userId: String,
+    ): GroupWithUsers
 
-    suspend fun refreshGroups(): DomainResult<List<GroupWithMembers>>
+    suspend fun refreshGroups(userId: String): DomainResult<List<GroupWithMembers>>
 }

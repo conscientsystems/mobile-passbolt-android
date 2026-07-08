@@ -24,20 +24,21 @@
 package com.passbolt.mobile.android.data.rbac
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.rbac.RbacDataSource
+import com.passbolt.mobile.android.domain.rbac.RbacLocalDataSource
+import com.passbolt.mobile.android.domain.rbac.RbacRemoteDataSource
 import com.passbolt.mobile.android.domain.rbac.RbacRepository
 import com.passbolt.mobile.android.domain.rbac.model.Rbac
 
 internal class RbacRepositoryImpl(
-    private val localDataSource: RbacDataSource,
-    private val remoteDataSource: RbacDataSource,
+    private val localDataSource: RbacLocalDataSource,
+    private val remoteDataSource: RbacRemoteDataSource,
 ) : RbacRepository {
-    override suspend fun getRbac(): DomainResult<Rbac> = localDataSource.getRbac()
+    override suspend fun getRbac(userId: String): DomainResult<Rbac> = localDataSource.getRbac(userId)
 
-    override suspend fun refreshRbac(): DomainResult<Rbac> =
+    override suspend fun refreshRbac(userId: String): DomainResult<Rbac> =
         remoteDataSource.getRbac().also {
             if (it is DomainResult.Finished) {
-                localDataSource.setRbac(it.value)
+                localDataSource.setRbac(userId, it.value)
             }
         }
 }

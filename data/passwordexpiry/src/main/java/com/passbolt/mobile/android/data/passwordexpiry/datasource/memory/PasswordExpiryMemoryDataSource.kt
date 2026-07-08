@@ -1,8 +1,7 @@
 package com.passbolt.mobile.android.data.passwordexpiry.datasource.memory
 
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryDataSource
+import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryLocalDataSource
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 
 /**
@@ -27,20 +26,18 @@ import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySet
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-internal class PasswordExpiryMemoryDataSource(
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : PasswordExpiryDataSource {
+internal class PasswordExpiryMemoryDataSource : PasswordExpiryLocalDataSource {
     private val perAccountSettings = hashMapOf<String, PasswordExpirySettings>()
 
-    override suspend fun getPasswordExpirySettings(): DomainResult<PasswordExpirySettings> {
-        val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        return perAccountSettings[selectedAccount]
+    override suspend fun getPasswordExpirySettings(userId: String): DomainResult<PasswordExpirySettings> =
+        perAccountSettings[userId]
             ?.let { DomainResult.Finished(it) }
             ?: DomainResult.Incomplete.NotCached
-    }
 
-    override suspend fun setPasswordExpirySettings(passwordExpirySettings: PasswordExpirySettings) {
-        val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        perAccountSettings[selectedAccount] = passwordExpirySettings
+    override suspend fun setPasswordExpirySettings(
+        userId: String,
+        passwordExpirySettings: PasswordExpirySettings,
+    ) {
+        perAccountSettings[userId] = passwordExpirySettings
     }
 }

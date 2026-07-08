@@ -25,17 +25,18 @@ package com.passbolt.mobile.android.data.resourcetypes
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.resourcetypes.RefreshResourceTypesRepository
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesLocalDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRemoteDataSource
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 
 internal class RefreshResourceTypesRepositoryImpl(
-    private val localDataSource: ResourceTypesDataSource,
-    private val remoteDataSource: ResourceTypesDataSource,
+    private val localDataSource: ResourceTypesLocalDataSource,
+    private val remoteDataSource: ResourceTypesRemoteDataSource,
 ) : RefreshResourceTypesRepository {
-    override suspend fun refreshResourceTypes(): DomainResult<List<ResourceType>> =
+    override suspend fun refreshResourceTypes(userId: String): DomainResult<List<ResourceType>> =
         remoteDataSource.getResourceTypes().also {
             if (it is DomainResult.Finished) {
-                localDataSource.setResourceTypes(it.value)
+                localDataSource.setResourceTypes(userId, it.value)
             }
         }
 }

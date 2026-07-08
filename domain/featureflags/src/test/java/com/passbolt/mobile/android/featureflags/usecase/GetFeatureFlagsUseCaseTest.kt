@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.featureflags.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
@@ -41,6 +42,7 @@ import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.whenever
 
 class GetFeatureFlagsUseCaseTest : KoinTest {
     @get:Rule
@@ -51,6 +53,7 @@ class GetFeatureFlagsUseCaseTest : KoinTest {
                 listOf(
                     module {
                         single { mock<FeatureFlagsRepository>() }
+                        single { mock<GetSelectedAccountUseCase>() }
                         factoryOf(::GetFeatureFlagsUseCase)
                     },
                 ),
@@ -58,11 +61,14 @@ class GetFeatureFlagsUseCaseTest : KoinTest {
         }
 
     private lateinit var repository: FeatureFlagsRepository
+    private lateinit var getSelectedAccountUseCase: GetSelectedAccountUseCase
     private lateinit var useCase: GetFeatureFlagsUseCase
 
     @Before
     fun setUp() {
         repository = get()
+        getSelectedAccountUseCase = get()
+        whenever(getSelectedAccountUseCase.execute(Unit)).thenReturn(GetSelectedAccountUseCase.Output(USER_ID))
         useCase = get()
     }
 
@@ -75,7 +81,7 @@ class GetFeatureFlagsUseCaseTest : KoinTest {
                     areFoldersAvailable = true,
                 )
             repository.stub {
-                onBlocking { getFeatureFlags() }.thenReturn(DomainResult.Finished(featureFlags))
+                onBlocking { getFeatureFlags(USER_ID) }.thenReturn(DomainResult.Finished(featureFlags))
             }
 
             val result = useCase.execute(Unit)
@@ -87,7 +93,7 @@ class GetFeatureFlagsUseCaseTest : KoinTest {
     fun `failure falls back to defaults mapped to feature flags model`() =
         runTest {
             repository.stub {
-                onBlocking { getFeatureFlags() }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, null))
+                onBlocking { getFeatureFlags(USER_ID) }.thenReturn(DomainResult.Incomplete.Error(UNKNOWN, null))
             }
 
             val result = useCase.execute(Unit)
@@ -99,11 +105,15 @@ class GetFeatureFlagsUseCaseTest : KoinTest {
     fun `notcached failure also falls back to defaults`() =
         runTest {
             repository.stub {
-                onBlocking { getFeatureFlags() }.thenReturn(DomainResult.Incomplete.NotCached)
+                onBlocking { getFeatureFlags(USER_ID) }.thenReturn(DomainResult.Incomplete.NotCached)
             }
 
             val result = useCase.execute(Unit)
 
             assertThat(result).isEqualTo(GetFeatureFlagsUseCase.Output(FeatureFlags.defaults().toFeatureFlagsModel()))
         }
+
+    private companion object {
+        const val USER_ID = "user-id"
+    }
 }

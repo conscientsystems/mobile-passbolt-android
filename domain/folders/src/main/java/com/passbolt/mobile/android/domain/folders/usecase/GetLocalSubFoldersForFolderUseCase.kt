@@ -24,14 +24,19 @@
 package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import com.passbolt.mobile.android.ui.Folder
 
 class GetLocalSubFoldersForFolderUseCase(
     private val foldersRepository: FoldersRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<GetLocalSubFoldersForFolderUseCase.Input, GetLocalSubFoldersForFolderUseCase.Output> {
-    override suspend fun execute(input: Input): Output = Output(foldersRepository.getSubFoldersForFolder(input.folder, input.searchQuery))
+    override suspend fun execute(input: Input): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return Output(foldersRepository.getSubFoldersForFolder(input.folder, input.searchQuery, userId))
+    }
 
     data class Input(
         val folder: Folder,

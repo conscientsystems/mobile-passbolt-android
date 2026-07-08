@@ -21,6 +21,7 @@ import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferences
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
+import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationError
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationSuccess
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.ConnectToExistingAccount
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.DismissNoAccountExplanation
@@ -36,6 +37,8 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Hi
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.NavigateToAccountList
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.ShowErrorSnackbar
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT_PERMANENT
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.WRONG_PASSPHRASE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthState.RefreshAuthReason.PASSPHRASE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthState.RefreshAuthReason.SESSION
@@ -48,6 +51,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKey
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyPassphraseUseCase
+import com.passbolt.mobile.android.ui.BiometricAuthError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -547,6 +551,24 @@ class AuthViewModelTest : KoinTest {
             }
 
             assertThat(viewModel.viewState.value.passphrase).isEmpty()
+        }
+
+    @Test
+    fun `biometric lockout errors show dedicated messages`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AuthConfig.Startup, USER_ID, AppContext.APP) })
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(BiometricAuthenticationError(BiometricAuthError.ERROR_LOCKOUT))
+                val lockout = awaitItem()
+                assertIs<ShowErrorSnackbar>(lockout)
+                assertThat(lockout.kind).isEqualTo(BIOMETRIC_LOCKOUT)
+
+                viewModel.onIntent(BiometricAuthenticationError(BiometricAuthError.ERROR_LOCKOUT_PERMANENT))
+                val permanentLockout = awaitItem()
+                assertIs<ShowErrorSnackbar>(permanentLockout)
+                assertThat(permanentLockout.kind).isEqualTo(BIOMETRIC_LOCKOUT_PERMANENT)
+            }
         }
 
     private companion object {

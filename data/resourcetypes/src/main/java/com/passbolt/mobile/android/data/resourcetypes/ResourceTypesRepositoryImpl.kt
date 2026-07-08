@@ -24,16 +24,16 @@
 package com.passbolt.mobile.android.data.resourcetypes
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesDataSource
+import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesLocalDataSource
 import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRepository
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType
 import java.util.UUID
 
 internal class ResourceTypesRepositoryImpl(
-    private val localDataSource: ResourceTypesDataSource,
+    private val localDataSource: ResourceTypesLocalDataSource,
 ) : ResourceTypesRepository {
-    override suspend fun getResourceTypes(): DomainResult<List<ResourceType>> = localDataSource.getResourceTypes()
+    override suspend fun getResourceTypes(userId: String): DomainResult<List<ResourceType>> = localDataSource.getResourceTypes(userId)
 
-    override suspend fun getResourceTypeIdToSlugMapping(): DomainResult<Map<UUID, String>> =
-        localDataSource.getResourceTypeIdToSlugMapping()
+    override suspend fun getResourceTypeIdToSlugMapping(userId: String): DomainResult<Map<UUID, String>> =
+        localDataSource.getResourceTypeIdToSlugMapping(userId)
 }

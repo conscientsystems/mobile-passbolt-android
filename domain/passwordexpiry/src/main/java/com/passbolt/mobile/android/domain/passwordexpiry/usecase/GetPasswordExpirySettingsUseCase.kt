@@ -24,16 +24,20 @@
 package com.passbolt.mobile.android.domain.passwordexpiry.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRepository
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 
 class GetPasswordExpirySettingsUseCase(
     private val passwordExpiryRepository: PasswordExpiryRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, PasswordExpirySettings> {
-    override suspend fun execute(input: Unit): PasswordExpirySettings =
-        when (val result = passwordExpiryRepository.getPasswordExpirySettings()) {
+    override suspend fun execute(input: Unit): PasswordExpirySettings {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = passwordExpiryRepository.getPasswordExpirySettings(userId)) {
             is DomainResult.Finished -> result.value
             is DomainResult.Incomplete -> PasswordExpirySettings.defaults()
         }
+    }
 }

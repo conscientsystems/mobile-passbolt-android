@@ -24,10 +24,15 @@
 package com.passbolt.mobile.android.domain.metadata.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.MetadataRepository
 
 class DeleteTrustedMetadataKeyUseCase(
     private val metadataRepository: MetadataRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, Unit> {
-    override suspend fun execute(input: Unit) = metadataRepository.deleteTrustedMetadataKey()
+    override suspend fun execute(input: Unit) {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        metadataRepository.deleteTrustedMetadataKey(userId)
+    }
 }

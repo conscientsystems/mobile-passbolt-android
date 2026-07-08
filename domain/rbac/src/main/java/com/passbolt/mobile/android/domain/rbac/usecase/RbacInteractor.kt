@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.domain.rbac.usecase
 
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.rbac.RbacRepository
 import com.passbolt.mobile.android.domain.rbac.mapper.toUiModel
@@ -30,12 +31,15 @@ import com.passbolt.mobile.android.ui.RbacModel
 
 class RbacInteractor(
     private val rbacRepository: RbacRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
-    suspend fun fetchAndSaveRbacRulesFlags(): Output =
-        when (val result = rbacRepository.refreshRbac()) {
+    suspend fun fetchAndSaveRbacRulesFlags(): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = rbacRepository.refreshRbac(userId)) {
             is DomainResult.Incomplete -> Output.Failure
             is DomainResult.Finished -> Output.Success(result.value.toUiModel())
         }
+    }
 
     sealed class Output {
         data class Success(

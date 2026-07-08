@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.domain.passwordpolicies.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
@@ -41,6 +42,7 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
@@ -56,6 +58,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
                     module {
                         single { mock<PasswordPoliciesRepository>() }
                         single { mock<PasswordPoliciesValidator>() }
+                        single { mock<GetSelectedAccountUseCase>() }
                         factoryOf(::PasswordPoliciesInteractor)
                     },
                 ),
@@ -64,12 +67,15 @@ class PasswordPoliciesInteractorTest : KoinTest {
 
     private lateinit var repository: PasswordPoliciesRepository
     private lateinit var validator: PasswordPoliciesValidator
+    private lateinit var getSelectedAccountUseCase: GetSelectedAccountUseCase
     private lateinit var interactor: PasswordPoliciesInteractor
 
     @Before
     fun setUp() {
         repository = get()
         validator = get()
+        getSelectedAccountUseCase = get()
+        whenever(getSelectedAccountUseCase.execute(Unit)).thenReturn(GetSelectedAccountUseCase.Output("userId"))
         interactor = get()
     }
 
@@ -78,7 +84,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
         runTest {
             val policies = PasswordPolicies.defaults()
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies))
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(DomainResult.Finished(policies))
             }
             whenever(validator.arePasswordPoliciesValid(policies)).thenReturn(true)
 
@@ -93,7 +99,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
         runTest {
             val policies = PasswordPolicies.defaults()
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(DomainResult.Finished(policies))
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(DomainResult.Finished(policies))
             }
             whenever(validator.arePasswordPoliciesValid(policies)).thenReturn(false)
 
@@ -108,7 +114,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
         runTest {
             val failure = DomainResult.Incomplete.Unauthorized
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(failure)
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordPolicies()
@@ -125,7 +131,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
             val providers = emptyList<AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider?>()
             val failure = DomainResult.Incomplete.MfaRequired(providers)
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(failure)
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordPolicies()
@@ -141,7 +147,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
         runTest {
             val failure = DomainResult.Incomplete.Error(UNKNOWN, "boom")
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(failure)
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordPolicies()
@@ -155,7 +161,7 @@ class PasswordPoliciesInteractorTest : KoinTest {
         runTest {
             val failure = DomainResult.Incomplete.NotCached
             repository.stub {
-                onBlocking { getPasswordPolicies() }.thenReturn(failure)
+                onBlocking { getPasswordPolicies(any()) }.thenReturn(failure)
             }
 
             val output = interactor.fetchAndSavePasswordPolicies()

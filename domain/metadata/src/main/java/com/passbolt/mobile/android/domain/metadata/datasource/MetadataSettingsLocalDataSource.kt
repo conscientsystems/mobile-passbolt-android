@@ -28,17 +28,26 @@ import com.passbolt.mobile.android.domain.metadata.model.MetadataTypesSettings
 import com.passbolt.mobile.android.domain.metadata.model.TrustedMetadataKey
 
 interface MetadataSettingsLocalDataSource {
-    suspend fun getMetadataKeysSettings(): MetadataKeysSettings
+    suspend fun getMetadataKeysSettings(userId: String): MetadataKeysSettings
 
-    suspend fun saveMetadataKeysSettings(metadataKeysSettings: MetadataKeysSettings)
+    suspend fun saveMetadataKeysSettings(
+        metadataKeysSettings: MetadataKeysSettings,
+        userId: String,
+    )
 
-    suspend fun getMetadataTypesSettings(): MetadataTypesSettings
+    suspend fun getMetadataTypesSettings(userId: String): MetadataTypesSettings
 
-    suspend fun saveMetadataTypesSettings(metadataTypesSettings: MetadataTypesSettings)
+    suspend fun saveMetadataTypesSettings(
+        metadataTypesSettings: MetadataTypesSettings,
+        userId: String,
+    )
 
-    suspend fun getTrustedMetadataKey(): TrustedMetadataKey?
+    suspend fun getTrustedMetadataKey(userId: String): TrustedMetadataKey?
 
-    suspend fun saveTrustedMetadataKey(trustedMetadataKey: TrustedMetadataKey)
+    suspend fun saveTrustedMetadataKey(
+        trustedMetadataKey: TrustedMetadataKey,
+        userId: String,
+    )
 
-    suspend fun deleteTrustedMetadataKey()
+    suspend fun deleteTrustedMetadataKey(userId: String)
 }

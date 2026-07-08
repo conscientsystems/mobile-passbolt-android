@@ -50,30 +50,58 @@ interface FoldersRepository {
         parentFolderId: String?,
     ): DomainResult<FolderModelWithAttributes>
 
-    suspend fun addFolder(folder: FolderModel)
+    suspend fun addFolder(
+        folder: FolderModel,
+        userId: String,
+    )
 
-    suspend fun upsertFolders(folders: List<FolderModel>)
+    suspend fun upsertFolders(
+        folders: List<FolderModel>,
+        userId: String,
+    )
 
-    suspend fun setAllFoldersUpdateState(updateState: FolderUpdateState)
+    suspend fun setAllFoldersUpdateState(
+        updateState: FolderUpdateState,
+        userId: String,
+    )
 
-    suspend fun removeFoldersWithUpdateState(updateState: FolderUpdateState)
+    suspend fun removeFoldersWithUpdateState(
+        updateState: FolderUpdateState,
+        userId: String,
+    )
 
-    suspend fun updateFoldersIsShared(currentUserServerId: String)
+    suspend fun updateFoldersIsShared(
+        currentUserServerId: String,
+        userId: String,
+    )
 
-    suspend fun addFolderPermissions(foldersWithAttributes: List<FolderModelWithAttributes>)
+    suspend fun addFolderPermissions(
+        foldersWithAttributes: List<FolderModelWithAttributes>,
+        userId: String,
+    )
 
-    suspend fun clearFolderPermissions()
+    suspend fun clearFolderPermissions(userId: String)
 
-    suspend fun getFolderDetails(folderId: String): FolderModel
+    suspend fun getFolderDetails(
+        folderId: String,
+        userId: String,
+    ): FolderModel
 
-    suspend fun getFolderLocation(folderId: String): List<FolderModel>
+    suspend fun getFolderLocation(
+        folderId: String,
+        userId: String,
+    ): List<FolderModel>
 
-    suspend fun getFolderPermissions(folderId: String): List<PermissionModelUi>
+    suspend fun getFolderPermissions(
+        folderId: String,
+        userId: String,
+    ): List<PermissionModelUi>
 
     suspend fun getParentFolderPermissionsToApplyToNewItem(
         parentFolderId: String,
         itemId: ParentPermissionItemId,
         currentUserServerId: String,
+        userId: String,
     ): List<PermissionModelUi>
 
     fun getDirectChildFoldersPaged(
@@ -81,16 +109,19 @@ interface FoldersRepository {
         searchQuery: String?,
         pageSize: Int,
         enablePlaceholders: Boolean,
+        userId: String,
     ): Flow<PagingData<FolderWithCountAndPath>>
 
     suspend fun getSubFoldersForFolder(
         folder: Folder,
         searchQuery: String?,
+        userId: String,
     ): List<FolderWithCountAndPath>
 
     fun getSubFoldersForFolderPaged(
         folder: Folder,
         searchQuery: String?,
         pageSize: Int,
+        userId: String,
     ): Flow<PagingData<FolderWithCountAndPath>>
 }

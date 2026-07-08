@@ -27,9 +27,18 @@ import com.passbolt.mobile.android.domain.metadata.model.MetadataKeyPurpose
 import com.passbolt.mobile.android.domain.metadata.model.ParsedMetadataKey
 
 interface MetadataKeysLocalDataSource {
-    suspend fun getMetadataKeys(purpose: MetadataKeyPurpose): List<ParsedMetadataKey>
+    suspend fun getMetadataKeys(
+        purpose: MetadataKeyPurpose,
+        userId: String,
+    ): List<ParsedMetadataKey>
 
-    suspend fun getMetadataKey(metadataKeyId: String): ParsedMetadataKey
+    suspend fun getMetadataKey(
+        metadataKeyId: String,
+        userId: String,
+    ): ParsedMetadataKey
 
-    suspend fun rebuildMetadataKeys(metadataKeys: List<ParsedMetadataKey>)
+    suspend fun rebuildMetadataKeys(
+        metadataKeys: List<ParsedMetadataKey>,
+        userId: String,
+    )
 }

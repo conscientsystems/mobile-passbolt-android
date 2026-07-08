@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.domain.passwordpolicies.usecase
 
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
@@ -36,12 +37,15 @@ import com.passbolt.mobile.android.ui.PasswordPoliciesUiModel
 class PasswordPoliciesInteractor(
     private val passwordPoliciesRepository: PasswordPoliciesRepository,
     private val passwordPoliciesValidator: PasswordPoliciesValidator,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
-    suspend fun fetchAndSavePasswordPolicies(): Output =
-        when (val result = passwordPoliciesRepository.getPasswordPolicies()) {
+    suspend fun fetchAndSavePasswordPolicies(): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = passwordPoliciesRepository.getPasswordPolicies(userId)) {
             is DomainResult.Incomplete -> Output.Failure.FetchFailure(result)
             is DomainResult.Finished -> validatePasswordPolicies(result.value)
         }
+    }
 
     private fun validatePasswordPolicies(passwordPolicies: PasswordPolicies): Output =
         if (passwordPoliciesValidator.arePasswordPoliciesValid(passwordPolicies)) {

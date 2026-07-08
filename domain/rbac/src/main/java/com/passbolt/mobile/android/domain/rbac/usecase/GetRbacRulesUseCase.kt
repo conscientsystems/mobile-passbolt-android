@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.domain.rbac.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.rbac.RbacRepository
 import com.passbolt.mobile.android.domain.rbac.mapper.toUiModel
@@ -32,12 +33,15 @@ import com.passbolt.mobile.android.ui.RbacModel
 
 class GetRbacRulesUseCase(
     private val rbacRepository: RbacRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<Unit, GetRbacRulesUseCase.Output> {
-    override suspend fun execute(input: Unit): Output =
-        when (val result = rbacRepository.getRbac()) {
+    override suspend fun execute(input: Unit): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return when (val result = rbacRepository.getRbac(userId)) {
             is DomainResult.Finished -> Output(result.value.toUiModel())
             is DomainResult.Incomplete -> Output(Rbac.defaults().toUiModel())
         }
+    }
 
     data class Output(
         val rbacModel: RbacModel,
