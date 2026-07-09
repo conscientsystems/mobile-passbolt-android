@@ -24,7 +24,7 @@ dependencies {
     implementation(project(":featureflagserror"))
     implementation(project(":helpmenu"))
     implementation(project(":logs"))
-    implementation(project(":inappreview"))
+    implementation(project(":inappreview-domain"))
     implementation(project(":idlingresource"))
     implementation(project(":rbac-domain"))
     implementation(project(":accounts"))

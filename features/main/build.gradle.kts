@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":authentication"))
     implementation(project(":security"))
     implementation(project(":fulldatarefresh"))
-    implementation(project(":inappreview"))
+    implementation(project(":inappreview-domain"))
     implementation(project(":otp"))
     implementation(project(":database"))
     implementation(project(":resourcetypes"))
