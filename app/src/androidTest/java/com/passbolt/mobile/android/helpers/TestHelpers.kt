@@ -34,9 +34,11 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.platform.app.InstrumentationRegistry
 import com.passbolt.mobile.android.testtags.composetags.Auth
+import com.passbolt.mobile.android.testtags.composetags.FiltersMenu
 import com.passbolt.mobile.android.testtags.composetags.Home
 import com.passbolt.mobile.android.testtags.composetags.ResourceForm
 import com.passbolt.mobile.android.testtags.composetags.SearchField
@@ -64,6 +66,7 @@ internal fun getString(
  * @param name The name for the new password resource.
  */
 internal fun ComposeTestRule.createNewPasswordFromHomeScreen(name: String) {
+    waitForCreateButton()
     onNodeWithTag(Home.FAB).performClick()
     onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
     waitForResourceForm()
@@ -207,13 +210,30 @@ internal fun ComposeTestRule.searchAndOpenFirstFolderByName(name: String) {
  * @param filter The resource ID of the filter to select.
  */
 internal fun ComposeTestRule.chooseFilter(filter: Int) {
+    waitUntil(conditionDescription = "Waiting for previous filters menu to dismiss", timeoutMillis = 5_000) {
+        onAllNodes(hasTestTag(FiltersMenu.SHEET))
+            .fetchSemanticsNodes()
+            .isEmpty()
+    }
+
     onNodeWithTag(Home.SEARCH_FILTER).performClick()
-    onNode(
+
+    val filterMatcher =
         hasClickAction().and(
             hasAnyDescendant(hasText(getString(filter))),
-        ),
-        useUnmergedTree = true,
-    ).performClick()
+        )
+
+    // Wait until the filter item is laid out in the opened sheet; clicking earlier fails with
+    // "Failed to inject touch input" because the node isn't present yet.
+    waitUntil(conditionDescription = "Waiting for filter ${getString(filter)}", timeoutMillis = 5_000) {
+        onAllNodes(filterMatcher, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+    }
+
+    onNode(filterMatcher, useUnmergedTree = true)
+        .performScrollTo()
+        .performClick()
 }
 
 /**
@@ -247,6 +267,23 @@ internal fun ComposeTestRule.waitForResourceForm() {
 internal fun ComposeTestRule.waitForHomeScreen() {
     waitUntil(timeoutMillis = 5_000, conditionDescription = "Waiting for home screen") {
         onAllNodes(hasTestTag(Home.SCREEN))
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+    }
+}
+
+/**
+ * Waits for the Create (FAB) button to be present on the Home screen.
+ *
+ * The FAB is gated on `canCreateResource`, which is recomputed asynchronously after a
+ * resource list reload (e.g. after selecting a filter). Clicking it immediately races the
+ * recomposition and fails with "Failed to inject touch input ... could not find any node
+ * that satisfies (TestTag = 'HomeFab')" - intermittently when run in isolation, reliably
+ * when run in the middle of a suite where accumulated state slows the reload down.
+ */
+internal fun ComposeTestRule.waitForCreateButton() {
+    waitUntil(timeoutMillis = 5_000, conditionDescription = "Waiting for create button") {
+        onAllNodes(hasTestTag(Home.FAB))
             .fetchSemanticsNodes()
             .isNotEmpty()
     }

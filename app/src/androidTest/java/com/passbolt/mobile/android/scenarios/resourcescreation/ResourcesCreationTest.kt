@@ -52,6 +52,7 @@ import com.passbolt.mobile.android.feature.authentication.AuthenticationMainActi
 import com.passbolt.mobile.android.helpers.chooseFilter
 import com.passbolt.mobile.android.helpers.getString
 import com.passbolt.mobile.android.helpers.signIn
+import com.passbolt.mobile.android.helpers.waitForCreateButton
 import com.passbolt.mobile.android.helpers.waitForResourceForm
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
@@ -137,6 +138,11 @@ class ResourcesCreationTest : KoinTest {
                 )
             filtersWithFab.forEach { filter ->
                 chooseFilter(filter)
+                // canCreateResource updates asynchronously after the filter's reload, so wait
+                // for the FAB before asserting.
+                waitUntil(conditionDescription = "Waiting for create button on ${getString(filter)}", timeoutMillis = 5_000) {
+                    onAllNodes(hasTestTag(Home.FAB)).fetchSemanticsNodes().isNotEmpty()
+                }
                 onNodeWithTag(Home.FAB).assertExists()
             }
 
@@ -147,6 +153,11 @@ class ResourcesCreationTest : KoinTest {
                 )
             filtersWithoutFab.forEach { filter ->
                 chooseFilter(filter)
+                // Tags/Groups hide the create button only after the async reload, so wait for
+                // the FAB to disappear before asserting.
+                waitUntil(conditionDescription = "Waiting for no create button on ${getString(filter)}", timeoutMillis = 5_000) {
+                    onAllNodes(hasTestTag(Home.FAB)).fetchSemanticsNodes().isEmpty()
+                }
                 onNodeWithTag(Home.FAB).assertDoesNotExist()
             }
         }
@@ -162,6 +173,7 @@ class ResourcesCreationTest : KoinTest {
     @Test
     fun asALoggedInMobileUserOnThePasswordWorkspaceIShouldSeeTheNewPasswordPage() {
         composeTestRule.apply {
+            waitForCreateButton()
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
             waitForResourceForm()
@@ -190,6 +202,7 @@ class ResourcesCreationTest : KoinTest {
         // (second refresh is during snackbar is showing)
         IdlingRegistry.getInstance().unregister(resourcesFullRefreshIdlingResource)
         composeTestRule.apply {
+            waitForCreateButton()
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
             waitForResourceForm()
@@ -210,6 +223,7 @@ class ResourcesCreationTest : KoinTest {
     @Test
     fun asALoggedInMobileUserOnTheNewPasswordPageICanGenerateARandomPassword() {
         composeTestRule.apply {
+            waitForCreateButton()
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
             waitForResourceForm()
@@ -230,6 +244,7 @@ class ResourcesCreationTest : KoinTest {
     @Test
     fun asALoggedInMobileUserOnTheNewPasswordPageICanSwitchTheVisibilityOfThePassword() {
         composeTestRule.apply {
+            waitForCreateButton()
             onNodeWithTag(Home.FAB).performClick()
             onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
             waitForResourceForm()
