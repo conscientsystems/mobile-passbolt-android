@@ -172,6 +172,22 @@ class ResourceInteractorTest : KoinTest {
         }
 
     @Test
+    fun `should notify page progress for each processed page`() =
+        runTest {
+            val totalCount = RESOURCES_PAGE_SIZE * 2 + 500 // requires 3 pages
+            stubResourcesPaginatedSuccess(page = 1, resources = listOf(createResourceWithAttributes()), totalCount = totalCount)
+            stubResourcesPaginatedSuccess(page = 2, resources = listOf(createResourceWithAttributes()), totalCount = totalCount)
+            stubResourcesPaginatedSuccess(page = 3, resources = listOf(createResourceWithAttributes()), totalCount = totalCount)
+            val pageProgress = mutableListOf<Pair<Int, Int>>()
+
+            resourceInteractor.fetchAndSaveResources { processedPages, totalPages ->
+                pageProgress.add(processedPages to totalPages)
+            }
+
+            assertThat(pageProgress).containsExactly(1 to 3, 2 to 3, 3 to 3).inOrder()
+        }
+
+    @Test
     fun `should return failure when first page fetch fails`() =
         runTest {
             stubResourcesPaginatedFailure(page = 1)

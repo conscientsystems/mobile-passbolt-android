@@ -42,7 +42,6 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,7 +62,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
-import com.passbolt.mobile.android.core.ui.pulltorefresh.PullToRefreshIndicatorBox
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
@@ -138,24 +136,13 @@ private fun ResourceTagsContent(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    val pullState = rememberPullToRefreshState()
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(state.isRefreshing) {
-        scope.launch {
-            if (state.isRefreshing) {
-                pullState.animateToThreshold()
-            } else {
-                pullState.animateToHidden()
-            }
-        }
-    }
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TitleAppBar(
                 title = stringResource(LocalizationR.string.resource_tags_title),
                 navigationIcon = { BackNavigationIcon(onBackClick = { onIntent(GoBack) }) },
+                refreshProgress = if (state.isRefreshing) state.refreshProgress else null,
             )
         },
         snackbarHost = {
@@ -176,33 +163,30 @@ private fun ResourceTagsContent(
             )
         },
         content = { paddingValues ->
-            PullToRefreshIndicatorBox(
-                isRefreshing = state.isRefreshing,
+            Column(
                 modifier =
                     Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    ResourceHeader(
-                        resourceModel = state.resourceModel,
-                        modifier = Modifier.padding(16.dp),
-                    )
+                ResourceHeader(
+                    resourceModel = state.resourceModel,
+                    modifier = Modifier.padding(16.dp),
+                )
 
-                    Text(
-                        text = stringResource(LocalizationR.string.resource_tags_section),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    )
+                Text(
+                    text = stringResource(LocalizationR.string.resource_tags_section),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
 
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        items(state.tags) { tag ->
-                            TagItem(tag = tag)
-                        }
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(state.tags) { tag ->
+                        TagItem(tag = tag)
                     }
                 }
             }

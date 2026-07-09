@@ -241,7 +241,7 @@ class FolderDetailsViewModelTest : KoinTest {
             viewModel = get { parametersOf(testFolder.folderId) }
 
             val dataRefreshTrackingFlow = get<DataRefreshTrackingFlow>()
-            dataRefreshTrackingFlow.updateStatus(InProgress)
+            dataRefreshTrackingFlow.updateStatus(InProgress(progress = 0f))
 
             viewModel.viewState.test {
                 val refreshingState = awaitItem()

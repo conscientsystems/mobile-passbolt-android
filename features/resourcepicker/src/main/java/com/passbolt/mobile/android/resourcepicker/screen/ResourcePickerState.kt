@@ -33,6 +33,7 @@ data class ResourcePickerState(
     val resourcePickerData: ResourcePickerData = ResourcePickerData(),
     val searchQuery: String = "",
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
     val searchInputEndIconMode: SearchInputEndIconMode = SearchInputEndIconMode.NONE,
     val isApplyButtonEnabled: Boolean = false,
     val pickedResource: ResourcePickerListItem? = null,

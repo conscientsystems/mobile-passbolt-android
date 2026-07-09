@@ -31,6 +31,7 @@ import java.util.UUID
 
 data class ResourceDetailsState(
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
     val isLoading: Boolean = false,
     val resourceData: ResourceData = ResourceData(),
     val totpData: TotpData = TotpData(),

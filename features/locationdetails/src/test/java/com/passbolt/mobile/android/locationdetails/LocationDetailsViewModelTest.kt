@@ -251,7 +251,7 @@ class LocationDetailsViewModelTest : KoinTest {
                 awaitItem()
 
                 val dataRefreshTrackingFlow = get<DataRefreshTrackingFlow>()
-                dataRefreshTrackingFlow.updateStatus(InProgress)
+                dataRefreshTrackingFlow.updateStatus(InProgress(progress = 0f))
 
                 val refreshingState = awaitItem()
                 assertThat(refreshingState.isRefreshing).isTrue()

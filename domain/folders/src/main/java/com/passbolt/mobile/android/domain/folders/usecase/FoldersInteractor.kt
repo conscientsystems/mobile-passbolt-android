@@ -49,7 +49,7 @@ class FoldersInteractor(
     private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
 ) {
     @Suppress("ReturnCount")
-    suspend fun fetchAndSaveFolders(): Output {
+    suspend fun fetchAndSaveFolders(onPageProcessed: suspend (processedPages: Int, totalPages: Int) -> Unit = { _, _ -> }): Output {
         if (!getFeatureFlagsUseCase.execute(Unit).featureFlags.areFoldersAvailable) {
             return Output.Success
         }
@@ -58,7 +58,7 @@ class FoldersInteractor(
             val pageSize = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
             markAllLocalFoldersAsPending()
             clearLocalFolderPermissions()
-            fetchAndProcessAllPages(pageSize)?.let { failure -> return failure }
+            fetchAndProcessAllPages(pageSize, onPageProcessed)?.let { failure -> return failure }
             removeStaleLocalFolders()
             updateFoldersIsShared()
             return Output.Success
@@ -80,17 +80,24 @@ class FoldersInteractor(
         removeLocalFolderPermissionsUseCase.execute(Unit)
     }
 
-    private suspend fun fetchAndProcessAllPages(pageSize: Int): Output.Failure? {
+    private suspend fun fetchAndProcessAllPages(
+        pageSize: Int,
+        onPageProcessed: suspend (processedPages: Int, totalPages: Int) -> Unit,
+    ): Output.Failure? {
         when (val firstPageResult = fetchFoldersPage(FIRST_PAGE, pageSize)) {
             is Failure -> return Output.Failure(firstPageResult.incomplete)
             is Success -> {
                 processFolders(firstPageResult.folders)
 
                 val totalPages = ceil(firstPageResult.totalCount.toDouble() / pageSize).toInt()
+                onPageProcessed(FIRST_PAGE, totalPages)
                 for (page in SECOND_PAGE..totalPages) {
                     when (val pageResult = fetchFoldersPage(page, pageSize)) {
                         is Failure -> return Output.Failure(pageResult.incomplete)
-                        is Success -> processFolders(pageResult.folders)
+                        is Success -> {
+                            processFolders(pageResult.folders)
+                            onPageProcessed(page, totalPages)
+                        }
                     }
                 }
             }

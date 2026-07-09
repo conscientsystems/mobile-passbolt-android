@@ -29,6 +29,7 @@ import com.passbolt.mobile.android.ui.PermissionModelUi
 data class FolderDetailsState(
     val folderId: String? = null,
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
     val locationPath: List<String> = emptyList(),
     val folder: FolderModel? = null,
     val canViewPermissions: Boolean = false,

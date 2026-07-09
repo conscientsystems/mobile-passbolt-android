@@ -148,6 +148,36 @@ class FoldersInteractorTest : KoinTest {
         }
 
     @Test
+    fun `should notify page progress for each processed page`() =
+        runTest {
+            stubFoldersAvailable(true)
+            val totalCount = FOLDERS_PAGE_SIZE * 2 + 500 // requires 3 pages
+            stubFoldersPaginatedSuccess(page = 1, folders = listOf(FOLDER_WITH_ATTRIBUTES), totalCount = totalCount)
+            stubFoldersPaginatedSuccess(page = 2, folders = listOf(FOLDER_WITH_ATTRIBUTES), totalCount = totalCount)
+            stubFoldersPaginatedSuccess(page = 3, folders = listOf(FOLDER_WITH_ATTRIBUTES), totalCount = totalCount)
+            val pageProgress = mutableListOf<Pair<Int, Int>>()
+
+            foldersInteractor.fetchAndSaveFolders { processedPages, totalPages ->
+                pageProgress.add(processedPages to totalPages)
+            }
+
+            assertThat(pageProgress).containsExactly(1 to 3, 2 to 3, 3 to 3).inOrder()
+        }
+
+    @Test
+    fun `should not notify page progress when folders feature is disabled`() =
+        runTest {
+            stubFoldersAvailable(false)
+            val pageProgress = mutableListOf<Pair<Int, Int>>()
+
+            foldersInteractor.fetchAndSaveFolders { processedPages, totalPages ->
+                pageProgress.add(processedPages to totalPages)
+            }
+
+            assertThat(pageProgress).isEmpty()
+        }
+
+    @Test
     fun `should return failure when first page fetch fails`() =
         runTest {
             stubFoldersAvailable(true)

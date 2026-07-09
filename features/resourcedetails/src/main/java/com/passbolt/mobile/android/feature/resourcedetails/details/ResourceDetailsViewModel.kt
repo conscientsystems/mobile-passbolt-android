@@ -372,7 +372,7 @@ class ResourceDetailsViewModel(
     private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect { status ->
             when (status) {
-                InProgress -> updateViewState { copy(isRefreshing = true) }
+                is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = status.progress) }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(ErrorSnackbarType.DATA_REFRESH_ERROR))
                     updateViewState { copy(isRefreshing = false) }

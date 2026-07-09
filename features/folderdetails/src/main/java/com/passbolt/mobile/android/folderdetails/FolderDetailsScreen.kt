@@ -59,7 +59,6 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.LocationDetailsN
 import com.passbolt.mobile.android.core.navigation.compose.keys.LocationDetailsNavigationKey.LocationItem
 import com.passbolt.mobile.android.core.navigation.compose.keys.PermissionsNavigationKey.Permissions
 import com.passbolt.mobile.android.core.ui.header.ItemWithHeader
-import com.passbolt.mobile.android.core.ui.pulltorefresh.PullToRefreshIndicatorBox
 import com.passbolt.mobile.android.core.ui.sharedwith.SharedWithSection
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.text.SeparatedText
@@ -148,6 +147,7 @@ private fun FolderDetailsScreen(
             TitleAppBar(
                 title = stringResource(LocalizationR.string.folder_details_title),
                 navigationIcon = { BackNavigationIcon(onBackClick = { onIntent(GoBack) }) },
+                refreshProgress = if (state.isRefreshing) state.refreshProgress else null,
             )
         },
         snackbarHost = {
@@ -168,78 +168,74 @@ private fun FolderDetailsScreen(
             )
         },
         content = { paddingValues ->
-            PullToRefreshIndicatorBox(
-                isRefreshing = state.isRefreshing,
+            Column(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .padding(paddingValues),
+                        .padding(paddingValues)
+                        .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Image(
+                    painter =
+                        painterResource(
+                            if (state.folder?.isShared == true) {
+                                CoreUiR.drawable.ic_filled_shared_folder_with_bg
+                            } else {
+                                CoreUiR.drawable.ic_filled_folder_with_bg
+                            },
+                        ),
+                    contentDescription = null,
+                    modifier = Modifier.size(60.dp),
+                )
+
+                Text(
+                    text =
+                        state.folder
+                            ?.name
+                            .orEmpty()
+                            .toSingleLine(),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+
+                ItemWithHeader(
+                    headerText = stringResource(LocalizationR.string.location),
+                    modifier = Modifier.padding(top = 16.dp),
+                    onItemClick = { onIntent(GoToLocationDetails) },
                 ) {
-                    Image(
-                        painter =
-                            painterResource(
-                                if (state.folder?.isShared == true) {
-                                    CoreUiR.drawable.ic_filled_shared_folder_with_bg
-                                } else {
-                                    CoreUiR.drawable.ic_filled_folder_with_bg
-                                },
-                            ),
-                        contentDescription = null,
-                        modifier = Modifier.size(60.dp),
+                    SeparatedText(
+                        segments = listOf(stringResource(LocalizationR.string.folder_root)) + state.locationPath,
+                        modifier = Modifier.fillMaxWidth(),
                     )
-
-                    Text(
-                        text =
-                            state.folder
-                                ?.name
-                                .orEmpty()
-                                .toSingleLine(),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 16.dp),
-                    )
-
+                }
+                if (state.canViewPermissions) {
                     ItemWithHeader(
-                        headerText = stringResource(LocalizationR.string.location),
+                        headerText = stringResource(LocalizationR.string.shared_with),
                         modifier = Modifier.padding(top = 16.dp),
-                        onItemClick = { onIntent(GoToLocationDetails) },
+                        onItemClick = { onIntent(SharedWithClick) },
                     ) {
-                        SeparatedText(
-                            segments = listOf(stringResource(LocalizationR.string.folder_root)) + state.locationPath,
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    if (state.canViewPermissions) {
-                        ItemWithHeader(
-                            headerText = stringResource(LocalizationR.string.shared_with),
-                            modifier = Modifier.padding(top = 16.dp),
-                            onItemClick = { onIntent(SharedWithClick) },
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                SharedWithSection(
-                                    permissions = state.permissions,
-                                    modifier = Modifier.weight(1f),
-                                )
+                            SharedWithSection(
+                                permissions = state.permissions,
+                                modifier = Modifier.weight(1f),
+                            )
 
-                                Image(
-                                    painter = painterResource(CoreUiR.drawable.ic_chevron_right),
-                                    contentDescription = null,
-                                    modifier =
-                                        Modifier
-                                            .size(24.dp)
-                                            .padding(start = 8.dp),
-                                )
-                            }
+                            Image(
+                                painter = painterResource(CoreUiR.drawable.ic_chevron_right),
+                                contentDescription = null,
+                                modifier =
+                                    Modifier
+                                        .size(24.dp)
+                                        .padding(start = 8.dp),
+                            )
                         }
                     }
                 }

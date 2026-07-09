@@ -594,7 +594,10 @@ internal class HomeViewModel(
     private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
-                InProgress -> updateViewState { copy(isRefreshing = true, canCreateResource = false) }
+                is InProgress ->
+                    updateViewState {
+                        copy(isRefreshing = true, refreshProgress = it.progress, canCreateResource = false)
+                    }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                     updateViewState { copy(isRefreshing = false, canCreateResource = false) }

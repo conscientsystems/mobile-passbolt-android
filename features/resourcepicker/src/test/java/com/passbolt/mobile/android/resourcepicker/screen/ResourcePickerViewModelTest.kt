@@ -374,7 +374,7 @@ class ResourcePickerViewModelTest : KoinTest {
             viewModel = get { parametersOf(null) }
 
             viewModel.viewState.drop(1).test {
-                dataRefreshFlow.updateStatus(InProgress)
+                dataRefreshFlow.updateStatus(InProgress(progress = 0f))
                 assertThat(expectMostRecentItem().isRefreshing).isTrue()
 
                 dataRefreshFlow.updateStatus(FinishedWithSuccess)
@@ -389,7 +389,7 @@ class ResourcePickerViewModelTest : KoinTest {
             viewModel = get { parametersOf(null) }
 
             viewModel.viewState.drop(1).test {
-                dataRefreshFlow.updateStatus(InProgress)
+                dataRefreshFlow.updateStatus(InProgress(progress = 0f))
                 assertThat(expectMostRecentItem().isRefreshing).isTrue()
 
                 dataRefreshFlow.updateStatus(FinishedWithFailure)

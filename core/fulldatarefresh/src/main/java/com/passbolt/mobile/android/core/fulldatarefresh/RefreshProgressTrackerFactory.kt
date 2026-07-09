@@ -21,19 +21,11 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.locationdetails
+package com.passbolt.mobile.android.core.fulldatarefresh
 
-import com.passbolt.mobile.android.domain.folders.model.FolderModel
-import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTree
-import com.passbolt.mobile.android.ui.ResourceUiModel
-
-data class LocationDetailsState(
-    val isRefreshing: Boolean = false,
-    val refreshProgress: Float = 0f,
-    val itemName: String = "",
-    val isSharedFolder: Boolean = false,
-    val resource: ResourceUiModel? = null,
-    val parentFolders: List<FolderModel> = emptyList(),
-    val folderTree: ExpandableFolderTree? = null,
-    val expandedItemIds: Set<String> = emptySet(),
-)
+class RefreshProgressTrackerFactory {
+    fun create(
+        totalSteps: Int,
+        onProgress: suspend (Float) -> Unit,
+    ): RefreshProgressTracker = RefreshProgressTracker(totalSteps, onProgress)
+}

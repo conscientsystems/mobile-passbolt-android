@@ -40,8 +40,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -61,6 +66,7 @@ import com.passbolt.mobile.android.core.ui.dialogs.ConfirmResourceDeleteAlertDia
 import com.passbolt.mobile.android.core.ui.empty.EmptyResourceListState
 import com.passbolt.mobile.android.core.ui.fab.AddFloatingActionButton
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
+import com.passbolt.mobile.android.core.ui.progressindicator.DataRefreshProgressIndicator
 import com.passbolt.mobile.android.core.ui.scaffold.HomeScaffold
 import com.passbolt.mobile.android.core.ui.search.SearchInput
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
@@ -219,9 +225,20 @@ fun OtpScreen(
         content =
             { paddingValues ->
                 val context = LocalContext.current
+                // show the default pull indicator only for refreshes initiated by the pull gesture,
+                // not for automatic ones (which are visualized by the progress bar only)
+                var refreshInitiatedByPull by remember { mutableStateOf(false) }
+                LaunchedEffect(state.isRefreshing) {
+                    if (!state.isRefreshing) {
+                        refreshInitiatedByPull = false
+                    }
+                }
                 PullToRefreshBox(
-                    isRefreshing = state.isRefreshing,
-                    onRefresh = { DataRefreshService.start(context) },
+                    isRefreshing = state.isRefreshing && refreshInitiatedByPull,
+                    onRefresh = {
+                        refreshInitiatedByPull = true
+                        DataRefreshService.start(context)
+                    },
                     modifier =
                         Modifier
                             .fillMaxSize()
@@ -286,6 +303,12 @@ fun OtpScreen(
                                 )
                             }
                         }
+                    }
+                    if (state.isRefreshing) {
+                        DataRefreshProgressIndicator(
+                            progress = state.refreshProgress,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                        )
                     }
                 }
                 if (state.showOtpMoreBottomSheet) {
