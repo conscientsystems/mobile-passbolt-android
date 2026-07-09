@@ -35,6 +35,7 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PasswordCharacterSetToggled
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PasswordExcludeLookAlikeChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PasswordLengthChanged
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PreviewMaskToggled
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.SavePreferences
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.TabSelected
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationSideEffect.ApplyAndGoBack
@@ -110,6 +111,23 @@ class AdvancedSecretGenerationViewModelTest : KoinTest {
             assertThat(state.passphraseSettings).isEqualTo(passphraseSettings)
             assertThat(state.preview).isEqualTo("pwd1!")
             assertThat(state.minimumEntropyBits).isNull()
+        }
+
+    @Test
+    fun `preview is unmasked by default and toggles on intent`() =
+        runTest {
+            val viewModel = createViewModel()
+            advanceUntilIdle()
+
+            viewModel.viewState.test {
+                assertThat(awaitItem().isPreviewMasked).isFalse()
+
+                viewModel.onIntent(PreviewMaskToggled)
+                assertThat(awaitItem().isPreviewMasked).isTrue()
+
+                viewModel.onIntent(PreviewMaskToggled)
+                assertThat(awaitItem().isPreviewMasked).isFalse()
+            }
         }
 
     @Test

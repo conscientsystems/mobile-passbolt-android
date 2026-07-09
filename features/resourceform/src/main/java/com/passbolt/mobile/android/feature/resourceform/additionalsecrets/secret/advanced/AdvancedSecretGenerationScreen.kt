@@ -51,6 +51,7 @@ import com.passbolt.mobile.android.core.ui.tabs.ButtonTabs
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.GoBack
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.PreviewMaskToggled
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.SavePreferences
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationIntent.TabSelected
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationSideEffect.ApplyAndGoBack
@@ -149,6 +150,8 @@ private fun AdvancedSecretGenerationScreen(
             SecretPreviewSection(
                 selectedTab = state.selectedTab,
                 preview = state.preview,
+                isPreviewMasked = state.isPreviewMasked,
+                onToggleMask = { onIntent(PreviewMaskToggled) },
                 minimumEntropyBits = state.minimumEntropyBits,
             )
             Spacer(modifier = Modifier.height(16.dp))
