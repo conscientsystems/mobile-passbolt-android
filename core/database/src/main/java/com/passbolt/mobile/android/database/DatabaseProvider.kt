@@ -2,6 +2,7 @@ package com.passbolt.mobile.android.database
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.withTransaction
 import com.passbolt.mobile.android.common.hash.MessageDigestHash
 import com.passbolt.mobile.android.database.migrations.Migration10to11
 import com.passbolt.mobile.android.database.migrations.Migration11to12
@@ -107,6 +108,11 @@ class DatabaseProvider(
                 .build()
         }
     }
+
+    suspend fun <T> inTransaction(
+        userId: String,
+        block: suspend () -> T,
+    ): T = get(userId).withTransaction { block() }
 
     suspend fun delete(userId: String) {
         val currentUser = messageDigestHash.sha256(userId)

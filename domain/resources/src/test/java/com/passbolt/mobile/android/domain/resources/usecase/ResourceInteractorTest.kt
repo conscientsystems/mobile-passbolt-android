@@ -6,6 +6,8 @@ import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.spi.json.GsonJsonProvider
 import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
+import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
+import com.passbolt.mobile.android.commontest.transaction.PassThroughTransactionRunner
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
@@ -97,6 +99,7 @@ class ResourceInteractorTest : KoinTest {
                     single { mock<RemoveLocalResourcesWithUpdateStateUseCase>() }
                     single { mock<GetGlobalPreferencesUseCase>() }
                     single { mock<GetSelectedAccountUseCase>() }
+                    singleOf(::PassThroughTransactionRunner) bind DatabaseTransactionRunner::class
                     single(named(JSON_MODEL_GSON)) { Gson() }
                     single {
                         Configuration

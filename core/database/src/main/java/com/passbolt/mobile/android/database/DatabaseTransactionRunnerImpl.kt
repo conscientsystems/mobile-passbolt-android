@@ -1,13 +1,3 @@
-package com.passbolt.mobile.android.database
-
-import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
-import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
-import com.passbolt.mobile.android.database.usecase.databaseModule
-import org.koin.android.ext.koin.androidApplication
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -30,17 +20,20 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val databaseModule =
-    module {
-        databaseModule()
-        singleOf(::ResourcesSnapshot)
-        singleOf(::DatabaseTransactionRunnerImpl) bind DatabaseTransactionRunner::class
-        singleOf(::FtsQuerySanitizer) bind QuerySanitizer::class
-        single {
-            DatabaseProvider(
-                context = androidApplication(),
-                getResourcesDatabasePassphraseUseCase = get(),
-                messageDigestHash = get(),
-            )
-        }
+package com.passbolt.mobile.android.database
+
+import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+
+internal class DatabaseTransactionRunnerImpl(
+    private val databaseProvider: DatabaseProvider,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : DatabaseTransactionRunner {
+    override suspend fun <T> runInTransaction(block: suspend () -> T): T {
+        val userId =
+            requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount) {
+                "No selected account during database transaction run"
+            }
+        return databaseProvider.inTransaction(userId, block)
     }
+}

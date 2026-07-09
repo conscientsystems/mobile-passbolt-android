@@ -35,6 +35,8 @@ dependencies {
     implementation(libs.json.path)
     implementation(libs.paging.runtime)
     implementation(libs.kotlin.coroutines)
+
+    testImplementation(project(":commontest"))
 }
 
 android {

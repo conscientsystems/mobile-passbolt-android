@@ -88,19 +88,20 @@ internal class GroupsLocalDataSourceImpl(
         val groupsDao = database.groupsDao()
         val usersAndGroupsCrossRefDao = database.usersAndGroupsCrossRefDao()
 
-        groupsDao.setAllUpdateState(PENDING)
-        usersAndGroupsCrossRefDao.deleteAll()
-
-        groupsDao.upsertAll(groups.map { it.group.toEntity() })
-
         val usersAndGroupsCrossRefs =
             groups.flatMap { group ->
                 group.members.map { member ->
                     UsersAndGroupCrossRef(member.userId, group.group.id)
                 }
             }
-        usersAndGroupsCrossRefDao.insertAll(usersAndGroupsCrossRefs)
 
-        groupsDao.removeWithUpdateState(PENDING)
+        // group the upsert + delete-stale writes into one transaction so Room invalidates observers once
+        databaseProvider.inTransaction(userId) {
+            groupsDao.setAllUpdateState(PENDING)
+            usersAndGroupsCrossRefDao.deleteAll()
+            groupsDao.upsertAll(groups.map { it.group.toEntity() })
+            usersAndGroupsCrossRefDao.insertAll(usersAndGroupsCrossRefs)
+            groupsDao.removeWithUpdateState(PENDING)
+        }
     }
 }

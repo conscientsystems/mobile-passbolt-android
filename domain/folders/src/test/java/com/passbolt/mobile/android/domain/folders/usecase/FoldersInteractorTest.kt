@@ -24,6 +24,8 @@
 package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
+import com.passbolt.mobile.android.commontest.transaction.PassThroughTransactionRunner
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
@@ -40,6 +42,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
@@ -75,6 +78,7 @@ class FoldersInteractorTest : KoinTest {
                     single { mock<AddLocalFolderPermissionsUseCase>() }
                     single { mock<UpdateLocalFoldersIsSharedUseCase>() }
                     single { mock<GetGlobalPreferencesUseCase>() }
+                    singleOf(::PassThroughTransactionRunner) bind DatabaseTransactionRunner::class
                     singleOf(::FoldersInteractor)
                 },
             )

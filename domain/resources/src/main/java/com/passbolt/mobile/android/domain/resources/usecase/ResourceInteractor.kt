@@ -1,6 +1,7 @@
 package com.passbolt.mobile.android.domain.resources.usecase
 
 import android.database.SQLException
+import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
@@ -56,6 +57,7 @@ class ResourceInteractor(
     private val removeLocalResourcesWithUpdateStateUseCase: RemoveLocalResourcesWithUpdateStateUseCase,
     private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val databaseTransactionRunner: DatabaseTransactionRunner,
 ) {
     private val selectedAccountId: String
         get() = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
@@ -124,16 +126,18 @@ class ResourceInteractor(
     }
 
     private suspend fun processResources(resources: List<ResourceUiModelWithAttributes>) {
-        upsertLocalResourcesUseCase.execute(
-            UpsertLocalResourcesUseCase.Input(resources.map { it.resourceModel }, selectedAccountId),
-        )
+        databaseTransactionRunner.runInTransaction {
+            upsertLocalResourcesUseCase.execute(
+                UpsertLocalResourcesUseCase.Input(resources.map { it.resourceModel }, selectedAccountId),
+            )
 
-        addLocalTagsUseCase.execute(
-            AddLocalTagsUseCase.Input(resources, selectedAccountId),
-        )
-        addLocalResourcePermissionsUseCase.execute(
-            AddLocalResourcePermissionsUseCase.Input(resources),
-        )
+            addLocalTagsUseCase.execute(
+                AddLocalTagsUseCase.Input(resources, selectedAccountId),
+            )
+            addLocalResourcePermissionsUseCase.execute(
+                AddLocalResourcePermissionsUseCase.Input(resources),
+            )
+        }
     }
 
     sealed class Output : AuthenticatedUseCaseOutput {
