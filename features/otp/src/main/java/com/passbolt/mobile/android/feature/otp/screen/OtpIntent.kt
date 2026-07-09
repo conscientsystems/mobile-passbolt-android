@@ -50,6 +50,8 @@ sealed interface OtpIntent {
 
     data object SearchEndIconAction : OtpIntent
 
+    data object Dispose : OtpIntent
+
     // switch account
     object CloseSwitchAccount : OtpIntent
 

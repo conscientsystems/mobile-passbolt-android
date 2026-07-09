@@ -42,20 +42,25 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelected
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
+import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
 import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Dispose
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OtpQRScanReturned
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.RevealOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Search
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.SearchEndIconAction
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.InitiateDataRefresh
@@ -65,6 +70,7 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.NavigateToEd
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowSuccessSnackbar
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarSuccessType.RESOURCE_CREATED
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarSuccessType.RESOURCE_EDITED
+import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.mappers.OtpModelMapper
@@ -75,7 +81,9 @@ import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -252,6 +260,59 @@ class OtpViewModelTest : KoinTest {
         }
 
     @Test
+    fun `should reveal otp on filtered list when search query is active`() =
+        runTest {
+            mockSuccessfulTotpFetch()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
+
+            viewModel.onIntent(Search("resource"))
+            viewModel.onIntent(RevealOtp(otpResources.first()))
+
+            viewModel.viewState.test {
+                val state = expectMostRecentItem()
+                assertThat(state.isInFilteringMode).isTrue()
+                val revealedItem = state.uiOtps.first { it.resource.resourceId == otpResources.first().resourceId }
+                assertThat(revealedItem.isVisible).isTrue()
+                assertThat(revealedItem.otpValue).isEqualTo(OTP_VALUE)
+            }
+        }
+
+    @Test
+    fun `should reset revealed otp but keep search filter on dispose`() =
+        runTest {
+            mockSuccessfulTotpFetch()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
+
+            viewModel.onIntent(Search("resource"))
+            viewModel.onIntent(RevealOtp(otpResources.first()))
+
+            viewModel.viewState.test {
+                assertThat(expectMostRecentItem().uiOtps.any { it.isVisible }).isTrue()
+
+                viewModel.onIntent(Dispose)
+
+                val state = expectMostRecentItem()
+                assertThat(state.searchQuery).isEqualTo("resource")
+                assertThat(state.isInFilteringMode).isTrue()
+                assertThat(state.otps.none { it.isVisible }).isTrue()
+                assertThat(state.filteredOtps.none { it.isVisible }).isTrue()
+            }
+        }
+
+    private fun mockSuccessfulTotpFetch(otpFlow: Flow<SecretPropertyActionResult<TotpSecret>> = flowOf(totpFetchSuccess)) {
+        val secretPropertiesActionsInteractor =
+            mock<SecretPropertiesActionsInteractor> {
+                onBlocking { provideOtp() } doReturn otpFlow
+            }
+        val secretPropertiesActionsInteractorFactory = get<SecretPropertiesActionsInteractorFactory>()
+        whenever(secretPropertiesActionsInteractorFactory.create(any())) doReturn secretPropertiesActionsInteractor
+
+        val totpParametersProvider = get<TotpParametersProvider>()
+        whenever(totpParametersProvider.provideOtpParameters(any(), any(), any(), any())) doReturn
+            OtpParameters(OTP_VALUE, secondsValid = 25)
+    }
+
+    @Test
     fun `should show refresh while resources are loading`() =
         runTest {
             viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
@@ -412,6 +473,21 @@ class OtpViewModelTest : KoinTest {
         }
 
     private companion object {
+        private const val OTP_VALUE = "123456"
+
+        private val totpFetchSuccess by lazy {
+            SecretPropertyActionResult.Success(
+                SecretPropertiesActionsInteractor.OTP_LABEL,
+                isSecret = true,
+                TotpSecret(
+                    algorithm = "SHA1",
+                    key = "JBSWY3DPEHPK3PXP",
+                    digits = 6,
+                    period = 30L,
+                ),
+            )
+        }
+
         private val selectedAccountData =
             GetSelectedAccountDataUseCase.Output(
                 firstName = "John",
