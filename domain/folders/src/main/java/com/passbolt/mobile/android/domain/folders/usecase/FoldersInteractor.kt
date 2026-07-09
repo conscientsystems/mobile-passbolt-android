@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.domain.folders.usecase
 
 import android.database.SQLException
+import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
@@ -47,6 +48,7 @@ class FoldersInteractor(
     private val addLocalFolderPermissionsUseCase: AddLocalFolderPermissionsUseCase,
     private val updateLocalFoldersIsSharedUseCase: UpdateLocalFoldersIsSharedUseCase,
     private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val databaseTransactionRunner: DatabaseTransactionRunner,
 ) {
     @Suppress("ReturnCount")
     suspend fun fetchAndSaveFolders(): Output {
@@ -106,12 +108,14 @@ class FoldersInteractor(
     )
 
     private suspend fun processFolders(foldersWithAttributes: List<FolderModelWithAttributes>) {
-        upsertLocalFoldersUseCase.execute(
-            UpsertLocalFoldersUseCase.Input(foldersWithAttributes.map { it.folderModel }),
-        )
-        addLocalFolderPermissionsUseCase.execute(
-            AddLocalFolderPermissionsUseCase.Input(foldersWithAttributes),
-        )
+        databaseTransactionRunner.runInTransaction {
+            upsertLocalFoldersUseCase.execute(
+                UpsertLocalFoldersUseCase.Input(foldersWithAttributes.map { it.folderModel }),
+            )
+            addLocalFolderPermissionsUseCase.execute(
+                AddLocalFolderPermissionsUseCase.Input(foldersWithAttributes),
+            )
+        }
     }
 
     private suspend fun updateFoldersIsShared() {

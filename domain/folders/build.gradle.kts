@@ -18,6 +18,8 @@ dependencies {
     implementation(libs.kotlin.coroutines)
     implementation(libs.paging.runtime)
     implementation(libs.timber)
+
+    testImplementation(project(":commontest"))
 }
 
 android {

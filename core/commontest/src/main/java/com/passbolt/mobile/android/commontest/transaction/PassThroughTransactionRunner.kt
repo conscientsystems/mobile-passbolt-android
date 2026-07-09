@@ -1,13 +1,3 @@
-package com.passbolt.mobile.android.database
-
-import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
-import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
-import com.passbolt.mobile.android.database.usecase.databaseModule
-import org.koin.android.ext.koin.androidApplication
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -30,17 +20,14 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val databaseModule =
-    module {
-        databaseModule()
-        singleOf(::ResourcesSnapshot)
-        singleOf(::DatabaseTransactionRunnerImpl) bind DatabaseTransactionRunner::class
-        singleOf(::FtsQuerySanitizer) bind QuerySanitizer::class
-        single {
-            DatabaseProvider(
-                context = androidApplication(),
-                getResourcesDatabasePassphraseUseCase = get(),
-                messageDigestHash = get(),
-            )
-        }
-    }
+package com.passbolt.mobile.android.commontest.transaction
+
+import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
+
+/**
+ * Test [DatabaseTransactionRunner] that runs the block inline without opening a real transaction.
+ * Lets interactor tests exercise the grouped-write path without a database.
+ */
+class PassThroughTransactionRunner : DatabaseTransactionRunner {
+    override suspend fun <T> runInTransaction(block: suspend () -> T): T = block()
+}
