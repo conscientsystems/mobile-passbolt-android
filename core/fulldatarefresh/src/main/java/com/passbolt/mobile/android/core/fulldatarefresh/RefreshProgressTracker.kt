@@ -21,19 +21,45 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.locationdetails
+package com.passbolt.mobile.android.core.fulldatarefresh
 
-import com.passbolt.mobile.android.domain.folders.model.FolderModel
-import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTree
-import com.passbolt.mobile.android.ui.ResourceUiModel
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
-data class LocationDetailsState(
-    val isRefreshing: Boolean = false,
-    val refreshProgress: Float = 0f,
-    val itemName: String = "",
-    val isSharedFolder: Boolean = false,
-    val resource: ResourceUiModel? = null,
-    val parentFolders: List<FolderModel> = emptyList(),
-    val folderTree: ExpandableFolderTree? = null,
-    val expandedItemIds: Set<String> = emptySet(),
-)
+class RefreshProgressTracker(
+    private val totalSteps: Int,
+    private val onProgress: suspend (Float) -> Unit,
+) {
+    private val mutex = Mutex()
+    private var completedSteps = 0
+    private var currentStepFraction = 0f
+
+    suspend fun onStepCompleted() {
+        mutex.withLock {
+            completedSteps++
+            currentStepFraction = 0f
+            emitProgress()
+        }
+    }
+
+    suspend fun onStepsSkipped(count: Int) {
+        mutex.withLock {
+            completedSteps += count
+            emitProgress()
+        }
+    }
+
+    suspend fun onStepPageDownloaded(
+        downloadedPages: Int,
+        totalPages: Int,
+    ) {
+        mutex.withLock {
+            currentStepFraction = downloadedPages.toFloat() / totalPages.coerceAtLeast(1)
+            emitProgress()
+        }
+    }
+
+    private suspend fun emitProgress() {
+        onProgress(((completedSteps + currentStepFraction) / totalSteps).coerceIn(0f, 1f))
+    }
+}

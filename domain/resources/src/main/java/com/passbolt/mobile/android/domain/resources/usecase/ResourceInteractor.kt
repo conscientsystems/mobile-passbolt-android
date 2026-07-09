@@ -63,7 +63,7 @@ class ResourceInteractor(
         get() = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
 
     @Suppress("ReturnCount")
-    suspend fun fetchAndSaveResources(): Output {
+    suspend fun fetchAndSaveResources(onPageProcessed: suspend (processedPages: Int, totalPages: Int) -> Unit = { _, _ -> }): Output {
         try {
             val pageSize = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
 
@@ -93,6 +93,7 @@ class ResourceInteractor(
 
                     // process remaining pages
                     val totalPages = ceil(firstPageResult.totalCount.toDouble() / pageSize).toInt()
+                    onPageProcessed(FIRST_PAGE, totalPages)
 
                     for (page in SECOND_PAGE..totalPages) {
                         when (
@@ -102,7 +103,10 @@ class ResourceInteractor(
                                 )
                         ) {
                             is Failure -> return Output.Failure(pageResult.authenticationState)
-                            is Success -> processResources(pageResult.resources)
+                            is Success -> {
+                                processResources(pageResult.resources)
+                                onPageProcessed(page, totalPages)
+                            }
                         }
                     }
 

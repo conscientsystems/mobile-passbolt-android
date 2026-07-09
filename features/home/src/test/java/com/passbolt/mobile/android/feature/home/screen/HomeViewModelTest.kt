@@ -437,7 +437,7 @@ class HomeViewModelTest : KoinTest {
             viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
 
             viewModel.viewState.drop(2).test {
-                dataRefreshFlow.updateStatus(InProgress)
+                dataRefreshFlow.updateStatus(InProgress(progress = 0f))
                 val inProgress = awaitItem()
                 assertThat(inProgress.isRefreshing).isTrue()
                 assertThat(inProgress.canCreateResource).isFalse()
@@ -477,7 +477,7 @@ class HomeViewModelTest : KoinTest {
             viewModel.onIntent(Initialize(DoNotShow, null))
 
             viewModel.viewState.drop(2).test {
-                dataRefreshFlow.updateStatus(InProgress)
+                dataRefreshFlow.updateStatus(InProgress(progress = 0f))
                 val inProgress = awaitItem()
                 assertThat(inProgress.isRefreshing).isTrue()
                 assertThat(inProgress.canCreateResource).isFalse()
@@ -663,7 +663,7 @@ class HomeViewModelTest : KoinTest {
 
             clearInvocations(provider)
 
-            dataRefreshFlow.updateStatus(InProgress)
+            dataRefreshFlow.updateStatus(InProgress(progress = 0f))
             dataRefreshFlow.updateStatus(FinishedWithSuccess)
             advanceUntilIdle()
 

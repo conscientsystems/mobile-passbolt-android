@@ -30,4 +30,5 @@ data class ResourceTagsState(
     val resourceModel: ResourceUiModel? = null,
     val tags: List<TagModel> = emptyList(),
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
 )

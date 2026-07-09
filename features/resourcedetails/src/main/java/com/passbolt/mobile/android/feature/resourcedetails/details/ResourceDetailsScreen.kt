@@ -25,6 +25,7 @@ package com.passbolt.mobile.android.feature.resourcedetails.details
 
 import android.graphics.drawable.Drawable
 import android.widget.Toast
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,7 +70,6 @@ import com.passbolt.mobile.android.core.navigation.compose.results.ResourceFormC
 import com.passbolt.mobile.android.core.navigation.compose.results.ResultEffect
 import com.passbolt.mobile.android.core.ui.dialogs.ConfirmResourceDeleteAlertDialog
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
-import com.passbolt.mobile.android.core.ui.pulltorefresh.PullToRefreshIndicatorBox
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
@@ -269,6 +269,7 @@ private fun ResourceDetailsScreen(
         topBar = {
             TitleAppBar(
                 navigationIcon = { BackNavigationIcon(onBackClick = { onIntent(GoBack) }) },
+                refreshProgress = if (state.isRefreshing) state.refreshProgress else null,
                 actions = {
                     IconButton(
                         onClick = { onIntent(OpenMoreMenu) },
@@ -300,8 +301,7 @@ private fun ResourceDetailsScreen(
             )
         },
         content = { paddingValues ->
-            PullToRefreshIndicatorBox(
-                isRefreshing = state.isRefreshing,
+            Box(
                 modifier =
                     Modifier
                         .fillMaxSize()

@@ -63,7 +63,6 @@ import com.passbolt.mobile.android.common.extension.toSingleLine
 import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
-import com.passbolt.mobile.android.core.ui.pulltorefresh.PullToRefreshIndicatorBox
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
@@ -149,6 +148,7 @@ private fun LocationDetailsContent(
             TitleAppBar(
                 title = stringResource(LocalizationR.string.location),
                 navigationIcon = { BackNavigationIcon(onBackClick = { onIntent(GoBack) }) },
+                refreshProgress = if (state.isRefreshing) state.refreshProgress else null,
             )
         },
         snackbarHost = {
@@ -169,75 +169,71 @@ private fun LocationDetailsContent(
             )
         },
         content = { paddingValues ->
-            PullToRefreshIndicatorBox(
-                isRefreshing = state.isRefreshing,
+            Column(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .padding(paddingValues),
+                        .padding(paddingValues)
+                        .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    val context = LocalContext.current
-                    var itemIcon by remember { mutableStateOf<Drawable?>(null) }
+                val context = LocalContext.current
+                var itemIcon by remember { mutableStateOf<Drawable?>(null) }
 
-                    LaunchedEffect(state.itemName) {
-                        itemIcon =
-                            if (state.resource != null) {
-                                resourceIconProvider.getResourceIcon(context, state.resource)
-                            } else {
-                                ContextCompat.getDrawable(
-                                    context,
-                                    if (state.isSharedFolder) {
-                                        CoreUiR.drawable.ic_filled_shared_folder_with_bg
-                                    } else {
-                                        CoreUiR.drawable.ic_filled_folder_with_bg
-                                    },
-                                )
-                            }
-                    }
+                LaunchedEffect(state.itemName) {
+                    itemIcon =
+                        if (state.resource != null) {
+                            resourceIconProvider.getResourceIcon(context, state.resource)
+                        } else {
+                            ContextCompat.getDrawable(
+                                context,
+                                if (state.isSharedFolder) {
+                                    CoreUiR.drawable.ic_filled_shared_folder_with_bg
+                                } else {
+                                    CoreUiR.drawable.ic_filled_folder_with_bg
+                                },
+                            )
+                        }
+                }
 
-                    itemIcon?.let { drawable ->
-                        Image(
-                            painter = BitmapPainter(drawable.toBitmap().asImageBitmap()),
-                            contentDescription = null,
-                            modifier = Modifier.size(60.dp),
-                        )
-                    }
+                itemIcon?.let { drawable ->
+                    Image(
+                        painter = BitmapPainter(drawable.toBitmap().asImageBitmap()),
+                        contentDescription = null,
+                        modifier = Modifier.size(60.dp),
+                    )
+                }
 
+                Text(
+                    text = state.itemName.toSingleLine(),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+
+                if (state.folderTree != null && state.folderTree.rootNodes.isNotEmpty()) {
                     Text(
-                        text = state.itemName.toSingleLine(),
-                        style = MaterialTheme.typography.titleLarge,
+                        text = stringResource(LocalizationR.string.location),
+                        style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 16.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(top = 24.dp, start = 16.dp),
                     )
 
-                    if (state.folderTree != null && state.folderTree.rootNodes.isNotEmpty()) {
-                        Text(
-                            text = stringResource(LocalizationR.string.location),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 24.dp, start = 16.dp),
-                        )
-
-                        LazyColumn(modifier = Modifier.padding(top = 24.dp)) {
-                            items(
-                                items = flattenTree(state.folderTree.rootNodes, state.expandedItemIds),
-                                key = { it.id },
-                            ) { node ->
-                                ExpandableFolderItem(
-                                    node = node,
-                                    isExpanded = state.expandedItemIds.contains(node.id),
-                                    onToggleExpansion = { onIntent(ToggleExpanded(node.id)) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                            }
+                    LazyColumn(modifier = Modifier.padding(top = 24.dp)) {
+                        items(
+                            items = flattenTree(state.folderTree.rootNodes, state.expandedItemIds),
+                            key = { it.id },
+                        ) { node ->
+                            ExpandableFolderItem(
+                                node = node,
+                                isExpanded = state.expandedItemIds.contains(node.id),
+                                onToggleExpansion = { onIntent(ToggleExpanded(node.id)) },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
                         }
                     }
                 }

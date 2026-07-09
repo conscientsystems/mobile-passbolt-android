@@ -534,7 +534,7 @@ internal class OtpViewModel(
     private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
-                InProgress -> updateViewState { copy(isRefreshing = true) }
+                is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = it.progress) }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                     updateViewState { copy(isRefreshing = false) }

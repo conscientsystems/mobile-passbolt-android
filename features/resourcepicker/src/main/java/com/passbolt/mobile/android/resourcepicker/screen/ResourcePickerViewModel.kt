@@ -172,7 +172,7 @@ internal class ResourcePickerViewModel(
         viewModelScope.launch(coroutineLaunchContext.ui) {
             dataRefreshTrackingFlow.dataRefreshStatusFlow.collect { status ->
                 when (status) {
-                    InProgress -> updateViewState { copy(isRefreshing = true) }
+                    is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = status.progress) }
                     FinishedWithFailure -> {
                         emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                         updateViewState { copy(isRefreshing = false) }

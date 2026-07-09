@@ -33,7 +33,6 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -45,12 +44,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
-import com.passbolt.mobile.android.core.fulldatarefresh.service.DataRefreshService
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
 import com.passbolt.mobile.android.core.navigation.compose.results.ResourcePickerResultEvent
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
 import com.passbolt.mobile.android.core.ui.dialogs.ConfirmAlertDialog
+import com.passbolt.mobile.android.core.ui.progressindicator.DataRefreshProgressIndicator
 import com.passbolt.mobile.android.core.ui.scaffold.HomeScaffold
 import com.passbolt.mobile.android.core.ui.search.SearchInput
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
@@ -120,8 +119,6 @@ private fun ResourcePickerScreen(
     modifier: Modifier = Modifier,
     confirmationModelFactory: ConfirmationModelFactory = koinInject(),
 ) {
-    val context = LocalContext.current
-
     HomeScaffold(
         snackbarHostState = snackbarHostState,
         modifier = modifier,
@@ -162,15 +159,19 @@ private fun ResourcePickerScreen(
             }
         },
         content = { paddingValues ->
-            PullToRefreshBox(
-                isRefreshing = state.isRefreshing,
-                onRefresh = { DataRefreshService.start(context) },
+            Box(
                 modifier =
                     Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
             ) {
                 ResourcePickerList(state, onIntent)
+                if (state.isRefreshing) {
+                    DataRefreshProgressIndicator(
+                        progress = state.refreshProgress,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                    )
+                }
             }
 
             if (state.showConfirmationDialog && state.confirmationType != null && state.pickAction != null) {

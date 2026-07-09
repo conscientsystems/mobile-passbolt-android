@@ -40,6 +40,7 @@ data class HomeState(
     val showSuggestedModel: ShowSuggestedModel = ShowSuggestedModel.DoNotShow,
     val canCreateResource: Boolean = false,
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
     val searchQuery: String = "",
     val showProgress: Boolean = false,
     val searchInputEndIconMode: SearchInputEndIconMode = AVATAR,

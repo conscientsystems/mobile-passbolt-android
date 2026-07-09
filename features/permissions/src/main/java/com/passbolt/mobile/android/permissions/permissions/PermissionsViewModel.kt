@@ -157,7 +157,7 @@ class PermissionsViewModel(
     private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect { status ->
             when (status) {
-                DataRefreshStatus.InProgress -> { // no-op
+                is DataRefreshStatus.InProgress -> { // no-op
                 }
                 DataRefreshStatus.Idle.FinishedWithFailure ->
                     emitSideEffect(ShowErrorSnackbar(DATA_REFRESH_ERROR))

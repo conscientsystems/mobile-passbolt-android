@@ -36,6 +36,7 @@ data class OtpState(
     val suggestedOtps: List<OtpItemWrapper> = emptyList(),
     val universalCountdownSeconds: Long = DEFAULT_TOTP_PERIOD,
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
     val searchQuery: String = "",
     val showProgress: Boolean = false,
     val searchInputEndIconMode: SearchInputEndIconMode = SearchInputEndIconMode.AVATAR,
