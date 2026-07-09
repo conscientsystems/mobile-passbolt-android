@@ -40,6 +40,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +85,7 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ConfirmDeleteTot
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CopyOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.DeleteOtp
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Dispose
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.RevealOtp
@@ -136,6 +138,12 @@ internal fun OtpScreen(
         resourceHandlingStrategy = resourceHandlingStrategy,
         modifier = modifier,
     )
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.onIntent(Dispose)
+        }
+    }
 
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
@@ -213,6 +221,7 @@ fun OtpScreen(
                         .fillMaxWidth()
                         .padding(end = 16.dp),
                 avatarUrl = state.userAvatar,
+                initialValue = state.searchQuery,
                 onEndIconClick = { onIntent(SearchEndIconAction) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             )

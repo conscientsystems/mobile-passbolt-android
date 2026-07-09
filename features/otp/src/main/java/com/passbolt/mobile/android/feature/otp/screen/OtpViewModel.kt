@@ -63,6 +63,7 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ConfirmDeleteTot
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CopyOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.DeleteOtp
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Dispose
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OtpQRScanReturned
@@ -147,6 +148,7 @@ internal class OtpViewModel(
     private var dataRefreshJob: Job? = null
     private var otpsCounterJob: Job? = null
     private var universalCountdownJob: Job? = null
+    private var fetchTotpJob: Job? = null
 
     init {
         loadUserAvatar()
@@ -177,6 +179,7 @@ internal class OtpViewModel(
         dataRefreshJob?.cancel()
         otpsCounterJob?.cancel()
         universalCountdownJob?.cancel()
+        fetchTotpJob?.cancel()
         super.onCleared()
     }
 
@@ -241,7 +244,17 @@ internal class OtpViewModel(
             is TrustNewMetadataKey -> trustNewMetadataKeyConfirmed(intent.model)
             CloseSwitchAccount -> updateViewState { copy(showAccountSwitchBottomSheet = false) }
             SearchEndIconAction -> searchEndIconAction()
+            Dispose -> dispose()
         }
+    }
+
+    private fun dispose() {
+        fetchTotpJob?.cancel()
+        updateOtpLists { allReset() }
+    }
+
+    private fun updateOtpLists(transform: List<OtpItemWrapper>.() -> List<OtpItemWrapper>) {
+        updateViewState { copy(otps = otps.transform(), filteredOtps = filteredOtps.transform()) }
     }
 
     private fun searchEndIconAction() {
@@ -441,28 +454,28 @@ internal class OtpViewModel(
         resource: ResourceUiModel,
         afterFetchAction: (SecretPropertyActionResult.Success<TotpSecret>) -> Unit,
     ) {
-        viewModelScope.launch(coroutineLaunchContext.io) {
-            updateViewState {
-                copy(otps = otps.refreshingOnly(resource.resourceId))
+        fetchTotpJob?.cancel()
+        fetchTotpJob =
+            viewModelScope.launch(coroutineLaunchContext.io) {
+                updateOtpLists { refreshingOnly(resource.resourceId) }
+
+                val secretPropertiesActionsInteractor = secretPropertiesActionsInteractorFactory.create(resource)
+
+                performSecretPropertyAction(
+                    action = { secretPropertiesActionsInteractor.provideOtp() },
+                    doOnDecryptionFailure = {
+                        emitSideEffect(ShowErrorSnackbar(DECRYPTION_FAILURE))
+                        updateOtpLists { refreshingNone() }
+                    },
+                    doOnFetchFailure = {
+                        emitSideEffect(ShowErrorSnackbar(FETCH_FAILURE))
+                        updateOtpLists { refreshingNone() }
+                    },
+                    doOnSuccess = { result ->
+                        afterFetchAction(result)
+                    },
+                )
             }
-
-            val secretPropertiesActionsInteractor = secretPropertiesActionsInteractorFactory.create(resource)
-
-            performSecretPropertyAction(
-                action = { secretPropertiesActionsInteractor.provideOtp() },
-                doOnDecryptionFailure = {
-                    emitSideEffect(ShowErrorSnackbar(DECRYPTION_FAILURE))
-                    updateViewState { copy(otps = otps.refreshingNone()) }
-                },
-                doOnFetchFailure = {
-                    emitSideEffect(ShowErrorSnackbar(FETCH_FAILURE))
-                    updateViewState { copy(otps = otps.refreshingNone()) }
-                },
-                doOnSuccess = { result ->
-                    afterFetchAction(result)
-                },
-            )
-        }
     }
 
     private fun showTotp(
@@ -484,15 +497,12 @@ internal class OtpViewModel(
         when (otpParameters) {
             InvalidTotpInput -> stopRefreshingAndShowError("Failed to generate totp parameters")
             is OtpParameters -> {
-                updateViewState {
-                    copy(
-                        otps =
-                            otps.revealed(
-                                resourceId,
-                                otpParameters.otpValue,
-                                totp.result.period,
-                                otpParameters.secondsValid,
-                            ),
+                updateOtpLists {
+                    revealed(
+                        resourceId,
+                        otpParameters.otpValue,
+                        totp.result.period,
+                        otpParameters.secondsValid,
                     )
                 }
 
@@ -520,12 +530,12 @@ internal class OtpViewModel(
                 val updated = visibleTotp.copy(remainingSecondsCounter = (visibleTotp.remainingSecondsCounter!!) - 1)
 
                 if (updated.isExpired()) {
-                    updateViewState { copy(otps = otps.allReset()) }
+                    updateOtpLists { allReset() }
                     fetchTotp(updated.resource) {
                         showTotp(it, updated.resource.resourceId)
                     }
                 } else {
-                    updateViewState { copy(otps = otps.replaceOnId(updated)) }
+                    updateOtpLists { replaceOnId(updated) }
                 }
             }
         }
@@ -541,7 +551,16 @@ internal class OtpViewModel(
                 }
                 FinishedWithSuccess -> {
                     val otps = getOtpResources()
-                    updateViewState { copy(otps = otps, suggestedOtps = getSuggestedOtps(otps), isRefreshing = false) }
+                    val searchQuery = viewState.value.searchQuery
+                    val filteredOtps = if (searchQuery.isNotEmpty()) getOtpResources(searchQuery) else emptyList()
+                    updateViewState {
+                        copy(
+                            otps = otps,
+                            filteredOtps = filteredOtps,
+                            suggestedOtps = getSuggestedOtps(otps),
+                            isRefreshing = false,
+                        )
+                    }
                 }
                 NotCompleted -> {
                     // do nothing
@@ -581,12 +600,12 @@ internal class OtpViewModel(
     private fun stopRefreshingAndShowError(message: String) {
         Timber.e(message)
         emitSideEffect(ShowErrorSnackbar(ERROR, message))
-        updateViewState { copy(otps = otps.refreshingNone()) }
+        updateOtpLists { refreshingNone() }
     }
 
     private fun stopRefreshingAndShowInvalidTotpError() {
         Timber.e("Invalid TOTP parameters")
         emitSideEffect(ShowErrorSnackbar(INVALID_TOTP_PARAMETERS))
-        updateViewState { copy(otps = otps.refreshingNone()) }
+        updateOtpLists { refreshingNone() }
     }
 }
