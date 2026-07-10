@@ -36,7 +36,6 @@ import com.passbolt.mobile.android.core.coreUiModule
 import com.passbolt.mobile.android.core.envinfo.envInfoModule
 import com.passbolt.mobile.android.core.fulldatarefresh.fullDataRefreshModule
 import com.passbolt.mobile.android.core.idlingresource.idlingResourcesModule
-import com.passbolt.mobile.android.core.inappreview.inAppReviewModule
 import com.passbolt.mobile.android.core.logger.loggerModule
 import com.passbolt.mobile.android.core.mvp.architectureModule
 import com.passbolt.mobile.android.core.navigation.navigationModule
@@ -58,6 +57,7 @@ import com.passbolt.mobile.android.data.favourites.favouritesDataModule
 import com.passbolt.mobile.android.data.featureflags.featureFlagsDataModule
 import com.passbolt.mobile.android.data.folders.foldersDataModule
 import com.passbolt.mobile.android.data.groups.groupsDataModule
+import com.passbolt.mobile.android.data.inappreview.inAppReviewDataModule
 import com.passbolt.mobile.android.data.metadata.metadataDataModule
 import com.passbolt.mobile.android.data.mfa.mfaDataModule
 import com.passbolt.mobile.android.data.mobiletransfer.mobileTransferDataModule
@@ -74,6 +74,7 @@ import com.passbolt.mobile.android.domain.auth.authDomainModule
 import com.passbolt.mobile.android.domain.favourites.favouritesDomainModule
 import com.passbolt.mobile.android.domain.folders.foldersDomainModule
 import com.passbolt.mobile.android.domain.groups.groupsDomainModule
+import com.passbolt.mobile.android.domain.inappreview.inAppReviewDomainModule
 import com.passbolt.mobile.android.domain.metadata.metadataDomainModule
 import com.passbolt.mobile.android.domain.mobiletransfer.mobileTransferDomainModule
 import com.passbolt.mobile.android.domain.passwordexpiry.passwordExpiryDomainModule
@@ -180,7 +181,8 @@ class KoinInitializer : Initializer<Unit> {
                 resourceTypesDataModule,
                 notificationsModule,
                 autofillModule,
-                inAppReviewModule,
+                inAppReviewDomainModule,
+                inAppReviewDataModule,
                 envInfoModule,
                 idlingResourcesModule,
                 transferAccountToAnotherDeviceModule,

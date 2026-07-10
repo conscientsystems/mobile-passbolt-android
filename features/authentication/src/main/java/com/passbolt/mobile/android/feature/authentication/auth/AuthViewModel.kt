@@ -11,7 +11,6 @@ import com.passbolt.mobile.android.core.authenticationcore.passphrase.GetPassphr
 import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
-import com.passbolt.mobile.android.core.inappreview.InAppReviewInteractor
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider.DUO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider.TOTP
@@ -30,6 +29,7 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphras
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
+import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AcceptChangedServerFingerprint
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AccessLogs

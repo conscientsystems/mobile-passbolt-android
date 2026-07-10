@@ -10,7 +10,6 @@ import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSel
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.GetPassphraseUseCase
 import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
-import com.passbolt.mobile.android.core.inappreview.InAppReviewInteractor
 import com.passbolt.mobile.android.core.mvp.authentication.MfaProvidersHandler
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.AppContext
@@ -20,6 +19,7 @@ import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PA
 import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
+import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationError
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationSuccess
