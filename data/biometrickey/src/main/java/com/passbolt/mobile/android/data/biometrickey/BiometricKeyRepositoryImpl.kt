@@ -1,9 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.biometrickey
-
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCrypto
-import com.passbolt.mobile.android.encryptedstorage.biometric.KeyStoreWrapper
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,10 +20,22 @@ import com.passbolt.mobile.android.encryptedstorage.biometric.KeyStoreWrapper
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class RemoveBiometricKeyUseCase(
-    private val keyStoreWrapper: KeyStoreWrapper,
-) : UseCase<Unit, Unit> {
-    override fun execute(input: Unit) {
-        keyStoreWrapper.removeKey(BiometricCrypto.BIOMETRIC_KEY_ALIAS)
-    }
+
+package com.passbolt.mobile.android.data.biometrickey
+
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyLocalDataSource
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
+import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey
+
+internal class BiometricKeyRepositoryImpl(
+    private val localDataSource: BiometricKeyLocalDataSource,
+) : BiometricKeyRepository {
+    override fun getBiometricKey(userId: String): BiometricKey = localDataSource.getBiometricKey(userId)
+
+    override fun saveBiometricKey(
+        userId: String,
+        biometricKey: BiometricKey,
+    ) = localDataSource.saveBiometricKey(userId, biometricKey)
+
+    override fun removeBiometricKey() = localDataSource.removeBiometricKey()
 }

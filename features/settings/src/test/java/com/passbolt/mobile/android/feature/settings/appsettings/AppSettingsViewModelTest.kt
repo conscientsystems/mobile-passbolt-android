@@ -5,7 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.common.BiometricInformationProvider
 import com.passbolt.mobile.android.common.autofill.DetectAutofillConflict
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.biometrickey.SaveBiometricKeyIvUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.CheckIfPassphraseFileExistsUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemovePassphraseUseCase
@@ -14,6 +13,7 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCa
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.KeyStatus.VALID
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.Passphrase
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.PassphraseNotPresent
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.AppSettingsIntent
@@ -90,7 +90,7 @@ class AppSettingsViewModelTest : KoinTest {
                         single { mock<BiometricCipher>() }
                         single { mock<BiometryInteractor>() }
                         single { mock<SavePassphraseUseCase>() }
-                        single { mock<SaveBiometricKeyIvUseCase>() }
+                        single { mock<BiometricKeyRepository>() }
                         single { mock<DetectAutofillConflict>() }
                         factoryOf(::AppSettingsViewModel)
                     },
@@ -231,7 +231,7 @@ class AppSettingsViewModelTest : KoinTest {
                     verify(get<SavePassphraseUseCase>()).execute(capture())
                     assertThat(firstValue.passphrase).isEqualTo(PASSPHRASE)
                 }
-                verify(get<SaveBiometricKeyIvUseCase>()).execute(any())
+                verify(get<BiometricKeyRepository>()).saveBiometricKey(any(), any())
 
                 assertThat(awaitItem().isBiometricEnabled).isTrue()
             }
@@ -273,7 +273,7 @@ class AppSettingsViewModelTest : KoinTest {
                     verify(get<SavePassphraseUseCase>()).execute(capture())
                     assertThat(firstValue.passphrase).isEqualTo(PASSPHRASE)
                 }
-                verify(get<SaveBiometricKeyIvUseCase>()).execute(any())
+                verify(get<BiometricKeyRepository>()).saveBiometricKey(any(), any())
 
                 assertThat(awaitItem().isBiometricEnabled).isTrue()
             }

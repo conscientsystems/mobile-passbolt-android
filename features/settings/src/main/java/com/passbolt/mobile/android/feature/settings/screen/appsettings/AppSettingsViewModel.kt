@@ -27,7 +27,6 @@ import android.security.keystore.KeyPermanentlyInvalidatedException
 import com.passbolt.mobile.android.common.BiometricInformationProvider
 import com.passbolt.mobile.android.common.autofill.DetectAutofillConflict
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.biometrickey.SaveBiometricKeyIvUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.CheckIfPassphraseFileExistsUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemovePassphraseUseCase
@@ -35,6 +34,8 @@ import com.passbolt.mobile.android.core.authenticationcore.passphrase.SavePassph
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
+import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.AppSettingsIntent.CancelConfigureBiometric
@@ -77,7 +78,7 @@ internal class AppSettingsViewModel(
     private val biometricCipher: BiometricCipher,
     private val biometryInteractor: BiometryInteractor,
     private val savePassphraseUseCase: SavePassphraseUseCase,
-    private val saveBiometricKeyIvUseCase: SaveBiometricKeyIvUseCase,
+    private val biometricKeyRepository: BiometricKeyRepository,
     private val detectAutofillConflict: DetectAutofillConflict,
 ) : SideEffectViewModel<AppSettingsState, AppSettingsSideEffect>(AppSettingsState()) {
     init {
@@ -159,10 +160,9 @@ internal class AppSettingsViewModel(
                     authenticatedCipher,
                 ),
             )
-            saveBiometricKeyIvUseCase.execute(
-                SaveBiometricKeyIvUseCase.Input(
-                    authenticatedCipher.iv,
-                ),
+            biometricKeyRepository.saveBiometricKey(
+                userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount),
+                biometricKey = BiometricKey(authenticatedCipher.iv),
             )
             updateViewState { copy(isBiometricEnabled = true) }
         } else {

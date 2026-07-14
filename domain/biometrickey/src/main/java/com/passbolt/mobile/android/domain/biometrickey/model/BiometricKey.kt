@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -23,17 +21,15 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @since v1.0
  */
 
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val ACCOUNTS_ALIAS = "accounts_list"
-internal const val USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY"
-internal const val USER_LAST_NAME_KEY = "USER_LAST_NAME_KEY"
-internal const val USER_LABEL_KEY = "USER_LABEL_KEY"
-internal const val URL_KEY = "URL_KEY"
-internal const val SERVER_ID_KEY = "SERVER_ID_KEY"
-internal const val AVATAR_URL_KEY = "AVATAR_URL_KEY"
-internal const val ROLE_KEY = "ROLE_KEY"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val SERVER_FINGERPRINT_KEY = "SERVER_FINGERPRINT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
-internal const val EMAIL_KEY = "EMAIL_KEY"
+package com.passbolt.mobile.android.domain.biometrickey.model
+
+/**
+ * Persisted material of the account's biometric key. The symmetric key itself lives in the Android Keystore; the only
+ * app-persisted datum is the initialization vector used to build the decryption cipher.
+ *
+ * Modelled as a plain class (not a data class) on purpose: the [iv] is a [ByteArray], whose structural equality is
+ * identity-based, so a generated data-class `equals`/`hashCode` would be misleading.
+ */
+class BiometricKey(
+    val iv: ByteArray,
+)

@@ -215,6 +215,7 @@ dependencies {
     implementation(project(":passwordgenerator"))
     implementation(project(":metadata-domain"))
     implementation(project(":metadata-data"))
+    implementation(project(":biometrickey-data"))
     implementation(project(":encryptedstorage"))
     implementation(project(":authenticationcore"))
     implementation(project(":preferences"))

@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.biometrickey
-
-import android.util.Base64
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.BiometricKeyIvFileName
-import com.passbolt.mobile.android.core.accounts.usecase.IV_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,20 +20,18 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class SaveBiometricKeyIvUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<SaveBiometricKeyIvUseCase.Input, Unit>,
-    SelectedAccountUseCase {
-    override fun execute(input: Input) {
-        val fileName = BiometricKeyIvFileName(selectedAccountId)
-        with(encryptedSharedPreferencesFactory.get(fileName.name).edit()) {
-            val encodedIv = Base64.encodeToString(input.iv, Base64.DEFAULT)
-            putString(IV_KEY, encodedIv)
-            apply()
-        }
-    }
 
-    class Input(
-        val iv: ByteArray,
+package com.passbolt.mobile.android.domain.biometrickey
+
+import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey
+
+interface BiometricKeyRepository {
+    fun getBiometricKey(userId: String): BiometricKey
+
+    fun saveBiometricKey(
+        userId: String,
+        biometricKey: BiometricKey,
     )
+
+    fun removeBiometricKey()
 }

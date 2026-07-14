@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.core.accounts
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -23,13 +21,17 @@ package com.passbolt.mobile.android.core.accounts
  * @since v1.0
  */
 
-class BiometricKeyIvFileName(
-    userId: String,
-) {
-    val name = BIOMETRIC_KEY_IV_FILE_NAME_FORMAT.format(userId)
+package com.passbolt.mobile.android.data.biometrickey
 
-    private companion object {
-        private const val BIOMETRIC_KEY_IV = "BIOMETRIC_KEY_IV"
-        private const val BIOMETRIC_KEY_IV_FILE_NAME_FORMAT = "${BIOMETRIC_KEY_IV}_%s"
+import com.passbolt.mobile.android.data.biometrickey.datasource.local.BiometricKeyLocalDataSourceImpl
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyLocalDataSource
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
+
+val biometricKeyDataModule =
+    module {
+        singleOf(::BiometricKeyLocalDataSourceImpl) bind BiometricKeyLocalDataSource::class
+        singleOf(::BiometricKeyRepositoryImpl) bind BiometricKeyRepository::class
     }
-}

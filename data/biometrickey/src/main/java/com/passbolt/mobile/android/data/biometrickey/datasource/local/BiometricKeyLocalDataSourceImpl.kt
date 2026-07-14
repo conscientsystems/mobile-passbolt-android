@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.biometrickey
-
-import android.util.Base64
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.BiometricKeyIvFileName
-import com.passbolt.mobile.android.core.accounts.usecase.IV_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,20 +20,48 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class GetBiometricKeyIvUseCase(
+
+package com.passbolt.mobile.android.data.biometrickey.datasource.local
+
+import android.util.Base64
+import com.passbolt.mobile.android.data.biometrickey.BiometricKeyIvFileName
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyLocalDataSource
+import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey
+import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCrypto
+import com.passbolt.mobile.android.encryptedstorage.biometric.KeyStoreWrapper
+
+internal class BiometricKeyLocalDataSourceImpl(
     private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<UserIdInput, GetBiometricKeyIvUseCase.Output> {
-    override fun execute(input: UserIdInput): Output {
-        val fileName = BiometricKeyIvFileName(input.userId)
+    private val keyStoreWrapper: KeyStoreWrapper,
+) : BiometricKeyLocalDataSource {
+    override fun getBiometricKey(userId: String): BiometricKey {
+        val fileName = BiometricKeyIvFileName(userId)
         val encodedIv =
             encryptedSharedPreferencesFactory
                 .get(fileName.name)
                 .getString(IV_KEY, "")
         require(!encodedIv.isNullOrBlank())
-        return Output(Base64.decode(encodedIv, Base64.DEFAULT))
+        return BiometricKey(Base64.decode(encodedIv, Base64.DEFAULT))
     }
 
-    class Output(
-        val iv: ByteArray,
-    )
+    override fun saveBiometricKey(
+        userId: String,
+        biometricKey: BiometricKey,
+    ) {
+        val fileName = BiometricKeyIvFileName(userId)
+        with(encryptedSharedPreferencesFactory.get(fileName.name).edit()) {
+            val encodedIv = Base64.encodeToString(biometricKey.iv, Base64.DEFAULT)
+            putString(IV_KEY, encodedIv)
+            apply()
+        }
+    }
+
+    override fun removeBiometricKey() {
+        keyStoreWrapper.removeKey(BiometricCrypto.BIOMETRIC_KEY_ALIAS)
+    }
+
+    private companion object {
+        private const val IV_KEY = "IV"
+    }
 }

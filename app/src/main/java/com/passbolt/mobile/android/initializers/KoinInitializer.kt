@@ -53,6 +53,7 @@ import com.passbolt.mobile.android.core.users.usersModule
 import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
 import com.passbolt.mobile.android.data.auth.authDataModule
+import com.passbolt.mobile.android.data.biometrickey.biometricKeyDataModule
 import com.passbolt.mobile.android.data.favourites.favouritesDataModule
 import com.passbolt.mobile.android.data.featureflags.featureFlagsDataModule
 import com.passbolt.mobile.android.data.folders.foldersDataModule
@@ -167,6 +168,7 @@ class KoinInitializer : Initializer<Unit> {
                 mainModule,
                 groupsDomainModule,
                 groupsDataModule,
+                biometricKeyDataModule,
                 commonModule,
                 coreUiModule,
                 locationDetailsModule,

@@ -1,7 +1,6 @@
 package com.passbolt.mobile.android.core.accounts.usecase
 
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.biometrickey.GetBiometricKeyIvUseCase
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCrypto.Companion.BIOMETRIC_KEY_ALIAS
 import com.passbolt.mobile.android.encryptedstorage.biometric.KeyStoreWrapper
@@ -33,7 +32,7 @@ import javax.crypto.spec.IvParameterSpec
 
 class BiometricCipherImpl(
     private val keyStoreWrapper: KeyStoreWrapper,
-    private val getBiometricKeyIvUseCase: GetBiometricKeyIvUseCase,
+    private val biometricKeyRepository: BiometricKeyRepository,
 ) : BiometricCipher {
     override fun getBiometricEncryptCipher(): Cipher =
         newSymmetricCipher().apply {
@@ -46,8 +45,8 @@ class BiometricCipherImpl(
             val key =
                 keyStoreWrapper.getSymmetricKey(BIOMETRIC_KEY_ALIAS)
                     ?: throw SecurityException("Unable to decrypt: No keys found")
-            val ivOutput = getBiometricKeyIvUseCase.execute(UserIdInput(userId))
-            init(Cipher.DECRYPT_MODE, key, IvParameterSpec(ivOutput.iv))
+            val iv = biometricKeyRepository.getBiometricKey(userId).iv
+            init(Cipher.DECRYPT_MODE, key, IvParameterSpec(iv))
         }
 
     companion object {

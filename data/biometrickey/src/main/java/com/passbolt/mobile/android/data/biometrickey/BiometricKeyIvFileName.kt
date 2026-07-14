@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -23,17 +21,15 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @since v1.0
  */
 
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val ACCOUNTS_ALIAS = "accounts_list"
-internal const val USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY"
-internal const val USER_LAST_NAME_KEY = "USER_LAST_NAME_KEY"
-internal const val USER_LABEL_KEY = "USER_LABEL_KEY"
-internal const val URL_KEY = "URL_KEY"
-internal const val SERVER_ID_KEY = "SERVER_ID_KEY"
-internal const val AVATAR_URL_KEY = "AVATAR_URL_KEY"
-internal const val ROLE_KEY = "ROLE_KEY"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val SERVER_FINGERPRINT_KEY = "SERVER_FINGERPRINT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
-internal const val EMAIL_KEY = "EMAIL_KEY"
+package com.passbolt.mobile.android.data.biometrickey
+
+internal class BiometricKeyIvFileName(
+    userId: String,
+) {
+    val name = BIOMETRIC_KEY_IV_FILE_NAME_FORMAT.format(userId)
+
+    private companion object {
+        private const val BIOMETRIC_KEY_IV = "BIOMETRIC_KEY_IV"
+        private const val BIOMETRIC_KEY_IV_FILE_NAME_FORMAT = "${BIOMETRIC_KEY_IV}_%s"
+    }
+}
