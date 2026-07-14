@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":accountdetails"))
     implementation(project(":fulldatarefresh"))
     implementation(project(":accounts"))
+    implementation(project(":biometrickey-domain"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":authenticationcore"))
     implementation(project(":encryptedstorage"))

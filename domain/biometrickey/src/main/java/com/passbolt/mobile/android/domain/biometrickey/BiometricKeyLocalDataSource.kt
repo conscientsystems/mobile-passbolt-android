@@ -1,7 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.biometrickey
-
-import org.koin.core.module.Module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,20 +21,17 @@ import org.koin.core.module.Module
  * @since v1.0
  */
 
-internal fun Module.biometricKeyIvModule() {
-    factory {
-        GetBiometricKeyIvUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    factory {
-        SaveBiometricKeyIvUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    factory {
-        RemoveBiometricKeyUseCase(
-            keyStoreWrapper = get(),
-        )
-    }
+package com.passbolt.mobile.android.domain.biometrickey
+
+import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey
+
+interface BiometricKeyLocalDataSource {
+    fun getBiometricKey(userId: String): BiometricKey
+
+    fun saveBiometricKey(
+        userId: String,
+        biometricKey: BiometricKey,
+    )
+
+    fun removeBiometricKey()
 }

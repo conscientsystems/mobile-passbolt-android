@@ -28,6 +28,7 @@ dependencies {
     implementation(project(":idlingresource"))
     implementation(project(":rbac-domain"))
     implementation(project(":accounts"))
+    implementation(project(":biometrickey-domain"))
     implementation(project(":testtags"))
     implementation(project(":authenticationcore"))
     implementation(project(":passphrasememorycache"))

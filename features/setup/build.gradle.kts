@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":helpmenu"))
     implementation(project(":logs"))
     implementation(project(":accounts"))
+    implementation(project(":biometrickey-domain"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":encryptedstorage"))
     implementation(project(":authenticationcore"))

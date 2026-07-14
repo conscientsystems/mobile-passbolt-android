@@ -2,9 +2,9 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.BiometricInformationProvider
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.biometrickey.RemoveBiometricKeyUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.CheckIfPassphraseFileExistsUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemoveAllAccountsPassphrasesUseCase
+import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
 import timber.log.Timber
 
 /**
@@ -32,7 +32,7 @@ import timber.log.Timber
 class BiometryInteractor(
     private val checkIfPassphraseFileExistsUseCase: CheckIfPassphraseFileExistsUseCase,
     private val removeAllAccountsPassphrasesUseCase: RemoveAllAccountsPassphrasesUseCase,
-    private val removeBiometricKeyUseCase: RemoveBiometricKeyUseCase,
+    private val biometricKeyRepository: BiometricKeyRepository,
     private val biometricInfoProvider: BiometricInformationProvider,
 ) {
     fun onBiometryReady(
@@ -53,6 +53,6 @@ class BiometryInteractor(
 
     fun disableBiometry() {
         removeAllAccountsPassphrasesUseCase.execute(Unit)
-        removeBiometricKeyUseCase.execute(Unit)
+        biometricKeyRepository.removeBiometricKey()
     }
 }
