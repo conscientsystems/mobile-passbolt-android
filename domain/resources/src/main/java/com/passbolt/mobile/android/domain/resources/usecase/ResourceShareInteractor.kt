@@ -1,7 +1,5 @@
 package com.passbolt.mobile.android.domain.resources.usecase
 
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
@@ -11,6 +9,7 @@ import com.passbolt.mobile.android.core.mvp.authentication.UnauthenticatedReason
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.SecretInteractor
 import com.passbolt.mobile.android.domain.share.model.ShareRecipient
@@ -49,7 +48,7 @@ class ResourceShareInteractor(
     private val simulateShareUseCase: SimulateShareResourceUseCase,
     private val shareResourceUseCase: ShareResourceUseCase,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val secretInteractor: SecretInteractor,
     private val openPgp: OpenPgp,
     private val passphraseMemoryCache: PassphraseMemoryCache,
@@ -169,7 +168,10 @@ class ResourceShareInteractor(
             .map { getLocalUserUseCase.execute(GetLocalUserUseCase.Input(it.userId)).user }
             .forEach { user ->
                 val currentUserId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-                val privateKey = getPrivateKeyUseCase.execute(UserIdInput(currentUserId)).privateKey
+                val privateKey =
+                    requireNotNull(privateKeyRepository.getPrivateKey(currentUserId)) {
+                        "Unable to restore private key."
+                    }.armoredKey
                 val publicKey = user.gpgKey.armoredKey
 
                 val encryptedSecret =

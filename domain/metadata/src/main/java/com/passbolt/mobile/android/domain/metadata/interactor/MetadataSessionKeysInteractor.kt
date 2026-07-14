@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.domain.metadata.interactor
 
 import com.google.gson.Gson
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
@@ -18,6 +18,7 @@ import com.passbolt.mobile.android.domain.metadata.usecase.FetchMetadataSessionK
 import com.passbolt.mobile.android.domain.metadata.usecase.FetchMetadataSessionKeysUseCase.Output.Success
 import com.passbolt.mobile.android.domain.metadata.usecase.PostMetadataSessionKeysUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.UpdateMetadataSessionKeysUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
 import com.passbolt.mobile.android.dto.request.SessionKeysBundleDto
 import com.passbolt.mobile.android.dto.response.DecryptedMetadataSessionKeysBundleModel
@@ -57,7 +58,8 @@ class MetadataSessionKeysInteractor(
     private val postMetadataSessionKeysUseCase: PostMetadataSessionKeysUseCase,
     private val updateMetadataSessionKeysUseCase: UpdateMetadataSessionKeysUseCase,
     private val passphraseMemoryCache: PassphraseMemoryCache,
-    private val getPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val openPgp: OpenPgp,
     private val sessionKeysBundleMerger: SessionKeysBundleMerger,
     private val sessionKeysMemoryCache: SessionKeysMemoryCache,
@@ -82,7 +84,8 @@ class MetadataSessionKeysInteractor(
 
     @Throws(PassphraseNotInCacheException::class)
     private suspend fun buildMetadataSessionKeysCache(metadataKeysBundles: List<MetadataSessionKeysBundleModel>): Output {
-        val privateKey = getPrivateKeyUseCase.execute(Unit).privateKey
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val privateKey = privateKeyRepository.getPrivateKey(userId)?.armoredKey
         if (privateKey == null) {
             Timber.e("User private key not found")
             return Output.Failure(AuthenticationState.Unauthenticated(Passphrase))
@@ -116,7 +119,8 @@ class MetadataSessionKeysInteractor(
 
     suspend fun saveMetadataSessionKeysCache(): Output {
         Timber.d("Saving session keys cache")
-        val privateKey = getPrivateKeyUseCase.execute(Unit).privateKey
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val privateKey = privateKeyRepository.getPrivateKey(userId)?.armoredKey
         if (privateKey == null) {
             Timber.e("User private key not found")
             return Output.Failure(AuthenticationState.Unauthenticated(Passphrase))
@@ -236,7 +240,8 @@ class MetadataSessionKeysInteractor(
     private suspend fun tryReFetchCacheAndUpdate() {
         val reFetchedCache =
             (fetchMetadataSessionKeysUseCase.execute(Unit) as? Success)?.metadataSessionKeysBundles
-        val privateKey = getPrivateKeyUseCase.execute(Unit).privateKey
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val privateKey = privateKeyRepository.getPrivateKey(userId)?.armoredKey
         val passphrase = passphraseMemoryCache.get()
         if (reFetchedCache != null && privateKey != null && passphrase is PotentialPassphrase.Passphrase) {
             val localSessionKeysBundleId = UUID.randomUUID()

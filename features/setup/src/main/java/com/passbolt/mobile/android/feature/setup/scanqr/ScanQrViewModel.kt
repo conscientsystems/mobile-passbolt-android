@@ -34,7 +34,6 @@ import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccoun
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountExistsUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
@@ -42,6 +41,8 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incompl
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.ConfirmSetupLeave
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.DismissHelpMenu
@@ -81,7 +82,7 @@ internal class ScanQrViewModel(
     private val updateTransferUseCase: UpdateTransferUseCase,
     private val qrParser: ScanQrParser,
     private val uuidProvider: UuidProvider,
-    private val savePrivateKeyUseCase: SavePrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val updateAccountDataUseCase: UpdateAccountDataUseCase,
     private val checkAccountExistsUseCase: CheckAccountExistsUseCase,
     private val httpsVerifier: HttpsVerifier,
@@ -231,15 +232,12 @@ internal class ScanQrViewModel(
     }
 
     private suspend fun parserFinishedWithSuccess(armoredKey: String) {
-        when (savePrivateKeyUseCase.execute(SavePrivateKeyUseCase.Input(userId, armoredKey))) {
-            SavePrivateKeyUseCase.Output.Failure -> {
-                updateTransfer(pageNumber = currentPage, Status.ERROR)
-                emitSideEffect(NavigateToSummary(ResultStatus.Failure("")))
-            }
-            SavePrivateKeyUseCase.Output.Success -> {
-                updateTransfer(pageNumber = currentPage, Status.COMPLETE)
-                emitSideEffect(NavigateToSummary(ResultStatus.Success(userId)))
-            }
+        if (privateKeyRepository.savePrivateKey(userId, PrivateKey(armoredKey))) {
+            updateTransfer(pageNumber = currentPage, Status.COMPLETE)
+            emitSideEffect(NavigateToSummary(ResultStatus.Success(userId)))
+        } else {
+            updateTransfer(pageNumber = currentPage, Status.ERROR)
+            emitSideEffect(NavigateToSummary(ResultStatus.Failure("")))
         }
     }
 

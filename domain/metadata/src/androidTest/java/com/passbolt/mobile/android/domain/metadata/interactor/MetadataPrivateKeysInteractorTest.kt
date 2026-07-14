@@ -26,13 +26,14 @@ package com.passbolt.mobile.android.domain.metadata.interactor
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
 import com.passbolt.mobile.android.domain.metadata.test.R
 import com.passbolt.mobile.android.domain.metadata.usecase.GetTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.SaveTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.UpdateMetadataPrivateKeyUseCase
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import com.passbolt.mobile.android.ui.GpgKeyUiModel
@@ -152,8 +153,11 @@ class MetadataPrivateKeysInteractorTest : KoinTest {
                     ),
                 )
         }
-        mockGetSelectedUserPrivateKeyUseCase.stub {
-            on { execute(any()) } doReturn GetSelectedUserPrivateKeyUseCase.Output(String(gracePrivateKey))
+        mockGetSelectedAccountUseCase.stub {
+            on { execute(any()) } doReturn GetSelectedAccountUseCase.Output(GRACE_USER_ID)
+        }
+        mockPrivateKeyRepository.stub {
+            on { getPrivateKey(any()) } doReturn PrivateKey(String(gracePrivateKey))
         }
         mockPassphraseMemoryCache.stub {
             on { get() } doReturn PotentialPassphrase.Passphrase("grace@passbolt.com".toByteArray())

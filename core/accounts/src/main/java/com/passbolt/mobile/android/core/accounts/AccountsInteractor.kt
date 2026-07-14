@@ -30,15 +30,16 @@ import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccoun
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountExistsUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 
 typealias UserId = String
 
 class AccountsInteractor(
     private val uuidProvider: UuidProvider,
-    private val savePrivateKeyUseCase: SavePrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val updateAccountDataUseCase: UpdateAccountDataUseCase,
     private val saveCurrentApiUrlUseCase: SaveCurrentApiUrlUseCase,
     private val checkAccountExistsUseCase: CheckAccountExistsUseCase,
@@ -70,13 +71,10 @@ class AccountsInteractor(
                 ),
             )
 
-            when (savePrivateKeyUseCase.execute(SavePrivateKeyUseCase.Input(userId, accountSetupData.armoredKey))) {
-                SavePrivateKeyUseCase.Output.Failure -> {
-                    onFailure(ERROR_WHEN_SAVING_PRIVATE_KEY)
-                }
-                SavePrivateKeyUseCase.Output.Success -> {
-                    onSuccess(userId)
-                }
+            if (privateKeyRepository.savePrivateKey(userId, PrivateKey(accountSetupData.armoredKey))) {
+                onSuccess(userId)
+            } else {
+                onFailure(ERROR_WHEN_SAVING_PRIVATE_KEY)
             }
         }
     }

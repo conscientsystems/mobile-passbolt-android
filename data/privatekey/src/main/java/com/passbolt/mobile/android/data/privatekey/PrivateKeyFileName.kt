@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.privatekey
-
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.PrivateKeyFileName
-import com.passbolt.mobile.android.encryptedstorage.EncryptedFileFactory
-import timber.log.Timber
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,34 +21,15 @@ import timber.log.Timber
  * @since v1.0
  */
 
-class SavePrivateKeyUseCase(
-    private val encryptedFileFactory: EncryptedFileFactory,
-) : UseCase<SavePrivateKeyUseCase.Input, SavePrivateKeyUseCase.Output> {
-    override fun execute(input: Input): Output {
-        val name = PrivateKeyFileName(input.userId).name
-        Timber.d("Saving private key.")
+package com.passbolt.mobile.android.data.privatekey
 
-        val encryptedFile = encryptedFileFactory.get(name)
-        return try {
-            val bytes = input.privateKey.toByteArray()
-            encryptedFile.openFileOutput().use {
-                it.write(bytes)
-            }
-            Output.Success
-        } catch (e: Exception) {
-            Timber.e(e)
-            Output.Failure
-        }
+internal class PrivateKeyFileName(
+    userId: String,
+) {
+    val name = PRIVATE_KEY_FILE_NAME_FORMAT.format(userId)
+
+    private companion object {
+        private const val PRIVATE_KEY_FILE_NAME = "user_key"
+        private const val PRIVATE_KEY_FILE_NAME_FORMAT = "${PRIVATE_KEY_FILE_NAME}_%s"
     }
-
-    sealed class Output {
-        data object Success : Output()
-
-        data object Failure : Output()
-    }
-
-    data class Input(
-        val userId: String,
-        val privateKey: String,
-    )
 }

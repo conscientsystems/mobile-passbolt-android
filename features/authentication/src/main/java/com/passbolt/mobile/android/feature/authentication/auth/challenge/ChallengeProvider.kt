@@ -4,8 +4,7 @@ import com.google.gson.Gson
 import com.passbolt.mobile.android.common.UuidProvider
 import com.passbolt.mobile.android.common.extension.erase
 import com.passbolt.mobile.android.common.time.TimeProvider
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.request.ChallengeDto
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
@@ -35,7 +34,7 @@ import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 class ChallengeProvider(
     private val gson: Gson,
     private val openPgp: OpenPgp,
-    private val privateKeyUseCase: GetPrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val timeProvider: TimeProvider,
     private val uuidProvider: UuidProvider,
 ) {
@@ -46,7 +45,7 @@ class ChallengeProvider(
         userId: String,
     ): Output {
         val passphraseCopy = passphrase.copyOf()
-        val privateKey = requireNotNull(privateKeyUseCase.execute(UserIdInput(userId)).privateKey)
+        val privateKey = requireNotNull(privateKeyRepository.getPrivateKey(userId)) { "Unable to restore private key." }.armoredKey
         val tokenExpiry = getVerifyTokenExpiry()
 
         val challengeJson =

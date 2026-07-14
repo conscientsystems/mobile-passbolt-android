@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.domain.metadata.interactor
 
 import com.google.gson.Gson
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
@@ -14,6 +14,7 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphras
 import com.passbolt.mobile.android.domain.metadata.privatekeys.MetadataPrivateKeysValidator
 import com.passbolt.mobile.android.domain.metadata.usecase.FetchMetadataKeysUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.db.RebuildMetadataKeysTablesUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.PassphraseNotInCacheException
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
@@ -51,7 +52,8 @@ class MetadataKeysInteractor(
     private val fetchMetadataKeysUseCase: FetchMetadataKeysUseCase,
     private val rebuildMetadataKeysTablesUseCase: RebuildMetadataKeysTablesUseCase,
     private val passphraseMemoryCache: PassphraseMemoryCache,
-    private val getPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val openPgp: OpenPgp,
     private val gson: Gson,
     private val metadataPrivateKeysValidator: MetadataPrivateKeysValidator,
@@ -73,7 +75,8 @@ class MetadataKeysInteractor(
     @Suppress("LongMethod")
     @Throws(PassphraseNotInCacheException::class)
     private suspend fun saveMetadataKeys(metadataKeysModel: List<MetadataKeyModel>): Output {
-        val privateKey = getPrivateKeyUseCase.execute(Unit).privateKey
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val privateKey = privateKeyRepository.getPrivateKey(userId)?.armoredKey
         if (privateKey == null) {
             Timber.e("User private key not found")
             return Output.Failure(AuthenticationState.Unauthenticated(Passphrase))

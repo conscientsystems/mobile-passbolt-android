@@ -5,7 +5,6 @@ import com.passbolt.mobile.android.common.extension.erase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.SaveServerFingerprintUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.GetPassphraseUseCase
 import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
@@ -30,6 +29,7 @@ import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferences
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AcceptChangedServerFingerprint
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AccessLogs
@@ -119,7 +119,7 @@ class AuthViewModel(
     private val userId: String,
     private val appContext: AppContext,
     private val getAccountDataUseCase: GetAccountDataUseCase,
-    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val verifyPassphraseUseCase: VerifyPassphraseUseCase,
     private val biometricCipher: BiometricCipher,
     private val getPassphraseUseCase: GetPassphraseUseCase,
@@ -294,9 +294,9 @@ class AuthViewModel(
     private fun validatePassphrase(passphrase: ByteArray) {
         launch {
             val privateKey =
-                requireNotNull(
-                    getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey,
-                )
+                requireNotNull(privateKeyRepository.getPrivateKey(userId)) {
+                    "Unable to restore private key."
+                }.armoredKey
             val isPassphraseCorrect =
                 verifyPassphraseUseCase.execute(VerifyPassphraseUseCase.Input(privateKey, passphrase)).isCorrect
             if (isPassphraseCorrect) {

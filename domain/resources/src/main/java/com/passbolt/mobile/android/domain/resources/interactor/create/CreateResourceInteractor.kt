@@ -23,9 +23,7 @@
 
 package com.passbolt.mobile.android.domain.resources.interactor.create
 
-import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
@@ -36,6 +34,7 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCa
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.domain.passwordexpiry.usecase.GetPasswordExpirySettingsUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.resources.ResourcesRepository
 import com.passbolt.mobile.android.domain.resources.mapper.toUiModel
 import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
@@ -65,7 +64,7 @@ class CreateResourceInteractor(
     private val getResourceTypeIdToSlugMappingUseCase: GetResourceTypeIdToSlugMappingUseCase,
     private val jsonSchemaValidationRunner: JsonSchemaValidationRunner,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val openPgp: OpenPgp,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
     private val passwordExpirySettingsUseCase: GetPasswordExpirySettingsUseCase,
@@ -195,7 +194,7 @@ class CreateResourceInteractor(
     ): EncryptedSecretOrError {
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         val userServerId = requireNotNull(getSelectedAccountDataUseCase.execute(Unit).serverId)
-        val privateKey = getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey
+        val privateKey = requireNotNull(privateKeyRepository.getPrivateKey(userId)) { "Unable to restore private key." }.armoredKey
 
         return when (
             val encryptedSecret =

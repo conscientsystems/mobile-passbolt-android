@@ -23,12 +23,13 @@
 
 package com.passbolt.mobile.android.serializers.gson
 
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.ForeignModel.RESOURCE
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysMemoryCache
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.response.MetadataKeyTypeDto.PERSONAL
 import com.passbolt.mobile.android.dto.response.MetadataKeyTypeDto.SHARED
 import com.passbolt.mobile.android.dto.response.ResourceResponseV5Dto
@@ -44,7 +45,8 @@ import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 
 class MetadataDecryptor(
-    private val getSelectedUserPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val metadataKeys: List<ParsedMetadataKeyModel>,
     private val openPgp: OpenPgp,
@@ -128,7 +130,8 @@ class MetadataDecryptor(
         cachedPersonalKey?.let { return it }
         return personalKeyMutex.withLock {
             cachedPersonalKey ?: run {
-                val privateKey = getSelectedUserPrivateKeyUseCase.execute(Unit).privateKey
+                val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+                val privateKey = privateKeyRepository.getPrivateKey(userId)?.armoredKey
                 require(privateKey != null) { "Selected user private key not found" }
                 val passphrase = passphraseMemoryCache.get()
                 require(passphrase is PotentialPassphrase.Passphrase) { "Passphrase not present in cache" }

@@ -25,13 +25,12 @@ package com.passbolt.mobile.android.domain.secrets.usecase.decrypt
 
 import com.passbolt.mobile.android.common.extension.erase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.UnauthenticatedReason
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpError
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
@@ -41,19 +40,17 @@ class DecryptSecretUseCase(
     private val gopenPgp: OpenPgp,
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
 ) : AsyncUseCase<DecryptSecretUseCase.Input, DecryptSecretUseCase.Output> {
     override suspend fun execute(input: Input): Output {
-        val account =
-            UserIdInput(
-                requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount),
-            )
+        val userId =
+            requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         val potentialPassphrase = passphraseMemoryCache.get()
         return if (potentialPassphrase is PotentialPassphrase.Passphrase) {
             val passphraseCopy = potentialPassphrase.passphrase.copyOf()
             val decrypted =
                 gopenPgp.decryptMessageArmored(
-                    getPrivateKeyUseCase.execute(account).privateKey,
+                    requireNotNull(privateKeyRepository.getPrivateKey(userId)) { "Unable to restore private key." }.armoredKey,
                     passphraseCopy,
                     input.encryptedSecret,
                 )

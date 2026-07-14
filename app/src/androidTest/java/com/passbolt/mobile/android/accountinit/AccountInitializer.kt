@@ -3,11 +3,12 @@ package com.passbolt.mobile.android.accountinit
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.account.SaveAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.database.usecase.SaveResourcesDatabasePassphraseUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
 import org.koin.core.component.KoinComponent
 
@@ -16,7 +17,7 @@ class AccountInitializer(
     private val saveResourcesDatabasePassphraseUseCase: SaveResourcesDatabasePassphraseUseCase,
     private val saveSelectedAccountUseCase: SaveSelectedAccountUseCase,
     private val updateAccountDataUseCase: UpdateAccountDataUseCase,
-    private val savePrivateKeyUseCase: SavePrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val managedAccountIntentCreator: ManagedAccountIntentCreator,
     private val saveAccountUseCase: SaveAccountUseCase,
     private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase,
@@ -44,11 +45,9 @@ class AccountInitializer(
                 serverId = managedAccountIntentCreator.getUserServerId(),
             ),
         )
-        savePrivateKeyUseCase.execute(
-            SavePrivateKeyUseCase.Input(
-                managedAccountIntentCreator.getUserLocalId(),
-                managedAccountIntentCreator.getArmoredPrivateKey(),
-            ),
+        privateKeyRepository.savePrivateKey(
+            managedAccountIntentCreator.getUserLocalId(),
+            PrivateKey(managedAccountIntentCreator.getArmoredPrivateKey()),
         )
         updateGlobalPreferencesUseCase.execute(
             UpdateGlobalPreferencesUseCase.Input(

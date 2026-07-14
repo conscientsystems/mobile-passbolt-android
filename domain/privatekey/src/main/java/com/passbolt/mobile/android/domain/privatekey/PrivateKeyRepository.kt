@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.privatekey
-
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.Module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,23 +21,17 @@ import org.koin.core.module.Module
  * @since v1.0
  */
 
-internal fun Module.privateKeyModule() {
-    single {
-        GetSelectedUserPrivateKeyUseCase(
-            encryptedFileFactory = get(),
-        )
-    }
-    single {
-        GetPrivateKeyUseCase(
-            encryptedFileFactory = get(),
-        )
-    }
-    factory {
-        RemovePrivateKeyUseCase(androidContext())
-    }
-    single {
-        SavePrivateKeyUseCase(
-            encryptedFileFactory = get(),
-        )
-    }
+package com.passbolt.mobile.android.domain.privatekey
+
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+
+interface PrivateKeyRepository {
+    fun getPrivateKey(userId: String): PrivateKey?
+
+    fun savePrivateKey(
+        userId: String,
+        privateKey: PrivateKey,
+    ): Boolean
+
+    fun removePrivateKey(userId: String)
 }

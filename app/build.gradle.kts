@@ -170,6 +170,8 @@ dependencies {
     implementation(project(":folders-data"))
     implementation(project(":groups-domain"))
     implementation(project(":groups-data"))
+    implementation(project(":privatekey-domain"))
+    implementation(project(":privatekey-data"))
     implementation(project(":tagsdetails"))
     implementation(project(":helpmenu"))
     implementation(project(":logs"))

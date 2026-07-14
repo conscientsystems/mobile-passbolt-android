@@ -87,7 +87,8 @@ val serializersModule =
         }
         factory { (metadataKeys: List<ParsedMetadataKeyModel>) ->
             MetadataDecryptor(
-                getSelectedUserPrivateKeyUseCase = get(),
+                getSelectedAccountUseCase = get(),
+                privateKeyRepository = get(),
                 passphraseMemoryCache = get(),
                 openPgp = get(),
                 sessionKeysCache = get(),

@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":rbac-domain"))
     implementation(project(":accounts"))
     implementation(project(":biometrickey-domain"))
+    implementation(project(":privatekey-domain"))
     implementation(project(":testtags"))
     implementation(project(":authenticationcore"))
     implementation(project(":passphrasememorycache"))
