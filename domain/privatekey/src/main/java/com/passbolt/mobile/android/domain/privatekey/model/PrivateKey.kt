@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.privatekey
-
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.PrivateKeyFileName
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
-import com.passbolt.mobile.android.encryptedstorage.EncryptedFileFactory
-import timber.log.Timber
-import java.io.IOException
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -30,24 +21,10 @@ import java.io.IOException
  * @since v1.0
  */
 
-class GetSelectedUserPrivateKeyUseCase(
-    private val encryptedFileFactory: EncryptedFileFactory,
-) : UseCase<Unit, GetSelectedUserPrivateKeyUseCase.Output>,
-    SelectedAccountUseCase {
-    override fun execute(input: Unit): Output =
-        try {
-            val name = PrivateKeyFileName(selectedAccountId).name
-            val encryptedFile = encryptedFileFactory.get(name)
-            encryptedFile.openFileInput().use {
-                val bytes = it.readBytes()
-                Output(String(bytes))
-            }
-        } catch (exception: IOException) {
-            Timber.e(exception)
-            Output(null)
-        }
+package com.passbolt.mobile.android.domain.privatekey.model
 
-    data class Output(
-        val privateKey: String?,
-    )
+data class PrivateKey(
+    val armoredKey: String,
+) {
+    override fun toString() = "PrivateKey(redacted)"
 }

@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.privatekey
-
-import android.content.Context
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.PrivateKeyFileName
-import timber.log.Timber
-import java.io.File
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -30,20 +21,21 @@ import java.io.File
  * @since v1.0
  */
 
-class RemovePrivateKeyUseCase(
-    private val appContext: Context,
-) : UseCase<UserIdInput, Unit> {
-    override fun execute(input: UserIdInput) {
-        val privateKeyFile =
-            File(
-                com.passbolt.mobile.android.encryptedstorage
-                    .EncryptedFileBaseDirectory(appContext)
-                    .baseDirectory,
-                PrivateKeyFileName(input.userId).name,
-            )
-        if (privateKeyFile.exists()) {
-            val deleted = privateKeyFile.delete()
-            Timber.e("Deleted private key file: $deleted")
-        }
-    }
+package com.passbolt.mobile.android.data.privatekey
+
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.datasource.PrivateKeyLocalDataSource
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+
+internal class PrivateKeyRepositoryImpl(
+    private val privateKeyLocalDataSource: PrivateKeyLocalDataSource,
+) : PrivateKeyRepository {
+    override fun getPrivateKey(userId: String): PrivateKey? = privateKeyLocalDataSource.getPrivateKey(userId)
+
+    override fun savePrivateKey(
+        userId: String,
+        privateKey: PrivateKey,
+    ): Boolean = privateKeyLocalDataSource.savePrivateKey(userId, privateKey)
+
+    override fun removePrivateKey(userId: String) = privateKeyLocalDataSource.removePrivateKey(userId)
 }

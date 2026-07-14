@@ -2,7 +2,7 @@ package com.passbolt.mobile.android.domain.metadata.interactor
 
 import com.google.gson.Gson
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.DeleteTrustedMetadataKeyUseCase
@@ -10,6 +10,7 @@ import com.passbolt.mobile.android.domain.metadata.usecase.GetTrustedMetadataKey
 import com.passbolt.mobile.android.domain.metadata.usecase.SaveTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.UpdateMetadataPrivateKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.db.GetLocalMetadataKeysUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.GopenPgpExceptionParser
 import com.proton.gopenpgp.crypto.Crypto
@@ -44,7 +45,8 @@ import org.mockito.Mockito.mock
 internal val mockGetLocalMetadataKeysUseCase = mock<GetLocalMetadataKeysUseCase>()
 internal val mockUpdateMetadataPrivateKeyUseCase = mock<UpdateMetadataPrivateKeyUseCase>()
 internal val mockGetLocalUserUseCase = mock<GetLocalUserUseCase>()
-internal val mockGetSelectedUserPrivateKeyUseCase = mock<GetSelectedUserPrivateKeyUseCase>()
+internal val mockGetSelectedAccountUseCase = mock<GetSelectedAccountUseCase>()
+internal val mockPrivateKeyRepository = mock<PrivateKeyRepository>()
 internal val mockPassphraseMemoryCache = mock<PassphraseMemoryCache>()
 internal val mockGetTrustedMetadataKeyUseCase = mock<GetTrustedMetadataKeyUseCase>()
 internal val mockSaveTrustedMetadataKeyUseCase = mock<SaveTrustedMetadataKeyUseCase>()
@@ -66,7 +68,8 @@ val testMetadataPrivateKeysInteractorModule =
                 saveTrustedMetadataKeyUseCase = mockSaveTrustedMetadataKeyUseCase,
                 getSelectedAccountDataUseCase = mockGetSelectedAccountDataUseCase,
                 deleteTrustedMetadataKeyUseCase = mockDeleteTrustedMetadataKeyUseCase,
-                getSelectedUserPrivateKeyUseCase = mockGetSelectedUserPrivateKeyUseCase,
+                getSelectedAccountUseCase = mockGetSelectedAccountUseCase,
+                privateKeyRepository = mockPrivateKeyRepository,
                 passphraseMemoryCache = mockPassphraseMemoryCache,
                 metadataKeysInteractor = mockMetadataKeysInteractor,
                 gson = get(),
@@ -78,7 +81,8 @@ val testMetadataPrivateKeysInteractorModule =
                 metadataPrivateKeysHelperInteractor = get(),
                 getLocalMetadataKeysUseCase = mockGetLocalMetadataKeysUseCase,
                 getLocalUserUseCase = mockGetLocalUserUseCase,
-                getSelectedUserPrivateKeyUseCase = mockGetSelectedUserPrivateKeyUseCase,
+                getSelectedAccountUseCase = mockGetSelectedAccountUseCase,
+                privateKeyRepository = mockPrivateKeyRepository,
                 passphraseMemoryCache = mockPassphraseMemoryCache,
                 getTrustedMetadataKeyUseCase = mockGetTrustedMetadataKeyUseCase,
                 metadataKeysInteractor = mockMetadataKeysInteractor,

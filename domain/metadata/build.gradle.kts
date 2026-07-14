@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":uimodel"))
     implementation(project(":accounts"))
+    implementation(project(":privatekey-domain"))
     implementation(project(":users"))
     implementation(project(":folders-domain"))
     implementation(project(":passphrasememorycache"))

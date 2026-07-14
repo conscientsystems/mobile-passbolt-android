@@ -1,14 +1,16 @@
 package com.passbolt.mobile.android.serializers.gson
 
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.db.GetLocalMetadataKeyUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
 import timber.log.Timber
 
 class MetadataEncryptor(
-    private val getSelectedUserPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val getLocalMetadataKeyUseCase: GetLocalMetadataKeyUseCase,
     private val openPgp: OpenPgp,
 ) {
@@ -22,7 +24,8 @@ class MetadataEncryptor(
             val (key, passphrase) =
                 when (metadataKeyTypeModel) {
                     MetadataKeyTypeModel.PERSONAL -> {
-                        val privateKey = getSelectedUserPrivateKeyUseCase.execute(Unit).privateKey
+                        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+                        val privateKey = privateKeyRepository.getPrivateKey(userId)?.armoredKey
                         require(privateKey != null) { "Selected user private key not found" }
                         privateKey to usersPrivateKeyPassphrase
                     }

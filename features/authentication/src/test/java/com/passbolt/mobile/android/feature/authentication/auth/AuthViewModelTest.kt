@@ -5,7 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.SaveServerFingerprintUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.GetPassphraseUseCase
 import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
@@ -20,6 +19,8 @@ import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferences
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationError
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationSuccess
@@ -92,7 +93,7 @@ class AuthViewModelTest : KoinTest {
             modules(
                 module {
                     single { mock<GetAccountDataUseCase>() }
-                    single { mock<GetPrivateKeyUseCase>() }
+                    single { mock<PrivateKeyRepository>() }
                     single { mock<VerifyPassphraseUseCase>() }
                     single { mock<BiometricCipher>() }
                     single { mock<GetPassphraseUseCase>() }
@@ -120,7 +121,7 @@ class AuthViewModelTest : KoinTest {
                             userId = params.get(),
                             appContext = params.get(),
                             getAccountDataUseCase = get(),
-                            getPrivateKeyUseCase = get(),
+                            privateKeyRepository = get(),
                             verifyPassphraseUseCase = get(),
                             biometricCipher = get(),
                             getPassphraseUseCase = get(),
@@ -171,8 +172,8 @@ class AuthViewModelTest : KoinTest {
         val getAccountDataUseCase: GetAccountDataUseCase = get()
         whenever(getAccountDataUseCase.execute(UserIdInput(USER_ID))) doReturn accountData
 
-        val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
-        whenever(getPrivateKeyUseCase.execute(any())) doReturn GetPrivateKeyUseCase.Output("privateKey")
+        val privateKeyRepository: PrivateKeyRepository = get()
+        whenever(privateKeyRepository.getPrivateKey(any())) doReturn PrivateKey("privateKey")
     }
 
     @After

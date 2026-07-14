@@ -4,12 +4,12 @@ import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.account.RemoveAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.RemoveAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.RemovePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.RemoveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemovePassphraseUseCase
 import com.passbolt.mobile.android.core.authenticationcore.session.RemoveSessionUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -37,7 +37,7 @@ class RemoveAllAccountDataUseCase(
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val removeAccountDataUseCase: RemoveAccountDataUseCase,
     private val removePassphraseUseCase: RemovePassphraseUseCase,
-    private val removePrivateKeyUseCase: RemovePrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val removeSelectedAccountUseCase: RemoveSelectedAccountUseCase,
     private val removeSessionUseCase: RemoveSessionUseCase,
     private val removeAccountUseCase: RemoveAccountUseCase,
@@ -56,7 +56,7 @@ class RemoveAllAccountDataUseCase(
     private fun removeAccountData(userIdInput: UserIdInput) {
         removeAccountDataUseCase.execute(userIdInput)
         removePassphraseUseCase.execute(userIdInput)
-        removePrivateKeyUseCase.execute(userIdInput)
+        privateKeyRepository.removePrivateKey(userIdInput.userId)
         removeSessionUseCase.execute(userIdInput)
         removeAccountUseCase.execute(userIdInput)
         removeServerPublicRsaKeyUseCase.execute(userIdInput)

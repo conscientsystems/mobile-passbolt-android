@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":metadata-domain"))
     implementation(project(":uimodel"))
     implementation(project(":accounts"))
+    implementation(project(":privatekey-domain"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":entity"))
     implementation(project(":architecture"))

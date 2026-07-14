@@ -33,7 +33,7 @@ fun Module.authModule() {
             userId = params.get(),
             appContext = params.get(),
             getAccountDataUseCase = get(),
-            getPrivateKeyUseCase = get(),
+            privateKeyRepository = get(),
             verifyPassphraseUseCase = get(),
             biometricCipher = get(),
             getPassphraseUseCase = get(),

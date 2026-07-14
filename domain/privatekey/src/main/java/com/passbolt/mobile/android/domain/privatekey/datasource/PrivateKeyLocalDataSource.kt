@@ -1,5 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -23,13 +21,17 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @since v1.0
  */
 
-class PrivateKeyFileName(
-    userId: String,
-) {
-    val name = PRIVATE_KEY_FILE_NAME_FORMAT.format(userId)
+package com.passbolt.mobile.android.domain.privatekey.datasource
 
-    private companion object {
-        private const val PRIVATE_KEY_FILE_NAME = "user_key"
-        private const val PRIVATE_KEY_FILE_NAME_FORMAT = "${PRIVATE_KEY_FILE_NAME}_%s"
-    }
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+
+interface PrivateKeyLocalDataSource {
+    fun getPrivateKey(userId: String): PrivateKey?
+
+    fun savePrivateKey(
+        userId: String,
+        privateKey: PrivateKey,
+    ): Boolean
+
+    fun removePrivateKey(userId: String)
 }

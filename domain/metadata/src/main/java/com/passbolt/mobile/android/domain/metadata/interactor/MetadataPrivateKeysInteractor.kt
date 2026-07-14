@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.domain.metadata.interactor
 
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
@@ -13,6 +13,7 @@ import com.passbolt.mobile.android.domain.metadata.usecase.GetTrustedMetadataKey
 import com.passbolt.mobile.android.domain.metadata.usecase.GetTrustedMetadataKeyUseCase.Output.NoTrustedKey
 import com.passbolt.mobile.android.domain.metadata.usecase.GetTrustedMetadataKeyUseCase.Output.TrustedKey
 import com.passbolt.mobile.android.domain.metadata.usecase.db.GetLocalMetadataKeysUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import com.passbolt.mobile.android.gopenpgp.model.VerifiedMessage
@@ -51,7 +52,8 @@ class MetadataPrivateKeysInteractor(
     private val getLocalMetadataKeysUseCase: GetLocalMetadataKeysUseCase,
     private val openPgp: OpenPgp,
     private val getLocalUserUseCase: GetLocalUserUseCase,
-    private val getSelectedUserPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val getTrustedMetadataKeyUseCase: GetTrustedMetadataKeyUseCase,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
@@ -118,7 +120,8 @@ class MetadataPrivateKeysInteractor(
                         GetLocalUserUseCase.Input(backendMetadataPrivateKey.modifiedBy.toString()),
                     ).user
             }.getOrNull()
-        val currentUserPrivateKey = requireNotNull(getSelectedUserPrivateKeyUseCase.execute(Unit).privateKey)
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val currentUserPrivateKey = requireNotNull(privateKeyRepository.getPrivateKey(userId)?.armoredKey)
         val currentUserSigningKeyFingerprint =
             requireNotNull(
                 (openPgp.getKeyFingerprint(currentUserPrivateKey) as? OpenPgpResult.Result),

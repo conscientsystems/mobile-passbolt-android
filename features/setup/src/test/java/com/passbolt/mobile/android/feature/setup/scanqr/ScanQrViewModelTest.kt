@@ -35,7 +35,6 @@ import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccoun
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountExistsUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
@@ -44,6 +43,7 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incompl
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.core.qrscan.analyzer.BarcodeScanResult
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.response.qrcode.AccountKitPageDto
 import com.passbolt.mobile.android.dto.response.qrcode.QrFirstPageDto
 import com.passbolt.mobile.android.dto.response.qrcode.ReservedBytesDto
@@ -125,7 +125,7 @@ class ScanQrViewModelTest : KoinTest {
                         single { mock<UpdateTransferUseCase>() }
                         single { mockScanQrParser }
                         single { mock<UuidProvider>() }
-                        single { mock<SavePrivateKeyUseCase>() }
+                        single { mock<PrivateKeyRepository>() }
                         single { mock<UpdateAccountDataUseCase>() }
                         single { mock<CheckAccountExistsUseCase>() }
                         single { mock<HttpsVerifier>() }
@@ -474,7 +474,7 @@ class ScanQrViewModelTest : KoinTest {
             val checkAccountExistsUseCase: CheckAccountExistsUseCase = get()
             val httpsVerifier: HttpsVerifier = get()
             val updateTransferUseCase: UpdateTransferUseCase = get()
-            val savePrivateKeyUseCase: SavePrivateKeyUseCase = get()
+            val privateKeyRepository: PrivateKeyRepository = get()
 
             whenever(uuidProvider.get()) doReturn NEW_USER_ID
             whenever(checkAccountExistsUseCase.execute(any())) doReturn CheckAccountExistsUseCase.Output(false)
@@ -483,7 +483,7 @@ class ScanQrViewModelTest : KoinTest {
                 UpdateTransferUseCase.Output.Success(
                     UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
-            whenever(savePrivateKeyUseCase.execute(any())) doReturn SavePrivateKeyUseCase.Output.Success
+            whenever(privateKeyRepository.savePrivateKey(any(), any())) doReturn true
 
             viewModel = get()
             viewModel.onIntent(Initialize(barcodeScanFlow = barcodeScanFlow, accountSetupDataModel = null))
@@ -498,7 +498,7 @@ class ScanQrViewModelTest : KoinTest {
                 assertIs<Success>(effect.status)
             }
 
-            verify(savePrivateKeyUseCase).execute(any())
+            verify(privateKeyRepository).savePrivateKey(any(), any())
         }
 
     @OptIn(ExperimentalTime::class)
@@ -509,7 +509,7 @@ class ScanQrViewModelTest : KoinTest {
             val checkAccountExistsUseCase: CheckAccountExistsUseCase = get()
             val httpsVerifier: HttpsVerifier = get()
             val updateTransferUseCase: UpdateTransferUseCase = get()
-            val savePrivateKeyUseCase: SavePrivateKeyUseCase = get()
+            val privateKeyRepository: PrivateKeyRepository = get()
 
             whenever(uuidProvider.get()) doReturn NEW_USER_ID
             whenever(checkAccountExistsUseCase.execute(any())) doReturn CheckAccountExistsUseCase.Output(false)
@@ -518,7 +518,7 @@ class ScanQrViewModelTest : KoinTest {
                 UpdateTransferUseCase.Output.Success(
                     UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
-            whenever(savePrivateKeyUseCase.execute(any())) doReturn SavePrivateKeyUseCase.Output.Failure
+            whenever(privateKeyRepository.savePrivateKey(any(), any())) doReturn false
 
             viewModel = get()
             viewModel.onIntent(Initialize(barcodeScanFlow = barcodeScanFlow, accountSetupDataModel = null))

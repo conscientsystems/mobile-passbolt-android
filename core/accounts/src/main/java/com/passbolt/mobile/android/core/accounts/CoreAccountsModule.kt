@@ -28,7 +28,6 @@ import com.passbolt.mobile.android.core.accounts.usecase.BiometricCipherImpl
 import com.passbolt.mobile.android.core.accounts.usecase.account.accountModule
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.accountDataModule
 import com.passbolt.mobile.android.core.accounts.usecase.accounts.accountsModule
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.privateKeyModule
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.selectedAccountModule
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import org.koin.android.ext.koin.androidApplication
@@ -42,7 +41,6 @@ val accountsCoreModule =
         accountModule()
         accountsModule()
         accountDataModule()
-        privateKeyModule()
         selectedAccountModule()
 
         singleOf(::AccountsInteractor)

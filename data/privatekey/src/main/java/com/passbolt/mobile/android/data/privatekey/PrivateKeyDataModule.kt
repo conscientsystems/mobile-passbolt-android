@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.core.accounts.usecase.privatekey
-
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.PrivateKeyFileName
-import com.passbolt.mobile.android.encryptedstorage.EncryptedFileFactory
-import timber.log.Timber
-import java.io.IOException
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -30,24 +21,23 @@ import java.io.IOException
  * @since v1.0
  */
 
-class GetPrivateKeyUseCase(
-    private val encryptedFileFactory: EncryptedFileFactory,
-) : UseCase<UserIdInput, GetPrivateKeyUseCase.Output> {
-    override fun execute(input: UserIdInput): Output {
-        val name = PrivateKeyFileName(input.userId).name
-        return try {
-            val encryptedFile = encryptedFileFactory.get(name)
-            encryptedFile.openFileInput().use {
-                val bytes = it.readBytes()
-                Output(String(bytes))
-            }
-        } catch (exception: IOException) {
-            Timber.e(exception)
-            error("Unable to restore private key.")
-        }
-    }
+package com.passbolt.mobile.android.data.privatekey
 
-    data class Output(
-        val privateKey: String,
-    )
-}
+import com.passbolt.mobile.android.data.privatekey.datasource.local.PrivateKeyLocalDataSourceImpl
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.datasource.PrivateKeyLocalDataSource
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
+
+val privateKeyDataModule =
+    module {
+        single<PrivateKeyLocalDataSource> {
+            PrivateKeyLocalDataSourceImpl(
+                appContext = androidContext(),
+                encryptedFileFactory = get(),
+            )
+        }
+        singleOf(::PrivateKeyRepositoryImpl) bind PrivateKeyRepository::class
+    }

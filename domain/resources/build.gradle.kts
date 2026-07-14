@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":supportedresourcetypes"))
     implementation(project(":folders-domain"))
     implementation(project(":accounts"))
+    implementation(project(":privatekey-domain"))
     implementation(project(":preferences"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":metadata-domain"))

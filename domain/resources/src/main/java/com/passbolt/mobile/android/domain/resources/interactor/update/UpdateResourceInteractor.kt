@@ -23,8 +23,6 @@
 
 package com.passbolt.mobile.android.domain.resources.interactor.update
 
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
@@ -36,6 +34,7 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphras
 import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.core.users.usecase.FetchUsersUseCase
 import com.passbolt.mobile.android.domain.passwordexpiry.usecase.GetPasswordExpirySettingsUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.resources.ResourcesRepository
 import com.passbolt.mobile.android.domain.resources.mapper.toUiModel
 import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.SecretInput
@@ -67,7 +66,7 @@ class UpdateResourceInteractor(
     private val getResourceTypeIdToSlugMappingUseCase: GetResourceTypeIdToSlugMappingUseCase,
     private val jsonSchemaValidationRunner: JsonSchemaValidationRunner,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val openPgp: OpenPgp,
     private val passwordExpirySettingsUseCase: GetPasswordExpirySettingsUseCase,
     private val metadataMapper: MetadataMapper,
@@ -215,7 +214,7 @@ class UpdateResourceInteractor(
     ): List<EncryptedSecretOrError> =
         usersWhoHaveAccess.mapTo(mutableListOf()) {
             val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-            val privateKey = getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey
+            val privateKey = requireNotNull(privateKeyRepository.getPrivateKey(userId)) { "Unable to restore private key." }.armoredKey
             val publicKey = it.gpgKey.armoredKey
 
             when (

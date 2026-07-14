@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":encryptedstorage"))
     implementation(project(":biometrickey-domain"))
+    implementation(project(":privatekey-domain"))
     implementation(project(":gopenpgp"))
     implementation(project(":dto"))
     implementation(project(":entity"))

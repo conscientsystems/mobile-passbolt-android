@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":localization"))
     implementation(project(":authenticationcore"))
     implementation(project(":accounts"))
+    implementation(project(":privatekey-domain"))
     implementation(project(":testtags"))
 
     implementation(platform(libs.koin.bom))
