@@ -658,7 +658,7 @@ class ResourceFormViewModelTest : KoinTest {
         }
 
     @Test
-    fun `generate password should show toast on low entropy failure`() =
+    fun `generate password should show unable to generate dialog on low entropy failure`() =
         runTest {
             mockGetDefaultCreateContentTypeUseCase.stub {
                 onBlocking { execute(any()) }.thenReturn(
@@ -690,13 +690,12 @@ class ResourceFormViewModelTest : KoinTest {
                 )
             }
 
-            viewModel.sideEffect.test {
-                viewModel.onIntent(GeneratePassword)
-                advanceUntilIdle()
-                val sideEffect = awaitItem()
-                assertIs<ShowToast>(sideEffect)
-                assertThat(sideEffect.type).isEqualTo(ToastMessage.UNABLE_TO_GENERATE_PASSWORD)
-            }
+            viewModel.onIntent(GeneratePassword)
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.isUnableToGeneratePasswordDialogVisible).isTrue()
+            assertThat(state.minimumEntropyBits).isEqualTo(80)
         }
 
     @Test

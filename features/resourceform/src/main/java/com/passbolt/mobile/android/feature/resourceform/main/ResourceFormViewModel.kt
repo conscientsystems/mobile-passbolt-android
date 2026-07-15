@@ -43,6 +43,7 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.N
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustBeBase32
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustNotBeEmpty
+import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase.Input
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdditionalUrisResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdvancedSecretGenerationResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AppearanceResult
@@ -51,6 +52,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DescriptionResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissMetadataKeyDialog
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePinCode
@@ -146,6 +148,7 @@ import timber.log.Timber
 class ResourceFormViewModel(
     private val mode: ResourceFormMode,
     private val getPasswordPoliciesUseCase: GetPasswordPoliciesUseCase,
+    private val getOrLoadGeneratorSettingsUseCase: GetOrLoadGeneratorSettingsUseCase,
     private val passwordPoliciesInteractor: PasswordPoliciesInteractor,
     private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
     private val passwordExpiryPoliciesInteractor: PasswordExpiryPoliciesInteractor,
@@ -184,6 +187,8 @@ class ResourceFormViewModel(
             UpdateResource -> updateResource()
             is PasswordTextChanged -> passwordTextChanged(intent.password)
             GeneratePassword -> generatePassword()
+            DismissUnableToGeneratePassword ->
+                updateViewState { copy(isUnableToGeneratePasswordDialogVisible = false) }
             OpenAdvancedSecretGeneration -> openAdvancedSecretGeneration()
             is AdvancedSecretGenerationResult -> advancedSecretGenerationResult(intent.result)
             is PasswordMainUriTextChanged -> passwordMainUriTextChanged(intent.mainUri)
@@ -451,12 +456,12 @@ class ResourceFormViewModel(
                 }
             when (secretGenerationResult) {
                 is FailedToGenerateLowEntropy ->
-                    emitSideEffect(
-                        ShowToast(
-                            ToastMessage.UNABLE_TO_GENERATE_PASSWORD,
-                            listOf(secretGenerationResult.minimumEntropyBits),
-                        ),
-                    )
+                    updateViewState {
+                        copy(
+                            isUnableToGeneratePasswordDialogVisible = true,
+                            minimumEntropyBits = secretGenerationResult.minimumEntropyBits,
+                        )
+                    }
                 is Success -> {
                     val password = secretGenerationResult.password
                     val entropy = secretGenerationResult.entropy
@@ -515,26 +520,24 @@ class ResourceFormViewModel(
 
     private suspend fun getOrLoadGeneratorSettings(): GeneratorSettings {
         val state = viewState.value
-        val type = state.generatorType
-        val passwordSettings = state.passwordGeneratorSettings
-        val passphraseSettings = state.passphraseGeneratorSettings
-        return if (type != null && passwordSettings != null && passphraseSettings != null) {
-            GeneratorSettings(type, passwordSettings, passphraseSettings)
-        } else {
-            val policies = getPasswordPoliciesUseCase.execute(Unit)
+        val (settings, wasLoaded) =
+            getOrLoadGeneratorSettingsUseCase.execute(
+                Input(
+                    type = state.generatorType,
+                    passwordSettings = state.passwordGeneratorSettings,
+                    passphraseSettings = state.passphraseGeneratorSettings,
+                ),
+            )
+        if (wasLoaded) {
             updateViewState {
                 copy(
-                    generatorType = policies.defaultGenerator,
-                    passwordGeneratorSettings = policies.passwordGeneratorSettings,
-                    passphraseGeneratorSettings = policies.passphraseGeneratorSettings,
+                    generatorType = settings.type,
+                    passwordGeneratorSettings = settings.passwordSettings,
+                    passphraseGeneratorSettings = settings.passphraseSettings,
                 )
             }
-            GeneratorSettings(
-                policies.defaultGenerator,
-                policies.passwordGeneratorSettings,
-                policies.passphraseGeneratorSettings,
-            )
         }
+        return settings
     }
 
     private fun passwordMainUriTextChanged(mainUri: String) {

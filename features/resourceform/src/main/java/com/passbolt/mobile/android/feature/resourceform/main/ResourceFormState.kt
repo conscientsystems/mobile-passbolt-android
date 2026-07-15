@@ -38,6 +38,8 @@ data class ResourceFormState(
     val generatorType: PasswordGeneratorTypeUiModel? = null,
     val passwordGeneratorSettings: PasswordGeneratorSettingsUiModel? = null,
     val passphraseGeneratorSettings: PassphraseGeneratorSettingsUiModel? = null,
+    val isUnableToGeneratePasswordDialogVisible: Boolean = false,
+    val minimumEntropyBits: Int = 0,
 )
 
 data class PasswordData(

@@ -169,6 +169,7 @@ internal val testResourceFormModule =
             ResourceFormViewModel(
                 mode = params.get(),
                 getPasswordPoliciesUseCase = mockGetPasswordPoliciesUseCase,
+                getOrLoadGeneratorSettingsUseCase = GetOrLoadGeneratorSettingsUseCase(mockGetPasswordPoliciesUseCase),
                 passwordPoliciesInteractor = mockPasswordPoliciesInteractor,
                 passwordExpiryPoliciesInteractor = mockPasswordExpiryPoliciesInteractor,
                 getFeatureFlagsUseCase = mockGetFeatureFlagsUseCase,

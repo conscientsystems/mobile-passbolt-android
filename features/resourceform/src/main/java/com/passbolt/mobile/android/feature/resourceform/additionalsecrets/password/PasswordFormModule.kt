@@ -10,7 +10,7 @@ internal fun Module.passwordFormModule() {
             passwordModel = params.get(),
             entropyViewMapper = get(),
             entropyCalculator = get(),
-            getPasswordPoliciesUseCase = get(),
+            getOrLoadGeneratorSettingsUseCase = get(),
             secretGenerator = get(),
         )
     }

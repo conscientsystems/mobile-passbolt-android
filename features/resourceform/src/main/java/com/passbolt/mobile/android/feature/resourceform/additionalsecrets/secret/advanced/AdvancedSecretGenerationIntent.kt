@@ -31,6 +31,8 @@ internal sealed interface AdvancedSecretGenerationIntent {
 
     data object SavePreferences : AdvancedSecretGenerationIntent
 
+    data object PreviewMaskToggled : AdvancedSecretGenerationIntent
+
     data class TabSelected(
         val type: PasswordGeneratorTypeUiModel,
     ) : AdvancedSecretGenerationIntent

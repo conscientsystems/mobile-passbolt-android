@@ -51,6 +51,7 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavi
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
 import com.passbolt.mobile.android.core.navigation.compose.results.ResourceFormCompleteResult
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
+import com.passbolt.mobile.android.core.ui.dialogs.UnableToGeneratePasswordAlertDialog
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.core.ui.text.TextInput
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
@@ -60,6 +61,7 @@ import com.passbolt.mobile.android.feature.metadatakeytrust.TrustedMetadataKeyDe
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissMetadataKeyDialog
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
@@ -306,6 +308,12 @@ private fun ResourceFormScreen(
         }
 
         ProgressDialog(isVisible = state.shouldShowDialogProgress)
+
+        UnableToGeneratePasswordAlertDialog(
+            isVisible = state.isUnableToGeneratePasswordDialogVisible,
+            requiredEntropy = state.minimumEntropyBits,
+            onDismiss = { onIntent(DismissUnableToGeneratePassword) },
+        )
 
         state.metadataKeyModifiedDialog?.let { model ->
             NewMetadataKeyTrustDialog(
