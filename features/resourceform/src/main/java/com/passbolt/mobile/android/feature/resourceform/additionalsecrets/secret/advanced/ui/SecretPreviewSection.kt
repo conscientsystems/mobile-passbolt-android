@@ -27,15 +27,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.testtags.composetags.PasswordField
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSPHRASE
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSWORD
@@ -46,6 +53,8 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
 internal fun SecretPreviewSection(
     selectedTab: PasswordGeneratorTypeUiModel,
     preview: String,
+    isPreviewMasked: Boolean,
+    onToggleMask: () -> Unit,
     minimumEntropyBits: Int?,
     modifier: Modifier = Modifier,
 ) {
@@ -68,6 +77,30 @@ internal fun SecretPreviewSection(
             onValueChange = {},
             readOnly = true,
             singleLine = true,
+            visualTransformation =
+                if (isPreviewMasked) {
+                    PasswordVisualTransformation()
+                } else {
+                    VisualTransformation.None
+                },
+            trailingIcon = {
+                IconButton(
+                    onClick = onToggleMask,
+                    modifier = Modifier.testTag(PasswordField.VISIBILITY_TOGGLE),
+                ) {
+                    Icon(
+                        painter =
+                            painterResource(
+                                if (isPreviewMasked) {
+                                    CoreUiR.drawable.ic_eye_visible
+                                } else {
+                                    CoreUiR.drawable.ic_eye_invisible
+                                },
+                            ),
+                        contentDescription = null,
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             colors =
                 MaterialTheme.colorScheme.surfaceVariant.let {

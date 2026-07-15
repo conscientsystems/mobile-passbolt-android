@@ -12,6 +12,7 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincod
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.advancedSecretGenerationModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.advanced.totpAdvancedSettingsFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.totpFormModule
+import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase
 import com.passbolt.mobile.android.feature.resourceform.main.resourceFormModule
 import com.passbolt.mobile.android.feature.resourceform.metadata.additionaluris.additionalUrisFormModule
 import com.passbolt.mobile.android.feature.resourceform.metadata.appearance.appearanceFormModule
@@ -61,6 +62,7 @@ val resourceFormModule =
 
         factoryOf(::GetDefaultCreateContentTypeUseCase)
         factoryOf(::GetEditContentTypeUseCase)
+        factoryOf(::GetOrLoadGeneratorSettingsUseCase)
 
         single<FeatureModuleNavigation>(named(Feature.RESOURCE_FORM)) { ResourceFormFeatureNavigation() }
     }

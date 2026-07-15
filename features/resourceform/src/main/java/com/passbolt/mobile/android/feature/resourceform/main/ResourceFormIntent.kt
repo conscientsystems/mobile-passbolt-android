@@ -26,6 +26,8 @@ sealed interface ResourceFormIntent {
 
     data object GeneratePassword : ResourceFormIntent
 
+    data object DismissUnableToGeneratePassword : ResourceFormIntent
+
     data object OpenAdvancedSecretGeneration : ResourceFormIntent
 
     data class AdvancedSecretGenerationResult(

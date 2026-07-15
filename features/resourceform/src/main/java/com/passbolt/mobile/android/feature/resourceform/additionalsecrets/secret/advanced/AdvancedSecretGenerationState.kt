@@ -32,5 +32,6 @@ internal data class AdvancedSecretGenerationState(
     val passwordSettings: PasswordGeneratorSettingsUiModel,
     val passphraseSettings: PassphraseGeneratorSettingsUiModel,
     val preview: String = "",
+    val isPreviewMasked: Boolean = false,
     val minimumEntropyBits: Int? = null,
 )

@@ -5,16 +5,22 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.Success
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
-import com.passbolt.mobile.android.domain.passwordpolicies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.AdvancedSecretGenerationResult
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.ApplyChanges
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.GeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.MainUriTextChanged
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.OpenAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.UsernameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateBack
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateToAdvancedSecretGeneration
+import com.passbolt.mobile.android.feature.resourceform.main.GeneratorSettings
+import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase
+import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase.Input
+import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
 import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.ui.Entropy
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSPHRASE
@@ -27,7 +33,7 @@ internal class PasswordFormViewModel(
     passwordModel: PasswordUiModel,
     private val entropyViewMapper: EntropyViewMapper,
     private val entropyCalculator: EntropyCalculator,
-    private val getPasswordPoliciesUseCase: GetPasswordPoliciesUseCase,
+    private val getOrLoadGeneratorSettingsUseCase: GetOrLoadGeneratorSettingsUseCase,
     private val secretGenerator: SecretGenerator,
 ) : SideEffectViewModel<PasswordFormState, PasswordFormSideEffect>(PasswordFormState()) {
     init {
@@ -56,6 +62,8 @@ internal class PasswordFormViewModel(
             is MainUriTextChanged -> updateViewState { copy(mainUri = intent.mainUri) }
             is UsernameTextChanged -> updateViewState { copy(username = intent.username) }
             GeneratePassword -> generatePassword()
+            OpenAdvancedSecretGeneration -> openAdvancedSecretGeneration()
+            is AdvancedSecretGenerationResult -> advancedSecretGenerationResult(intent.result)
             ApplyChanges -> applyChanges()
             GoBack -> emitSideEffect(NavigateBack)
             DismissUnableToGeneratePassword ->
@@ -78,11 +86,11 @@ internal class PasswordFormViewModel(
 
     private fun generatePassword() {
         launch {
-            val passwordPolicies = getPasswordPoliciesUseCase.execute(Unit)
+            val (type, passwordSettings, passphraseSettings) = getOrLoadGeneratorSettings()
             val result =
-                when (passwordPolicies.defaultGenerator) {
-                    PASSWORD -> secretGenerator.generatePassword(passwordPolicies.passwordGeneratorSettings)
-                    PASSPHRASE -> secretGenerator.generatePassphrase(passwordPolicies.passphraseGeneratorSettings)
+                when (type) {
+                    PASSWORD -> secretGenerator.generatePassword(passwordSettings)
+                    PASSPHRASE -> secretGenerator.generatePassphrase(passphraseSettings)
                 }
 
             when (result) {
@@ -109,6 +117,61 @@ internal class PasswordFormViewModel(
                 }
             }
         }
+    }
+
+    private fun openAdvancedSecretGeneration() {
+        launch {
+            val (type, passwordSettings, passphraseSettings) = getOrLoadGeneratorSettings()
+            emitSideEffect(
+                NavigateToAdvancedSecretGeneration(
+                    selectedTab = type,
+                    passwordSettings = passwordSettings,
+                    passphraseSettings = passphraseSettings,
+                ),
+            )
+        }
+    }
+
+    private fun advancedSecretGenerationResult(result: AdvancedSecretGenerationFormResult) {
+        updateViewState {
+            copy(
+                generatorType = result.selectedTab,
+                passwordGeneratorSettings = result.passwordSettings,
+                passphraseGeneratorSettings = result.passphraseSettings,
+            )
+        }
+        launch {
+            val entropy = entropyCalculator.getSecretEntropy(result.generatedSecret)
+            updateViewState {
+                copy(
+                    password = result.generatedSecret,
+                    entropy = entropy,
+                    passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
+                )
+            }
+        }
+    }
+
+    private suspend fun getOrLoadGeneratorSettings(): GeneratorSettings {
+        val state = viewState.value
+        val (settings, wasLoaded) =
+            getOrLoadGeneratorSettingsUseCase.execute(
+                Input(
+                    type = state.generatorType,
+                    passwordSettings = state.passwordGeneratorSettings,
+                    passphraseSettings = state.passphraseGeneratorSettings,
+                ),
+            )
+        if (wasLoaded) {
+            updateViewState {
+                copy(
+                    generatorType = settings.type,
+                    passwordGeneratorSettings = settings.passwordSettings,
+                    passphraseGeneratorSettings = settings.passphraseSettings,
+                )
+            }
+        }
+        return settings
     }
 
     private fun applyChanges() {

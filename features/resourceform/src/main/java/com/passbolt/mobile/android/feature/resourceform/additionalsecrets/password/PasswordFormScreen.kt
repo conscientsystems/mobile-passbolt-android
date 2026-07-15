@@ -28,22 +28,29 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AdvancedSecretGenerationForm
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
+import com.passbolt.mobile.android.core.navigation.compose.results.ResultEffect
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
 import com.passbolt.mobile.android.core.ui.dialogs.UnableToGeneratePasswordAlertDialog
 import com.passbolt.mobile.android.core.ui.text.TextInput
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.AdvancedSecretGenerationResult
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.ApplyChanges
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.GeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.MainUriTextChanged
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.OpenAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.UsernameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateBack
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateToAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.ui.PasswordGenerationInput
+import com.passbolt.mobile.android.feature.resourceform.main.ui.SettingRow
+import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
 import com.passbolt.mobile.android.feature.resourceform.navigation.PasswordFormResult
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.PasswordStrength
@@ -86,7 +93,19 @@ internal fun PasswordFormScreen(
                 navigator.navigateBack()
             }
             NavigateBack -> navigator.navigateBack()
+            is NavigateToAdvancedSecretGeneration ->
+                navigator.navigateToKey(
+                    AdvancedSecretGenerationForm(
+                        selectedTab = it.selectedTab,
+                        passwordSettings = it.passwordSettings,
+                        passphraseSettings = it.passphraseSettings,
+                    ),
+                )
         }
+    }
+
+    ResultEffect<AdvancedSecretGenerationFormResult> { result ->
+        viewModel.onIntent(AdvancedSecretGenerationResult(result))
     }
 }
 
@@ -157,6 +176,12 @@ private fun PasswordFormScreen(
                     entropy = state.entropy,
                     onPasswordChange = { onIntent(PasswordTextChanged(it)) },
                     onGenerateClick = { onIntent(GeneratePassword) },
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                SettingRow(
+                    leadingIconResId = CoreUiR.drawable.ic_cog,
+                    text = stringResource(LocalizationR.string.resource_form_advanced_password_generation),
+                    onClick = { onIntent(OpenAdvancedSecretGeneration) },
                 )
             }
         }
