@@ -24,7 +24,7 @@ dependencies {
     implementation(project(":featureflags-domain"))
     implementation(project(":accounts"))
     implementation(project(":autofillresources"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
     implementation(project(":navigation"))
     implementation(project(":autofill"))
     implementation(project(":testtags"))

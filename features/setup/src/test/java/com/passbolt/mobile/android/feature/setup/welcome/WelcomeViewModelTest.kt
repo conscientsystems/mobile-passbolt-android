@@ -30,9 +30,9 @@ import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccoun
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AcknowledgeDeviceRooted
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.ConnectToExistingAccount
@@ -49,6 +49,7 @@ import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.Navig
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateToSummary
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateToTransferDetails
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateUp
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import com.passbolt.mobile.android.ui.ResultStatus.AlreadyLinked
 import com.passbolt.mobile.android.ui.ResultStatus.Failure
 import com.passbolt.mobile.android.ui.ResultStatus.HttpNotSupported
@@ -89,7 +90,7 @@ class WelcomeViewModelTest : KoinTest {
                 listOf(
                     module {
                         single { mock<RootDetector>() }
-                        single { mock<GetGlobalPreferencesUseCase>() }
+                        single { mock<GlobalPreferencesRepository>() }
                         single { mock<AccountsInteractor>() }
                         single { mock<AccountKitParser>() }
                         factoryOf(::WelcomeViewModel)
@@ -109,9 +110,9 @@ class WelcomeViewModelTest : KoinTest {
         val rootDetector: RootDetector = get()
         whenever(rootDetector.isDeviceRooted()) doReturn false
 
-        val getGlobalPreferencesUseCase = get<GetGlobalPreferencesUseCase>()
-        whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-            GetGlobalPreferencesUseCase.Output(
+        val globalPreferencesRepository = get<GlobalPreferencesRepository>()
+        whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
                 isHideRootDialogEnabled = false,
@@ -188,15 +189,15 @@ class WelcomeViewModelTest : KoinTest {
             val rootDetector: RootDetector = get()
             whenever(rootDetector.isDeviceRooted()) doReturn true
 
-            val getGlobalPreferencesUseCase = get<GetGlobalPreferencesUseCase>()
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+            val globalPreferencesRepository = get<GlobalPreferencesRepository>()
+            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 

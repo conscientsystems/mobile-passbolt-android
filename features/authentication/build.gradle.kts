@@ -34,7 +34,7 @@ dependencies {
     implementation(project(":authenticationcore"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":encryptedstorage"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
     implementation(project(":clipboard"))
 
     implementation(libs.androidx.navigation3.runtime)

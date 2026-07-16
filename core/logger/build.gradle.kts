@@ -6,7 +6,8 @@ dependencies {
     implementation(project(":localization"))
     implementation(project(":envinfo"))
     implementation(project(":common"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
+    implementation(project(":uimodel"))
     implementation(project(":accounts"))
 
     implementation(platform(libs.koin.bom))

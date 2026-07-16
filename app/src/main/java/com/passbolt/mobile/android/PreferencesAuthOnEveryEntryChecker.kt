@@ -24,10 +24,10 @@
 package com.passbolt.mobile.android
 
 import com.passbolt.mobile.android.core.passphrasememorycache.AuthOnEveryEntryChecker
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 
 class PreferencesAuthOnEveryEntryChecker(
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
 ) : AuthOnEveryEntryChecker {
-    override fun isRequired(): Boolean = getGlobalPreferencesUseCase.execute(Unit).isAuthRequiredOnEveryEntry
+    override fun isRequired(): Boolean = globalPreferencesRepository.getGlobalPreferences().isAuthRequiredOnEveryEntry
 }

@@ -28,7 +28,7 @@ import androidx.startup.Initializer
 import com.passbolt.mobile.android.BuildConfig
 import com.passbolt.mobile.android.core.logger.FileLoggingTree
 import com.passbolt.mobile.android.core.logger.LogFilesManager
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import timber.log.Timber
@@ -49,7 +49,7 @@ class TimberInitializer :
     KoinComponent {
     private val fileLoggingTree: FileLoggingTree by inject()
     private val logFilesManager: LogFilesManager by inject()
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase by inject()
+    private val globalPreferencesRepository: GlobalPreferencesRepository by inject()
 
     override fun create(context: Context) {
         if (BuildConfig.DEBUG) {
@@ -57,7 +57,7 @@ class TimberInitializer :
         }
         val logFilePath = logFilesManager.initializeLogFile()
         fileLoggingTree.initialize(logFilePath)
-        if (getGlobalPreferencesUseCase.execute(Unit).areDebugLogsEnabled &&
+        if (globalPreferencesRepository.getGlobalPreferences().areDebugLogsEnabled &&
             !Timber.forest().contains(fileLoggingTree)
         ) {
             Timber.plant(fileLoggingTree)

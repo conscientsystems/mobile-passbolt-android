@@ -23,12 +23,12 @@
 
 package com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter
 
-import com.passbolt.mobile.android.ui.DefaultFilterModel
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 
 internal sealed interface DefaultFilterIntent {
     object GoBack : DefaultFilterIntent
 
     data class SelectDefaultFilter(
-        val filter: DefaultFilterModel,
+        val filter: DefaultFilterUiModel,
     ) : DefaultFilterIntent
 }

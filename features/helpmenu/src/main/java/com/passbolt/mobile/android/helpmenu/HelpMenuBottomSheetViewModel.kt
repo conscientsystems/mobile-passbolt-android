@@ -25,8 +25,8 @@ package com.passbolt.mobile.android.helpmenu
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.logger.FileLoggingTree
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
 import com.passbolt.mobile.android.helpmenu.HelpMenuBottomSheetIntent.AccessLogs
 import com.passbolt.mobile.android.helpmenu.HelpMenuBottomSheetIntent.AccountKitRead
 import com.passbolt.mobile.android.helpmenu.HelpMenuBottomSheetIntent.Close
@@ -47,8 +47,7 @@ import com.passbolt.mobile.android.ui.HelpMenuModel
 import timber.log.Timber
 
 class HelpMenuBottomSheetViewModel(
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
-    private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
     private val fileLoggingTree: FileLoggingTree,
 ) : SideEffectViewModel<HelpMenuBottomSheetState, HelpMenuBottomSheetSideEffect>(HelpMenuBottomSheetState()) {
     init {
@@ -56,7 +55,7 @@ class HelpMenuBottomSheetViewModel(
     }
 
     private fun initializeLogsState() {
-        val areLogsEnabled = getGlobalPreferencesUseCase.execute(Unit).areDebugLogsEnabled
+        val areLogsEnabled = globalPreferencesRepository.getGlobalPreferences().areDebugLogsEnabled
         updateViewState { copy(enableLogsSwitch = areLogsEnabled, accessLogsEnabled = areLogsEnabled) }
     }
 
@@ -100,7 +99,7 @@ class HelpMenuBottomSheetViewModel(
     }
 
     private fun handleEnableLogsToggled(enabled: Boolean) {
-        updateGlobalPreferencesUseCase.execute(UpdateGlobalPreferencesUseCase.Input(enabled))
+        globalPreferencesRepository.updateGlobalPreferences(GlobalPreferencesUpdate(enabled))
 
         updateViewState {
             copy(

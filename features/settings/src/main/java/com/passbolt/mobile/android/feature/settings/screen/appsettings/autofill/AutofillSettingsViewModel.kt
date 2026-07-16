@@ -27,7 +27,7 @@ import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.ENABLED
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.NOT_SUPPORTED
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.ErrorSnackbarType.NATIVE_AUTOFILL_NOT_SUPPORTED
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAccessibilityPoliciesConsent
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAutofillEnabled
@@ -45,7 +45,7 @@ import timber.log.Timber
 
 internal class AutofillSettingsViewModel(
     private val autofillInformationProvider: AutofillInformationProvider,
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
 ) : SideEffectViewModel<AutofillSettingsState, AutofillScreenSideEffect>(AutofillSettingsState()) {
     init {
         loadInitialValues()
@@ -62,7 +62,7 @@ internal class AutofillSettingsViewModel(
     }
 
     private fun toggleAccessibilityAutofill() {
-        if (getGlobalPreferencesUseCase.execute(Unit).accessibilityPoliciesConsentGiven) {
+        if (globalPreferencesRepository.getGlobalPreferences().accessibilityPoliciesConsentGiven) {
             emitSideEffect(NavigateToEncourageAccessibilityAutofill)
         } else {
             Timber.d("Accessibility consent shown (no prior consent)")

@@ -12,9 +12,9 @@ import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSele
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.AddLocalTagsUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.RemoveLocalTagsUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.RemoveLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.RemoveLocalResourcesWithUpdateStateUseCase
@@ -24,6 +24,7 @@ import com.passbolt.mobile.android.domain.resources.usecase.db.UpsertLocalResour
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
 import com.passbolt.mobile.android.ui.ResourcePermission
@@ -97,7 +98,7 @@ class ResourceInteractorTest : KoinTest {
                     single { mock<AddLocalResourcePermissionsUseCase>() }
                     single { mock<SetLocalResourcesUpdateStateUseCase>() }
                     single { mock<RemoveLocalResourcesWithUpdateStateUseCase>() }
-                    single { mock<GetGlobalPreferencesUseCase>() }
+                    single { mock<GlobalPreferencesRepository>() }
                     single { mock<GetSelectedAccountUseCase>() }
                     singleOf(::PassThroughTransactionRunner) bind DatabaseTransactionRunner::class
                     single(named(JSON_MODEL_GSON)) { Gson() }
@@ -119,9 +120,9 @@ class ResourceInteractorTest : KoinTest {
     fun setUp() {
         whenever(get<GetSelectedAccountUseCase>().execute(Unit))
             .doReturn(GetSelectedAccountUseCase.Output(SELECTED_ACCOUNT_ID))
-        whenever(get<GetGlobalPreferencesUseCase>().execute(Unit))
+        whenever(get<GlobalPreferencesRepository>().getGlobalPreferences())
             .doReturn(
-                GetGlobalPreferencesUseCase.Output(
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     debugLogLastAppVersion = null,

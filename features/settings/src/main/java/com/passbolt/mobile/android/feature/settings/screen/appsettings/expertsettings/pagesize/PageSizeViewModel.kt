@@ -24,15 +24,14 @@
 package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.PageSizeChanged
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeSideEffect.NavigateBack
 
 internal class PageSizeViewModel(
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
-    private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
 ) : SideEffectViewModel<PageSizeState, PageSizeSideEffect>(PageSizeState()) {
     init {
         loadInitialValues()
@@ -46,7 +45,7 @@ internal class PageSizeViewModel(
     }
 
     private fun loadInitialValues() {
-        val currentPageSize = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
+        val currentPageSize = globalPreferencesRepository.getGlobalPreferences().apiFetchPageSize
         val index = ALLOWED_PAGE_SIZES.indexOf(currentPageSize).coerceIn(0, ALLOWED_PAGE_SIZES.lastIndex)
         updateViewState { copy(selectedIndex = index) }
     }
@@ -54,8 +53,8 @@ internal class PageSizeViewModel(
     private fun pageSizeChanged(sliderIndex: Int) {
         val index = sliderIndex.coerceIn(0, ALLOWED_PAGE_SIZES.lastIndex)
         val pageSize = ALLOWED_PAGE_SIZES[index]
-        updateGlobalPreferencesUseCase.execute(
-            UpdateGlobalPreferencesUseCase.Input(apiFetchPageSize = pageSize),
+        globalPreferencesRepository.updateGlobalPreferences(
+            GlobalPreferencesUpdate(apiFetchPageSize = pageSize),
         )
         updateViewState { copy(selectedIndex = index) }
     }

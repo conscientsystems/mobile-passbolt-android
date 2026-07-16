@@ -24,7 +24,6 @@ dependencies {
     implementation(project(":autofill"))
     implementation(project(":accounts"))
     implementation(project(":jsonmodel"))
-    implementation(project(":preferences"))
     implementation(project(":entity"))
     implementation(project(":otpcore"))
     implementation(project(":otp"))

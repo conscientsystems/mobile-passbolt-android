@@ -40,7 +40,7 @@ dependencies {
     implementation(project(":serializers"))
     implementation(project(":autofill"))
     implementation(project(":accounts"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
     implementation(project(":jsonmodel"))
     implementation(project(":createresourcemenu"))
     implementation(project(":resourceform"))

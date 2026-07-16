@@ -7,9 +7,9 @@ import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSele
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.AddLocalTagsUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.RemoveLocalTagsUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.resources.usecase.GetResourcesPaginatedUseCase.Output.Failure
 import com.passbolt.mobile.android.domain.resources.usecase.GetResourcesPaginatedUseCase.Output.Success
 import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourcePermissionsUseCase
@@ -55,7 +55,7 @@ class ResourceInteractor(
     private val addLocalResourcePermissionsUseCase: AddLocalResourcePermissionsUseCase,
     private val setLocalResourcesUpdateStateUseCase: SetLocalResourcesUpdateStateUseCase,
     private val removeLocalResourcesWithUpdateStateUseCase: RemoveLocalResourcesWithUpdateStateUseCase,
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val databaseTransactionRunner: DatabaseTransactionRunner,
 ) {
@@ -65,7 +65,7 @@ class ResourceInteractor(
     @Suppress("ReturnCount")
     suspend fun fetchAndSaveResources(onPageProcessed: suspend (processedPages: Int, totalPages: Int) -> Unit = { _, _ -> }): Output {
         try {
-            val pageSize = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
+            val pageSize = globalPreferencesRepository.getGlobalPreferences().apiFetchPageSize
 
             // set all resource update states to pending
             setLocalResourcesUpdateStateUseCase.execute(

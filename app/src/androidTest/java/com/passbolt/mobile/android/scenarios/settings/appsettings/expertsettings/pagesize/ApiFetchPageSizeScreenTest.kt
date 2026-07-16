@@ -40,9 +40,9 @@ import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
 import com.passbolt.mobile.android.core.idlingresource.SignOutIdlingResource
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AppContext
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
 import com.passbolt.mobile.android.feature.authentication.AuthenticationMainActivity
 import com.passbolt.mobile.android.helpers.getString
 import com.passbolt.mobile.android.helpers.signIn
@@ -89,8 +89,7 @@ class ApiFetchPageSizeScreenTest : KoinTest {
     val composeTestRule = createEmptyComposeRule()
 
     private val managedAccountIntentCreator: ManagedAccountIntentCreator by inject()
-    private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase by inject()
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase by inject()
+    private val globalPreferencesRepository: GlobalPreferencesRepository by inject()
 
     @get:Rule
     val idlingResourceRule =
@@ -111,7 +110,7 @@ class ApiFetchPageSizeScreenTest : KoinTest {
      */
     @Before
     fun resetPrefsAndOpenSettings() {
-        setPersistedPageSize(DEFAULT_API_FETCH_PAGE_SIZE)
+        setPersistedPageSize(PreferencesDefaults.API_FETCH_PAGE_SIZE)
         composeTestRule.apply {
             signIn(managedAccountIntentCreator.getPassphrase())
             onNodeWithTag(BottomNav.SETTINGS_TAB).performClick()
@@ -141,7 +140,7 @@ class ApiFetchPageSizeScreenTest : KoinTest {
                 .assertIsDisplayed()
             onNodeWithText("50").assertIsDisplayed()
             onNodeWithText("100,000").assertIsDisplayed()
-            // "2,000" mirrors DEFAULT_API_FETCH_PAGE_SIZE; update both together if the default changes.
+            // "2,000" mirrors PreferencesDefaults.API_FETCH_PAGE_SIZE; update both together if the default changes.
             onNodeWithTag(PageSize.HEADLINE).assertTextEquals("2,000")
         }
     }
@@ -194,7 +193,7 @@ class ApiFetchPageSizeScreenTest : KoinTest {
 
             composeTestRule.onNodeWithTag(PageSize.HEADLINE).assertTextEquals(displayed)
 
-            val actuallyPersisted = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
+            val actuallyPersisted = globalPreferencesRepository.getGlobalPreferences().apiFetchPageSize
             check(actuallyPersisted == persisted) {
                 "Expected persisted apiFetchPageSize=$persisted after slider step $step, was $actuallyPersisted"
             }
@@ -231,8 +230,8 @@ class ApiFetchPageSizeScreenTest : KoinTest {
     }
 
     private fun setPersistedPageSize(persistedValue: Int) {
-        updateGlobalPreferencesUseCase.execute(
-            UpdateGlobalPreferencesUseCase.Input(apiFetchPageSize = persistedValue),
+        globalPreferencesRepository.updateGlobalPreferences(
+            GlobalPreferencesUpdate(apiFetchPageSize = persistedValue),
         )
     }
 

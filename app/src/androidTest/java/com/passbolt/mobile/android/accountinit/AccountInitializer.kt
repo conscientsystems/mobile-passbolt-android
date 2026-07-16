@@ -5,8 +5,9 @@ import com.passbolt.mobile.android.core.accounts.usecase.account.SaveAccountUseC
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.database.usecase.SaveResourcesDatabasePassphraseUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
@@ -20,7 +21,7 @@ class AccountInitializer(
     private val privateKeyRepository: PrivateKeyRepository,
     private val managedAccountIntentCreator: ManagedAccountIntentCreator,
     private val saveAccountUseCase: SaveAccountUseCase,
-    private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
 ) : KoinComponent {
     fun initializeAccount() {
         saveCurrentApiUrlUseCase.execute(
@@ -49,8 +50,8 @@ class AccountInitializer(
             managedAccountIntentCreator.getUserLocalId(),
             PrivateKey(managedAccountIntentCreator.getArmoredPrivateKey()),
         )
-        updateGlobalPreferencesUseCase.execute(
-            UpdateGlobalPreferencesUseCase.Input(
+        globalPreferencesRepository.updateGlobalPreferences(
+            GlobalPreferencesUpdate(
                 areDebugLogsEnabled = false,
                 isHideRootDialogEnabled = false,
             ),

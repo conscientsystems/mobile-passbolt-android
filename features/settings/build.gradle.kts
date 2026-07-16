@@ -28,7 +28,7 @@ dependencies {
     implementation(project(":passphrasememorycache"))
     implementation(project(":authenticationcore"))
     implementation(project(":encryptedstorage"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
     implementation(project(":clipboard"))
     implementation(project(":accessibilitypolicies"))
     implementation(project(":testtags"))

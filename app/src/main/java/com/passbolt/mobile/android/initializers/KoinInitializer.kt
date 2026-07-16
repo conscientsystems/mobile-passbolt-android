@@ -44,7 +44,6 @@ import com.passbolt.mobile.android.core.notifications.notificationsModule
 import com.passbolt.mobile.android.core.otpcore.otpCoreModule
 import com.passbolt.mobile.android.core.passphrasememorycache.passphraseMemoryCacheModule
 import com.passbolt.mobile.android.core.passwordgenerator.passwordGeneratorModule
-import com.passbolt.mobile.android.core.preferences.preferencesModule
 import com.passbolt.mobile.android.core.qrscan.barcodeScanModule
 import com.passbolt.mobile.android.core.resourcetypes.resourceTypesModule
 import com.passbolt.mobile.android.core.security.securityModule
@@ -64,6 +63,7 @@ import com.passbolt.mobile.android.data.mfa.mfaDataModule
 import com.passbolt.mobile.android.data.mobiletransfer.mobileTransferDataModule
 import com.passbolt.mobile.android.data.passwordexpiry.passwordExpiryDataModule
 import com.passbolt.mobile.android.data.passwordpolicies.passwordPoliciesDataModule
+import com.passbolt.mobile.android.data.preferences.preferencesDataModule
 import com.passbolt.mobile.android.data.privatekey.privateKeyDataModule
 import com.passbolt.mobile.android.data.rbac.rbacDataModule
 import com.passbolt.mobile.android.data.resources.resourcesDataModule
@@ -81,6 +81,7 @@ import com.passbolt.mobile.android.domain.metadata.metadataDomainModule
 import com.passbolt.mobile.android.domain.mobiletransfer.mobileTransferDomainModule
 import com.passbolt.mobile.android.domain.passwordexpiry.passwordExpiryDomainModule
 import com.passbolt.mobile.android.domain.passwordpolicies.passwordPoliciesDomainModule
+import com.passbolt.mobile.android.domain.preferences.preferencesDomainModule
 import com.passbolt.mobile.android.domain.rbac.rbacDomainModule
 import com.passbolt.mobile.android.domain.resources.resourcesDomainModule
 import com.passbolt.mobile.android.domain.secrets.secretsDomainModule
@@ -202,6 +203,8 @@ class KoinInitializer : Initializer<Unit> {
                 accountsCoreModule,
                 passwordPoliciesDomainModule,
                 passwordPoliciesDataModule,
+                preferencesDomainModule,
+                preferencesDataModule,
                 mobileTransferDomainModule,
                 mobileTransferDataModule,
                 favouritesDomainModule,
@@ -217,7 +220,6 @@ class KoinInitializer : Initializer<Unit> {
                 metadataDomainModule,
                 encryptedStorageModule,
                 authenticationCoreModule,
-                preferencesModule,
                 passphraseMemoryCacheModule,
                 jsonModelModule,
                 createResourceMenuModule,
