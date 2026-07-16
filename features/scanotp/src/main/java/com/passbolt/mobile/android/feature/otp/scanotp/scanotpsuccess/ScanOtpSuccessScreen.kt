@@ -33,8 +33,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
-import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.Otp
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ResourcePicker
+import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtp
+import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtpMode
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
 import com.passbolt.mobile.android.core.navigation.compose.results.OtpScanCompleteResult
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
@@ -85,7 +86,10 @@ internal fun ScanOtpSuccessScreen(
                 resultBus.sendResult(
                     result = OtpScanCompleteResult(otpCreated = sideEffect.otpCreated, otpManualCreationChosen = false),
                 )
-                navigator.popToKey(Otp)
+                navigator.popToKey(
+                    ScanOtp(ScanOtpMode.SCAN_WITH_SUCCESS_SCREEN, parentFolderId),
+                    inclusive = true,
+                )
             }
             is NavigateToResourcePicker ->
                 navigator.navigateToKey(ResourcePicker(sideEffect.suggestedUri))
