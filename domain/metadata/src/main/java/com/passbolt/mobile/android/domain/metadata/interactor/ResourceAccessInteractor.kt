@@ -1,7 +1,3 @@
-package com.passbolt.mobile.android.feature.home.switchaccount
-
-import com.passbolt.mobile.android.ui.SwitchAccountUiModel.AccountItem
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,22 +21,17 @@ import com.passbolt.mobile.android.ui.SwitchAccountUiModel.AccountItem
  * @since v1.0
  */
 
-sealed interface SwitchAccountIntent {
-    data object Refresh : SwitchAccountIntent
+package com.passbolt.mobile.android.domain.metadata.interactor
 
-    data object SeeCurrentAccountDetails : SwitchAccountIntent
+import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
 
-    data class SwitchAccount(
-        val account: AccountItem,
-    ) : SwitchAccountIntent
+class ResourceAccessInteractor(
+    private val canCreateResourceUseCase: CanCreateResourceUseCase,
+    private val canShareResourceUseCase: CanShareResourceUseCase,
+) {
+    suspend fun canCreateResource(folderId: String? = null): Boolean =
+        canCreateResourceUseCase.execute(CanCreateResourceUseCase.Input(folderId)).canCreateResource
 
-    data object ManageAccounts : SwitchAccountIntent
-
-    data object SignOut : SwitchAccountIntent
-
-    data object CloseSignOutDialog : SwitchAccountIntent
-
-    data object SignOutConfirmed : SwitchAccountIntent
-
-    data object Close : SwitchAccountIntent
+    suspend fun canShareResource(): Boolean = canShareResourceUseCase.execute(Unit).canShareResource
 }

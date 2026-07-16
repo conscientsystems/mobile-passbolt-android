@@ -15,7 +15,7 @@ import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchCont
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
-import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.domain.resources.usecase.ResourceShareInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
@@ -81,7 +81,7 @@ class PermissionsViewModelTest : KoinTest {
                     single { mock<ResourceShareInteractor>() }
                     single { mock<MetadataPrivateKeysHelperInteractor>() }
                     single { mock<ResourceUpdateActionsInteractorFactory>() }
-                    single { mock<CanShareResourceUseCase>() }
+                    single { mock<ResourceAccessInteractor>() }
                     singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                     singleOf(::SessionRefreshTrackingFlow)
                     singleOf(::DataRefreshTrackingFlow)
@@ -108,7 +108,7 @@ class PermissionsViewModelTest : KoinTest {
                             permissionModelUiComparator = get(),
                             resourceShareInteractor = get(),
                             metadataPrivateKeysHelperInteractor = get(),
-                            canShareResourceUseCase = get(),
+                            resourceAccessInteractor = get(),
                             dataRefreshTrackingFlow = get(),
                             coroutineLaunchContext = get(),
                             resourceUpdateActionsInteractorFactory = get(),
@@ -133,8 +133,8 @@ class PermissionsViewModelTest : KoinTest {
             onBlocking { execute(GetLocalResourceUseCase.Input(RESOURCE_ID)) }
                 .doReturn(GetLocalResourceUseCase.Output(RESOURCE_MODEL))
         }
-        get<CanShareResourceUseCase>().stub {
-            onBlocking { execute(Unit) } doReturn CanShareResourceUseCase.Output(canShareResource = true)
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canShareResource() } doReturn true
         }
     }
 
@@ -180,8 +180,8 @@ class PermissionsViewModelTest : KoinTest {
     @Test
     fun `error should be shown when sharing not possible`() =
         runTest {
-            get<CanShareResourceUseCase>().stub {
-                onBlocking { execute(Unit) } doReturn CanShareResourceUseCase.Output(canShareResource = false)
+            get<ResourceAccessInteractor>().stub {
+                onBlocking { canShareResource() } doReturn false
             }
             get<GetLocalResourceUseCase>().stub {
                 onBlocking { execute(GetLocalResourceUseCase.Input(RESOURCE_ID)) }

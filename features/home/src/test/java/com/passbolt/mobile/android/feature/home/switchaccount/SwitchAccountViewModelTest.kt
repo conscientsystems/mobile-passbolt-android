@@ -325,6 +325,50 @@ class SwitchAccountViewModelTest : KoinTest {
         }
 
     @Test
+    fun `should reload selected account header when refresh intent is received`() =
+        runTest {
+            val getAllAccountsDataUseCase: GetAllAccountsDataUseCase = get()
+            val accounts =
+                listOf(
+                    Account(
+                        userId = "id1",
+                        firstName = "firstName1",
+                        lastName = "lastName1",
+                        email = "email1",
+                        avatarUrl = "avatarUrl1",
+                        url = "url1",
+                        serverId = "serverId1",
+                        label = "label1",
+                    ),
+                    Account(
+                        userId = "id2",
+                        firstName = "firstName2",
+                        lastName = "lastName2",
+                        email = "email2",
+                        avatarUrl = "avatarUrl2",
+                        url = "url2",
+                        serverId = "serverId2",
+                        label = "label2",
+                    ),
+                )
+            whenever(getAllAccountsDataUseCase.execute(Unit)) doReturn GetAllAccountsDataUseCase.Output(accounts)
+
+            val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
+            whenever(getSelectedAccountUseCase.execute(Unit)) doReturn GetSelectedAccountUseCase.Output("id1")
+
+            viewModel = get { parametersOf(AppContext.APP) }
+            assertThat((viewModel.viewState.value.accountsList[0] as SwitchAccountUiModel.HeaderItem).email)
+                .isEqualTo("email1")
+
+            // simulate the account being switched elsewhere while this (retained) view model is alive
+            whenever(getSelectedAccountUseCase.execute(Unit)) doReturn GetSelectedAccountUseCase.Output("id2")
+            viewModel.onIntent(SwitchAccountIntent.Refresh)
+
+            val headerItem = viewModel.viewState.value.accountsList[0] as SwitchAccountUiModel.HeaderItem
+            assertThat(headerItem.email).isEqualTo("email2")
+        }
+
+    @Test
     fun `should navigate to manage accounts when manage accounts intent is received`() =
         runTest {
             viewModel = get { parametersOf(AppContext.APP) }

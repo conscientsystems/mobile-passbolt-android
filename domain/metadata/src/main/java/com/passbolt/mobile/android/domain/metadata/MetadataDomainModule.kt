@@ -29,6 +29,7 @@ import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKey
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysInteractor
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataSessionKeysInteractor
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataTypesSettingsInteractor
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.metadata.privatekeys.MetadataPrivateKeysValidator
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysBundleMerger
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysBundleProcessor
@@ -93,4 +94,5 @@ val metadataDomainModule =
 
         singleOf(::CanCreateResourceUseCase)
         singleOf(::CanShareResourceUseCase)
+        singleOf(::ResourceAccessInteractor)
     }

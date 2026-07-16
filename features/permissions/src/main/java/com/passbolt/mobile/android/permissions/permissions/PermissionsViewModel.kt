@@ -32,7 +32,7 @@ import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchCont
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
-import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.domain.resources.actions.performResourceUpdateAction
 import com.passbolt.mobile.android.domain.resources.usecase.ResourceShareInteractor
@@ -106,7 +106,7 @@ class PermissionsViewModel(
     private val permissionModelUiComparator: PermissionModelUiComparator,
     private val resourceShareInteractor: ResourceShareInteractor,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
-    private val canShareResourceUseCase: CanShareResourceUseCase,
+    private val resourceAccessInteractor: ResourceAccessInteractor,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
@@ -256,7 +256,7 @@ class PermissionsViewModel(
 
     private fun onCanShareResource(action: () -> Unit) {
         viewModelScope.launch(coroutineLaunchContext.io) {
-            if (canShareResourceUseCase.execute(Unit).canShareResource) {
+            if (resourceAccessInteractor.canShareResource()) {
                 action()
             } else {
                 emitSideEffect(ShowErrorSnackbar(CANNOT_SHARE_RESOURCE))

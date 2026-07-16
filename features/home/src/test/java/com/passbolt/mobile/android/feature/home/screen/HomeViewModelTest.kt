@@ -52,8 +52,7 @@ import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.entity.home.HomeDisplayView
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseSwitchAccount
@@ -62,6 +61,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePassword
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateTotp
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.Initialize
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OnResume
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.Search
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.SearchEndIconAction
@@ -149,8 +149,7 @@ class HomeViewModelTest : KoinTest {
                     single { mock<HomeDisplayViewMapper>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
-                    single { mock<CanCreateResourceUseCase>() }
-                    single { mock<CanShareResourceUseCase>() }
+                    single { mock<ResourceAccessInteractor>() }
                     single { mock<DetectAutofillConflict>() }
                     single {
                         mock<UserProfileInteractor> {
@@ -215,12 +214,9 @@ class HomeViewModelTest : KoinTest {
             }.doReturn(HomeData())
         }
 
-        get<CanCreateResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanCreateResourceUseCase.Output(canCreateResource = true))
-        }
-
-        get<CanShareResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanShareResourceUseCase.Output(canShareResource = true))
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) }.doReturn(true)
+            onBlocking { canShareResource() }.doReturn(true)
         }
     }
 
@@ -703,13 +699,62 @@ class HomeViewModelTest : KoinTest {
             assertThat(viewModel.viewState.value.homeData).isEqualTo(newHomeData)
         }
 
-    private fun mockCanCreateResource(canCreate: Boolean) {
-        get<CanCreateResourceUseCase>().stub {
-            onBlocking {
-                execute(any())
-            }.doReturn(
-                CanCreateResourceUseCase.Output(canCreateResource = canCreate),
+    @Test
+    fun `should reload home data and avatar on resume when selected account changed`() =
+        runTest {
+            mockHomeData()
+            // first read (initialize) returns the initial account, second read (resume) a new one
+            whenever(get<GetSelectedAccountDataUseCase>().selectedAccountId).thenReturn("id1", "id2")
+
+            viewModel = get()
+            viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
+            advanceUntilIdle()
+
+            val newAvatar = "new_avatar_url"
+            whenever(get<GetSelectedAccountDataUseCase>().execute(anyOrNull())).thenReturn(
+                GetSelectedAccountDataUseCase.Output(
+                    firstName = "New",
+                    lastName = "User",
+                    email = "new@passbolt.com",
+                    avatarUrl = newAvatar,
+                    url = "www.passbolt.com",
+                    serverId = "2",
+                    label = "label2",
+                    role = "user",
+                ),
             )
+            val newHomeData = mockResourcesData()
+            whenever(get<HomeDataProvider>().provideData(any(), any(), any(), any())).thenReturn(newHomeData)
+
+            viewModel.onIntent(OnResume)
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.userAvatar).isEqualTo(newAvatar)
+            assertThat(viewModel.viewState.value.homeData).isEqualTo(newHomeData)
+        }
+
+    @Test
+    fun `should not reload home data on resume when selected account unchanged`() =
+        runTest {
+            mockHomeData()
+            whenever(get<GetSelectedAccountDataUseCase>().selectedAccountId).thenReturn("id1")
+            val provider: HomeDataProvider = get()
+
+            viewModel = get()
+            viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
+            advanceUntilIdle()
+
+            clearInvocations(provider)
+
+            viewModel.onIntent(OnResume)
+            advanceUntilIdle()
+
+            verify(provider, never()).provideData(any(), any(), any(), any())
+        }
+
+    private fun mockCanCreateResource(canCreate: Boolean) {
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) }.doReturn(canCreate)
         }
     }
 

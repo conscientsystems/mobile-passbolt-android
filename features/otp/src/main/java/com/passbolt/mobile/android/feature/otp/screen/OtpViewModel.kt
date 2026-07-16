@@ -43,7 +43,7 @@ import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
-import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractorFactory
@@ -138,7 +138,7 @@ internal class OtpViewModel(
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
     private val timerFactory: TimerFactory,
-    private val canCreateResourceUse: CanCreateResourceUseCase,
+    private val resourceAccessInteractor: ResourceAccessInteractor,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
     private val secretPropertiesActionsInteractorFactory: SecretPropertiesActionsInteractorFactory,
     private val autofillUriMatcher: AutofillUriMatcher,
@@ -185,7 +185,7 @@ internal class OtpViewModel(
 
     private fun onCanCreateResource(function: () -> Unit) {
         viewModelScope.launch {
-            if (canCreateResourceUse.execute(CanCreateResourceUseCase.Input(folderId = null)).canCreateResource) {
+            if (resourceAccessInteractor.canCreateResource()) {
                 function()
             } else {
                 emitSideEffect(ShowErrorSnackbar(NO_SHARED_KEY_ACCESS))

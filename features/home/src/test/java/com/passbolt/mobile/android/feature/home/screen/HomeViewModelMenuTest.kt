@@ -43,8 +43,7 @@ import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPr
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionResult
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
@@ -129,8 +128,7 @@ class HomeViewModelMenuTest : KoinTest {
                     single { mock<HomeDisplayViewMapper>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
-                    single { mock<CanCreateResourceUseCase>() }
-                    single { mock<CanShareResourceUseCase>() }
+                    single { mock<ResourceAccessInteractor>() }
                     single { mock<DetectAutofillConflict>() }
                     single {
                         mock<UserProfileInteractor> {
@@ -195,12 +193,9 @@ class HomeViewModelMenuTest : KoinTest {
             }.doReturn(HomeData())
         }
 
-        get<CanCreateResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanCreateResourceUseCase.Output(canCreateResource = true))
-        }
-
-        get<CanShareResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanShareResourceUseCase.Output(canShareResource = true))
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) }.doReturn(true)
+            onBlocking { canShareResource() }.doReturn(true)
         }
     }
 

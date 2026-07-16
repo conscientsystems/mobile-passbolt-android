@@ -46,7 +46,7 @@ import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParame
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
-import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractorFactory
@@ -102,6 +102,7 @@ import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
@@ -124,7 +125,7 @@ class OtpViewModelTest : KoinTest {
                         single { mock<GetLocalResourcesUseCase>() }
                         single { mock<TotpParametersProvider>() }
                         single { mock<MetadataPrivateKeysHelperInteractor>() }
-                        single { mock<CanCreateResourceUseCase>() }
+                        single { mock<ResourceAccessInteractor>() }
                         single { mock<ResourceUpdateActionsInteractorFactory>() }
                         single { mock<SecretPropertiesActionsInteractorFactory>() }
                         single { mock<AutofillUriMatcher>() }
@@ -142,7 +143,7 @@ class OtpViewModelTest : KoinTest {
                                 dataRefreshTrackingFlow = get(),
                                 metadataPrivateKeysHelperInteractor = get(),
                                 timerFactory = get(),
-                                canCreateResourceUse = get(),
+                                resourceAccessInteractor = get(),
                                 resourceUpdateActionsInteractorFactory = get(),
                                 secretPropertiesActionsInteractorFactory = get(),
                                 autofillUriMatcher = get(),
@@ -182,10 +183,8 @@ class OtpViewModelTest : KoinTest {
             onBlocking { execute(any()) } doReturn GetLocalResourcesUseCase.Output(otpResources)
         }
 
-        val canCreateResourceUseCase = get<CanCreateResourceUseCase>()
-        canCreateResourceUseCase.stub {
-            onBlocking { execute(any()) } doReturn
-                CanCreateResourceUseCase.Output(canCreateResource = true)
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) } doReturn true
         }
     }
 
@@ -458,9 +457,9 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should show error when resource creation not possible`() =
         runTest {
-            val canCreateResourceUseCase = get<CanCreateResourceUseCase>()
-            whenever(canCreateResourceUseCase.execute(any())) doReturn
-                CanCreateResourceUseCase.Output(canCreateResource = false)
+            get<ResourceAccessInteractor>().stub {
+                onBlocking { canCreateResource(anyOrNull()) } doReturn false
+            }
 
             viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -71,6 +72,15 @@ fun SwitchAccountBottomSheet(
     val state by viewModel.viewState.collectAsState()
     val context = LocalContext.current
     val activity = LocalActivity.current
+
+    /*
+     The ViewModel instance survives across open/close of the sheet (and across an
+     autofill account switch, where the activity is not recreated), so reload the
+     accounts each time the sheet is shown to reflect the currently selected account.
+     */
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(SwitchAccountIntent.Refresh)
+    }
 
     SwitchAccountBottomSheet(
         onIntent = viewModel::onIntent,
