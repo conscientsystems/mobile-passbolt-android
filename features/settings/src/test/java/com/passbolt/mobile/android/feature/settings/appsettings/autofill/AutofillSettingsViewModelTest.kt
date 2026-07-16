@@ -27,8 +27,8 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.DISABLED
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.NOT_SUPPORTED
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAccessibilityPoliciesConsent
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAutofillEnabled
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToChromeNativeAutofill
@@ -39,6 +39,7 @@ import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillSettingsIntent.ToggleNativeAutofill
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillSettingsIntent.UpdateAutofillState
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillSettingsViewModel
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -70,7 +71,7 @@ class AutofillSettingsViewModelTest : KoinTest {
                 listOf(
                     module {
                         single { mock<AutofillInformationProvider>() }
-                        single { mock<GetGlobalPreferencesUseCase>() }
+                        single { mock<GlobalPreferencesRepository>() }
                         factoryOf(::AutofillSettingsViewModel)
                     },
                 ),
@@ -209,19 +210,19 @@ class AutofillSettingsViewModelTest : KoinTest {
     fun `when accessibility autofill disabled a click should navigate to encourage accessibility`() =
         runTest {
             val autofillInformationProvider: AutofillInformationProvider = get()
-            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
+            val globalPreferencesRepository: GlobalPreferencesRepository = get()
             whenever(autofillInformationProvider.isAutofillServiceSupported()) doReturn true
             whenever(autofillInformationProvider.isPassboltAutofillServiceSet()) doReturn true
             whenever(autofillInformationProvider.getChromeNativeAutofillStatus()) doReturn DISABLED
             whenever(autofillInformationProvider.isAccessibilityAutofillSetup()) doReturn false
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -243,19 +244,19 @@ class AutofillSettingsViewModelTest : KoinTest {
     fun `when consent not given a click should navigate to consent screen`() =
         runTest {
             val autofillInformationProvider: AutofillInformationProvider = get()
-            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
+            val globalPreferencesRepository: GlobalPreferencesRepository = get()
             whenever(autofillInformationProvider.isAutofillServiceSupported()) doReturn true
             whenever(autofillInformationProvider.isPassboltAutofillServiceSet()) doReturn true
             whenever(autofillInformationProvider.getChromeNativeAutofillStatus()) doReturn DISABLED
             whenever(autofillInformationProvider.isAccessibilityAutofillSetup()) doReturn false
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = false,
                 )
 

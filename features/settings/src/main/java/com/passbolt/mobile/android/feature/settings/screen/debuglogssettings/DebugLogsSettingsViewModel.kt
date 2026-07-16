@@ -25,8 +25,8 @@ package com.passbolt.mobile.android.feature.settings.screen.debuglogssettings
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.logger.FileLoggingTree
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
 import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.DebugLogsScreenSideEffect.NavigateToLogs
 import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.DebugLogsScreenSideEffect.NavigateUp
 import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.DebugLogsSettingsIntent.AccessLogs
@@ -36,8 +36,7 @@ import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.Deb
 import timber.log.Timber
 
 internal class DebugLogsSettingsViewModel(
-    private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase,
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
     private val fileLoggingTree: FileLoggingTree,
 ) : SideEffectViewModel<DebugLogsSettingsState, DebugLogsScreenSideEffect>(DebugLogsSettingsState()) {
     init {
@@ -54,7 +53,7 @@ internal class DebugLogsSettingsViewModel(
     }
 
     private fun loadInitialValues() {
-        val areLogsEnabled = getGlobalPreferencesUseCase.execute(Unit).areDebugLogsEnabled
+        val areLogsEnabled = globalPreferencesRepository.getGlobalPreferences().areDebugLogsEnabled
         updateViewState {
             copy(
                 areDebugLogsEnabled = areLogsEnabled,
@@ -74,7 +73,7 @@ internal class DebugLogsSettingsViewModel(
                 Timber.uproot(fileLoggingTree)
             }
         }
-        updateGlobalPreferencesUseCase.execute(UpdateGlobalPreferencesUseCase.Input(areLogsEnabled))
+        globalPreferencesRepository.updateGlobalPreferences(GlobalPreferencesUpdate(areLogsEnabled))
         updateViewState {
             copy(
                 areDebugLogsEnabled = areLogsEnabled,

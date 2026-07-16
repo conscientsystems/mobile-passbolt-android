@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.mappers
 
-import com.passbolt.mobile.android.entity.home.HomeDisplayView
 import com.passbolt.mobile.android.entity.resource.Permission
 import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView
-import com.passbolt.mobile.android.ui.DefaultFilterModel
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
 
 /**
  * Mapper responsible for mapping between UI related resource display view type and database related
@@ -31,33 +31,33 @@ class HomeDisplayViewMapper {
             is HomeDisplayViewModel.Expiry -> ResourceDatabaseView.HasExpiry
         }
 
-    fun map(homeView: HomeDisplayView): HomeDisplayViewModel =
+    fun map(homeView: HomeDisplayViewUiModel): HomeDisplayViewModel =
         when (homeView) {
-            HomeDisplayView.ALL_ITEMS -> HomeDisplayViewModel.AllItems
-            HomeDisplayView.FAVOURITES -> HomeDisplayViewModel.Favourites
-            HomeDisplayView.RECENTLY_MODIFIED -> HomeDisplayViewModel.RecentlyModified
-            HomeDisplayView.SHARED_WITH_ME -> HomeDisplayViewModel.SharedWithMe
-            HomeDisplayView.OWNED_BY_ME -> HomeDisplayViewModel.OwnedByMe
-            HomeDisplayView.FOLDERS -> HomeDisplayViewModel.folderRoot()
-            HomeDisplayView.TAGS -> HomeDisplayViewModel.tagsRoot()
-            HomeDisplayView.GROUPS -> HomeDisplayViewModel.groupsRoot()
-            HomeDisplayView.EXPIRY -> HomeDisplayViewModel.Expiry
+            HomeDisplayViewUiModel.ALL_ITEMS -> HomeDisplayViewModel.AllItems
+            HomeDisplayViewUiModel.FAVOURITES -> HomeDisplayViewModel.Favourites
+            HomeDisplayViewUiModel.RECENTLY_MODIFIED -> HomeDisplayViewModel.RecentlyModified
+            HomeDisplayViewUiModel.SHARED_WITH_ME -> HomeDisplayViewModel.SharedWithMe
+            HomeDisplayViewUiModel.OWNED_BY_ME -> HomeDisplayViewModel.OwnedByMe
+            HomeDisplayViewUiModel.FOLDERS -> HomeDisplayViewModel.folderRoot()
+            HomeDisplayViewUiModel.TAGS -> HomeDisplayViewModel.tagsRoot()
+            HomeDisplayViewUiModel.GROUPS -> HomeDisplayViewModel.groupsRoot()
+            HomeDisplayViewUiModel.EXPIRY -> HomeDisplayViewModel.Expiry
         }
 
     fun map(
-        userSetHomeView: DefaultFilterModel,
-        lastUsedHomeView: HomeDisplayView,
+        userSetHomeView: DefaultFilterUiModel,
+        lastUsedHomeView: HomeDisplayViewUiModel,
     ): HomeDisplayViewModel =
         when (userSetHomeView) {
-            DefaultFilterModel.LAST_USED -> map(lastUsedHomeView)
-            DefaultFilterModel.ALL_ITEMS -> HomeDisplayViewModel.AllItems
-            DefaultFilterModel.FAVOURITES -> HomeDisplayViewModel.Favourites
-            DefaultFilterModel.RECENTLY_MODIFIED -> HomeDisplayViewModel.RecentlyModified
-            DefaultFilterModel.SHARED_WITH_ME -> HomeDisplayViewModel.SharedWithMe
-            DefaultFilterModel.OWNED_BY_ME -> HomeDisplayViewModel.OwnedByMe
-            DefaultFilterModel.FOLDERS -> HomeDisplayViewModel.folderRoot()
-            DefaultFilterModel.TAGS -> HomeDisplayViewModel.tagsRoot()
-            DefaultFilterModel.GROUPS -> HomeDisplayViewModel.groupsRoot()
-            DefaultFilterModel.EXPIRY -> HomeDisplayViewModel.Expiry
+            DefaultFilterUiModel.LAST_USED -> map(lastUsedHomeView)
+            DefaultFilterUiModel.ALL_ITEMS -> HomeDisplayViewModel.AllItems
+            DefaultFilterUiModel.FAVOURITES -> HomeDisplayViewModel.Favourites
+            DefaultFilterUiModel.RECENTLY_MODIFIED -> HomeDisplayViewModel.RecentlyModified
+            DefaultFilterUiModel.SHARED_WITH_ME -> HomeDisplayViewModel.SharedWithMe
+            DefaultFilterUiModel.OWNED_BY_ME -> HomeDisplayViewModel.OwnedByMe
+            DefaultFilterUiModel.FOLDERS -> HomeDisplayViewModel.folderRoot()
+            DefaultFilterUiModel.TAGS -> HomeDisplayViewModel.tagsRoot()
+            DefaultFilterUiModel.GROUPS -> HomeDisplayViewModel.groupsRoot()
+            DefaultFilterUiModel.EXPIRY -> HomeDisplayViewModel.Expiry
         }
 }

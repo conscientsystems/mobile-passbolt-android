@@ -40,7 +40,7 @@ fun Module.authModule() {
             passphraseMemoryCache = get(),
             rootDetector = get(),
             biometryInteractor = get(),
-            getGlobalPreferencesUseCase = get(),
+            globalPreferencesRepository = get(),
             runtimeAuthenticatedFlag = get(),
             saveSessionUseCase = get(),
             saveSelectedAccountUseCase = get(),

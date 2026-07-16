@@ -29,11 +29,12 @@ import com.passbolt.mobile.android.commontest.transaction.PassThroughTransaction
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttributes
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import com.passbolt.mobile.android.ui.ResourcePermission
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -77,7 +78,7 @@ class FoldersInteractorTest : KoinTest {
                     single { mock<RemoveLocalFolderPermissionsUseCase>() }
                     single { mock<AddLocalFolderPermissionsUseCase>() }
                     single { mock<UpdateLocalFoldersIsSharedUseCase>() }
-                    single { mock<GetGlobalPreferencesUseCase>() }
+                    single { mock<GlobalPreferencesRepository>() }
                     singleOf(::PassThroughTransactionRunner) bind DatabaseTransactionRunner::class
                     singleOf(::FoldersInteractor)
                 },
@@ -86,9 +87,9 @@ class FoldersInteractorTest : KoinTest {
 
     @Before
     fun setUp() {
-        whenever(get<GetGlobalPreferencesUseCase>().execute(Unit))
+        whenever(get<GlobalPreferencesRepository>().getGlobalPreferences())
             .doReturn(
-                GetGlobalPreferencesUseCase.Output(
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     debugLogLastAppVersion = null,

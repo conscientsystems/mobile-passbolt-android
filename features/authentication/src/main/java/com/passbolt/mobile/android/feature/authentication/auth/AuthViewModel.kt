@@ -25,10 +25,10 @@ import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.Passphrase
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AcceptChangedServerFingerprint
@@ -126,7 +126,7 @@ class AuthViewModel(
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val rootDetector: RootDetector,
     private val biometryInteractor: BiometryInteractor,
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
     private val runtimeAuthenticatedFlag: RuntimeAuthenticatedFlag,
     private val saveSessionUseCase: SaveSessionUseCase,
     private val saveSelectedAccountUseCase: SaveSelectedAccountUseCase,
@@ -246,7 +246,7 @@ class AuthViewModel(
     }
 
     private fun checkRootAndBiometry() {
-        if (!getGlobalPreferencesUseCase.execute(Unit).isHideRootDialogEnabled && rootDetector.isDeviceRooted()) {
+        if (!globalPreferencesRepository.getGlobalPreferences().isHideRootDialogEnabled && rootDetector.isDeviceRooted()) {
             updateViewState { copy(showDeviceRooted = true) }
         } else {
             handleBiometry()

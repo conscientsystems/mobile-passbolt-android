@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":localization"))
     implementation(project(":logger"))
     implementation(project(":uimodel"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
     implementation(project(":navigation"))
 
     implementation(platform(libs.koin.bom))

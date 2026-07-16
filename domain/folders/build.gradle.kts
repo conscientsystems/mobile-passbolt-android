@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":share-domain"))
     implementation(project(":featureflags-domain"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

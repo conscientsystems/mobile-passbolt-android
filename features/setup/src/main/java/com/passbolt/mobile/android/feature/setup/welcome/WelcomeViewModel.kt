@@ -31,8 +31,8 @@ import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccoun
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AcknowledgeDeviceRooted
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.ConnectToExistingAccount
@@ -57,7 +57,7 @@ import org.koin.core.component.KoinComponent
 
 internal class WelcomeViewModel(
     private val rootDetector: RootDetector,
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
     private val accountsInteractor: AccountsInteractor,
     private val accountKitParser: AccountKitParser,
 ) : SideEffectViewModel<WelcomeState, WelcomeSideEffect>(WelcomeState()),
@@ -79,7 +79,8 @@ internal class WelcomeViewModel(
     }
 
     private fun initialize(intent: Initialize) {
-        val shouldShowRootWarning = !getGlobalPreferencesUseCase.execute(Unit).isHideRootDialogEnabled && rootDetector.isDeviceRooted()
+        val shouldShowRootWarning =
+            !globalPreferencesRepository.getGlobalPreferences().isHideRootDialogEnabled && rootDetector.isDeviceRooted()
         updateViewState {
             copy(
                 showBackNavigation = !intent.isTaskRoot,

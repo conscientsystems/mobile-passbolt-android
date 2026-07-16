@@ -29,11 +29,11 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttributes
 import com.passbolt.mobile.android.domain.folders.model.FolderUpdateState.PENDING
 import com.passbolt.mobile.android.domain.folders.usecase.GetFoldersPaginatedUseCase.Output.Failure
 import com.passbolt.mobile.android.domain.folders.usecase.GetFoldersPaginatedUseCase.Output.Success
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import timber.log.Timber
 import kotlin.math.ceil
@@ -47,7 +47,7 @@ class FoldersInteractor(
     private val removeLocalFolderPermissionsUseCase: RemoveLocalFolderPermissionsUseCase,
     private val addLocalFolderPermissionsUseCase: AddLocalFolderPermissionsUseCase,
     private val updateLocalFoldersIsSharedUseCase: UpdateLocalFoldersIsSharedUseCase,
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
     private val databaseTransactionRunner: DatabaseTransactionRunner,
 ) {
     @Suppress("ReturnCount")
@@ -57,7 +57,7 @@ class FoldersInteractor(
         }
 
         try {
-            val pageSize = getGlobalPreferencesUseCase.execute(Unit).apiFetchPageSize
+            val pageSize = globalPreferencesRepository.getGlobalPreferences().apiFetchPageSize
             markAllLocalFoldersAsPending()
             clearLocalFolderPermissions()
             fetchAndProcessAllPages(pageSize, onPageProcessed)?.let { failure -> return failure }

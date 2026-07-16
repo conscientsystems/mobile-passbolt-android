@@ -24,7 +24,8 @@
 package com.passbolt.mobile.android.feature.accessibilitypolicies
 
 import app.cash.turbine.test
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Accept
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Decline
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesSideEffect.NavigateToAcceptedScreen
@@ -47,7 +48,7 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccessibilityPoliciesViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
-    private val updateGlobalPreferencesUseCase = mock<UpdateGlobalPreferencesUseCase>()
+    private val globalPreferencesRepository = mock<GlobalPreferencesRepository>()
 
     @Before
     fun setUp() {
@@ -62,7 +63,7 @@ class AccessibilityPoliciesViewModelTest {
     @Test
     fun `accept emits Accepted`() =
         runTest {
-            val viewModel = AccessibilityPoliciesViewModel(updateGlobalPreferencesUseCase)
+            val viewModel = AccessibilityPoliciesViewModel(globalPreferencesRepository)
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(Accept)
@@ -73,19 +74,19 @@ class AccessibilityPoliciesViewModelTest {
     @Test
     fun `accept writes consent flag`() =
         runTest {
-            val viewModel = AccessibilityPoliciesViewModel(updateGlobalPreferencesUseCase)
+            val viewModel = AccessibilityPoliciesViewModel(globalPreferencesRepository)
 
             viewModel.onIntent(Accept)
 
-            verify(updateGlobalPreferencesUseCase).execute(
-                UpdateGlobalPreferencesUseCase.Input(accessibilityPoliciesConsentGiven = true),
+            verify(globalPreferencesRepository).updateGlobalPreferences(
+                GlobalPreferencesUpdate(accessibilityPoliciesConsentGiven = true),
             )
         }
 
     @Test
     fun `decline emits Declined`() =
         runTest {
-            val viewModel = AccessibilityPoliciesViewModel(updateGlobalPreferencesUseCase)
+            val viewModel = AccessibilityPoliciesViewModel(globalPreferencesRepository)
 
             viewModel.sideEffect.test {
                 viewModel.onIntent(Decline)
@@ -96,10 +97,10 @@ class AccessibilityPoliciesViewModelTest {
     @Test
     fun `decline does not write consent flag`() =
         runTest {
-            val viewModel = AccessibilityPoliciesViewModel(updateGlobalPreferencesUseCase)
+            val viewModel = AccessibilityPoliciesViewModel(globalPreferencesRepository)
 
             viewModel.onIntent(Decline)
 
-            verify(updateGlobalPreferencesUseCase, never()).execute(any())
+            verify(globalPreferencesRepository, never()).updateGlobalPreferences(any())
         }
 }

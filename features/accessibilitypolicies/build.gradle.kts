@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":navigation"))
     implementation(project(":localization"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
     implementation(project(":logger"))
     implementation(project(":common"))
 

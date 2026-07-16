@@ -39,18 +39,17 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelected
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionResult
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertyActionResult
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
-import com.passbolt.mobile.android.entity.home.HomeDisplayView
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyPassword
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyResourceMetadataDescription
@@ -71,9 +70,11 @@ import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
-import com.passbolt.mobile.android.ui.DefaultFilterModel
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.AllItems
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.NotLoaded
+import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.ADD_TO_FAVOURITES
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.REMOVE_FROM_FAVOURITES
@@ -124,7 +125,7 @@ class HomeViewModelMenuTest : KoinTest {
                     singleOf(::DataRefreshTrackingFlow)
                     singleOf(::SessionRefreshTrackingFlow)
                     single { mock<GetSelectedAccountDataUseCase>() }
-                    single { mock<GetHomeDisplayViewPrefsUseCase>() }
+                    single { mock<AccountPreferencesRepository>() }
                     single { mock<HomeDisplayViewMapper>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
@@ -173,10 +174,10 @@ class HomeViewModelMenuTest : KoinTest {
             ),
         )
 
-        whenever(get<GetHomeDisplayViewPrefsUseCase>().execute(any())).thenReturn(
-            GetHomeDisplayViewPrefsUseCase.Output(
-                lastUsedHomeView = HomeDisplayView.ALL_ITEMS,
-                userSetHomeView = DefaultFilterModel.ALL_ITEMS,
+        whenever(get<AccountPreferencesRepository>().getHomeDisplayViewPreferences()).thenReturn(
+            HomeDisplayViewPreferencesUiModel(
+                lastUsedHomeView = HomeDisplayViewUiModel.ALL_ITEMS,
+                userSetHomeView = DefaultFilterUiModel.ALL_ITEMS,
             ),
         )
 

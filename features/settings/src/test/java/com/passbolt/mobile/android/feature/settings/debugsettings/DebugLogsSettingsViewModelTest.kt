@@ -24,11 +24,12 @@ package com.passbolt.mobile.android.feature.settings.debugsettings
  */
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.logger.FileLoggingTree
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
 import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.DebugLogsSettingsIntent.ToggleDebugLogs
 import com.passbolt.mobile.android.feature.settings.screen.debuglogssettings.DebugLogsSettingsViewModel
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -61,8 +62,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<UpdateGlobalPreferencesUseCase>() }
-                        single { mock<GetGlobalPreferencesUseCase>() }
+                        single { mock<GlobalPreferencesRepository>() }
                         single { mock<FileLoggingTree>() }
                         factoryOf(::DebugLogsSettingsViewModel)
                     },
@@ -87,15 +87,15 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     @Test
     fun `initial state should be correct for disabled logs`() =
         runTest {
-            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+            val globalPreferencesRepository: GlobalPreferencesRepository = get()
+            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -110,15 +110,15 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     @Test
     fun `initial state should be correct for enabled logs`() =
         runTest {
-            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+            val globalPreferencesRepository: GlobalPreferencesRepository = get()
+            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = true,
                     debugLogFileCreationDateTime = null,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -134,18 +134,17 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     @Test
     fun `toggleDebugLogsIntent should enable debug logs`() =
         runTest {
-            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+            val globalPreferencesRepository: GlobalPreferencesRepository = get()
+            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
-            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
 
             viewModel =
                 get<DebugLogsSettingsViewModel>()
@@ -155,8 +154,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
 
             assertThat(state.areDebugLogsEnabled).isTrue()
             assertThat(state.isAccessLogsEnabled).isTrue()
-            argumentCaptor<UpdateGlobalPreferencesUseCase.Input> {
-                verify(updateGlobalPreferencesUseCase).execute(capture())
+            argumentCaptor<GlobalPreferencesUpdate> {
+                verify(globalPreferencesRepository).updateGlobalPreferences(capture())
                 assertThat(firstValue.areDebugLogsEnabled).isTrue()
             }
         }
@@ -164,18 +163,17 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     @Test
     fun `toggleDebugLogsIntent should disable debug logs`() =
         runTest {
-            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+            val globalPreferencesRepository: GlobalPreferencesRepository = get()
+            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = true,
                     debugLogFileCreationDateTime = null,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     accessibilityPoliciesConsentGiven = true,
                 )
-            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
 
             viewModel =
                 get<DebugLogsSettingsViewModel>()
@@ -185,8 +183,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
 
             assertThat(state.areDebugLogsEnabled).isFalse()
             assertThat(state.isAccessLogsEnabled).isFalse()
-            argumentCaptor<UpdateGlobalPreferencesUseCase.Input> {
-                verify(updateGlobalPreferencesUseCase).execute(capture())
+            argumentCaptor<GlobalPreferencesUpdate> {
+                verify(globalPreferencesRepository).updateGlobalPreferences(capture())
                 assertThat(firstValue.areDebugLogsEnabled).isFalse()
             }
         }

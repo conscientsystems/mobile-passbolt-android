@@ -14,11 +14,11 @@ import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
@@ -53,6 +53,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVer
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyPassphraseUseCase
 import com.passbolt.mobile.android.ui.BiometricAuthError
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -100,7 +101,7 @@ class AuthViewModelTest : KoinTest {
                     single { mock<PassphraseMemoryCache>() }
                     single { mock<RootDetector>() }
                     single { mock<BiometryInteractor>() }
-                    single { mock<GetGlobalPreferencesUseCase>() }
+                    single { mock<GlobalPreferencesRepository>() }
                     single { mock<SaveSessionUseCase>() }
                     single { mock<SaveSelectedAccountUseCase>() }
                     single { mock<SignOutUseCase>() }
@@ -128,7 +129,7 @@ class AuthViewModelTest : KoinTest {
                             passphraseMemoryCache = get(),
                             rootDetector = get(),
                             biometryInteractor = get(),
-                            getGlobalPreferencesUseCase = get(),
+                            globalPreferencesRepository = get(),
                             runtimeAuthenticatedFlag = get(),
                             saveSessionUseCase = get(),
                             saveSelectedAccountUseCase = get(),
@@ -157,15 +158,15 @@ class AuthViewModelTest : KoinTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
 
-        val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
-        whenever(getGlobalPreferencesUseCase.execute(any())) doReturn
-            GetGlobalPreferencesUseCase.Output(
+        val globalPreferencesRepository: GlobalPreferencesRepository = get()
+        whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
                 debugLogLastAppVersion = null,
                 isHideRootDialogEnabled = true,
                 isAuthRequiredOnEveryEntry = true,
-                apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                 accessibilityPoliciesConsentGiven = false,
             )
 
