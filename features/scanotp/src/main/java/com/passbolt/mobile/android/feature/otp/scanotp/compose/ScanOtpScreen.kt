@@ -32,7 +32,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
-import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.Otp
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtpSuccess
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
 import com.passbolt.mobile.android.core.navigation.compose.results.OtpScanCompleteResult
@@ -156,7 +155,7 @@ internal fun ScanOtpScreen(
                         resultBus.sendResult(
                             result = OtpScanCompleteResult(otpCreated = false, otpManualCreationChosen = true),
                         )
-                        navigator.popToKey(Otp)
+                        navigator.navigateBack()
                     }
                 }
             NavigateToAppSettings -> {
