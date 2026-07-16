@@ -272,14 +272,14 @@ internal class HomeViewModel(
 
     private fun createTotp() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
             emitSideEffect(NavigateToCreateTotp(folderId = viewState.value.currentFolderId))
         }
     }
 
     private fun createPassword() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = PASSWORD,
@@ -291,7 +291,7 @@ internal class HomeViewModel(
 
     private fun createNote() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = STANDALONE_NOTE,
@@ -303,7 +303,7 @@ internal class HomeViewModel(
 
     private fun createPinCode() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = PIN_CODE,
