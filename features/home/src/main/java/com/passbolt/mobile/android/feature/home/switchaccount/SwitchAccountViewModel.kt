@@ -13,6 +13,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUs
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.Close
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.CloseSignOutDialog
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.ManageAccounts
+import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.Refresh
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.SeeCurrentAccountDetails
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.SignOut
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.SignOutConfirmed
@@ -69,6 +70,7 @@ class SwitchAccountViewModel(
 
     fun onIntent(intent: SwitchAccountIntent) {
         when (intent) {
+            is Refresh -> loadAccounts()
             is Close -> emitSideEffect(SwitchAccountSideEffect.Dismiss)
             is SeeCurrentAccountDetails -> emitSideEffect(SwitchAccountSideEffect.NavigateToAccountDetails)
             is SignOut -> updateViewState { copy(showSignOutDialog = true) }

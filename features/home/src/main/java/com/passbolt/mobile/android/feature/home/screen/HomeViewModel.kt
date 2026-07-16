@@ -43,8 +43,7 @@ import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor.Outp
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor.Output.Success
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.domain.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
@@ -74,6 +73,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.EditResource
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.FolderCreateReturned
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.Initialize
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.LaunchResourceWebsite
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OnResume
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenFiltersBottomSheet
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenFolderMoreMenu
@@ -144,8 +144,7 @@ internal class HomeViewModel(
     private val homeModelMapper: HomeDisplayViewMapper,
     private val homeDataProvider: HomeDataProvider,
     private val getLocalFolderUseCase: GetLocalFolderDetailsUseCase,
-    private val canCreateResourceUse: CanCreateResourceUseCase,
-    private val canShareResourceUse: CanShareResourceUseCase,
+    private val resourceAccessInteractor: ResourceAccessInteractor,
     private val detectAutofillConflict: DetectAutofillConflict,
     private val accountSwitchFlow: AccountSwitchFlow,
     private val userProfileInteractor: UserProfileInteractor,
@@ -162,6 +161,7 @@ internal class HomeViewModel(
     private var dataRefreshJob: Job? = null
     private var accountSwitchJob: Job? = null
     private var lastInitializeIntent: Initialize? = null
+    private var loadedAccountId: String? = null
 
     init {
         loadUserAvatar()
@@ -219,6 +219,7 @@ internal class HomeViewModel(
             CreateFolder -> createFolder()
             CreatePinCode -> createPinCode()
             is Initialize -> initialize(intent)
+            OnResume -> refreshForChangedAccount()
             is OpenResourceMenu -> openResourceMoreMenu(intent)
             is Search -> searchQueryChanged(intent.searchQuery)
             SearchEndIconAction -> searchEndIconAction()
@@ -230,7 +231,10 @@ internal class HomeViewModel(
             CopyResourceUsername -> copyResourceUsername()
             EditResource -> emitSideEffect(NavigateToEditResourceForm(viewState.value.requireMoreMenuResource))
             LaunchResourceWebsite -> launchResourceWebsite()
-            ShareResource -> onCanShareResource { emitSideEffect(NavigateToShare(viewState.value.requireMoreMenuResource)) }
+            ShareResource ->
+                withResourceAccess({ resourceAccessInteractor.canShareResource() }) {
+                    emitSideEffect(NavigateToShare(viewState.value.requireMoreMenuResource))
+                }
             is ToggleResourceFavourite -> toggleFavourite(intent.option)
             is FolderCreateReturned -> folderCreationReturned(intent)
             is OtpQRScanReturned -> processOtpScanResult(intent)
@@ -268,12 +272,14 @@ internal class HomeViewModel(
 
     private fun createTotp() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource { emitSideEffect(NavigateToCreateTotp(folderId = viewState.value.currentFolderId)) }
+        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
+            emitSideEffect(NavigateToCreateTotp(folderId = viewState.value.currentFolderId))
+        }
     }
 
     private fun createPassword() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = PASSWORD,
@@ -285,7 +291,7 @@ internal class HomeViewModel(
 
     private fun createNote() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = STANDALONE_NOTE,
@@ -297,7 +303,7 @@ internal class HomeViewModel(
 
     private fun createPinCode() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource() }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = PIN_CODE,
@@ -488,6 +494,7 @@ internal class HomeViewModel(
             return
         }
         lastInitializeIntent = intent
+        loadedAccountId = getSelectedAccountDataUseCase.selectedAccountId
         val filterPreferences = getHomeDisplayViewPrefsUseCase.execute(Unit)
 
         viewModelScope.launch {
@@ -518,7 +525,8 @@ internal class HomeViewModel(
                 viewModelScope.launch(coroutineLaunchContext.io) {
                     accountSwitchFlow.selectedAccountFlow
                         .drop(1)
-                        .collect {
+                        .collect { switchedAccountId ->
+                            loadedAccountId = switchedAccountId
                             loadUserAvatar()
                             val homeData =
                                 getHomeData(
@@ -529,6 +537,30 @@ internal class HomeViewModel(
                             updateViewState { copy(homeData = homeData) }
                         }
                 }
+        }
+    }
+
+    /*
+    Unlike the app's Home, the autofill flow does NOT recreate this activity when
+    switching accounts: finishAffinity would destroy the pending autofill request
+    this activity holds, so it is only reordered to front and
+    its ViewModels survive with stale, previous-account state.
+     */
+    private fun refreshForChangedAccount() {
+        val loadedAccount = loadedAccountId ?: return
+        val selectedAccountId = getSelectedAccountDataUseCase.selectedAccountId
+        if (selectedAccountId != loadedAccount) {
+            loadedAccountId = selectedAccountId
+            viewModelScope.launch {
+                loadUserAvatar()
+                val homeData =
+                    getHomeData(
+                        viewState.value.homeView,
+                        viewState.value.searchQuery,
+                        viewState.value.showSuggestedModel,
+                    )
+                updateViewState { copy(homeData = homeData) }
+            }
         }
     }
 
@@ -622,20 +654,13 @@ internal class HomeViewModel(
         }
     }
 
-    private fun onCanShareResource(function: () -> Unit) {
+    private fun withResourceAccess(
+        hasAccess: suspend () -> Boolean,
+        onAllowed: () -> Unit,
+    ) {
         viewModelScope.launch(coroutineLaunchContext.io) {
-            if (canShareResourceUse.execute(Unit).canShareResource) {
-                function()
-            } else {
-                emitSideEffect(ShowErrorSnackbar(NO_SHARED_KEY_ACCESS))
-            }
-        }
-    }
-
-    private fun onCanCreateResource(function: () -> Unit) {
-        viewModelScope.launch(coroutineLaunchContext.io) {
-            if (canCreateResourceUse.execute(CanCreateResourceUseCase.Input(folderId = null)).canCreateResource) {
-                function()
+            if (hasAccess()) {
+                onAllowed()
             } else {
                 emitSideEffect(ShowErrorSnackbar(NO_SHARED_KEY_ACCESS))
             }
