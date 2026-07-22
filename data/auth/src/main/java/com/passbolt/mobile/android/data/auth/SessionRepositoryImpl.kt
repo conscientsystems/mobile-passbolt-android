@@ -1,4 +1,8 @@
-package com.passbolt.mobile.android.core.authenticationcore.session
+package com.passbolt.mobile.android.data.auth
+
+import com.passbolt.mobile.android.domain.auth.SessionRepository
+import com.passbolt.mobile.android.domain.auth.datasource.SessionLocalDataSource
+import com.passbolt.mobile.android.domain.auth.model.Session
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,7 +26,17 @@ package com.passbolt.mobile.android.core.authenticationcore.session
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class SessionRepositoryImpl(
+    private val localDataSource: SessionLocalDataSource,
+) : SessionRepository {
+    override fun getSession(userId: String): Session = localDataSource.getSession(userId)
 
-const val ACCESS_TOKEN_KEY = "ACCESS_TOKEN_KEY"
-const val REFRESH_TOKEN_KEY = "SESSION_REFRESH_TOKEN_KEY"
-const val MFA_TOKEN_KEY = "REFRESH_TOKEN_KEY"
+    override fun saveSession(
+        userId: String,
+        accessToken: String,
+        refreshToken: String,
+        mfaToken: String?,
+    ) = localDataSource.saveSession(userId, accessToken, refreshToken, mfaToken)
+
+    override fun removeSession(userId: String) = localDataSource.removeSession(userId)
+}

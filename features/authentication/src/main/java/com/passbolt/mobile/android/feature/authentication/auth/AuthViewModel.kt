@@ -7,7 +7,6 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountD
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.SaveServerFingerprintUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.GetPassphraseUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider
@@ -27,6 +26,7 @@ import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphras
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.Passphrase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
+import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository

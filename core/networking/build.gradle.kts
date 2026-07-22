@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":architecture"))
     implementation(project(":localization"))
-    implementation(project(":authenticationcore"))
+    implementation(project(":auth-domain"))
     implementation(project(":accounts"))
 
     api(libs.retrofit)

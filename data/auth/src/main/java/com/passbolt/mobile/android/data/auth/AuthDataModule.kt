@@ -2,11 +2,14 @@ package com.passbolt.mobile.android.data.auth
 
 import com.passbolt.mobile.android.core.networking.RestService
 import com.passbolt.mobile.android.data.auth.datasource.local.AuthLocalDataSourceImpl
+import com.passbolt.mobile.android.data.auth.datasource.local.SessionLocalDataSourceImpl
 import com.passbolt.mobile.android.data.auth.datasource.remote.AuthRemoteDataSourceImpl
 import com.passbolt.mobile.android.data.auth.datasource.remote.api.AuthApi
 import com.passbolt.mobile.android.domain.auth.AuthRepository
+import com.passbolt.mobile.android.domain.auth.SessionRepository
 import com.passbolt.mobile.android.domain.auth.datasource.AuthLocalDataSource
 import com.passbolt.mobile.android.domain.auth.datasource.AuthRemoteDataSource
+import com.passbolt.mobile.android.domain.auth.datasource.SessionLocalDataSource
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -40,4 +43,6 @@ val authDataModule =
         singleOf(::AuthRemoteDataSourceImpl) bind AuthRemoteDataSource::class
         singleOf(::AuthLocalDataSourceImpl) bind AuthLocalDataSource::class
         singleOf(::AuthRepositoryImpl) bind AuthRepository::class
+        singleOf(::SessionLocalDataSourceImpl) bind SessionLocalDataSource::class
+        singleOf(::SessionRepositoryImpl) bind SessionRepository::class
     }

@@ -28,11 +28,11 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.SERVER
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.core.idlingresource.TransferAccountIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.CreateTransferUseCase
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.ViewTransferUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase

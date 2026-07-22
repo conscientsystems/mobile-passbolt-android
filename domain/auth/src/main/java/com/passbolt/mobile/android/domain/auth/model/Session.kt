@@ -1,3 +1,5 @@
+package com.passbolt.mobile.android.domain.auth.model
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,13 +22,8 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.core.authenticationcore
-
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.passphraseModule
-import org.koin.dsl.module
-
-val authenticationCoreModule =
-    module {
-        passphraseModule()
-    }
+data class Session(
+    val accessToken: String?,
+    val refreshToken: String?,
+    val mfaToken: String?,
+)

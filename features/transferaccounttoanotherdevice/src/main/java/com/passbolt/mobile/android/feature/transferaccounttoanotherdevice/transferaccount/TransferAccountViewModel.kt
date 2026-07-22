@@ -3,10 +3,10 @@ package com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.trans
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.TransferAccountIdlingResource
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.CreateTransferUseCase
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.ViewTransferUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
@@ -158,11 +158,12 @@ internal class TransferAccountViewModel(
         transferPollingJob =
             viewModelScope.launch {
                 while (shouldLoopForTransfer(totalPageCount)) {
+                    val session = getSessionUseCase.execute(Unit)
                     val accessToken =
                         "Bearer %s".format(
-                            requireNotNull(getSessionUseCase.execute(Unit).accessToken),
+                            requireNotNull(session.accessToken),
                         )
-                    val mfaCookie = getSessionUseCase.execute(Unit).mfaToken
+                    val mfaCookie = session.mfaToken
 
                     delay(GET_TRANSFER_LOOP_INTERVAL_DELAY_MILLIS)
                     when (

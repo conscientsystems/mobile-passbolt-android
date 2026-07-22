@@ -32,7 +32,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.core.compose.RepeatOnStartedEffect
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider
@@ -43,6 +42,7 @@ import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackin
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.RefreshPassphrase
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.RefreshSession
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.feature.authentication.mfa.MfaDialogState
 import com.passbolt.mobile.android.feature.authentication.mfa.MfaResult
 import com.passbolt.mobile.android.feature.authentication.mfa.duo.AuthWithDuoScreen

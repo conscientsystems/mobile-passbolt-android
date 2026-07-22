@@ -1,8 +1,6 @@
-package com.passbolt.mobile.android.core.authenticationcore.session
+package com.passbolt.mobile.android.domain.auth.datasource
 
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SessionFileName
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.domain.auth.model.Session
 
 /**
  * Passbolt - Open source password manager for teams
@@ -26,25 +24,15 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface SessionLocalDataSource {
+    fun getSession(userId: String): Session
 
-class SaveSessionUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<SaveSessionUseCase.Input, Unit> {
-    override fun execute(input: Input) {
-        val fileName = SessionFileName(input.userId).name
-        val sharedPreferences = encryptedSharedPreferencesFactory.get("$fileName.xml")
-        with(sharedPreferences.edit()) {
-            putString(ACCESS_TOKEN_KEY, input.accessToken)
-            putString(REFRESH_TOKEN_KEY, input.refreshToken)
-            putString(MFA_TOKEN_KEY, input.mfaToken)
-            apply()
-        }
-    }
-
-    data class Input(
-        val userId: String,
-        val refreshToken: String,
-        val accessToken: String,
-        val mfaToken: String? = null,
+    fun saveSession(
+        userId: String,
+        accessToken: String,
+        refreshToken: String,
+        mfaToken: String?,
     )
+
+    fun removeSession(userId: String)
 }
