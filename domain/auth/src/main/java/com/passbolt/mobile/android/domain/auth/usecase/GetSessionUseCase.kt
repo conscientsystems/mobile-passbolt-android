@@ -1,6 +1,8 @@
-package com.passbolt.mobile.android.core.authenticationcore.session
+package com.passbolt.mobile.android.domain.auth.usecase
 
-import org.koin.core.module.Module
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.auth.SessionRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,20 +26,25 @@ import org.koin.core.module.Module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+class GetSessionUseCase(
+    private val sessionRepository: SessionRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : UseCase<Unit, GetSessionUseCase.Output> {
+    override fun execute(input: Unit): Output {
+        val userId = getSelectedAccountUseCase.execute(Unit).selectedAccount
+        userId?.let {
+            val session = sessionRepository.getSession(it)
+            return Output(
+                accessToken = session.accessToken,
+                refreshToken = session.refreshToken,
+                mfaToken = session.mfaToken,
+            )
+        } ?: return Output(null, null, null)
+    }
 
-internal fun Module.sessionModule() {
-    single {
-        GetSessionUseCase(
-            encryptedSharedPreferencesFactory = get(),
-            getSelectedAccountUseCase = get(),
-        )
-    }
-    single {
-        SaveSessionUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    factory {
-        RemoveSessionUseCase(encryptedSharedPreferencesFactory = get())
-    }
+    data class Output(
+        val accessToken: String?,
+        val refreshToken: String?,
+        val mfaToken: String?,
+    )
 }

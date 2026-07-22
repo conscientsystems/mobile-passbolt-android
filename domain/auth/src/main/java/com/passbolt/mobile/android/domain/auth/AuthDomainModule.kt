@@ -3,8 +3,10 @@ package com.passbolt.mobile.android.domain.auth
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.GetServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SaveServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -37,4 +39,6 @@ val authDomainModule =
         singleOf(::GetServerPublicRsaKeyUseCase)
         singleOf(::SaveServerPublicRsaKeyUseCase)
         singleOf(::RemoveServerPublicRsaKeyUseCase)
+        singleOf(::GetSessionUseCase)
+        singleOf(::SaveSessionUseCase)
     }

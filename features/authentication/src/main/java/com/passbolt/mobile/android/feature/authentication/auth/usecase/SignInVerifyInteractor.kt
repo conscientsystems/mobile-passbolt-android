@@ -2,9 +2,9 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.domain.auth.model.SignInFailureType
 import com.passbolt.mobile.android.domain.auth.model.SignInResult
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.dto.response.ChallengeResponseDto
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.ChallengeDecryptor
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.ChallengeProvider

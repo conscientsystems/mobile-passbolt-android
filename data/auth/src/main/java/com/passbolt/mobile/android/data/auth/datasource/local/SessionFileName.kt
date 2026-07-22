@@ -1,3 +1,5 @@
+package com.passbolt.mobile.android.data.auth.datasource.local
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -21,12 +23,13 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.core.authenticationcore
+internal class SessionFileName(
+    userId: String,
+) {
+    val name = SESSION_FILE_NAME_FORMAT.format(userId)
 
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.passphraseModule
-import org.koin.dsl.module
-
-val authenticationCoreModule =
-    module {
-        passphraseModule()
+    private companion object {
+        private const val SESSION_TOKENS_ALIAS = "sessions"
+        private const val SESSION_FILE_NAME_FORMAT = "${SESSION_TOKENS_ALIAS}_%s"
     }
+}

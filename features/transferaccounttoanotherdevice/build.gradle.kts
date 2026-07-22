@@ -17,8 +17,8 @@ dependencies {
     implementation(project(":uimodel"))
     implementation(project(":idlingresource"))
     implementation(project(":localization"))
-    implementation(project(":authenticationcore"))
     implementation(project(":accounts"))
+    implementation(project(":auth-domain"))
     implementation(project(":privatekey-domain"))
     implementation(project(":testtags"))
 

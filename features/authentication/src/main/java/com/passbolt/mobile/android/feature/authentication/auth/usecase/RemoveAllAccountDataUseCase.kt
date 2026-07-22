@@ -7,7 +7,7 @@ import com.passbolt.mobile.android.core.accounts.usecase.accountdata.RemoveAccou
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.RemoveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemovePassphraseUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.RemoveSessionUseCase
+import com.passbolt.mobile.android.domain.auth.SessionRepository
 import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 
@@ -39,7 +39,7 @@ class RemoveAllAccountDataUseCase(
     private val removePassphraseUseCase: RemovePassphraseUseCase,
     private val privateKeyRepository: PrivateKeyRepository,
     private val removeSelectedAccountUseCase: RemoveSelectedAccountUseCase,
-    private val removeSessionUseCase: RemoveSessionUseCase,
+    private val sessionRepository: SessionRepository,
     private val removeAccountUseCase: RemoveAccountUseCase,
     private val removeServerPublicRsaKeyUseCase: RemoveServerPublicRsaKeyUseCase,
 ) : AsyncUseCase<UserIdInput, Unit> {
@@ -57,7 +57,7 @@ class RemoveAllAccountDataUseCase(
         removeAccountDataUseCase.execute(userIdInput)
         removePassphraseUseCase.execute(userIdInput)
         privateKeyRepository.removePrivateKey(userIdInput.userId)
-        removeSessionUseCase.execute(userIdInput)
+        sessionRepository.removeSession(userIdInput.userId)
         removeAccountUseCase.execute(userIdInput)
         removeServerPublicRsaKeyUseCase.execute(userIdInput)
     }

@@ -2,11 +2,9 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.SessionFileName
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.ACCESS_TOKEN_KEY
+import com.passbolt.mobile.android.domain.auth.SessionRepository
 import com.passbolt.mobile.android.domain.auth.usecase.GetServerPublicRsaKeyUseCase
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
 import io.fusionauth.jwt.JWTExpiredException
 import io.fusionauth.jwt.Verifier
 import io.fusionauth.jwt.domain.JWT
@@ -37,16 +35,14 @@ import java.time.ZonedDateTime
  */
 
 class GetSessionExpiryUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
+    private val sessionRepository: SessionRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val getServerRsaPublicKeyUseCase: GetServerPublicRsaKeyUseCase,
 ) : UseCase<Unit, GetSessionExpiryUseCase.Output> {
     override fun execute(input: Unit): Output {
         val userId = getSelectedAccountUseCase.execute(Unit).selectedAccount
         userId?.let {
-            val alias = SessionFileName(it).name
-            val sharedPreferences = encryptedSharedPreferencesFactory.get("$alias.xml")
-            val accessToken = sharedPreferences.getString(ACCESS_TOKEN_KEY, null)
+            val accessToken = sessionRepository.getSession(it).accessToken
             val rsaPublicKey = getServerRsaPublicKeyUseCase.execute(UserIdInput(userId)).rsaKey
 
             val verifier: Verifier = RSAVerifier.newVerifier(rsaPublicKey)

@@ -1,4 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.domain.auth.usecase
+
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.domain.auth.SessionRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,14 +25,22 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-class SessionFileName(
-    userId: String,
-) {
-    val name = SESSION_FILE_NAME_FORMAT.format(userId)
-
-    private companion object {
-        private const val SESSION_TOKENS_ALIAS = "sessions"
-        private const val SESSION_FILE_NAME_FORMAT = "${SESSION_TOKENS_ALIAS}_%s"
+class SaveSessionUseCase(
+    private val sessionRepository: SessionRepository,
+) : UseCase<SaveSessionUseCase.Input, Unit> {
+    override fun execute(input: Input) {
+        sessionRepository.saveSession(
+            userId = input.userId,
+            accessToken = input.accessToken,
+            refreshToken = input.refreshToken,
+            mfaToken = input.mfaToken,
+        )
     }
+
+    data class Input(
+        val userId: String,
+        val refreshToken: String,
+        val accessToken: String,
+        val mfaToken: String? = null,
+    )
 }

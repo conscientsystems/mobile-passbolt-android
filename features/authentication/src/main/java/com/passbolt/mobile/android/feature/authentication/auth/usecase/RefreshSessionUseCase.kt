@@ -5,9 +5,8 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
 import com.passbolt.mobile.android.domain.auth.AuthRepository
+import com.passbolt.mobile.android.domain.auth.SessionRepository
 import timber.log.Timber
 
 /**
@@ -36,24 +35,21 @@ class RefreshSessionUseCase(
     private val authRepository: AuthRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val getAccountDataUseCase: GetAccountDataUseCase,
-    private val getSessionUseCase: GetSessionUseCase,
-    private val saveSessionUseCase: SaveSessionUseCase,
+    private val sessionRepository: SessionRepository,
 ) : AsyncUseCase<Unit, RefreshSessionUseCase.Output> {
     override suspend fun execute(input: Unit): Output =
         try {
             val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
             val serverUserId = requireNotNull(getAccountDataUseCase.execute(UserIdInput(userId)).serverId)
-            val refreshToken = requireNotNull(getSessionUseCase.execute(Unit).refreshToken)
+            val refreshToken = requireNotNull(sessionRepository.getSession(userId).refreshToken)
 
             when (val result = authRepository.refreshSession(refreshToken, serverUserId)) {
                 is DomainResult.Finished -> {
-                    saveSessionUseCase.execute(
-                        SaveSessionUseCase.Input(
-                            userId,
-                            result.value.refreshToken,
-                            result.value.accessToken,
-                            result.value.mfaToken,
-                        ),
+                    sessionRepository.saveSession(
+                        userId = userId,
+                        accessToken = result.value.accessToken,
+                        refreshToken = result.value.refreshToken,
+                        mfaToken = result.value.mfaToken,
                     )
                     Output.Success
                 }

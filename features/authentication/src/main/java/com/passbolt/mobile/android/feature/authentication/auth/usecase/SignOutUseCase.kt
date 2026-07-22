@@ -4,10 +4,10 @@ import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.RemoveSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.core.idlingresource.SignOutIdlingResource
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.domain.auth.AuthRepository
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 
 /**
  * Passbolt - Open source password manager for teams
