@@ -6,13 +6,13 @@ import com.passbolt.mobile.android.common.BiometricInformationProvider
 import com.passbolt.mobile.android.common.autofill.DetectAutofillConflict
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.CheckIfPassphraseFileExistsUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemovePassphraseUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.SavePassphraseUseCase
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.KeyStatus.VALID
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.Passphrase
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.PassphraseNotPresent
+import com.passbolt.mobile.android.domain.auth.usecase.CheckIfPassphraseFileExistsUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.RemovePassphraseUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.SavePassphraseUseCase
 import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor

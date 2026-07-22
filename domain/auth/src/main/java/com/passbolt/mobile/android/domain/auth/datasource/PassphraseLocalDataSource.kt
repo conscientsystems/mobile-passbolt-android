@@ -1,6 +1,7 @@
-package com.passbolt.mobile.android.domain.auth
+package com.passbolt.mobile.android.domain.auth.datasource
 
-import com.passbolt.mobile.android.domain.auth.model.Session
+import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import javax.crypto.Cipher
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,16 +25,21 @@ import com.passbolt.mobile.android.domain.auth.model.Session
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-interface SessionRepository {
-    fun getSession(userId: String): Session
-
-    fun saveSession(
+interface PassphraseLocalDataSource {
+    fun getPassphrase(
         userId: String,
-        accessToken: String,
-        refreshToken: String,
-        mfaToken: String? = null,
+        authenticatedCipher: Cipher,
+    ): PotentialPassphrase
+
+    fun savePassphrase(
+        userId: String,
+        passphrase: ByteArray,
+        authenticatedCipher: Cipher,
     )
 
-    fun removeSession(userId: String)
+    fun removePassphrase(userId: String)
+
+    fun removeAllPassphrases(userIds: List<String>)
+
+    fun passphraseFileExists(userId: String): Boolean
 }

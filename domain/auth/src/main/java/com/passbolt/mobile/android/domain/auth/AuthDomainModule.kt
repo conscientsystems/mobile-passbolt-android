@@ -1,10 +1,15 @@
 package com.passbolt.mobile.android.domain.auth
 
+import com.passbolt.mobile.android.domain.auth.usecase.CheckIfPassphraseFileExistsUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.GetPassphraseUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.GetServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.RemoveAllAccountsPassphrasesUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.RemovePassphraseUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.SavePassphraseUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SaveServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
 import org.koin.core.module.dsl.singleOf
@@ -41,4 +46,9 @@ val authDomainModule =
         singleOf(::RemoveServerPublicRsaKeyUseCase)
         singleOf(::GetSessionUseCase)
         singleOf(::SaveSessionUseCase)
+        singleOf(::GetPassphraseUseCase)
+        singleOf(::SavePassphraseUseCase)
+        singleOf(::RemovePassphraseUseCase)
+        singleOf(::RemoveAllAccountsPassphrasesUseCase)
+        singleOf(::CheckIfPassphraseFileExistsUseCase)
     }

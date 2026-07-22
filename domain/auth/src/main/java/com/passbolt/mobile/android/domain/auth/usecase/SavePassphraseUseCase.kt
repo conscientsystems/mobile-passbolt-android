@@ -1,3 +1,11 @@
+package com.passbolt.mobile.android.domain.auth.usecase
+
+import android.security.keystore.UserNotAuthenticatedException
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.auth.PassphraseRepository
+import javax.crypto.Cipher
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,13 +28,21 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.core.authenticationcore
-
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.passphraseModule
-import org.koin.dsl.module
-
-val authenticationCoreModule =
-    module {
-        passphraseModule()
+class SavePassphraseUseCase(
+    private val passphraseRepository: PassphraseRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : UseCase<SavePassphraseUseCase.Input, Unit> {
+    @Throws(UserNotAuthenticatedException::class)
+    override fun execute(input: Input) {
+        val userId =
+            requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount) {
+                "${javaClass.name} is a selected account use case, but no account is selected"
+            }
+        passphraseRepository.savePassphrase(userId, input.passphrase, input.authenticatedCipher)
     }
+
+    data class Input(
+        val passphrase: ByteArray,
+        val authenticatedCipher: Cipher,
+    )
+}
