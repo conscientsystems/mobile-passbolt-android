@@ -1,3 +1,5 @@
+package com.passbolt.mobile.android.data.accounts.datasource.local
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,26 +22,7 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.core.accounts
-
-import com.passbolt.mobile.android.core.accounts.usecase.BiometricCipherImpl
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.accountDataModule
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.accountsModule
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.selectedAccountModule
-import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
-
-val accountsCoreModule =
-    module {
-        accountsModule()
-        accountDataModule()
-        selectedAccountModule()
-
-        singleOf(::AccountsInteractor)
-        singleOf(::AccountKitParser)
-        factoryOf(::BiometricCipherImpl) bind BiometricCipher::class
-    }
+internal object Constants {
+    const val ACCOUNTS_PREFERENCES_NAME = "user-accounts"
+    const val ACCOUNTS_ALIAS = "accounts_list"
+}

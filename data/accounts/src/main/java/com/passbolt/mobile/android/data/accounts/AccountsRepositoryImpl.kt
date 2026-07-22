@@ -1,3 +1,8 @@
+package com.passbolt.mobile.android.data.accounts
+
+import com.passbolt.mobile.android.domain.accounts.AccountsRepository
+import com.passbolt.mobile.android.domain.accounts.datasource.AccountsLocalDataSource
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,26 +25,12 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class AccountsRepositoryImpl(
+    private val localDataSource: AccountsLocalDataSource,
+) : AccountsRepository {
+    override fun getAccounts(): Set<String> = localDataSource.getAccounts()
 
-package com.passbolt.mobile.android.core.accounts
+    override fun saveAccount(userId: String) = localDataSource.saveAccount(userId)
 
-import com.passbolt.mobile.android.core.accounts.usecase.BiometricCipherImpl
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.accountDataModule
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.accountsModule
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.selectedAccountModule
-import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
-
-val accountsCoreModule =
-    module {
-        accountsModule()
-        accountDataModule()
-        selectedAccountModule()
-
-        singleOf(::AccountsInteractor)
-        singleOf(::AccountKitParser)
-        factoryOf(::BiometricCipherImpl) bind BiometricCipher::class
-    }
+    override fun removeAccount(userId: String) = localDataSource.removeAccount(userId)
+}

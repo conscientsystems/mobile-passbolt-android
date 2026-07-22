@@ -1,6 +1,4 @@
-package com.passbolt.mobile.android.core.accounts.usecase.account
-
-import org.koin.core.module.Module
+package com.passbolt.mobile.android.domain.accounts.datasource
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,16 +22,10 @@ import org.koin.core.module.Module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface AccountsLocalDataSource {
+    fun getAccounts(): Set<String>
 
-internal fun Module.accountModule() {
-    factory {
-        SaveAccountUseCase(
-            sharedPreferences = get(),
-        )
-    }
-    factory {
-        RemoveAccountUseCase(
-            sharedPreferences = get(),
-        )
-    }
+    fun saveAccount(userId: String)
+
+    fun removeAccount(userId: String)
 }

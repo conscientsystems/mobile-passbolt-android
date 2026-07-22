@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":common"))
     implementation(project(":encryptedstorage"))
     implementation(project(":biometrickey-domain"))

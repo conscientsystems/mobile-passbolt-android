@@ -25,7 +25,6 @@ package com.passbolt.mobile.android.core.accounts.usecase
 
 internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
 internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val ACCOUNTS_ALIAS = "accounts_list"
 internal const val USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY"
 internal const val USER_LAST_NAME_KEY = "USER_LAST_NAME_KEY"
 internal const val USER_LABEL_KEY = "USER_LABEL_KEY"

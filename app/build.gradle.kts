@@ -139,6 +139,8 @@ dependencies {
     implementation(project(":setup"))
     implementation(project(":auth-domain"))
     implementation(project(":auth-data"))
+    implementation(project(":accounts-domain"))
+    implementation(project(":accounts-data"))
     implementation(project(":uimodel"))
     implementation(project(":common"))
     implementation(project(":navigation"))

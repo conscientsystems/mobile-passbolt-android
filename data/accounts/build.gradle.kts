@@ -4,15 +4,12 @@ plugins {
 
 dependencies {
     implementation(project(":accounts-domain"))
-    implementation(project(":accounts"))
-    implementation(project(":architecture"))
     implementation(project(":common"))
-    implementation(project(":passphrasememorycache"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
 }
 
 android {
-    namespace = "com.passbolt.mobile.android.domain.auth"
+    namespace = "com.passbolt.mobile.android.data.accounts"
 }

@@ -2,10 +2,10 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.account.RemoveAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.RemoveAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.RemoveSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountUseCase
 import com.passbolt.mobile.android.domain.auth.PassphraseRepository
 import com.passbolt.mobile.android.domain.auth.SessionRepository
 import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase

@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.core.accounts.usecase.accounts
 import com.passbolt.mobile.android.common.usecase.UseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
 import com.passbolt.mobile.android.entity.account.Account
 
 /**

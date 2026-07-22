@@ -2,9 +2,9 @@ package com.passbolt.mobile.android.feature.setup.summary
 
 import com.passbolt.mobile.android.common.UuidProvider
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.account.SaveAccountUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.database.usecase.SaveResourcesDatabasePassphraseUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveAccountUseCase
 import com.passbolt.mobile.android.feature.setup.summary.SummaryIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.summary.SummaryIntent.AuthenticationSuccess
 import com.passbolt.mobile.android.feature.setup.summary.SummaryIntent.ConfirmSetupLeave

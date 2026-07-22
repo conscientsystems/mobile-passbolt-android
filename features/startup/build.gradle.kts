@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":coreui"))
     implementation(project(":navigation"))
     implementation(project(":accounts"))

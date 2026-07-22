@@ -1,3 +1,9 @@
+package com.passbolt.mobile.android.domain.accounts.usecase
+
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.common.usecase.UserIdInput
+import com.passbolt.mobile.android.domain.accounts.AccountsRepository
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,26 +26,10 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.core.accounts
-
-import com.passbolt.mobile.android.core.accounts.usecase.BiometricCipherImpl
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.accountDataModule
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.accountsModule
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.selectedAccountModule
-import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
-
-val accountsCoreModule =
-    module {
-        accountsModule()
-        accountDataModule()
-        selectedAccountModule()
-
-        singleOf(::AccountsInteractor)
-        singleOf(::AccountKitParser)
-        factoryOf(::BiometricCipherImpl) bind BiometricCipher::class
+class RemoveAccountUseCase(
+    private val accountsRepository: AccountsRepository,
+) : UseCase<UserIdInput, Unit> {
+    override fun execute(input: UserIdInput) {
+        accountsRepository.removeAccount(input.userId)
     }
+}
