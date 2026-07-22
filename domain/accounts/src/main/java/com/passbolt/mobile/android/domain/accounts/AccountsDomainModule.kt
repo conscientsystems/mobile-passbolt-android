@@ -1,3 +1,11 @@
+package com.passbolt.mobile.android.domain.accounts
+
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveAccountUseCase
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,26 +28,9 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.core.accounts
-
-import com.passbolt.mobile.android.core.accounts.usecase.BiometricCipherImpl
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.accountDataModule
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.accountsModule
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.selectedAccountModule
-import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
-
-val accountsCoreModule =
+val accountsDomainModule =
     module {
-        accountsModule()
-        accountDataModule()
-        selectedAccountModule()
-
-        singleOf(::AccountsInteractor)
-        singleOf(::AccountKitParser)
-        factoryOf(::BiometricCipherImpl) bind BiometricCipher::class
+        singleOf(::GetAccountsUseCase)
+        singleOf(::SaveAccountUseCase)
+        singleOf(::RemoveAccountUseCase)
     }

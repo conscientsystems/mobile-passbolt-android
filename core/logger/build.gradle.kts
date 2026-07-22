@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":localization"))
     implementation(project(":envinfo"))
     implementation(project(":common"))

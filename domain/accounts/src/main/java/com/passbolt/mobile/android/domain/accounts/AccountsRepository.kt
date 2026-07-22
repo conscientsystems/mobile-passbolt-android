@@ -1,9 +1,4 @@
-package com.passbolt.mobile.android.core.accounts.usecase.account
-
-import android.content.SharedPreferences
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.ACCOUNTS_ALIAS
+package com.passbolt.mobile.android.domain.accounts
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,21 +22,10 @@ import com.passbolt.mobile.android.core.accounts.usecase.ACCOUNTS_ALIAS
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface AccountsRepository {
+    fun getAccounts(): Set<String>
 
-class RemoveAccountUseCase(
-    private val sharedPreferences: SharedPreferences,
-) : UseCase<UserIdInput, Unit> {
-    override fun execute(input: UserIdInput) {
-        with(sharedPreferences.edit()) {
-            val modifiedAccountsSet =
-                sharedPreferences
-                    .getStringSet(ACCOUNTS_ALIAS, emptySet())
-                    .orEmpty()
-                    .toMutableSet()
-                    .apply { remove(input.userId) }
+    fun saveAccount(userId: String)
 
-            putStringSet(ACCOUNTS_ALIAS, modifiedAccountsSet)
-            apply()
-        }
-    }
+    fun removeAccount(userId: String)
 }

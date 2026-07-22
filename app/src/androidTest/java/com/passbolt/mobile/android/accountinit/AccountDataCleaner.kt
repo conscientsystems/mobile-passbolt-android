@@ -1,8 +1,8 @@
 package com.passbolt.mobile.android.accountinit
 
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAccountsUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RemoveAllAccountDataUseCase
 import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent

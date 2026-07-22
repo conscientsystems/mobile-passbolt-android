@@ -50,6 +50,7 @@ import com.passbolt.mobile.android.core.tags.tagsModule
 import com.passbolt.mobile.android.core.users.usersModule
 import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
+import com.passbolt.mobile.android.data.accounts.accountsDataModule
 import com.passbolt.mobile.android.data.auth.authDataModule
 import com.passbolt.mobile.android.data.biometrickey.biometricKeyDataModule
 import com.passbolt.mobile.android.data.favourites.favouritesDataModule
@@ -71,6 +72,7 @@ import com.passbolt.mobile.android.data.secrets.secretsDataModule
 import com.passbolt.mobile.android.data.share.shareDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
+import com.passbolt.mobile.android.domain.accounts.accountsDomainModule
 import com.passbolt.mobile.android.domain.auth.authDomainModule
 import com.passbolt.mobile.android.domain.favourites.favouritesDomainModule
 import com.passbolt.mobile.android.domain.folders.foldersDomainModule
@@ -145,6 +147,8 @@ class KoinInitializer : Initializer<Unit> {
                 barcodeScanModule,
                 authDomainModule,
                 authDataModule,
+                accountsDomainModule,
+                accountsDataModule,
                 autofillResourcesModule,
                 authenticationModule,
                 homeModule,

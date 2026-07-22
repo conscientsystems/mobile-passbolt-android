@@ -1,12 +1,12 @@
 package com.passbolt.mobile.android.feature.autofill.resources
 
 import androidx.lifecycle.viewModelScope
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAccountsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.InvalidTotpInput
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase

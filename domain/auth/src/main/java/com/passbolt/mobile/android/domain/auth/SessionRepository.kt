@@ -24,7 +24,6 @@ import com.passbolt.mobile.android.domain.auth.model.Session
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
 interface SessionRepository {
     fun getSession(userId: String): Session
 
@@ -32,7 +31,7 @@ interface SessionRepository {
         userId: String,
         accessToken: String,
         refreshToken: String,
-        mfaToken: String? = null,
+        mfaToken: String?,
     )
 
     fun removeSession(userId: String)

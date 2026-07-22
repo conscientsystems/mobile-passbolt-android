@@ -27,11 +27,6 @@ import org.koin.core.module.Module
 
 internal fun Module.accountsModule() {
     single {
-        GetAccountsUseCase(
-            sharedPreferences = get(),
-        )
-    }
-    single {
         CheckAccountExistsUseCase(
             getAllAccountsDataUseCase = get(),
         )

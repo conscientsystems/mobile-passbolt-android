@@ -1,9 +1,14 @@
-package com.passbolt.mobile.android.core.accounts.usecase.account
+package com.passbolt.mobile.android.data.accounts
 
-import android.content.SharedPreferences
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.ACCOUNTS_ALIAS
+import android.content.Context
+import com.passbolt.mobile.android.data.accounts.datasource.local.AccountsLocalDataSourceImpl
+import com.passbolt.mobile.android.data.accounts.datasource.local.Constants
+import com.passbolt.mobile.android.domain.accounts.AccountsRepository
+import com.passbolt.mobile.android.domain.accounts.datasource.AccountsLocalDataSource
+import org.koin.android.ext.koin.androidApplication
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,15 +32,13 @@ import com.passbolt.mobile.android.core.accounts.usecase.ACCOUNTS_ALIAS
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-class SaveAccountUseCase(
-    private val sharedPreferences: SharedPreferences,
-) : UseCase<UserIdInput, Unit> {
-    override fun execute(input: UserIdInput) {
-        with(sharedPreferences.edit()) {
-            val currentList = sharedPreferences.getStringSet(ACCOUNTS_ALIAS, emptySet()).orEmpty()
-            putStringSet(ACCOUNTS_ALIAS, currentList.plus(input.userId))
-            apply()
+val accountsDataModule =
+    module {
+        single<AccountsLocalDataSource> {
+            AccountsLocalDataSourceImpl(
+                sharedPreferences =
+                    androidApplication().getSharedPreferences(Constants.ACCOUNTS_PREFERENCES_NAME, Context.MODE_PRIVATE),
+            )
         }
+        singleOf(::AccountsRepositoryImpl) bind AccountsRepository::class
     }
-}
