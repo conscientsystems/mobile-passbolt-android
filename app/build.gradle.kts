@@ -219,7 +219,6 @@ dependencies {
     implementation(project(":metadata-data"))
     implementation(project(":biometrickey-data"))
     implementation(project(":encryptedstorage"))
-    implementation(project(":authenticationcore"))
     implementation(project(":preferences-domain"))
     implementation(project(":preferences-data"))
     implementation(project(":passphrasememorycache"))

@@ -1,8 +1,4 @@
-package com.passbolt.mobile.android.core.authenticationcore.passphrase
-
-import org.koin.android.ext.koin.androidApplication
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.Module
+package com.passbolt.mobile.android.data.auth.datasource.local
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,31 +23,13 @@ import org.koin.core.module.Module
  * @since v1.0
  */
 
-internal fun Module.passphraseModule() {
-    factory {
-        CheckIfPassphraseFileExistsUseCase(
-            appContext = androidContext(),
-        )
-    }
-    single {
-        GetPassphraseUseCase(
-            biometricCrypto = get(),
-            appContext = androidApplication(),
-        )
-    }
-    factory {
-        RemovePassphraseUseCase(androidContext())
-    }
-    factory {
-        RemoveAllAccountsPassphrasesUseCase(
-            androidContext(),
-            getAllAccountsDataUseCase = get(),
-        )
-    }
-    single {
-        SavePassphraseUseCase(
-            biometricCrypto = get(),
-            appContext = androidApplication(),
-        )
+internal class PassphraseFileName(
+    userId: String,
+) {
+    val name = PASSPHRASE_FILE_NAME_FORMAT.format(userId)
+
+    private companion object {
+        private const val PASSPHRASE_FILE_NAME = "passphrase"
+        private const val PASSPHRASE_FILE_NAME_FORMAT = "${PASSPHRASE_FILE_NAME}_%s"
     }
 }

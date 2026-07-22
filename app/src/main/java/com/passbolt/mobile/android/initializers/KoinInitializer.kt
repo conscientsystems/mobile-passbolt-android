@@ -29,7 +29,6 @@ import androidx.startup.Initializer
 import com.passbolt.mobile.android.appModule
 import com.passbolt.mobile.android.common.commonModule
 import com.passbolt.mobile.android.core.accounts.accountsCoreModule
-import com.passbolt.mobile.android.core.authenticationcore.authenticationCoreModule
 import com.passbolt.mobile.android.core.autofill.autofillModule
 import com.passbolt.mobile.android.core.clipboard.clipboardModule
 import com.passbolt.mobile.android.core.coreUiModule
@@ -219,7 +218,6 @@ class KoinInitializer : Initializer<Unit> {
                 metadataDataModule,
                 metadataDomainModule,
                 encryptedStorageModule,
-                authenticationCoreModule,
                 passphraseMemoryCacheModule,
                 jsonModelModule,
                 createResourceMenuModule,

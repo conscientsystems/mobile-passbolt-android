@@ -26,7 +26,7 @@ dependencies {
     implementation(project(":biometrickey-domain"))
     implementation(project(":privatekey-domain"))
     implementation(project(":passphrasememorycache"))
-    implementation(project(":authenticationcore"))
+    implementation(project(":auth-domain"))
     implementation(project(":encryptedstorage"))
     implementation(project(":preferences-domain"))
     implementation(project(":clipboard"))

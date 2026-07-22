@@ -1,11 +1,8 @@
-package com.passbolt.mobile.android.core.authenticationcore.passphrase
+package com.passbolt.mobile.android.domain.auth.usecase
 
-import android.content.Context
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAllAccountsDataUseCase
-import com.passbolt.mobile.android.core.authenticationcore.PassphraseFileName
-import timber.log.Timber
-import java.io.File
+import com.passbolt.mobile.android.common.usecase.UserIdInput
+import com.passbolt.mobile.android.domain.auth.PassphraseRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,27 +26,12 @@ import java.io.File
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class RemoveAllAccountsPassphrasesUseCase(
-    private val appContext: Context,
-    private val getAllAccountsDataUseCase: GetAllAccountsDataUseCase,
-) : UseCase<Unit, Unit> {
-    override fun execute(input: Unit) {
-        getAllAccountsDataUseCase
-            .execute(Unit)
-            .accounts
-            .map { PassphraseFileName(requireNotNull(it.userId)) }
-            .map { passphraseFileName ->
-                File(
-                    com.passbolt.mobile.android.encryptedstorage
-                        .EncryptedFileBaseDirectory(appContext)
-                        .baseDirectory,
-                    passphraseFileName.name,
-                )
-            }.forEach { passphraseFile ->
-                if (passphraseFile.exists()) {
-                    Timber.d("Passphrase file ${passphraseFile.name} scheduled deletion")
-                    passphraseFile.delete()
-                }
-            }
-    }
+class CheckIfPassphraseFileExistsUseCase(
+    private val passphraseRepository: PassphraseRepository,
+) : UseCase<UserIdInput, CheckIfPassphraseFileExistsUseCase.Output> {
+    override fun execute(input: UserIdInput): Output = Output(passphraseRepository.passphraseFileExists(input.userId))
+
+    data class Output(
+        val passphraseFileExists: Boolean,
+    )
 }

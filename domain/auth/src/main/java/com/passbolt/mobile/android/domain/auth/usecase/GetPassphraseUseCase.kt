@@ -1,11 +1,8 @@
-package com.passbolt.mobile.android.core.authenticationcore.passphrase
+package com.passbolt.mobile.android.domain.auth.usecase
 
-import android.content.Context
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.authenticationcore.PassphraseFileName
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCrypto
-import java.io.File
+import com.passbolt.mobile.android.domain.auth.PassphraseRepository
 import javax.crypto.Cipher
 
 /**
@@ -30,30 +27,10 @@ import javax.crypto.Cipher
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
 class GetPassphraseUseCase(
-    private val biometricCrypto: BiometricCrypto,
-    private val appContext: Context,
+    private val passphraseRepository: PassphraseRepository,
 ) : UseCase<GetPassphraseUseCase.Input, GetPassphraseUseCase.Output> {
-    override fun execute(input: Input): Output {
-        val fileName = PassphraseFileName(input.userId).name
-        val file =
-            File(
-                com.passbolt.mobile.android.encryptedstorage
-                    .EncryptedFileBaseDirectory(appContext)
-                    .baseDirectory,
-                fileName,
-            )
-
-        file.readText().let {
-            return if (it.isNotEmpty()) {
-                val decrypted = biometricCrypto.decryptData(it, input.authenticatedCipher)
-                Output(PotentialPassphrase.Passphrase(decrypted))
-            } else {
-                Output(PotentialPassphrase.PassphraseNotPresent())
-            }
-        }
-    }
+    override fun execute(input: Input): Output = Output(passphraseRepository.getPassphrase(input.userId, input.authenticatedCipher))
 
     data class Input(
         val userId: String,

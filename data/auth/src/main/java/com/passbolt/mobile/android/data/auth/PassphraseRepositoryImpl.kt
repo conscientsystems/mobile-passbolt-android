@@ -1,4 +1,9 @@
-package com.passbolt.mobile.android.core.authenticationcore
+package com.passbolt.mobile.android.data.auth
+
+import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.auth.PassphraseRepository
+import com.passbolt.mobile.android.domain.auth.datasource.PassphraseLocalDataSource
+import javax.crypto.Cipher
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,14 +27,23 @@ package com.passbolt.mobile.android.core.authenticationcore
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class PassphraseRepositoryImpl(
+    private val localDataSource: PassphraseLocalDataSource,
+) : PassphraseRepository {
+    override fun getPassphrase(
+        userId: String,
+        authenticatedCipher: Cipher,
+    ): PotentialPassphrase = localDataSource.getPassphrase(userId, authenticatedCipher)
 
-class PassphraseFileName(
-    userId: String,
-) {
-    val name = PASSPHRASE_FILE_NAME_FORMAT.format(userId)
+    override fun savePassphrase(
+        userId: String,
+        passphrase: ByteArray,
+        authenticatedCipher: Cipher,
+    ) = localDataSource.savePassphrase(userId, passphrase, authenticatedCipher)
 
-    private companion object {
-        private const val PASSPHRASE_FILE_NAME = "passphrase"
-        private const val PASSPHRASE_FILE_NAME_FORMAT = "${PASSPHRASE_FILE_NAME}_%s"
-    }
+    override fun removePassphrase(userId: String) = localDataSource.removePassphrase(userId)
+
+    override fun removeAllPassphrases(userIds: List<String>) = localDataSource.removeAllPassphrases(userIds)
+
+    override fun passphraseFileExists(userId: String): Boolean = localDataSource.passphraseFileExists(userId)
 }

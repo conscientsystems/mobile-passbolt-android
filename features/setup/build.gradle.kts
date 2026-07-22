@@ -28,7 +28,7 @@ dependencies {
     implementation(project(":privatekey-domain"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":encryptedstorage"))
-    implementation(project(":authenticationcore"))
+    implementation(project(":auth-domain"))
     implementation(project(":preferences-domain"))
     implementation(project(":main"))
     implementation(project(":testtags"))

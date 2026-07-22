@@ -1,11 +1,7 @@
-package com.passbolt.mobile.android.core.authenticationcore.passphrase
+package com.passbolt.mobile.android.domain.auth
 
-import android.content.Context
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.authenticationcore.PassphraseFileName
-import com.passbolt.mobile.android.encryptedstorage.EncryptedFileBaseDirectory
-import java.io.File
+import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import javax.crypto.Cipher
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,16 +25,21 @@ import java.io.File
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface PassphraseRepository {
+    fun getPassphrase(
+        userId: String,
+        authenticatedCipher: Cipher,
+    ): PotentialPassphrase
 
-class CheckIfPassphraseFileExistsUseCase(
-    private val appContext: Context,
-) : UseCase<UserIdInput, CheckIfPassphraseFileExistsUseCase.Output> {
-    override fun execute(input: UserIdInput): Output {
-        val fileName = PassphraseFileName(input.userId).name
-        return Output(File(EncryptedFileBaseDirectory(appContext).baseDirectory, fileName).exists())
-    }
-
-    data class Output(
-        val passphraseFileExists: Boolean,
+    fun savePassphrase(
+        userId: String,
+        passphrase: ByteArray,
+        authenticatedCipher: Cipher,
     )
+
+    fun removePassphrase(userId: String)
+
+    fun removeAllPassphrases(userIds: List<String>)
+
+    fun passphraseFileExists(userId: String): Boolean
 }

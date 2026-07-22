@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":common"))
     implementation(project(":encryptedstorage"))
+    implementation(project(":passphrasememorycache"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

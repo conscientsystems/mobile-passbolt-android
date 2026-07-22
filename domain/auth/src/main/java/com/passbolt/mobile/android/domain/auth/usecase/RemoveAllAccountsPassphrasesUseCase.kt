@@ -1,11 +1,8 @@
-package com.passbolt.mobile.android.core.authenticationcore.passphrase
+package com.passbolt.mobile.android.domain.auth.usecase
 
-import android.content.Context
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.authenticationcore.PassphraseFileName
-import timber.log.Timber
-import java.io.File
+import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAccountsUseCase
+import com.passbolt.mobile.android.domain.auth.PassphraseRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,20 +26,12 @@ import java.io.File
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class RemovePassphraseUseCase(
-    private val appContext: Context,
-) : UseCase<UserIdInput, Unit> {
-    override fun execute(input: UserIdInput) {
-        val passphraseFile =
-            File(
-                com.passbolt.mobile.android.encryptedstorage
-                    .EncryptedFileBaseDirectory(appContext)
-                    .baseDirectory,
-                PassphraseFileName(input.userId).name,
-            )
-        if (passphraseFile.exists()) {
-            val deleted = passphraseFile.delete()
-            Timber.e("Deleted passphrase file: $deleted")
-        }
+class RemoveAllAccountsPassphrasesUseCase(
+    private val passphraseRepository: PassphraseRepository,
+    private val getAccountsUseCase: GetAccountsUseCase,
+) : UseCase<Unit, Unit> {
+    override fun execute(input: Unit) {
+        val userIds = getAccountsUseCase.execute(Unit).users.toList()
+        passphraseRepository.removeAllPassphrases(userIds)
     }
 }
