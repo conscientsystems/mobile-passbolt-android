@@ -24,7 +24,6 @@
 package com.passbolt.mobile.android.domain.resources.actions
 
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.ResourceTypesUpdatesAdjacencyGraph
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysInteractor
@@ -34,6 +33,7 @@ import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateAction
 import com.passbolt.mobile.android.domain.resources.interactor.update.UpdateResourceInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.UpdateLocalResourceUseCase
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.jsonmodel.jsonModelModule
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription

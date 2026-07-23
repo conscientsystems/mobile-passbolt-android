@@ -85,6 +85,7 @@ import com.passbolt.mobile.android.domain.passwordpolicies.passwordPoliciesDomai
 import com.passbolt.mobile.android.domain.preferences.preferencesDomainModule
 import com.passbolt.mobile.android.domain.rbac.rbacDomainModule
 import com.passbolt.mobile.android.domain.resources.resourcesDomainModule
+import com.passbolt.mobile.android.domain.resourcetypes.resourceTypesDomainModule
 import com.passbolt.mobile.android.domain.secrets.secretsDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
 import com.passbolt.mobile.android.feature.accountdetails.accountDetailsModule
@@ -186,6 +187,7 @@ class KoinInitializer : Initializer<Unit> {
                 resourceMoreMenuModule,
                 fullDataRefreshModule,
                 resourceTypesModule,
+                resourceTypesDomainModule,
                 resourceTypesDataModule,
                 notificationsModule,
                 autofillModule,

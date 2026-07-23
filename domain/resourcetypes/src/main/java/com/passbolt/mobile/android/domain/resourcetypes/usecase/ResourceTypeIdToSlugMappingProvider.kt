@@ -21,31 +21,41 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.core.resourcetypes.usecase.db
+package com.passbolt.mobile.android.domain.resourcetypes.usecase
 
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.domain.resourcetypes.ResourceTypesRepository
 import java.util.UUID
 
-/**
- * Use ResourceTypeIdToSlugMappingProvider in client code
- * @see ResourceTypeIdToSlugMappingProvider
- */
-class GetResourceTypeIdToSlugMappingUseCase(
-    private val resourceTypesRepository: ResourceTypesRepository,
+class ResourceTypeIdToSlugMappingProvider(
+    private val resourceTypeIdToSlugMappingUseCase: GetResourceTypeIdToSlugMappingUseCase,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<Unit, GetResourceTypeIdToSlugMappingUseCase.Output> {
-    override suspend fun execute(input: Unit): Output {
-        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        return when (val result = resourceTypesRepository.getResourceTypeIdToSlugMapping(userId)) {
-            is DomainResult.Finished -> Output(result.value)
-            is DomainResult.Incomplete -> Output(emptyMap())
+) {
+    private val perAccountMappings = hashMapOf<String, Map<UUID, String>>()
+
+    suspend fun provideMappingForSelectedAccount(): Map<UUID, String> {
+        val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return if (perAccountMappings.containsKey(selectedAccount)) {
+            perAccountMappings[selectedAccount]!!
+        } else {
+            resourceTypeIdToSlugMappingUseCase.execute(Unit).idToSlugMapping.also {
+                perAccountMappings[selectedAccount] = it
+            }
         }
     }
 
-    data class Output(
-        val idToSlugMapping: Map<UUID, String>,
-    )
+    suspend fun provideMappingForAccount(account: String): Map<UUID, String> =
+        if (perAccountMappings.containsKey(account)) {
+            perAccountMappings[account]!!
+        } else {
+            resourceTypeIdToSlugMappingUseCase.execute(Unit).idToSlugMapping.also {
+                perAccountMappings[account] = it
+            }
+        }
+
+    fun invalidateSelectedUserMapping() {
+        val selectedAccount = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        if (perAccountMappings.containsKey(selectedAccount)) {
+            perAccountMappings.remove(selectedAccount)
+        }
+    }
 }

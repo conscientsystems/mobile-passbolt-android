@@ -20,7 +20,6 @@ dependencies {
     implementation(project(":home"))
     implementation(project(":security"))
     implementation(project(":gopenpgp"))
-    implementation(project(":resourcetypes"))
     implementation(project(":notifications"))
     implementation(project(":autofill"))
     implementation(project(":jsonmodel"))

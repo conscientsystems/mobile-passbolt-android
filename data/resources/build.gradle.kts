@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":resources-domain"))
     implementation(project(":architecture"))
     implementation(project(":common"))
@@ -13,7 +14,6 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":uimodel"))
     implementation(project(":jsonmodel"))
-    implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
 
     implementation(libs.gson)

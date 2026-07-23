@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":architecture"))
     implementation(project(":uimodel"))
     implementation(project(":coreui"))

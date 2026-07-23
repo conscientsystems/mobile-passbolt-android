@@ -9,7 +9,6 @@ dependencies {
     implementation(project(":accounts-domain"))
     implementation(project(":entity"))
     implementation(project(":common"))
-    implementation(project(":encryptedstorage"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

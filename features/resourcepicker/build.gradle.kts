@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":authentication"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":resources-domain"))
-    implementation(project(":resourcetypes"))
     implementation(project(":jsonmodel"))
     implementation(project(":navigation"))
 

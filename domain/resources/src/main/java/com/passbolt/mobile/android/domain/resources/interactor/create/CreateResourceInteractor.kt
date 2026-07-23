@@ -30,13 +30,13 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.toAuthenticationState
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.passwordexpiry.usecase.GetPasswordExpirySettingsUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.resources.ResourcesRepository
 import com.passbolt.mobile.android.domain.resources.mapper.toUiModel
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.GetResourceTypeIdToSlugMappingUseCase
 import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
 import com.passbolt.mobile.android.dto.request.CreateV4ResourceDto
 import com.passbolt.mobile.android.dto.request.CreateV5ResourceDto

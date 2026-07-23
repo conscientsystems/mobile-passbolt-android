@@ -229,6 +229,7 @@ dependencies {
     implementation(project(":resourceform"))
     implementation(project(":permissions"))
     implementation(project(":clipboard"))
+    implementation(project("::resourcetypes-domain"))
 
     debugImplementation(libs.leakcanary)
 
