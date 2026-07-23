@@ -1,4 +1,8 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.domain.accounts
+
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,8 +26,16 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+class AccountSwitchFlow(
+    getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) {
+    private val _selectedAccountFlow =
+        MutableStateFlow(
+            getSelectedAccountUseCase.execute(Unit).selectedAccount,
+        )
+    val selectedAccountFlow: StateFlow<String?> = _selectedAccountFlow
 
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
+    fun notifyAccountSwitch(newAccountId: String) {
+        _selectedAccountFlow.value = newAccountId
+    }
+}

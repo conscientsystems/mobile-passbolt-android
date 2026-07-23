@@ -13,7 +13,6 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":database"))
     implementation(project(":entity"))
-    implementation(project(":accounts"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

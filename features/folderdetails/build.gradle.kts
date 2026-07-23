@@ -21,7 +21,6 @@ dependencies {
     implementation(project(":folders-domain"))
     implementation(project(":localization"))
     implementation(project(":rbac-domain"))
-    implementation(project(":accounts"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

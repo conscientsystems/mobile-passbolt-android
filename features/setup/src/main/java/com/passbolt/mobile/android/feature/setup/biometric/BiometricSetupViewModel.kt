@@ -1,11 +1,11 @@
 package com.passbolt.mobile.android.feature.setup.biometric
 
 import com.passbolt.mobile.android.common.BiometricInformationProvider
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SavePassphraseUseCase
 import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
 import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey

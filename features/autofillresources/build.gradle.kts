@@ -23,7 +23,6 @@ dependencies {
     implementation(project(":resourcetypes"))
     implementation(project(":notifications"))
     implementation(project(":autofill"))
-    implementation(project(":accounts"))
     implementation(project(":jsonmodel"))
     implementation(project(":entity"))
     implementation(project(":otpcore"))

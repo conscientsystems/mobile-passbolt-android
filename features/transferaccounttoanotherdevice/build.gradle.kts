@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
     implementation(project(":coreui"))
     implementation(project(":common"))
@@ -17,7 +18,6 @@ dependencies {
     implementation(project(":uimodel"))
     implementation(project(":idlingresource"))
     implementation(project(":localization"))
-    implementation(project(":accounts"))
     implementation(project(":auth-domain"))
     implementation(project(":privatekey-domain"))
     implementation(project(":testtags"))

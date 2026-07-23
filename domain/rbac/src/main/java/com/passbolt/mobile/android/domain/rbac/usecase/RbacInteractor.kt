@@ -23,8 +23,8 @@
 
 package com.passbolt.mobile.android.domain.rbac.usecase
 
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.rbac.RbacRepository
 import com.passbolt.mobile.android.domain.rbac.mapper.toUiModel
 import com.passbolt.mobile.android.ui.RbacModel

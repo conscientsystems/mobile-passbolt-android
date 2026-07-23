@@ -4,10 +4,13 @@ import android.content.Context
 import com.passbolt.mobile.android.data.accounts.datasource.local.AccountDataLocalDataSourceImpl
 import com.passbolt.mobile.android.data.accounts.datasource.local.AccountsLocalDataSourceImpl
 import com.passbolt.mobile.android.data.accounts.datasource.local.Constants
+import com.passbolt.mobile.android.data.accounts.datasource.local.SelectedAccountLocalDataSourceImpl
 import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
 import com.passbolt.mobile.android.domain.accounts.AccountsRepository
+import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
 import com.passbolt.mobile.android.domain.accounts.datasource.AccountDataLocalDataSource
 import com.passbolt.mobile.android.domain.accounts.datasource.AccountsLocalDataSource
+import com.passbolt.mobile.android.domain.accounts.datasource.SelectedAccountLocalDataSource
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -46,4 +49,6 @@ val accountsDataModule =
         singleOf(::AccountsRepositoryImpl) bind AccountsRepository::class
         singleOf(::AccountDataLocalDataSourceImpl) bind AccountDataLocalDataSource::class
         singleOf(::AccountDataRepositoryImpl) bind AccountDataRepository::class
+        singleOf(::SelectedAccountLocalDataSourceImpl) bind SelectedAccountLocalDataSource::class
+        singleOf(::SelectedAccountRepositoryImpl) bind SelectedAccountRepository::class
     }

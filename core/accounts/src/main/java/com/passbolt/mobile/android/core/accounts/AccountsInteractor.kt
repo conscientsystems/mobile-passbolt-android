@@ -28,9 +28,9 @@ import com.passbolt.mobile.android.common.UuidProvider
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
 import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountExistsUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.domain.accounts.usecase.CheckAccountExistsUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey

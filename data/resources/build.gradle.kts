@@ -13,7 +13,6 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":uimodel"))
     implementation(project(":jsonmodel"))
-    implementation(project(":accounts"))
     implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
 

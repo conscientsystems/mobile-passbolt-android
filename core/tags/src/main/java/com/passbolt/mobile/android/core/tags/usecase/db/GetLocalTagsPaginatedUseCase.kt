@@ -5,10 +5,10 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.GetLocalTagsPaginatedUseCase.Output
 import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.database.QuerySanitizer
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.mappers.TagsModelMapper
 import com.passbolt.mobile.android.ui.TagWithCount
 import kotlinx.coroutines.flow.Flow

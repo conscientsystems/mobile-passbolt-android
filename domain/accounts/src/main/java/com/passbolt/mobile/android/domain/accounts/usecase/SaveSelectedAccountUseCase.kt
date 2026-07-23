@@ -1,8 +1,9 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accountdata
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
-import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
+import com.passbolt.mobile.android.common.usecase.UserIdInput
+import com.passbolt.mobile.android.domain.accounts.AccountSwitchFlow
+import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -26,34 +27,12 @@ import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-class GetSelectedAccountDataUseCase(
-    private val accountDataRepository: AccountDataRepository,
-) : UseCase<Unit, GetSelectedAccountDataUseCase.Output>,
-    SelectedAccountUseCase {
-    override fun execute(input: Unit): Output {
-        val accountData = accountDataRepository.getAccountData(selectedAccountId)
-
-        return Output(
-            firstName = accountData.firstName,
-            lastName = accountData.lastName,
-            email = accountData.email,
-            avatarUrl = accountData.avatarUrl,
-            url = accountData.url,
-            serverId = accountData.serverId,
-            label = accountData.label,
-            role = accountData.role,
-        )
+class SaveSelectedAccountUseCase(
+    private val selectedAccountRepository: SelectedAccountRepository,
+    private val accountSwitchFlow: AccountSwitchFlow,
+) : UseCase<UserIdInput, Unit> {
+    override fun execute(input: UserIdInput) {
+        selectedAccountRepository.saveSelectedAccount(input.userId)
+        accountSwitchFlow.notifyAccountSwitch(input.userId)
     }
-
-    data class Output(
-        val firstName: String?,
-        val lastName: String?,
-        val email: String?,
-        val avatarUrl: String?,
-        val url: String,
-        val serverId: String?,
-        val label: String?,
-        val role: String?,
-    )
 }

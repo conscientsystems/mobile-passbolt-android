@@ -24,7 +24,7 @@
 package com.passbolt.mobile.android.domain.inappreview.usecase
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.inappreview.InAppReviewRepository
 import com.passbolt.mobile.android.domain.inappreview.model.InAppReviewParameters
 import com.passbolt.mobile.android.domain.inappreview.model.InAppReviewShowMode

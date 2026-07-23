@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
     implementation(project(":uimodel"))
     implementation(project(":navigation"))
@@ -39,7 +40,6 @@ dependencies {
     implementation(project(":rbac-domain"))
     implementation(project(":serializers"))
     implementation(project(":autofill"))
-    implementation(project(":accounts"))
     implementation(project(":preferences-domain"))
     implementation(project(":jsonmodel"))
     implementation(project(":createresourcemenu"))

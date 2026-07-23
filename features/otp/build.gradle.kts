@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
     implementation(project(":uimodel"))
     implementation(project(":coreui"))
@@ -30,7 +31,6 @@ dependencies {
     implementation(project(":scanotp"))
     implementation(project(":otpmoremenu"))
     implementation(project(":serializers"))
-    implementation(project(":accounts"))
     implementation(project(":jsonmodel"))
     implementation(project(":resourceform"))
     implementation(project(":metadatakeytrust"))

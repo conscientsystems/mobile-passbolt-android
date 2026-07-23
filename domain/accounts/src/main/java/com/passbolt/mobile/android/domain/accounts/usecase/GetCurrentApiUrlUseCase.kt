@@ -1,10 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accounts
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
-import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
-import com.passbolt.mobile.android.entity.account.Account
+import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -28,31 +25,20 @@ import com.passbolt.mobile.android.entity.account.Account
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-class GetAllAccountsDataUseCase(
-    private val getAccountDataUseCase: GetAccountDataUseCase,
-    private val getAccountsUseCase: GetAccountsUseCase,
-) : UseCase<Unit, GetAllAccountsDataUseCase.Output> {
+class GetCurrentApiUrlUseCase(
+    private val selectedAccountRepository: SelectedAccountRepository,
+) : UseCase<Unit, GetCurrentApiUrlUseCase.Output> {
     override fun execute(input: Unit): Output {
-        val accountsData =
-            getAccountsUseCase.execute(Unit).users.map { userId ->
-                val accountData = getAccountDataUseCase.execute(UserIdInput(userId))
-                Account(
-                    userId = userId,
-                    firstName = accountData.firstName,
-                    lastName = accountData.lastName,
-                    email = accountData.email,
-                    avatarUrl = accountData.avatarUrl,
-                    url = accountData.url,
-                    serverId = accountData.serverId,
-                    label = accountData.label,
-                )
-            }
+        val currentUrl = selectedAccountRepository.getCurrentApiUrl()
 
-        return Output(accountsData)
+        return if (currentUrl != null) {
+            Output(currentUrl)
+        } else {
+            error("No api url is currently saved")
+        }
     }
 
     data class Output(
-        val accounts: List<Account>,
+        val currentUrl: String,
     )
 }

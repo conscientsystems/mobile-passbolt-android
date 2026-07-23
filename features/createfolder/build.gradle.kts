@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":idlingresource"))
     implementation(project(":users"))
     implementation(project(":localization"))
-    implementation(project(":accounts"))
+    implementation(project(":accounts-domain"))
     implementation(project(":navigation"))
     implementation(project(":testtags"))
 

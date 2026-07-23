@@ -1,9 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase.selectedaccount
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.CURRENT_URL_ALIAS
-import com.passbolt.mobile.android.core.accounts.usecase.CURRENT_URL_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,20 +25,12 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+class GetSelectedAccountUseCase(
+    private val selectedAccountRepository: SelectedAccountRepository,
+) : UseCase<Unit, GetSelectedAccountUseCase.Output> {
+    override fun execute(input: Unit): Output = Output(selectedAccountRepository.getSelectedAccount())
 
-class SaveCurrentApiUrlUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<SaveCurrentApiUrlUseCase.Input, Unit> {
-    override fun execute(input: Input) {
-        val sharedPreferences =
-            encryptedSharedPreferencesFactory.get("$CURRENT_URL_ALIAS.xml")
-        with(sharedPreferences.edit()) {
-            putString(CURRENT_URL_KEY, input.currentUrl)
-            apply()
-        }
-    }
-
-    data class Input(
-        val currentUrl: String,
+    data class Output(
+        val selectedAccount: String?,
     )
 }

@@ -1,6 +1,8 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accounts
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.common.usecase.UserIdInput
+import com.passbolt.mobile.android.entity.account.Account
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,21 +26,30 @@ import com.passbolt.mobile.android.common.usecase.UseCase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+class GetAllAccountsDataUseCase(
+    private val getAccountDataUseCase: GetAccountDataUseCase,
+    private val getAccountsUseCase: GetAccountsUseCase,
+) : UseCase<Unit, GetAllAccountsDataUseCase.Output> {
+    override fun execute(input: Unit): Output {
+        val accountsData =
+            getAccountsUseCase.execute(Unit).users.map { userId ->
+                val accountData = getAccountDataUseCase.execute(UserIdInput(userId))
+                Account(
+                    userId = userId,
+                    firstName = accountData.firstName,
+                    lastName = accountData.lastName,
+                    email = accountData.email,
+                    avatarUrl = accountData.avatarUrl,
+                    url = accountData.url,
+                    serverId = accountData.serverId,
+                    label = accountData.label,
+                )
+            }
 
-class CheckAccountExistsUseCase(
-    private val getAllAccountsDataUseCase: GetAllAccountsDataUseCase,
-) : UseCase<CheckAccountExistsUseCase.Input, CheckAccountExistsUseCase.Output> {
-    override fun execute(input: Input): Output {
-        val result = getAllAccountsDataUseCase.execute(Unit).accounts.find { it.serverId == input.serverId }
-        return Output(result != null, result?.userId)
+        return Output(accountsData)
     }
 
-    data class Input(
-        val serverId: String,
-    )
-
     data class Output(
-        val exist: Boolean,
-        val userId: String? = null,
+        val accounts: List<Account>,
     )
 }

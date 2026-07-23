@@ -1,9 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase.selectedaccount
+package com.passbolt.mobile.android.domain.accounts.usecase
 
-import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,12 +25,10 @@ import org.koin.core.module.dsl.singleOf
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-internal fun Module.selectedAccountModule() {
-    singleOf(::AccountSwitchFlow)
-    singleOf(::GetSelectedAccountUseCase)
-    factoryOf(::RemoveSelectedAccountUseCase)
-    singleOf(::SaveSelectedAccountUseCase)
-    singleOf(::GetCurrentApiUrlUseCase)
-    singleOf(::SaveCurrentApiUrlUseCase)
+interface SelectedAccountUseCase : KoinComponent {
+    val selectedAccountId: String
+        get() =
+            requireNotNull(get<GetSelectedAccountUseCase>().execute(Unit).selectedAccount) {
+                "${javaClass.name} is a selected account use case, but no account is selected"
+            }
 }

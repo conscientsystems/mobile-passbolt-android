@@ -17,7 +17,6 @@ dependencies {
     implementation(project(":entity"))
     implementation(project(":passwordgenerator"))
     implementation(project(":common"))
-    implementation(project(":accounts"))
     implementation(project(":mappers"))
     implementation(project(":navigation"))
     implementation(project(":metadata-domain"))

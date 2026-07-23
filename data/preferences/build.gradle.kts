@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":preferences-domain"))
-    implementation(project(":accounts"))
     implementation(project(":encryptedstorage"))
     implementation(project(":common"))
     implementation(project(":uimodel"))

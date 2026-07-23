@@ -1,10 +1,4 @@
-package com.passbolt.mobile.android.core.accounts.usecase.selectedaccount
-
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.SELECTED_ACCOUNT_ALIAS
-import com.passbolt.mobile.android.core.accounts.usecase.SELECTED_ACCOUNT_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+package com.passbolt.mobile.android.domain.accounts.datasource
 
 /**
  * Passbolt - Open source password manager for teams
@@ -28,16 +22,14 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface SelectedAccountLocalDataSource {
+    fun getSelectedAccount(): String?
 
-class RemoveSelectedAccountUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<UserIdInput, Unit> {
-    override fun execute(input: UserIdInput) {
-        val sharedPreferences =
-            encryptedSharedPreferencesFactory.get("$SELECTED_ACCOUNT_ALIAS.xml")
-        with(sharedPreferences.edit()) {
-            remove(SELECTED_ACCOUNT_KEY)
-            apply()
-        }
-    }
+    fun saveSelectedAccount(userId: String)
+
+    fun removeSelectedAccount()
+
+    fun getCurrentApiUrl(): String?
+
+    fun saveCurrentApiUrl(currentUrl: String)
 }

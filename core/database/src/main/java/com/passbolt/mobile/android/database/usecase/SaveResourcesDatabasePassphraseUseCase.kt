@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.database.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
 
 /**

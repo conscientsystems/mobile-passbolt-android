@@ -1,9 +1,6 @@
-package com.passbolt.mobile.android.core.accounts.usecase.selectedaccount
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SELECTED_ACCOUNT_ALIAS
-import com.passbolt.mobile.android.core.accounts.usecase.SELECTED_ACCOUNT_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,24 +24,20 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-class GetSelectedAccountUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<Unit, GetSelectedAccountUseCase.Output> {
-    override fun execute(input: Unit): Output {
-        val sharedPreferences =
-            encryptedSharedPreferencesFactory.get("$SELECTED_ACCOUNT_ALIAS.xml")
-        val selectedAccount =
-            sharedPreferences.getString(SELECTED_ACCOUNT_KEY, null)
-
-        return if (selectedAccount != null) {
-            Output(selectedAccount)
-        } else {
-            Output(null)
-        }
+class CheckAccountExistsUseCase(
+    private val getAllAccountsDataUseCase: GetAllAccountsDataUseCase,
+) : UseCase<CheckAccountExistsUseCase.Input, CheckAccountExistsUseCase.Output> {
+    override fun execute(input: Input): Output {
+        val result = getAllAccountsDataUseCase.execute(Unit).accounts.find { it.serverId == input.serverId }
+        return Output(result != null, result?.userId)
     }
 
+    data class Input(
+        val serverId: String,
+    )
+
     data class Output(
-        val selectedAccount: String?,
+        val exist: Boolean,
+        val userId: String? = null,
     )
 }

@@ -2,13 +2,13 @@ package com.passbolt.mobile.android.feature.authentication.auth.accountslist
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAllAccountsDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.ManageAccount
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Startup
 import com.passbolt.mobile.android.database.DatabaseProvider
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAllAccountsDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.entity.account.Account
 import com.passbolt.mobile.android.feature.authentication.accountslist.AccountsListIntent.AddAccount
 import com.passbolt.mobile.android.feature.authentication.accountslist.AccountsListIntent.ConfirmRemoveAccount

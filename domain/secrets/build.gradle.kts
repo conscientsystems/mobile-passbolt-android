@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":common"))
     implementation(project(":gopenpgp"))
     implementation(project(":architecture"))
@@ -10,7 +11,6 @@ dependencies {
     implementation(project(":serializers"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":passphrasememorycache"))
-    implementation(project(":accounts"))
     implementation(project(":privatekey-domain"))
     implementation(project(":jsonmodel"))
 

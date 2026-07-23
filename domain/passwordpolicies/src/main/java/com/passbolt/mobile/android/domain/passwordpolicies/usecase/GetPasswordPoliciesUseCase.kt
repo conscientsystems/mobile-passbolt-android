@@ -24,8 +24,8 @@
 package com.passbolt.mobile.android.domain.passwordpolicies.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.passwordpolicies.PasswordPoliciesRepository
 import com.passbolt.mobile.android.domain.passwordpolicies.mapper.toUiModel
 import com.passbolt.mobile.android.domain.passwordpolicies.model.PasswordPolicies

@@ -1,9 +1,4 @@
-package com.passbolt.mobile.android.core.accounts.usecase.selectedaccount
-
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.CURRENT_URL_ALIAS
-import com.passbolt.mobile.android.core.accounts.usecase.CURRENT_URL_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+package com.passbolt.mobile.android.domain.accounts
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,24 +22,14 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface SelectedAccountRepository {
+    fun getSelectedAccount(): String?
 
-class GetCurrentApiUrlUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<Unit, GetCurrentApiUrlUseCase.Output> {
-    override fun execute(input: Unit): Output {
-        val sharedPreferences =
-            encryptedSharedPreferencesFactory.get("$CURRENT_URL_ALIAS.xml")
-        val selectedAccount =
-            sharedPreferences.getString(CURRENT_URL_KEY, null)
+    fun saveSelectedAccount(userId: String)
 
-        return if (selectedAccount != null) {
-            Output(selectedAccount)
-        } else {
-            error("No api url is currently saved")
-        }
-    }
+    fun removeSelectedAccount()
 
-    data class Output(
-        val currentUrl: String,
-    )
+    fun getCurrentApiUrl(): String?
+
+    fun saveCurrentApiUrl(currentUrl: String)
 }

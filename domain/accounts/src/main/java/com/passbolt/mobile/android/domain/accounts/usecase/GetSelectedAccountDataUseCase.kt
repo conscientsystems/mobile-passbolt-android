@@ -1,11 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase.selectedaccount
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
-import com.passbolt.mobile.android.core.accounts.usecase.SELECTED_ACCOUNT_ALIAS
-import com.passbolt.mobile.android.core.accounts.usecase.SELECTED_ACCOUNT_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,18 +25,33 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+class GetSelectedAccountDataUseCase(
+    private val accountDataRepository: AccountDataRepository,
+) : UseCase<Unit, GetSelectedAccountDataUseCase.Output>,
+    SelectedAccountUseCase {
+    override fun execute(input: Unit): Output {
+        val accountData = accountDataRepository.getAccountData(selectedAccountId)
 
-class SaveSelectedAccountUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-    private val accountSwitchFlow: AccountSwitchFlow,
-) : UseCase<UserIdInput, Unit> {
-    override fun execute(input: UserIdInput) {
-        val sharedPreferences =
-            encryptedSharedPreferencesFactory.get("$SELECTED_ACCOUNT_ALIAS.xml")
-        with(sharedPreferences.edit()) {
-            putString(SELECTED_ACCOUNT_KEY, input.userId)
-            apply()
-        }
-        accountSwitchFlow.notifyAccountSwitch(input.userId)
+        return Output(
+            firstName = accountData.firstName,
+            lastName = accountData.lastName,
+            email = accountData.email,
+            avatarUrl = accountData.avatarUrl,
+            url = accountData.url,
+            serverId = accountData.serverId,
+            label = accountData.label,
+            role = accountData.role,
+        )
     }
+
+    data class Output(
+        val firstName: String?,
+        val lastName: String?,
+        val email: String?,
+        val avatarUrl: String?,
+        val url: String,
+        val serverId: String?,
+        val label: String?,
+        val role: String?,
+    )
 }

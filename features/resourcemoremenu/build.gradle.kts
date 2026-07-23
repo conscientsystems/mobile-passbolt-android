@@ -22,7 +22,6 @@ dependencies {
     implementation(project(":rbac-domain"))
     implementation(project(":idlingresource"))
     implementation(project(":featureflags-domain"))
-    implementation(project(":accounts"))
     implementation(project(":jsonmodel"))
 
     implementation(libs.androidx.core)
