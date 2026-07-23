@@ -24,9 +24,9 @@
 package com.passbolt.mobile.android.domain.passwordexpiry.usecase
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.passwordexpiry.PasswordExpiryRepository
 import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
 import kotlinx.coroutines.test.runTest

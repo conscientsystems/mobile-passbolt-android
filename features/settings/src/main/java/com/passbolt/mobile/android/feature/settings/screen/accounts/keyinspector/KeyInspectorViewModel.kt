@@ -24,12 +24,12 @@
 package com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector
 
 import androidx.lifecycle.viewModelScope
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.formatter.DateFormatter
 import com.passbolt.mobile.android.core.formatter.FingerprintFormatter
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.users.user.FetchCurrentUserUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorIntent.CloseMoreMenu
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorIntent.CopyFingerprint

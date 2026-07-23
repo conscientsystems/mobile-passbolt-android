@@ -1,11 +1,19 @@
 package com.passbolt.mobile.android.domain.accounts
 
+import com.passbolt.mobile.android.domain.accounts.usecase.CheckAccountExistsUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAllAccountsDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetCurrentApiUrlUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.IsServerFingerprintCorrectUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveServerFingerprintUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import org.koin.core.module.dsl.singleOf
@@ -43,4 +51,13 @@ val accountsDomainModule =
         singleOf(::RemoveAccountDataUseCase)
         singleOf(::SaveServerFingerprintUseCase)
         singleOf(::IsServerFingerprintCorrectUseCase)
+        singleOf(::AccountSwitchFlow)
+        singleOf(::GetSelectedAccountUseCase)
+        singleOf(::SaveSelectedAccountUseCase)
+        singleOf(::RemoveSelectedAccountUseCase)
+        singleOf(::GetCurrentApiUrlUseCase)
+        singleOf(::SaveCurrentApiUrlUseCase)
+        singleOf(::GetSelectedAccountDataUseCase)
+        singleOf(::GetAllAccountsDataUseCase)
+        singleOf(::CheckAccountExistsUseCase)
     }

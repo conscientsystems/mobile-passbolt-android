@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":transferaccounttoanotherdevice"))
     implementation(project(":navigation"))
-    implementation(project(":accounts"))
     implementation(project(":users"))
 
     implementation(libs.androidx.navigation3.ui)

@@ -2,7 +2,7 @@ package com.passbolt.mobile.android.domain.auth.usecase
 
 import android.security.keystore.UserNotAuthenticatedException
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.auth.PassphraseRepository
 import javax.crypto.Cipher
 

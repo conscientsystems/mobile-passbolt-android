@@ -34,13 +34,13 @@ import com.passbolt.mobile.android.common.autofill.DetectAutofillConflict
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.commontest.session.validSessionTestModule
-import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
+import com.passbolt.mobile.android.domain.accounts.AccountSwitchFlow
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository

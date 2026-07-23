@@ -37,7 +37,6 @@ dependencies {
     implementation(project(":scanotp"))
     implementation(project(":rbac-domain"))
     implementation(project(":serializers"))
-    implementation(project(":accounts"))
     implementation(project(":jsonmodel"))
     implementation(project(":resourceform"))
     implementation(project(":clipboard"))

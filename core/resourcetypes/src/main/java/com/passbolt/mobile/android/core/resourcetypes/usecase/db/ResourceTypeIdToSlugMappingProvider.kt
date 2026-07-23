@@ -23,7 +23,7 @@
 
 package com.passbolt.mobile.android.core.resourcetypes.usecase.db
 
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import java.util.UUID
 
 class ResourceTypeIdToSlugMappingProvider(

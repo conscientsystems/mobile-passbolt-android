@@ -5,12 +5,12 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAllAccountsDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAllAccountsDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.entity.account.Account
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.mappers.SwitchAccountModelMapper

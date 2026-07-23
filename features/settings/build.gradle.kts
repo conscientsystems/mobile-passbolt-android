@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
     implementation(project(":navigation"))
     implementation(project(":coreui"))
@@ -22,7 +23,6 @@ dependencies {
     implementation(project(":gopenpgp"))
     implementation(project(":accountdetails"))
     implementation(project(":fulldatarefresh"))
-    implementation(project(":accounts"))
     implementation(project(":biometrickey-domain"))
     implementation(project(":privatekey-domain"))
     implementation(project(":passphrasememorycache"))

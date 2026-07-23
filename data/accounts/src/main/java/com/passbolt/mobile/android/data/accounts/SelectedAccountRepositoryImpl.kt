@@ -1,6 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accounts
+package com.passbolt.mobile.android.data.accounts
 
-import org.koin.core.module.Module
+import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
+import com.passbolt.mobile.android.domain.accounts.datasource.SelectedAccountLocalDataSource
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,17 +25,16 @@ import org.koin.core.module.Module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class SelectedAccountRepositoryImpl(
+    private val localDataSource: SelectedAccountLocalDataSource,
+) : SelectedAccountRepository {
+    override fun getSelectedAccount(): String? = localDataSource.getSelectedAccount()
 
-internal fun Module.accountsModule() {
-    single {
-        CheckAccountExistsUseCase(
-            getAllAccountsDataUseCase = get(),
-        )
-    }
-    single {
-        GetAllAccountsDataUseCase(
-            getAccountDataUseCase = get(),
-            getAccountsUseCase = get(),
-        )
-    }
+    override fun saveSelectedAccount(userId: String) = localDataSource.saveSelectedAccount(userId)
+
+    override fun removeSelectedAccount() = localDataSource.removeSelectedAccount()
+
+    override fun getCurrentApiUrl(): String? = localDataSource.getCurrentApiUrl()
+
+    override fun saveCurrentApiUrl(currentUrl: String) = localDataSource.saveCurrentApiUrl(currentUrl)
 }

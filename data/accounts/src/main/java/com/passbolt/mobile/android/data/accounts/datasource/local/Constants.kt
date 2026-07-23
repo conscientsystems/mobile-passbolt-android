@@ -34,4 +34,8 @@ internal object Constants {
     const val ROLE_KEY = "ROLE_KEY"
     const val EMAIL_KEY = "EMAIL_KEY"
     const val SERVER_FINGERPRINT_KEY = "SERVER_FINGERPRINT_KEY"
+    const val SELECTED_ACCOUNT_ALIAS = "selected_account"
+    const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
+    const val CURRENT_URL_ALIAS = "current_url"
+    const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
 }

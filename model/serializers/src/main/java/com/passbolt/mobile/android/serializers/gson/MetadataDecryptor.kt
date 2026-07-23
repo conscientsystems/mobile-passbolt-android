@@ -23,10 +23,10 @@
 
 package com.passbolt.mobile.android.serializers.gson
 
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.ForeignModel.RESOURCE
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysMemoryCache
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository

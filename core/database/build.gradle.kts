@@ -5,10 +5,10 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":entity"))
     implementation(project(":common"))
     implementation(project(":encryptedstorage"))
-    implementation(project(":accounts"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

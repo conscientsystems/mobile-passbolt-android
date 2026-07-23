@@ -24,7 +24,6 @@ dependencies {
     implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":metadata-domain"))
-    implementation(project(":accounts"))
     implementation(project(":serializers"))
     implementation(project(":metadatakeytrust"))
 

@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":dto"))
     implementation(project(":common"))
     implementation(project(":database"))
@@ -11,7 +12,6 @@ dependencies {
     implementation(project(":gopenpgp"))
     implementation(project(":metadata-domain"))
     implementation(project(":uimodel"))
-    implementation(project(":accounts"))
     implementation(project(":privatekey-domain"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":entity"))

@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
+    implementation(project(":entity"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

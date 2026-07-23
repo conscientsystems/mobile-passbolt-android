@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.domain.metadata.interactor
 
 import com.google.gson.Gson
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.DeleteTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.GetTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.SaveTrustedMetadataKeyUseCase

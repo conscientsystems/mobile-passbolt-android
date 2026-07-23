@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.accountinit
 
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.database.usecase.SaveResourcesDatabasePassphraseUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate

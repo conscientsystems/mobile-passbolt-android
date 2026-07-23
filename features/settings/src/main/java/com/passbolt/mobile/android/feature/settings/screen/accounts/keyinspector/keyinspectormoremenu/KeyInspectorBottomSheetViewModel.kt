@@ -1,9 +1,9 @@
 package com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu
 
 import androidx.lifecycle.viewModelScope
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.Close
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.ExportPrivateKey

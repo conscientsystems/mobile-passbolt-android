@@ -25,11 +25,11 @@ package com.passbolt.mobile.android.domain.secrets.usecase.decrypt
 
 import com.passbolt.mobile.android.common.extension.erase
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.UnauthenticatedReason
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpError

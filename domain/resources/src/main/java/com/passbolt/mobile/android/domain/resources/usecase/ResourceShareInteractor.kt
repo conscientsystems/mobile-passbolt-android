@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.domain.resources.usecase
 
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
@@ -9,6 +8,7 @@ import com.passbolt.mobile.android.core.mvp.authentication.UnauthenticatedReason
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.SecretInteractor

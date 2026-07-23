@@ -9,7 +9,6 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":preferences-domain"))
     implementation(project(":uimodel"))
-    implementation(project(":accounts"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

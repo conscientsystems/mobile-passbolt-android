@@ -8,12 +8,12 @@ import com.jayway.jsonpath.spi.json.GsonJsonProvider
 import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
 import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
 import com.passbolt.mobile.android.commontest.transaction.PassThroughTransactionRunner
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.tags.usecase.db.AddLocalTagsUseCase
 import com.passbolt.mobile.android.core.tags.usecase.db.RemoveLocalTagsUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.RemoveLocalResourcePermissionsUseCase

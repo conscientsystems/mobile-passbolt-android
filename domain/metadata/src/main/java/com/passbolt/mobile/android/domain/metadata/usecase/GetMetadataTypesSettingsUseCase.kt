@@ -24,7 +24,7 @@
 package com.passbolt.mobile.android.domain.metadata.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.MetadataRepository
 import com.passbolt.mobile.android.domain.metadata.mapper.toUiModel
 import com.passbolt.mobile.android.ui.MetadataTypesSettingsModel

@@ -1,6 +1,8 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accountdata
+package com.passbolt.mobile.android.domain.accounts.usecase
 
-import org.koin.core.module.Module
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.common.usecase.UserIdInput
+import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,11 +26,10 @@ import org.koin.core.module.Module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-internal fun Module.accountDataModule() {
-    single {
-        GetSelectedAccountDataUseCase(
-            accountDataRepository = get(),
-        )
+class RemoveSelectedAccountUseCase(
+    private val selectedAccountRepository: SelectedAccountRepository,
+) : UseCase<UserIdInput, Unit> {
+    override fun execute(input: UserIdInput) {
+        selectedAccountRepository.removeSelectedAccount()
     }
 }

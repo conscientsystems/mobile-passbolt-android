@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":accounts"))
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
     implementation(project(":common"))
 

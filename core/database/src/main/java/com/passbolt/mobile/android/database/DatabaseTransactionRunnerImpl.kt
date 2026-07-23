@@ -23,7 +23,7 @@
 package com.passbolt.mobile.android.database
 
 import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 
 internal class DatabaseTransactionRunnerImpl(
     private val databaseProvider: DatabaseProvider,

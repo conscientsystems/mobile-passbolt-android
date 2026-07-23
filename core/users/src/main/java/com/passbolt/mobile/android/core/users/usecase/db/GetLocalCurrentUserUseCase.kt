@@ -1,9 +1,9 @@
 package com.passbolt.mobile.android.core.users.usecase.db
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SelectedAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.database.DatabaseProvider
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.mappers.UsersModelMapper
 import com.passbolt.mobile.android.ui.UserUiModel
 

@@ -1,7 +1,6 @@
 package com.passbolt.mobile.android.domain.metadata.interactor
 
 import com.google.gson.Gson
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Passphrase
@@ -10,6 +9,7 @@ import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchCont
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.mapAsyncNotNull
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysBundleMerger
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysBundleProcessor
 import com.passbolt.mobile.android.domain.metadata.sessionkeys.SessionKeysBundleValidator

@@ -24,7 +24,7 @@
 package com.passbolt.mobile.android.domain.folders.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.FoldersRepository
 import com.passbolt.mobile.android.domain.folders.model.FolderModel
 

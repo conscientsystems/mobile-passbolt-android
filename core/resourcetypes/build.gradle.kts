@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":resourcetypes-domain"))
     implementation(project(":common"))
     implementation(project(":database"))
@@ -12,7 +13,6 @@ dependencies {
     implementation(project(":dto"))
     implementation(project(":mappers"))
     implementation(project(":supportedresourcetypes"))
-    implementation(project(":accounts"))
     implementation(project(":uimodel"))
 
     implementation(platform(libs.koin.bom))

@@ -24,9 +24,9 @@
 package com.passbolt.mobile.android.featureflags.usecase
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
 import com.passbolt.mobile.android.featureflags.mapper.toFeatureFlagsModel
 import com.passbolt.mobile.android.featureflags.model.FeatureFlags

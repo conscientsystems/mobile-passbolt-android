@@ -9,7 +9,6 @@ dependencies {
     implementation(project(":localization"))
     implementation(project(":featureflags-domain"))
     implementation(project(":uimodel"))
-    implementation(project(":accounts"))
     implementation(project(":architecture"))
     implementation(project(":idlingresource"))
     implementation(project(":entity"))

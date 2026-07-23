@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data
 
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.response.qrcode.AssembledKeyDto
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data.QrGenerationConstants.MAX_QR_DATA_BYTES
