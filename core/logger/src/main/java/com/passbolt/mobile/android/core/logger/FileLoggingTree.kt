@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.core.logger
 
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
 import timber.log.Timber
 import java.io.File

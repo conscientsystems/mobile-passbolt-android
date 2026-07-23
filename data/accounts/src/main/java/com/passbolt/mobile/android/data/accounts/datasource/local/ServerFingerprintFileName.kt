@@ -1,4 +1,4 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.data.accounts.datasource.local
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,8 +22,13 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class ServerFingerprintFileName(
+    userId: String,
+) {
+    val name = SERVER_FINGERPRINT_FILE_NAME_FORMAT.format(userId)
 
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
+    private companion object {
+        private const val SERVER_FINGERPRINT_FILE_NAME = "server_fingerprint"
+        private const val SERVER_FINGERPRINT_FILE_NAME_FORMAT = "${SERVER_FINGERPRINT_FILE_NAME}_%s"
+    }
+}

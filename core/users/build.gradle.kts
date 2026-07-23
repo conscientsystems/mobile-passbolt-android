@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":dto"))
     implementation(project(":common"))
     implementation(project(":uimodel"))

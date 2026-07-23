@@ -1,17 +1,8 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accountdata
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.AVATAR_URL_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.AccountDataFileName
-import com.passbolt.mobile.android.core.accounts.usecase.EMAIL_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.ROLE_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.SERVER_ID_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.URL_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.USER_FIRST_NAME_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.USER_LABEL_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.USER_LAST_NAME_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -35,23 +26,21 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
 class GetAccountDataUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
+    private val accountDataRepository: AccountDataRepository,
 ) : UseCase<UserIdInput, GetAccountDataUseCase.Output> {
     override fun execute(input: UserIdInput): Output {
-        val fileName = AccountDataFileName(input.userId).name
-        val sharedPreferences = encryptedSharedPreferencesFactory.get("$fileName.xml")
+        val accountData = accountDataRepository.getAccountData(input.userId)
 
         return Output(
-            firstName = sharedPreferences.getString(USER_FIRST_NAME_KEY, null),
-            lastName = sharedPreferences.getString(USER_LAST_NAME_KEY, null),
-            label = sharedPreferences.getString(USER_LABEL_KEY, null),
-            email = sharedPreferences.getString(EMAIL_KEY, null),
-            avatarUrl = sharedPreferences.getString(AVATAR_URL_KEY, null),
-            url = sharedPreferences.getString(URL_KEY, "").orEmpty(),
-            serverId = sharedPreferences.getString(SERVER_ID_KEY, ""),
-            role = sharedPreferences.getString(ROLE_KEY, null),
+            firstName = accountData.firstName,
+            lastName = accountData.lastName,
+            email = accountData.email,
+            avatarUrl = accountData.avatarUrl,
+            url = accountData.url,
+            serverId = accountData.serverId,
+            label = accountData.label,
+            role = accountData.role,
         )
     }
 

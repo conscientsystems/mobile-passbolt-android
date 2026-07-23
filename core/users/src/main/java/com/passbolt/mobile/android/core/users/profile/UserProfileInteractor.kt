@@ -23,13 +23,13 @@
 
 package com.passbolt.mobile.android.core.users.profile
 
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
+import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.domain.users.UsersRepository
 import timber.log.Timber
 

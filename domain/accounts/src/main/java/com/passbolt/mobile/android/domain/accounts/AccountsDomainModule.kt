@@ -1,8 +1,13 @@
 package com.passbolt.mobile.android.domain.accounts
 
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.IsServerFingerprintCorrectUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveServerFingerprintUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -33,4 +38,9 @@ val accountsDomainModule =
         singleOf(::GetAccountsUseCase)
         singleOf(::SaveAccountUseCase)
         singleOf(::RemoveAccountUseCase)
+        singleOf(::GetAccountDataUseCase)
+        singleOf(::UpdateAccountDataUseCase)
+        singleOf(::RemoveAccountDataUseCase)
+        singleOf(::SaveServerFingerprintUseCase)
+        singleOf(::IsServerFingerprintCorrectUseCase)
     }

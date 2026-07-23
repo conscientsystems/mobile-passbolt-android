@@ -1,4 +1,4 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.domain.accounts.model
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,8 +22,14 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
+data class AccountDataUpdate(
+    val userId: String,
+    val url: String? = null,
+    val firstName: String? = null,
+    val lastName: String? = null,
+    val email: String? = null,
+    val avatarUrl: String? = null,
+    val serverId: String? = null,
+    val label: String? = null,
+    val role: String? = null,
+)

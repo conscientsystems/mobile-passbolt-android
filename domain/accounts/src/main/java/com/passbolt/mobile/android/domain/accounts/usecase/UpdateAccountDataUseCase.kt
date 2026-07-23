@@ -1,9 +1,8 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accountdata
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SERVER_FINGERPRINT_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.ServerFingerprintFileName
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
+import com.passbolt.mobile.android.domain.accounts.model.AccountDataUpdate
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,24 +26,34 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class IsServerFingerprintCorrectUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<IsServerFingerprintCorrectUseCase.Input, IsServerFingerprintCorrectUseCase.Output> {
-    override fun execute(input: Input): Output {
-        val fileName = ServerFingerprintFileName(input.userId).name
-        val sharedPreferences = encryptedSharedPreferencesFactory.get("$fileName.xml")
-
-        val serverFingerprint = sharedPreferences.getString(SERVER_FINGERPRINT_KEY, null)
-
-        return Output(serverFingerprint.isNullOrEmpty() || serverFingerprint == input.fingerprint)
+class UpdateAccountDataUseCase(
+    private val accountDataRepository: AccountDataRepository,
+) : UseCase<UpdateAccountDataUseCase.Input, Unit> {
+    override fun execute(input: Input) {
+        accountDataRepository.updateAccountData(
+            AccountDataUpdate(
+                userId = input.userId,
+                url = input.url,
+                firstName = input.firstName,
+                lastName = input.lastName,
+                email = input.email,
+                avatarUrl = input.avatarUrl,
+                serverId = input.serverId,
+                label = input.label,
+                role = input.role,
+            ),
+        )
     }
 
     data class Input(
         val userId: String,
-        val fingerprint: String,
-    )
-
-    data class Output(
-        val isCorrect: Boolean,
+        val url: String? = null,
+        val firstName: String? = null,
+        val lastName: String? = null,
+        val email: String? = null,
+        val avatarUrl: String? = null,
+        val serverId: String? = null,
+        val label: String? = null,
+        val role: String? = null,
     )
 }

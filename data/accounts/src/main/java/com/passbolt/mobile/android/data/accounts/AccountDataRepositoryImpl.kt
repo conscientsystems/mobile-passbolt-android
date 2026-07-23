@@ -1,4 +1,9 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.data.accounts
+
+import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
+import com.passbolt.mobile.android.domain.accounts.datasource.AccountDataLocalDataSource
+import com.passbolt.mobile.android.domain.accounts.model.AccountData
+import com.passbolt.mobile.android.domain.accounts.model.AccountDataUpdate
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,8 +27,22 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class AccountDataRepositoryImpl(
+    private val localDataSource: AccountDataLocalDataSource,
+) : AccountDataRepository {
+    override fun getAccountData(userId: String): AccountData = localDataSource.getAccountData(userId)
 
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
+    override fun updateAccountData(update: AccountDataUpdate) = localDataSource.updateAccountData(update)
+
+    override fun removeAccountData(userId: String) = localDataSource.removeAccountData(userId)
+
+    override fun saveServerFingerprint(
+        userId: String,
+        fingerprint: String,
+    ) = localDataSource.saveServerFingerprint(userId, fingerprint)
+
+    override fun isServerFingerprintCorrect(
+        userId: String,
+        fingerprint: String,
+    ): Boolean = localDataSource.isServerFingerprintCorrect(userId, fingerprint)
+}

@@ -1,13 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accountdata
+package com.passbolt.mobile.android.domain.accounts
 
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.AccountDataFileName
-import com.passbolt.mobile.android.core.accounts.usecase.EMAIL_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.URL_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.USER_FIRST_NAME_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.USER_LAST_NAME_KEY
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.domain.accounts.model.AccountData
+import com.passbolt.mobile.android.domain.accounts.model.AccountDataUpdate
 
 /**
  * Passbolt - Open source password manager for teams
@@ -31,19 +25,20 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface AccountDataRepository {
+    fun getAccountData(userId: String): AccountData
 
-class RemoveAccountDataUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<UserIdInput, Unit> {
-    override fun execute(input: UserIdInput) {
-        val fileName = AccountDataFileName(input.userId).name
-        val sharedPreferences = encryptedSharedPreferencesFactory.get("$fileName.xml")
-        with(sharedPreferences.edit()) {
-            remove(USER_FIRST_NAME_KEY)
-            remove(USER_LAST_NAME_KEY)
-            remove(EMAIL_KEY)
-            remove(URL_KEY)
-            apply()
-        }
-    }
+    fun updateAccountData(update: AccountDataUpdate)
+
+    fun removeAccountData(userId: String)
+
+    fun saveServerFingerprint(
+        userId: String,
+        fingerprint: String,
+    )
+
+    fun isServerFingerprintCorrect(
+        userId: String,
+        fingerprint: String,
+    ): Boolean
 }
