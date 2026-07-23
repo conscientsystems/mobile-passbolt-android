@@ -1,11 +1,11 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.IsServerFingerprintCorrectUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.IsServerFingerprintCorrectUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicPgpKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.FetchServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SaveServerPublicRsaKeyUseCase

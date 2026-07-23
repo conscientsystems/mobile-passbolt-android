@@ -1,9 +1,8 @@
-package com.passbolt.mobile.android.core.accounts.usecase.accountdata
+package com.passbolt.mobile.android.domain.accounts.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.core.accounts.usecase.SERVER_FINGERPRINT_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.ServerFingerprintFileName
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.common.usecase.UserIdInput
+import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,21 +26,10 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class SaveServerFingerprintUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<SaveServerFingerprintUseCase.Input, Unit> {
-    override fun execute(input: Input) {
-        val fileName = ServerFingerprintFileName(input.userId).name
-        val sharedPreferences = encryptedSharedPreferencesFactory.get("$fileName.xml")
-
-        with(sharedPreferences.edit()) {
-            putString(SERVER_FINGERPRINT_KEY, input.fingerprint)
-            apply()
-        }
+class RemoveAccountDataUseCase(
+    private val accountDataRepository: AccountDataRepository,
+) : UseCase<UserIdInput, Unit> {
+    override fun execute(input: UserIdInput) {
+        accountDataRepository.removeAccountData(input.userId)
     }
-
-    data class Input(
-        val userId: String,
-        val fingerprint: String,
-    )
 }

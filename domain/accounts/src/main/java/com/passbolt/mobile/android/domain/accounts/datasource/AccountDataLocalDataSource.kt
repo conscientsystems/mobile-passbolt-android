@@ -1,4 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.domain.accounts.datasource
+
+import com.passbolt.mobile.android.domain.accounts.model.AccountData
+import com.passbolt.mobile.android.domain.accounts.model.AccountDataUpdate
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,8 +25,20 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+interface AccountDataLocalDataSource {
+    fun getAccountData(userId: String): AccountData
 
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
+    fun updateAccountData(update: AccountDataUpdate)
+
+    fun removeAccountData(userId: String)
+
+    fun saveServerFingerprint(
+        userId: String,
+        fingerprint: String,
+    )
+
+    fun isServerFingerprintCorrect(
+        userId: String,
+        fingerprint: String,
+    ): Boolean
+}

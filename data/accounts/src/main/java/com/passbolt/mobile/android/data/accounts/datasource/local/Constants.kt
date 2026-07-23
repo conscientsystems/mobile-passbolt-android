@@ -25,4 +25,13 @@ package com.passbolt.mobile.android.data.accounts.datasource.local
 internal object Constants {
     const val ACCOUNTS_PREFERENCES_NAME = "user-accounts"
     const val ACCOUNTS_ALIAS = "accounts_list"
+    const val USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY"
+    const val USER_LAST_NAME_KEY = "USER_LAST_NAME_KEY"
+    const val USER_LABEL_KEY = "USER_LABEL_KEY"
+    const val URL_KEY = "URL_KEY"
+    const val SERVER_ID_KEY = "SERVER_ID_KEY"
+    const val AVATAR_URL_KEY = "AVATAR_URL_KEY"
+    const val ROLE_KEY = "ROLE_KEY"
+    const val EMAIL_KEY = "EMAIL_KEY"
+    const val SERVER_FINGERPRINT_KEY = "SERVER_FINGERPRINT_KEY"
 }

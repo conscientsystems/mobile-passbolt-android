@@ -1,4 +1,7 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.domain.accounts.usecase
+
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,8 +25,17 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+class IsServerFingerprintCorrectUseCase(
+    private val accountDataRepository: AccountDataRepository,
+) : UseCase<IsServerFingerprintCorrectUseCase.Input, IsServerFingerprintCorrectUseCase.Output> {
+    override fun execute(input: Input): Output = Output(accountDataRepository.isServerFingerprintCorrect(input.userId, input.fingerprint))
 
-internal const val SELECTED_ACCOUNT_ALIAS = "selected_account"
-internal const val CURRENT_URL_ALIAS = "current_url"
-internal const val SELECTED_ACCOUNT_KEY = "SELECTED_ACCOUNT_KEY"
-internal const val CURRENT_URL_KEY = "CURRENT_URL_KEY"
+    data class Input(
+        val userId: String,
+        val fingerprint: String,
+    )
+
+    data class Output(
+        val isCorrect: Boolean,
+    )
+}

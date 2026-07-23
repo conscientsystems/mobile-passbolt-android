@@ -1,4 +1,4 @@
-package com.passbolt.mobile.android.core.accounts.usecase
+package com.passbolt.mobile.android.data.accounts.datasource.local
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,14 +22,13 @@ package com.passbolt.mobile.android.core.accounts.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-class ServerFingerprintFileName(
+internal class AccountDataFileName(
     userId: String,
 ) {
-    val name = SERVER_FINGERPRINT_FILE_NAME_FORMAT.format(userId)
+    val name = ACCOUNT_DATA_FILE_NAME_FORMAT.format(userId)
 
     private companion object {
-        private const val SERVER_FINGERPRINT_FILE_NAME = "server_fingerprint"
-        private const val SERVER_FINGERPRINT_FILE_NAME_FORMAT = "${SERVER_FINGERPRINT_FILE_NAME}_%s"
+        private const val ACCOUNTS_DATA_ALIAS = "accounts"
+        private const val ACCOUNT_DATA_FILE_NAME_FORMAT = "${ACCOUNTS_DATA_ALIAS}_%s"
     }
 }

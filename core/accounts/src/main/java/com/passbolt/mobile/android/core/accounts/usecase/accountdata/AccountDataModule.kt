@@ -27,31 +27,8 @@ import org.koin.core.module.Module
 
 internal fun Module.accountDataModule() {
     single {
-        GetAccountDataUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    single {
         GetSelectedAccountDataUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    factory {
-        RemoveAccountDataUseCase(encryptedSharedPreferencesFactory = get())
-    }
-    single {
-        UpdateAccountDataUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    single {
-        IsServerFingerprintCorrectUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    single {
-        SaveServerFingerprintUseCase(
-            encryptedSharedPreferencesFactory = get(),
+            accountDataRepository = get(),
         )
     }
 }

@@ -29,11 +29,11 @@ import com.passbolt.mobile.android.common.validation.StringMaxLength
 import com.passbolt.mobile.android.common.validation.StringNotBlank
 import com.passbolt.mobile.android.common.validation.validation
 import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.GoBack
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.SaveChanges
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.StartTransferAccount

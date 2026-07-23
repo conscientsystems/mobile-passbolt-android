@@ -2,9 +2,9 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
 import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
 import com.passbolt.mobile.android.domain.auth.AuthRepository
 import com.passbolt.mobile.android.domain.auth.SessionRepository
 import timber.log.Timber
