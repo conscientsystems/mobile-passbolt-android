@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":groups-domain"))
     implementation(project(":users"))
     implementation(project(":architecture"))
@@ -14,7 +15,6 @@ dependencies {
     implementation(project(":folders-domain"))
     implementation(project(":idlingresource"))
     implementation(project(":authentication"))
-    implementation(project(":resourcetypes"))
     implementation(project(":metadata-domain"))
     implementation(project(":common"))
     implementation(project(":entity"))

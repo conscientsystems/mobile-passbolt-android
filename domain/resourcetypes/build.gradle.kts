@@ -3,8 +3,13 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
+    implementation(project(":common"))
     implementation(project(":uimodel"))
+
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin)
 }
 
 android {

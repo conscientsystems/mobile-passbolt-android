@@ -1,7 +1,11 @@
-package com.passbolt.mobile.android.core.resourcetypes.usecase.db
+package com.passbolt.mobile.android.domain.resourcetypes
 
-import org.koin.core.module.Module
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.GetLocalResourceTypesUseCase
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.GetResourceTypeIdToSlugMappingUseCase
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypeIdToSlugMappingProvider
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypesInteractor
 import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
 
 /**
  * Passbolt - Open source password manager for teams
@@ -25,9 +29,10 @@ import org.koin.core.module.dsl.singleOf
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-internal fun Module.resourceTypesDbModule() {
-    singleOf(::GetResourceTypeIdToSlugMappingUseCase)
-    singleOf(::ResourceTypeIdToSlugMappingProvider)
-    singleOf(::GetLocalResourceTypesUseCase)
-}
+val resourceTypesDomainModule =
+    module {
+        singleOf(::GetLocalResourceTypesUseCase)
+        singleOf(::GetResourceTypeIdToSlugMappingUseCase)
+        singleOf(::ResourceTypeIdToSlugMappingProvider)
+        singleOf(::ResourceTypesInteractor)
+    }

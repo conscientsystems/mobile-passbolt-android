@@ -28,7 +28,6 @@ dependencies {
     implementation(project(":resourcemoremenu"))
     implementation(project(":resourcedetails"))
     implementation(project(":fulldatarefresh"))
-    implementation(project(":resourcetypes"))
     implementation(project(":idlingresource"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":folders-domain"))

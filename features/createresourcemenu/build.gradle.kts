@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":common"))
     implementation(project(":coreui"))
     implementation(project(":localization"))
@@ -12,7 +13,6 @@ dependencies {
     implementation(project(":architecture"))
     implementation(project(":idlingresource"))
     implementation(project(":entity"))
-    implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":metadata-domain"))
     implementation(project(":navigation"))

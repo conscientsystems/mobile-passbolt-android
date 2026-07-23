@@ -21,11 +21,10 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.core.resourcetypes
+package com.passbolt.mobile.android.domain.resourcetypes.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.resourcetypes.RefreshResourceTypesRepository
 import com.passbolt.mobile.android.domain.resourcetypes.model.ResourceType

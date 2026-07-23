@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":accounts-domain"))
     implementation(project(":common"))
     implementation(project(":architecture"))

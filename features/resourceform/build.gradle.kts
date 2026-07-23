@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":metadatakeytrust"))
     implementation(project(":idlingresource"))
     implementation(project(":testtags"))
+    implementation(project("::resourcetypes-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

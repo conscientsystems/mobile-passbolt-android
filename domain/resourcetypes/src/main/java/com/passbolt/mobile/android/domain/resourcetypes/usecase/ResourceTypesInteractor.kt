@@ -1,4 +1,4 @@
-package com.passbolt.mobile.android.core.resourcetypes
+package com.passbolt.mobile.android.domain.resourcetypes.usecase
 
 import android.database.SQLException
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
@@ -6,7 +6,6 @@ import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incompl
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.resourcetypes.RefreshResourceTypesRepository
 import timber.log.Timber

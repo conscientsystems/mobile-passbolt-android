@@ -27,7 +27,6 @@ import com.passbolt.mobile.android.core.idlingresource.ResourcesFullRefreshIdlin
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.plus
-import com.passbolt.mobile.android.core.resourcetypes.ResourceTypesInteractor
 import com.passbolt.mobile.android.core.users.UsersInteractor
 import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
 import com.passbolt.mobile.android.domain.folders.usecase.FoldersInteractor
@@ -38,6 +37,7 @@ import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKey
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataSessionKeysInteractor
 import com.passbolt.mobile.android.domain.metadata.interactor.MetadataTypesSettingsInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.ResourceInteractor
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypesInteractor
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope

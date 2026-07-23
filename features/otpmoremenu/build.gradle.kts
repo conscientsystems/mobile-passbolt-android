@@ -13,7 +13,6 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":localization"))
     implementation(project(":idlingresource"))
-    implementation(project(":resourcetypes"))
     implementation(project(":jsonmodel"))
 
     implementation(libs.androidx.core)

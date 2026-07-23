@@ -3,11 +3,11 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":accounts-domain"))
     implementation(project(":dto"))
     implementation(project(":common"))
     implementation(project(":database"))
-    implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":gopenpgp"))
     implementation(project(":metadata-domain"))

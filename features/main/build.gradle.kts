@@ -17,7 +17,6 @@ dependencies {
     implementation(project(":inappreview-domain"))
     implementation(project(":otp"))
     implementation(project(":database"))
-    implementation(project(":resourcetypes"))
     implementation(project(":entity"))
     implementation(project(":scanotp"))
     implementation(project(":resourcepicker"))

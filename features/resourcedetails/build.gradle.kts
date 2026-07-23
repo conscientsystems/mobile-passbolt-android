@@ -26,7 +26,6 @@ dependencies {
     implementation(project(":resourcemoremenu"))
     implementation(project(":resources-domain"))
     implementation(project(":passwordgenerator"))
-    implementation(project(":resourcetypes"))
     implementation(project(":tagsdetails"))
     implementation(project(":fulldatarefresh"))
     implementation(project(":idlingresource"))

@@ -27,13 +27,13 @@ import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
 import com.passbolt.mobile.android.core.networking.toDomainResult
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.data.resources.datasource.remote.api.ResourceApi
 import com.passbolt.mobile.android.domain.resources.ResourcesRemoteDataSource
 import com.passbolt.mobile.android.domain.resources.mapper.toDomain
 import com.passbolt.mobile.android.domain.resources.model.Resource
 import com.passbolt.mobile.android.domain.resources.model.ResourceWithAttributes
 import com.passbolt.mobile.android.domain.resources.model.ResourcesPage
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.dto.request.CreateResourceDto
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper

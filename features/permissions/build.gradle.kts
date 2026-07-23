@@ -21,7 +21,6 @@ dependencies {
     implementation(project(":folders-domain"))
     implementation(project(":localization"))
     implementation(project(":jsonmodel"))
-    implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":metadata-domain"))
     implementation(project(":serializers"))

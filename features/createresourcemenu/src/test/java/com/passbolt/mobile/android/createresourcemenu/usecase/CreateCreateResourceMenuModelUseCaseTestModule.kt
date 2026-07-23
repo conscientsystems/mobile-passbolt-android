@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.createresourcemenu.usecase
 
-import com.passbolt.mobile.android.core.resourcetypes.usecase.db.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.domain.metadata.usecase.GetMetadataTypesSettingsUseCase
+import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import org.koin.dsl.module
 import org.mockito.kotlin.mock
