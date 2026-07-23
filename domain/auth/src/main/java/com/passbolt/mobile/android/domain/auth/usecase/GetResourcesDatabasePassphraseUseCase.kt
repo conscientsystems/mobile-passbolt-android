@@ -1,11 +1,8 @@
-package com.passbolt.mobile.android.database
+package com.passbolt.mobile.android.domain.auth.usecase
 
-import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
-import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
-import org.koin.android.ext.koin.androidApplication
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.auth.DatabasePassphraseRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,16 +26,18 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val databaseModule =
-    module {
-        singleOf(::ResourcesSnapshot)
-        singleOf(::DatabaseTransactionRunnerImpl) bind DatabaseTransactionRunner::class
-        singleOf(::FtsQuerySanitizer) bind QuerySanitizer::class
-        single {
-            DatabaseProvider(
-                context = androidApplication(),
-                getResourcesDatabasePassphraseUseCase = get(),
-                messageDigestHash = get(),
-            )
-        }
+class GetResourcesDatabasePassphraseUseCase(
+    private val databasePassphraseRepository: DatabasePassphraseRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : UseCase<Unit, GetResourcesDatabasePassphraseUseCase.Output> {
+    override fun execute(input: Unit): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val passphrase = requireNotNull(databasePassphraseRepository.getDatabasePassphrase(userId))
+
+        return Output(passphrase)
     }
+
+    data class Output(
+        val passphrase: String,
+    )
+}

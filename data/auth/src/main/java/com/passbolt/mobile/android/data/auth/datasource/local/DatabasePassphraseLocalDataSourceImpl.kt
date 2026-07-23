@@ -1,4 +1,8 @@
-package com.passbolt.mobile.android.database.usecase
+package com.passbolt.mobile.android.data.auth.datasource.local
+
+import androidx.core.content.edit
+import com.passbolt.mobile.android.domain.auth.datasource.DatabasePassphraseLocalDataSource
+import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
 
 /**
  * Passbolt - Open source password manager for teams
@@ -22,6 +26,23 @@ package com.passbolt.mobile.android.database.usecase
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class DatabasePassphraseLocalDataSourceImpl(
+    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
+) : DatabasePassphraseLocalDataSource {
+    override fun getDatabasePassphrase(userId: String): String? {
+        val sharedPreferences = encryptedSharedPreferencesFactory.get(fileName(userId))
+        return sharedPreferences.getString(Constants.DATABASE_PASSPHRASE_KEY, null)
+    }
 
-internal const val RESOURCE_DATABASE_ALIAS = "current_url" // TODO bug in the file name - migrate to separate prefs file
-internal const val PASSPHRASE_KEY = "passphrase_key"
+    override fun saveDatabasePassphrase(
+        userId: String,
+        passphrase: String,
+    ) {
+        val sharedPreferences = encryptedSharedPreferencesFactory.get(fileName(userId))
+        sharedPreferences.edit {
+            putString(Constants.DATABASE_PASSPHRASE_KEY, passphrase)
+        }
+    }
+
+    private fun fileName(userId: String) = "${Constants.RESOURCE_DATABASE_ALIAS}_$userId.xml"
+}

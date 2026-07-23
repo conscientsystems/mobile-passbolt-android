@@ -18,7 +18,6 @@ dependencies {
     implementation(project(":autofill"))
     implementation(project(":autofillresources"))
     implementation(project(":authentication"))
-    implementation(project(":database"))
     implementation(project(":security"))
     implementation(project(":logger"))
     implementation(project(":localization"))
