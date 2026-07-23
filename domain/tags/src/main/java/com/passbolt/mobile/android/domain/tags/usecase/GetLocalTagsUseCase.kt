@@ -1,3 +1,10 @@
+package com.passbolt.mobile.android.domain.tags.usecase
+
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.tags.TagsRepository
+import com.passbolt.mobile.android.ui.TagWithCount
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,13 +27,16 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.core.tags
-
-import com.passbolt.mobile.android.core.tags.usecase.db.tagsDbModule
-import org.koin.dsl.module
-
-val tagsModule =
-    module {
-        tagsDbModule()
+class GetLocalTagsUseCase(
+    private val tagsRepository: TagsRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : AsyncUseCase<GetLocalTagsUseCase.Input, List<TagWithCount>> {
+    override suspend fun execute(input: Input): List<TagWithCount> {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return tagsRepository.getTagsWithCount(input.searchQuery, userId)
     }
+
+    data class Input(
+        val searchQuery: String? = null,
+    )
+}

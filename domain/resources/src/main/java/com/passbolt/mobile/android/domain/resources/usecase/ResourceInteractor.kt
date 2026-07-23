@@ -6,8 +6,6 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
-import com.passbolt.mobile.android.core.tags.usecase.db.AddLocalTagsUseCase
-import com.passbolt.mobile.android.core.tags.usecase.db.RemoveLocalTagsUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.resources.usecase.GetResourcesPaginatedUseCase.Output.Failure
@@ -18,6 +16,8 @@ import com.passbolt.mobile.android.domain.resources.usecase.db.RemoveLocalResour
 import com.passbolt.mobile.android.domain.resources.usecase.db.RemoveLocalUrisUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.SetLocalResourcesUpdateStateUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.UpsertLocalResourcesUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.AddLocalTagsUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.RemoveLocalTagsUseCase
 import com.passbolt.mobile.android.entity.resource.ResourceUpdateState.PENDING
 import com.passbolt.mobile.android.ui.ResourceUiModelWithAttributes
 import timber.log.Timber

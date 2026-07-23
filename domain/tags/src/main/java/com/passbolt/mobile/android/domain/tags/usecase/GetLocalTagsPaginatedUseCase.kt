@@ -1,18 +1,12 @@
-package com.passbolt.mobile.android.core.tags.usecase.db
+package com.passbolt.mobile.android.domain.tags.usecase
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.map
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.tags.usecase.db.GetLocalTagsPaginatedUseCase.Output
-import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.database.QuerySanitizer
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.mappers.TagsModelMapper
+import com.passbolt.mobile.android.domain.tags.TagsRepository
+import com.passbolt.mobile.android.domain.tags.usecase.GetLocalTagsPaginatedUseCase.Output
 import com.passbolt.mobile.android.ui.TagWithCount
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 /**
  * Passbolt - Open source password manager for teams
@@ -37,27 +31,15 @@ import kotlinx.coroutines.flow.map
  * @since v1.0
  */
 class GetLocalTagsPaginatedUseCase(
-    private val databaseProvider: DatabaseProvider,
-    private val tagModelMapper: TagsModelMapper,
+    private val tagsRepository: TagsRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-    private val querySanitizer: QuerySanitizer,
 ) : AsyncUseCase<GetLocalTagsPaginatedUseCase.Input, Output> {
-    override suspend fun execute(input: Input): Output =
-        Output(
-            Pager(
-                config = PagingConfig(pageSize = input.pageSize, enablePlaceholders = false),
-                pagingSourceFactory = {
-                    databaseProvider
-                        .get(requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount))
-                        .paginatedTagsDao()
-                        .getAllWithTaggedItemsCount(querySanitizer.sanitize(input.searchQuery))
-                },
-            ).flow.map { pagingData ->
-                pagingData.map {
-                    tagModelMapper.map(it)
-                }
-            },
+    override suspend fun execute(input: Input): Output {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return Output(
+            tagsRepository.getTagsWithCountPaginated(input.searchQuery, input.pageSize, userId),
         )
+    }
 
     data class Input(
         val searchQuery: String? = null,

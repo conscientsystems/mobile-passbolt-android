@@ -46,7 +46,6 @@ import com.passbolt.mobile.android.core.passwordgenerator.passwordGeneratorModul
 import com.passbolt.mobile.android.core.qrscan.barcodeScanModule
 import com.passbolt.mobile.android.core.resourcetypes.resourceTypesModule
 import com.passbolt.mobile.android.core.security.securityModule
-import com.passbolt.mobile.android.core.tags.tagsModule
 import com.passbolt.mobile.android.core.users.usersModule
 import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
@@ -70,6 +69,7 @@ import com.passbolt.mobile.android.data.resources.resourcesDataModule
 import com.passbolt.mobile.android.data.resourcetypes.resourceTypesDataModule
 import com.passbolt.mobile.android.data.secrets.secretsDataModule
 import com.passbolt.mobile.android.data.share.shareDataModule
+import com.passbolt.mobile.android.data.tags.tagsDataModule
 import com.passbolt.mobile.android.data.users.usersDataModule
 import com.passbolt.mobile.android.database.databaseModule
 import com.passbolt.mobile.android.domain.accounts.accountsDomainModule
@@ -87,6 +87,7 @@ import com.passbolt.mobile.android.domain.rbac.rbacDomainModule
 import com.passbolt.mobile.android.domain.resources.resourcesDomainModule
 import com.passbolt.mobile.android.domain.resourcetypes.resourceTypesDomainModule
 import com.passbolt.mobile.android.domain.secrets.secretsDomainModule
+import com.passbolt.mobile.android.domain.tags.tagsDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
 import com.passbolt.mobile.android.feature.accountdetails.accountDetailsModule
 import com.passbolt.mobile.android.feature.authenticationModule
@@ -200,7 +201,8 @@ class KoinInitializer : Initializer<Unit> {
                 otpCoreModule,
                 serializersModule,
                 resourcePickerModule,
-                tagsModule,
+                tagsDomainModule,
+                tagsDataModule,
                 scanOtpMainModule,
                 otpMoreMenuModule,
                 rbacDomainModule,

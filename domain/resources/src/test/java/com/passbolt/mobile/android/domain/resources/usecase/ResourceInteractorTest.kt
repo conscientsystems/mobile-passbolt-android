@@ -11,8 +11,6 @@ import com.passbolt.mobile.android.commontest.transaction.PassThroughTransaction
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.tags.usecase.db.AddLocalTagsUseCase
-import com.passbolt.mobile.android.core.tags.usecase.db.RemoveLocalTagsUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourcePermissionsUseCase
@@ -21,6 +19,8 @@ import com.passbolt.mobile.android.domain.resources.usecase.db.RemoveLocalResour
 import com.passbolt.mobile.android.domain.resources.usecase.db.RemoveLocalUrisUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.SetLocalResourcesUpdateStateUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.UpsertLocalResourcesUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.AddLocalTagsUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.RemoveLocalTagsUseCase
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps

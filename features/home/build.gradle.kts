@@ -32,7 +32,7 @@ dependencies {
     implementation(project(":supportedresourcetypes"))
     implementation(project(":folders-domain"))
     implementation(project(":groups-domain"))
-    implementation(project(":tags"))
+    implementation(project(":tags-domain"))
     implementation(project(":scanotp"))
     implementation(project(":otpmoremenu"))
     implementation(project(":otpcore"))

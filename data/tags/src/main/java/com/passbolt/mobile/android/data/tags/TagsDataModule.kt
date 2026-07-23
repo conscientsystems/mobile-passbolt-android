@@ -1,8 +1,11 @@
-package com.passbolt.mobile.android.core.tags.usecase.db
+package com.passbolt.mobile.android.data.tags
 
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.database.DatabaseProvider
+import com.passbolt.mobile.android.data.tags.datasource.local.TagsLocalDataSourceImpl
+import com.passbolt.mobile.android.domain.tags.TagsRepository
+import com.passbolt.mobile.android.domain.tags.datasource.TagsLocalDataSource
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
 
 /**
  * Passbolt - Open source password manager for teams
@@ -26,21 +29,8 @@ import com.passbolt.mobile.android.database.DatabaseProvider
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class RemoveLocalTagsUseCase(
-    private val databaseProvider: DatabaseProvider,
-) : AsyncUseCase<UserIdInput, Unit> {
-    override suspend fun execute(input: UserIdInput) {
-        val tagsDao =
-            databaseProvider
-                .get(input.userId)
-                .tagsDao()
-
-        val resourcesAndTagsCrossRefDao =
-            databaseProvider
-                .get(input.userId)
-                .resourcesAndTagsCrossRefDao()
-
-        tagsDao.deleteAll()
-        resourcesAndTagsCrossRefDao.deleteAll()
+val tagsDataModule =
+    module {
+        singleOf(::TagsLocalDataSourceImpl) bind TagsLocalDataSource::class
+        singleOf(::TagsRepositoryImpl) bind TagsRepository::class
     }
-}

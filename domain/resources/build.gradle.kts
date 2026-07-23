@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":authentication"))
     implementation(project(":users"))
     implementation(project(":entity"))
-    implementation(project(":tags"))
+    implementation(project(":tags-domain"))
     implementation(project(":serializers"))
     implementation(project(":passwordexpiry-domain"))
     implementation(project(":supportedresourcetypes"))
