@@ -1,11 +1,11 @@
-package com.passbolt.mobile.android.core.tags.usecase.db
+package com.passbolt.mobile.android.domain.tags
 
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.database.QuerySanitizer
-import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.mappers.TagsModelMapper
-import com.passbolt.mobile.android.ui.TagWithCount
+import com.passbolt.mobile.android.domain.tags.usecase.AddLocalTagsUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.GetLocalTagsPaginatedUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.GetLocalTagsUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.RemoveLocalTagsUseCase
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,20 +29,10 @@ import com.passbolt.mobile.android.ui.TagWithCount
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class GetLocalTagsUseCase(
-    private val databaseProvider: DatabaseProvider,
-    private val tagModelMapper: TagsModelMapper,
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-    private val querySanitizer: QuerySanitizer,
-) : AsyncUseCase<GetLocalTagsUseCase.Input, List<TagWithCount>> {
-    override suspend fun execute(input: Input) =
-        databaseProvider
-            .get(requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount))
-            .tagsDao()
-            .getAllWithTaggedItemsCount(querySanitizer.sanitize(input.searchQuery))
-            .map { tagModelMapper.map(it) }
-
-    data class Input(
-        val searchQuery: String? = null,
-    )
-}
+val tagsDomainModule =
+    module {
+        singleOf(::RemoveLocalTagsUseCase)
+        singleOf(::AddLocalTagsUseCase)
+        singleOf(::GetLocalTagsUseCase)
+        singleOf(::GetLocalTagsPaginatedUseCase)
+    }

@@ -25,7 +25,6 @@ package com.passbolt.mobile.android.feature.home.screen.data
 import androidx.paging.PagingData
 import androidx.paging.filter
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
-import com.passbolt.mobile.android.core.tags.usecase.db.GetLocalTagsPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalDirectChildFoldersPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderUseCase
@@ -36,6 +35,7 @@ import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResources
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesWithTagPaginatedUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalSubFolderResourcesFilteredPaginatedUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetResourcesInFolderPaginatedUseCase
+import com.passbolt.mobile.android.domain.tags.usecase.GetLocalTagsPaginatedUseCase
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.Folder

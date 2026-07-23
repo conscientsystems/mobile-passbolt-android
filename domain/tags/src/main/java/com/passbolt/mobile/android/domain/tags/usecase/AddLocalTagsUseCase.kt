@@ -1,9 +1,7 @@
-package com.passbolt.mobile.android.core.tags.usecase.db
+package com.passbolt.mobile.android.domain.tags.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.entity.resource.ResourceAndTagsCrossRef
-import com.passbolt.mobile.android.mappers.TagsModelMapper
+import com.passbolt.mobile.android.domain.tags.TagsRepository
 import com.passbolt.mobile.android.ui.ResourceUiModelWithAttributes
 
 /**
@@ -29,32 +27,10 @@ import com.passbolt.mobile.android.ui.ResourceUiModelWithAttributes
  * @since v1.0
  */
 class AddLocalTagsUseCase(
-    private val databaseProvider: DatabaseProvider,
-    private val tagModelMapper: TagsModelMapper,
+    private val tagsRepository: TagsRepository,
 ) : AsyncUseCase<AddLocalTagsUseCase.Input, Unit> {
     override suspend fun execute(input: Input) {
-        val tagsDao =
-            databaseProvider
-                .get(input.userId)
-                .tagsDao()
-
-        val tagsAndResourcesCrossRefDao =
-            databaseProvider
-                .get(input.userId)
-                .resourcesAndTagsCrossRefDao()
-
-        input.resourcesWithTagsModelAndGroups.apply {
-            val tags = flatMap { it.resourceTags }
-            val resourceAndTagCrossRefs =
-                map { it.resourceModel.resourceId to it.resourceTags.map { tag -> tag.id } }
-                    .flatMap { (resourceId, resourceTagsIds) ->
-                        resourceTagsIds.map { tagId ->
-                            ResourceAndTagsCrossRef(tagId, resourceId)
-                        }
-                    }
-            tagsDao.insertAll(tagModelMapper.map(tags))
-            tagsAndResourcesCrossRefDao.insertAll(resourceAndTagCrossRefs)
-        }
+        tagsRepository.addTags(input.resourcesWithTagsModelAndGroups, input.userId)
     }
 
     data class Input(

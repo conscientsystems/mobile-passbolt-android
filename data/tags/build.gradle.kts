@@ -3,21 +3,21 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":accounts-domain"))
-    implementation(project(":database"))
+    implementation(project(":tags-domain"))
     implementation(project(":common"))
-    implementation(project(":mappers"))
+    implementation(project(":database"))
     implementation(project(":entity"))
+    implementation(project(":mappers"))
     implementation(project(":uimodel"))
-    implementation(project(":jsonmodel"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.room.core)
     implementation(libs.room.paging)
     implementation(libs.sqlite.cipher) { artifact { type = "aar" } }
+    implementation(libs.paging.runtime)
 }
 
 android {
-    namespace = "com.passbolt.mobile.android.core.tags"
+    namespace = "com.passbolt.mobile.android.data.tags"
 }
