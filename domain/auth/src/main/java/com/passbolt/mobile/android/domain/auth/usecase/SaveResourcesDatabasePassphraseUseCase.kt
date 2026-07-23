@@ -1,8 +1,8 @@
-package com.passbolt.mobile.android.database.usecase
+package com.passbolt.mobile.android.domain.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.domain.accounts.usecase.SelectedAccountUseCase
-import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.auth.DatabasePassphraseRepository
 
 /**
  * Passbolt - Open source password manager for teams
@@ -26,20 +26,16 @@ import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFa
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-class GetResourcesDatabasePassphraseUseCase(
-    private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : UseCase<Unit, GetResourcesDatabasePassphraseUseCase.Output>,
-    SelectedAccountUseCase {
-    override fun execute(input: Unit): Output {
-        val sharedPreferences =
-            encryptedSharedPreferencesFactory.get("${RESOURCE_DATABASE_ALIAS}_$selectedAccountId.xml")
-        val passphrase = requireNotNull(sharedPreferences.getString(PASSPHRASE_KEY, null))
-
-        return Output(passphrase)
+class SaveResourcesDatabasePassphraseUseCase(
+    private val databasePassphraseRepository: DatabasePassphraseRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : UseCase<SaveResourcesDatabasePassphraseUseCase.Input, Unit> {
+    override fun execute(input: Input) {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        databasePassphraseRepository.saveDatabasePassphrase(userId, input.passphrase)
     }
 
-    data class Output(
+    data class Input(
         val passphrase: String,
     )
 }

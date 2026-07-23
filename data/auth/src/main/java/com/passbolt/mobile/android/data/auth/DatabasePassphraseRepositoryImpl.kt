@@ -1,6 +1,7 @@
-package com.passbolt.mobile.android.database.usecase
+package com.passbolt.mobile.android.data.auth
 
-import org.koin.core.module.Module
+import com.passbolt.mobile.android.domain.auth.DatabasePassphraseRepository
+import com.passbolt.mobile.android.domain.auth.datasource.DatabasePassphraseLocalDataSource
 
 /**
  * Passbolt - Open source password manager for teams
@@ -24,16 +25,13 @@ import org.koin.core.module.Module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+internal class DatabasePassphraseRepositoryImpl(
+    private val localDataSource: DatabasePassphraseLocalDataSource,
+) : DatabasePassphraseRepository {
+    override fun getDatabasePassphrase(userId: String): String? = localDataSource.getDatabasePassphrase(userId)
 
-internal fun Module.databaseModule() {
-    single {
-        GetResourcesDatabasePassphraseUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
-    single {
-        SaveResourcesDatabasePassphraseUseCase(
-            encryptedSharedPreferencesFactory = get(),
-        )
-    }
+    override fun saveDatabasePassphrase(
+        userId: String,
+        passphrase: String,
+    ) = localDataSource.saveDatabasePassphrase(userId, passphrase)
 }

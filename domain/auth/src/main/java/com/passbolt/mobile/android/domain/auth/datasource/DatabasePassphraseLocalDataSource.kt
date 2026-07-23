@@ -1,11 +1,4 @@
-package com.passbolt.mobile.android.database
-
-import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
-import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
-import org.koin.android.ext.koin.androidApplication
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
-import org.koin.dsl.module
+package com.passbolt.mobile.android.domain.auth.datasource
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,16 +22,11 @@ import org.koin.dsl.module
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-val databaseModule =
-    module {
-        singleOf(::ResourcesSnapshot)
-        singleOf(::DatabaseTransactionRunnerImpl) bind DatabaseTransactionRunner::class
-        singleOf(::FtsQuerySanitizer) bind QuerySanitizer::class
-        single {
-            DatabaseProvider(
-                context = androidApplication(),
-                getResourcesDatabasePassphraseUseCase = get(),
-                messageDigestHash = get(),
-            )
-        }
-    }
+interface DatabasePassphraseLocalDataSource {
+    fun getDatabasePassphrase(userId: String): String?
+
+    fun saveDatabasePassphrase(
+        userId: String,
+        passphrase: String,
+    )
+}
