@@ -23,7 +23,6 @@
 
 package com.passbolt.mobile.android.domain.resources.actions
 
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.ItemIdResourceId
@@ -50,6 +49,7 @@ import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourceP
 import com.passbolt.mobile.android.domain.resources.usecase.db.AddLocalResourceUseCase
 import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypeIdToSlugMappingProvider
 import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType

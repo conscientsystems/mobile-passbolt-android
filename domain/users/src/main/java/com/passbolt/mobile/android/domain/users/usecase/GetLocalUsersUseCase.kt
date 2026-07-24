@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.core.users.usecase.db
-
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.ui.UserUiModel
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,23 +20,32 @@ import com.passbolt.mobile.android.ui.UserUiModel
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class GetLocalUserUseCase(
-    private val databaseProvider: DatabaseProvider,
-    private val userModelMapper: UsersModelMapper,
+
+package com.passbolt.mobile.android.domain.users.usecase
+
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.users.UsersRepository
+import com.passbolt.mobile.android.domain.users.mapper.toUserModel
+import com.passbolt.mobile.android.ui.UserUiModel
+
+class GetLocalUsersUseCase(
+    private val usersRepository: UsersRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<GetLocalUserUseCase.Input, GetLocalUserUseCase.Output> {
-    override suspend fun execute(input: Input) =
-        databaseProvider
-            .get(requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount))
-            .usersDao()
-            .get(input.userId)
-            .let { Output(userModelMapper.map(it)) }
+) : AsyncUseCase<GetLocalUsersUseCase.Input, GetLocalUsersUseCase.Output> {
+    override suspend fun execute(input: Input): Output {
+        val selectedAccountId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        return usersRepository
+            .getLocalUsers(selectedAccountId, input.excludedByIds)
+            .map { it.toUserModel() }
+            .let { Output(it) }
+    }
 
     data class Input(
-        val userId: String,
+        val excludedByIds: List<String> = emptyList(),
     )
 
     data class Output(
-        val user: UserUiModel,
+        val users: List<UserUiModel>,
     )
 }

@@ -17,7 +17,6 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":authentication"))
     implementation(project(":mappers"))
-    implementation(project(":users"))
     implementation(project(":localization"))
     implementation(project(":groupdetails"))
     implementation(project(":gopenpgp"))

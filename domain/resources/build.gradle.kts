@@ -17,7 +17,7 @@ dependencies {
     implementation(project(":secrets-domain"))
     implementation(project(":resourcetypes"))
     implementation(project(":authentication"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":entity"))
     implementation(project(":tags-domain"))
     implementation(project(":serializers"))

@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.core.users.usecase.db
-
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.singleOf
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -26,11 +21,18 @@ import org.koin.core.module.dsl.singleOf
  * @since v1.0
  */
 
-internal fun Module.usersDbModule() {
-    singleOf(::UpsertLocalUsersUseCase)
-    singleOf(::SetLocalUsersUpdateStateUseCase)
-    singleOf(::RemoveLocalUsersWithUpdateStateUseCase)
-    singleOf(::GetLocalUsersUseCase)
-    singleOf(::GetLocalUserUseCase)
-    singleOf(::GetLocalCurrentUserUseCase)
+package com.passbolt.mobile.android.domain.users.profile
+
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+class UserProfileRefreshTrackingFlow {
+    val isRefreshing: StateFlow<Boolean>
+        get() = _isRefreshing.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(false)
+
+    fun setRefreshing(refreshing: Boolean) {
+        _isRefreshing.value = refreshing
+    }
 }

@@ -9,13 +9,13 @@ import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticated
 import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.DeleteTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.SaveTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.UpdateMetadataPrivateKeyUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUserUseCase
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpError
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult

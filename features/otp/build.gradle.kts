@@ -23,7 +23,6 @@ dependencies {
     implementation(project(":secrets-domain"))
     implementation(project(":resourcetypes"))
     implementation(project(":otpcore"))
-    implementation(project(":users"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":networking"))
     implementation(project(":gopenpgp"))

@@ -21,41 +21,58 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.data.users
+package com.passbolt.mobile.android.data.users.datasource.local
 
-import com.passbolt.mobile.android.core.architecture.result.DomainResult
-import com.passbolt.mobile.android.domain.users.UsersDataSource
+import com.passbolt.mobile.android.data.users.mapper.toDomain
+import com.passbolt.mobile.android.data.users.mapper.toEntity
+import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.domain.users.UsersLocalDataSource
-import com.passbolt.mobile.android.domain.users.UsersRepository
 import com.passbolt.mobile.android.domain.users.model.UserProfile
+import com.passbolt.mobile.android.entity.user.UserUpdateState.PENDING
 
-internal class UsersRepositoryImpl(
-    private val localDataSource: UsersLocalDataSource,
-    private val remoteDataSource: UsersDataSource,
-) : UsersRepository {
-    override suspend fun getMyProfile(): DomainResult<UserProfile> = remoteDataSource.getMyProfile()
-
-    override suspend fun getUsers(hasAccessTo: List<String>?): DomainResult<List<UserProfile>> = remoteDataSource.getUsers(hasAccessTo)
-
-    override suspend fun getLocalUser(
+internal class UsersLocalDataSourceImpl(
+    private val databaseProvider: DatabaseProvider,
+) : UsersLocalDataSource {
+    override suspend fun getUser(
         selectedAccountId: String,
         userId: String,
-    ): UserProfile = localDataSource.getUser(selectedAccountId, userId)
+    ): UserProfile =
+        databaseProvider
+            .get(selectedAccountId)
+            .usersDao()
+            .get(userId)
+            .toDomain()
 
-    override suspend fun getLocalCurrentUser(
+    override suspend fun getCurrentUser(
         selectedAccountId: String,
         serverId: String,
-    ): UserProfile = localDataSource.getCurrentUser(selectedAccountId, serverId)
+    ): UserProfile =
+        databaseProvider
+            .get(selectedAccountId)
+            .usersDao()
+            .get(serverId)
+            .toDomain()
 
-    override suspend fun getLocalUsers(
+    override suspend fun getUsers(
         selectedAccountId: String,
         excludingIds: List<String>,
-    ): List<UserProfile> = localDataSource.getUsers(selectedAccountId, excludingIds)
+    ): List<UserProfile> =
+        databaseProvider
+            .get(selectedAccountId)
+            .usersDao()
+            .getAllExcluding(excludingIds)
+            .map { it.toDomain() }
 
-    override suspend fun refreshUsers(selectedAccountId: String): DomainResult<List<UserProfile>> =
-        remoteDataSource.getUsers().also {
-            if (it is DomainResult.Finished) {
-                localDataSource.upsertUsers(selectedAccountId, it.value)
-            }
-        }
+    override suspend fun upsertUsers(
+        selectedAccountId: String,
+        users: List<UserProfile>,
+    ) {
+        val usersDao =
+            databaseProvider
+                .get(selectedAccountId)
+                .usersDao()
+        usersDao.setAllUpdateState(PENDING)
+        usersDao.upsertAll(users.map { it.toEntity() })
+        usersDao.removeWithUpdateState(PENDING)
+    }
 }

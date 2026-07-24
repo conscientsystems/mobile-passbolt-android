@@ -186,7 +186,6 @@ com.jakewharton.timber:timber:5.0.1=releaseRuntimeClasspath
 com.jayway.jsonpath:json-path:2.10.0=releaseRuntimeClasspath
 com.journeyapps:zxing-android-embedded:4.3.0=releaseRuntimeClasspath
 com.scottyab:rootbeer-lib:0.1.2=releaseRuntimeClasspath
-com.squareup.okhttp3:logging-interceptor:5.4.0=releaseRuntimeClasspath
 com.squareup.okhttp3:okhttp-android:5.4.0=releaseRuntimeClasspath
 com.squareup.okhttp3:okhttp:5.4.0=releaseRuntimeClasspath
 com.squareup.okio:okio-jvm:3.17.0=releaseRuntimeClasspath

@@ -28,8 +28,8 @@ import com.passbolt.mobile.android.common.search.SearchableMatcher
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUsersUseCase
 import com.passbolt.mobile.android.domain.groups.usecase.GetLocalGroupsUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUsersUseCase
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper.Companion.TEMPORARY_NEW_PERMISSION_ID
 import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRecipientsIntent.GoBack

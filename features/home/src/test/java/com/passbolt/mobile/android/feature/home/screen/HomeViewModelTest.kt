@@ -45,14 +45,14 @@ import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchCont
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
-import com.passbolt.mobile.android.core.users.profile.UserProfileInteractor
-import com.passbolt.mobile.android.core.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.domain.accounts.AccountSwitchFlow
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.domain.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseSwitchAccount
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateFolder

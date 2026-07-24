@@ -26,7 +26,6 @@ package com.passbolt.mobile.android.domain.metadata.interactor
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.metadata.test.R
@@ -34,6 +33,7 @@ import com.passbolt.mobile.android.domain.metadata.usecase.GetTrustedMetadataKey
 import com.passbolt.mobile.android.domain.metadata.usecase.SaveTrustedMetadataKeyUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.UpdateMetadataPrivateKeyUseCase
 import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUserUseCase
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import com.passbolt.mobile.android.ui.GpgKeyUiModel

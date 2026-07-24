@@ -159,7 +159,6 @@ dependencies {
     implementation(project(":secrets-data"))
     implementation(project(":security"))
     implementation(project(":linksapi"))
-    implementation(project(":users"))
     implementation(project(":logger"))
     implementation(project(":accountdetails"))
     implementation(project(":localization"))

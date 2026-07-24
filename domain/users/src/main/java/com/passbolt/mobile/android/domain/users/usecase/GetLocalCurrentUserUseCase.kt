@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.core.users.usecase.db
-
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.ui.UserUiModel
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,22 +20,31 @@ import com.passbolt.mobile.android.ui.UserUiModel
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class UpsertLocalUsersUseCase(
-    private val databaseProvider: DatabaseProvider,
-    private val userModelMapper: UsersModelMapper,
+
+package com.passbolt.mobile.android.domain.users.usecase
+
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.users.UsersRepository
+import com.passbolt.mobile.android.domain.users.mapper.toUserModel
+import com.passbolt.mobile.android.ui.UserUiModel
+
+class GetLocalCurrentUserUseCase(
+    private val usersRepository: UsersRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<UpsertLocalUsersUseCase.Input, Unit> {
-    override suspend fun execute(input: Input) {
-        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        databaseProvider
-            .get(userId)
-            .usersDao()
-            .upsertAll(
-                input.users.map(userModelMapper::map),
-            )
+    private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
+) : AsyncUseCase<Unit, GetLocalCurrentUserUseCase.Output> {
+    override suspend fun execute(input: Unit): Output {
+        val selectedAccountId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val currentUserServerId = requireNotNull(getSelectedAccountDataUseCase.execute(Unit).serverId)
+        return usersRepository
+            .getLocalCurrentUser(selectedAccountId, currentUserServerId)
+            .toUserModel()
+            .let { Output(it) }
     }
 
-    data class Input(
-        val users: List<UserUiModel>,
+    data class Output(
+        val user: UserUiModel,
     )
 }

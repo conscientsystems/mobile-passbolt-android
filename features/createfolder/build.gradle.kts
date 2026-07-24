@@ -17,7 +17,7 @@ dependencies {
     implementation(project(":networking"))
     implementation(project(":folders-domain"))
     implementation(project(":idlingresource"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":localization"))
     implementation(project(":accounts-domain"))
     implementation(project(":navigation"))

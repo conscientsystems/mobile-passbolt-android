@@ -21,7 +21,7 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.core.users.user
+package com.passbolt.mobile.android.domain.users.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
@@ -33,18 +33,22 @@ import com.passbolt.mobile.android.domain.users.UsersRepository
 import com.passbolt.mobile.android.domain.users.mapper.toUserModel
 import com.passbolt.mobile.android.ui.UserUiModel
 
-class FetchCurrentUserUseCase(
+class FetchUsersUseCase(
     private val usersRepository: UsersRepository,
-) : AsyncUseCase<Unit, FetchCurrentUserUseCase.Output> {
-    override suspend fun execute(input: Unit): Output =
-        when (val result = usersRepository.getMyProfile()) {
-            is DomainResult.Finished -> Output.Success(result.value.toUserModel())
+) : AsyncUseCase<FetchUsersUseCase.Input, FetchUsersUseCase.Output> {
+    override suspend fun execute(input: Input) =
+        when (val result = usersRepository.getUsers(input.hasAccessTo)) {
+            is DomainResult.Finished -> Output.Success(result.value.map { it.toUserModel() })
             is DomainResult.Incomplete -> Output.Failure(result)
         }
 
+    data class Input(
+        val hasAccessTo: List<String>? = null,
+    )
+
     sealed class Output : AuthenticatedUseCaseOutput {
         data class Success(
-            val userUiModel: UserUiModel,
+            val users: List<UserUiModel>,
         ) : Output(),
             CompleteAuthenticatedOutput
 

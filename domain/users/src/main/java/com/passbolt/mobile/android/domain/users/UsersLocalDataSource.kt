@@ -1,12 +1,3 @@
-package com.passbolt.mobile.android.core.users
-
-import com.passbolt.mobile.android.core.users.profile.userProfileModule
-import com.passbolt.mobile.android.core.users.usecase.FetchUsersUseCase
-import com.passbolt.mobile.android.core.users.usecase.db.usersDbModule
-import com.passbolt.mobile.android.core.users.user.FetchCurrentUserUseCase
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -30,12 +21,28 @@ import org.koin.dsl.module
  * @since v1.0
  */
 
-val usersModule =
-    module {
-        userProfileModule()
-        usersDbModule()
+package com.passbolt.mobile.android.domain.users
 
-        singleOf(::FetchCurrentUserUseCase)
-        singleOf(::FetchUsersUseCase)
-        singleOf(::UsersInteractor)
-    }
+import com.passbolt.mobile.android.domain.users.model.UserProfile
+
+interface UsersLocalDataSource {
+    suspend fun getUser(
+        selectedAccountId: String,
+        userId: String,
+    ): UserProfile
+
+    suspend fun getCurrentUser(
+        selectedAccountId: String,
+        serverId: String,
+    ): UserProfile
+
+    suspend fun getUsers(
+        selectedAccountId: String,
+        excludingIds: List<String>,
+    ): List<UserProfile>
+
+    suspend fun upsertUsers(
+        selectedAccountId: String,
+        users: List<UserProfile>,
+    )
+}

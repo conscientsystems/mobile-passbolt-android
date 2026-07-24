@@ -22,7 +22,7 @@ dependencies {
     implementation(project(":featureflags-domain"))
     implementation(project(":folderdetails"))
     implementation(project(":groupdetails"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":gopenpgp"))
     implementation(project(":createfolder"))
     implementation(project(":resourcemoremenu"))

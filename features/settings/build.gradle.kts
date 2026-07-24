@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":logger"))
     implementation(project(":localization"))
     implementation(project(":entity"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":transferaccounttoanotherdevice"))
     implementation(project(":gopenpgp"))
     implementation(project(":accountdetails"))

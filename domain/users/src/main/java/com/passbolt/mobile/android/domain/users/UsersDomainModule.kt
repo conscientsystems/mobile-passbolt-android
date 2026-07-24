@@ -1,10 +1,3 @@
-package com.passbolt.mobile.android.core.users.usecase.db
-
-import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.database.DatabaseProvider
-import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.entity.user.UserUpdateState
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -27,19 +20,28 @@ import com.passbolt.mobile.android.entity.user.UserUpdateState
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class SetLocalUsersUpdateStateUseCase(
-    private val databaseProvider: DatabaseProvider,
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : AsyncUseCase<SetLocalUsersUpdateStateUseCase.Input, Unit> {
-    override suspend fun execute(input: Input) {
-        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        databaseProvider
-            .get(userId)
-            .usersDao()
-            .setAllUpdateState(input.updateState)
-    }
 
-    data class Input(
-        val updateState: UserUpdateState,
-    )
-}
+package com.passbolt.mobile.android.domain.users
+
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.domain.users.profile.UserProfileRefreshTrackingFlow
+import com.passbolt.mobile.android.domain.users.usecase.FetchCurrentUserUseCase
+import com.passbolt.mobile.android.domain.users.usecase.FetchUsersUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalCurrentUserUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUserUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUsersUseCase
+import com.passbolt.mobile.android.domain.users.usecase.UsersInteractor
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+
+val usersDomainModule =
+    module {
+        singleOf(::FetchCurrentUserUseCase)
+        singleOf(::FetchUsersUseCase)
+        singleOf(::GetLocalUsersUseCase)
+        singleOf(::GetLocalUserUseCase)
+        singleOf(::GetLocalCurrentUserUseCase)
+        singleOf(::UsersInteractor)
+        singleOf(::UserProfileInteractor)
+        singleOf(::UserProfileRefreshTrackingFlow)
+    }

@@ -21,50 +21,32 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.core.users.profile
+package com.passbolt.mobile.android.domain.users.usecase
 
+import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
 import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
 import com.passbolt.mobile.android.core.mvp.authentication.IncompleteAuthenticatedOutput
-import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.domain.users.UsersRepository
-import timber.log.Timber
+import com.passbolt.mobile.android.domain.users.mapper.toUserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
-// TODO move interactor to domain - first move the two use cases
-class UserProfileInteractor(
+class FetchCurrentUserUseCase(
     private val usersRepository: UsersRepository,
-    private val updateAccountDataUseCase: UpdateAccountDataUseCase,
-    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) {
-    suspend fun fetchAndUpdateUserProfile(): Output {
-        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        return when (val result = usersRepository.getMyProfile()) {
-            is DomainResult.Finished -> {
-                val profile = result.value
-                updateAccountDataUseCase.execute(
-                    UpdateAccountDataUseCase.Input(
-                        userId = userId,
-                        avatarUrl = profile.avatarUrl,
-                        firstName = profile.firstName,
-                        lastName = profile.lastName,
-                        email = profile.username,
-                        role = profile.role,
-                    ),
-                )
-                Output.Success
-            }
-            is DomainResult.Incomplete -> {
-                Timber.e("Failed to fetch user profile")
-                Output.Failure(result)
-            }
+) : AsyncUseCase<Unit, FetchCurrentUserUseCase.Output> {
+    override suspend fun execute(input: Unit): Output =
+        when (val result = usersRepository.getMyProfile()) {
+            is DomainResult.Finished -> Output.Success(result.value.toUserModel())
+            is DomainResult.Incomplete -> Output.Failure(result)
         }
-    }
 
     sealed class Output : AuthenticatedUseCaseOutput {
-        data object Success : Output(), CompleteAuthenticatedOutput
+        data class Success(
+            val userUiModel: UserUiModel,
+        ) : Output(),
+            CompleteAuthenticatedOutput
 
         data class Failure(
             override val incomplete: DomainResult.Incomplete,
