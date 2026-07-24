@@ -17,7 +17,7 @@ dependencies {
     implementation(project(":fulldatarefresh"))
     implementation(project(":resources-domain"))
     implementation(project(":groups-domain"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":folders-domain"))
     implementation(project(":localization"))
     implementation(project(":jsonmodel"))

@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":transferaccounttoanotherdevice"))
     implementation(project(":navigation"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
 
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)

@@ -46,7 +46,6 @@ import com.passbolt.mobile.android.core.passwordgenerator.passwordGeneratorModul
 import com.passbolt.mobile.android.core.qrscan.barcodeScanModule
 import com.passbolt.mobile.android.core.resourcetypes.resourceTypesModule
 import com.passbolt.mobile.android.core.security.securityModule
-import com.passbolt.mobile.android.core.users.usersModule
 import com.passbolt.mobile.android.createFolderModule
 import com.passbolt.mobile.android.createresourcemenu.createResourceMenuModule
 import com.passbolt.mobile.android.data.accounts.accountsDataModule
@@ -88,6 +87,7 @@ import com.passbolt.mobile.android.domain.resources.resourcesDomainModule
 import com.passbolt.mobile.android.domain.resourcetypes.resourceTypesDomainModule
 import com.passbolt.mobile.android.domain.secrets.secretsDomainModule
 import com.passbolt.mobile.android.domain.tags.tagsDomainModule
+import com.passbolt.mobile.android.domain.users.usersDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
 import com.passbolt.mobile.android.feature.accountdetails.accountDetailsModule
 import com.passbolt.mobile.android.feature.authenticationModule
@@ -166,7 +166,7 @@ class KoinInitializer : Initializer<Unit> {
                 resourceDetailsModule,
                 securityModule,
                 linksApiModule,
-                usersModule,
+                usersDomainModule,
                 loggerModule,
                 accountDetailsModule,
                 foldersDomainModule,

@@ -20,7 +20,6 @@ dependencies {
     implementation(project(":uimodel"))
     implementation(project(":security"))
     implementation(project(":logger"))
-    implementation(project(":users"))
     implementation(project(":localization"))
     implementation(project(":featureflagserror"))
     implementation(project(":helpmenu"))

@@ -24,9 +24,11 @@
 package com.passbolt.mobile.android.data.users
 
 import com.passbolt.mobile.android.core.networking.RestService
+import com.passbolt.mobile.android.data.users.datasource.local.UsersLocalDataSourceImpl
 import com.passbolt.mobile.android.data.users.datasource.remote.UsersRemoteDataSource
 import com.passbolt.mobile.android.data.users.datasource.remote.api.UsersApi
 import com.passbolt.mobile.android.domain.users.UsersDataSource
+import com.passbolt.mobile.android.domain.users.UsersLocalDataSource
 import com.passbolt.mobile.android.domain.users.UsersRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -36,5 +38,6 @@ val usersDataModule =
     module {
         single { get<RestService>().service(UsersApi::class.java) }
         singleOf(::UsersRemoteDataSource) bind UsersDataSource::class
+        singleOf(::UsersLocalDataSourceImpl) bind UsersLocalDataSource::class
         singleOf(::UsersRepositoryImpl) bind UsersRepository::class
     }

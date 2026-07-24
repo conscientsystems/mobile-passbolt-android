@@ -9,7 +9,7 @@ android {
 dependencies {
     implementation(project(":resourcetypes-domain"))
     implementation(project(":groups-domain"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":architecture"))
     implementation(project(":resources-domain"))
     implementation(project(":folders-domain"))

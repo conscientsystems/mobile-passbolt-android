@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":uimodel"))
     implementation(project(":privatekey-domain"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":folders-domain"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":gopenpgp"))

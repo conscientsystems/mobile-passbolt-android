@@ -1,16 +1,3 @@
-package com.passbolt.mobile.android.core.users
-
-import android.database.SQLException
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
-import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
-import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
-import com.passbolt.mobile.android.core.users.usecase.FetchUsersUseCase
-import com.passbolt.mobile.android.core.users.usecase.db.RemoveLocalUsersWithUpdateStateUseCase
-import com.passbolt.mobile.android.core.users.usecase.db.SetLocalUsersUpdateStateUseCase
-import com.passbolt.mobile.android.core.users.usecase.db.UpsertLocalUsersUseCase
-import com.passbolt.mobile.android.entity.user.UserUpdateState.PENDING
-import timber.log.Timber
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -33,25 +20,29 @@ import timber.log.Timber
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
+
+package com.passbolt.mobile.android.domain.users.usecase
+
+import android.database.SQLException
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticatedUseCaseOutput
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
+import com.passbolt.mobile.android.core.mvp.authentication.CompleteAuthenticatedOutput
+import com.passbolt.mobile.android.core.mvp.authentication.toAuthenticationState
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.users.UsersRepository
+import timber.log.Timber
+
 class UsersInteractor(
-    private val fetchUsersUseCase: FetchUsersUseCase,
-    private val setLocalUsersUpdateStateUseCase: SetLocalUsersUpdateStateUseCase,
-    private val upsertLocalUsersUseCase: UpsertLocalUsersUseCase,
-    private val removeLocalUsersWithUpdateStateUseCase: RemoveLocalUsersWithUpdateStateUseCase,
+    private val usersRepository: UsersRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
     suspend fun fetchAndSaveUsers(): Output =
         try {
-            setLocalUsersUpdateStateUseCase.execute(SetLocalUsersUpdateStateUseCase.Input(PENDING))
-
-            when (val fetched = fetchUsersUseCase.execute(FetchUsersUseCase.Input())) {
-                is FetchUsersUseCase.Output.Failure -> Output.Failure(fetched.authenticationState)
-                is FetchUsersUseCase.Output.Success -> {
-                    upsertLocalUsersUseCase.execute(UpsertLocalUsersUseCase.Input(fetched.users))
-                    removeLocalUsersWithUpdateStateUseCase.execute(
-                        RemoveLocalUsersWithUpdateStateUseCase.Input(PENDING),
-                    )
-                    Output.Success
-                }
+            val selectedAccountId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+            when (val result = usersRepository.refreshUsers(selectedAccountId)) {
+                is DomainResult.Finished -> Output.Success
+                is DomainResult.Incomplete -> Output.Failure(result.toAuthenticationState())
             }
         } catch (exception: SQLException) {
             Timber.e(exception, "There was an error during users db insert")

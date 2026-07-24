@@ -30,4 +30,21 @@ interface UsersRepository {
     suspend fun getMyProfile(): DomainResult<UserProfile>
 
     suspend fun getUsers(hasAccessTo: List<String>? = null): DomainResult<List<UserProfile>>
+
+    suspend fun getLocalUser(
+        selectedAccountId: String,
+        userId: String,
+    ): UserProfile
+
+    suspend fun getLocalCurrentUser(
+        selectedAccountId: String,
+        serverId: String,
+    ): UserProfile
+
+    suspend fun getLocalUsers(
+        selectedAccountId: String,
+        excludingIds: List<String>,
+    ): List<UserProfile>
+
+    suspend fun refreshUsers(selectedAccountId: String): DomainResult<List<UserProfile>>
 }
