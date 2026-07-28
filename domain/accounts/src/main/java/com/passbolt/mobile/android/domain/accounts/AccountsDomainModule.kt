@@ -1,5 +1,6 @@
 package com.passbolt.mobile.android.domain.accounts
 
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor
 import com.passbolt.mobile.android.domain.accounts.usecase.CheckAccountExistsUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
@@ -60,4 +61,5 @@ val accountsDomainModule =
         singleOf(::GetSelectedAccountDataUseCase)
         singleOf(::GetAllAccountsDataUseCase)
         singleOf(::CheckAccountExistsUseCase)
+        singleOf(::AccountsInteractor)
     }

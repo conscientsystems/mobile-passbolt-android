@@ -25,17 +25,20 @@ package com.passbolt.mobile.android.feature.main.mainscreen.encouragements
 
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.DISABLED
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.preferences.AccountFlagsUpdate
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 
 class EncouragementsInteractor(
     private val accountPreferencesRepository: AccountPreferencesRepository,
     private val autofillInformationProvider: AutofillInformationProvider,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
     fun shouldShowChromeNativeAutofillEncouragement(): Boolean {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         val wasChromeEncouragementDialogShown =
             accountPreferencesRepository
-                .getAccountFlags()
+                .getAccountFlags(userId)
                 .wasChromeNativeAutofillDialogShown
         val chromeNativeAutofillStatus = autofillInformationProvider.getChromeNativeAutofillStatus()
 
@@ -43,8 +46,10 @@ class EncouragementsInteractor(
     }
 
     fun chromeNativeAutofillEncouragementShown() {
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         accountPreferencesRepository.updateAccountFlags(
             AccountFlagsUpdate(wasChromeNativeAutofillDialogShown = true),
+            userId,
         )
     }
 }

@@ -27,10 +27,11 @@ import com.passbolt.mobile.android.domain.accounts.AccountDataRepository
  */
 class GetSelectedAccountDataUseCase(
     private val accountDataRepository: AccountDataRepository,
-) : UseCase<Unit, GetSelectedAccountDataUseCase.Output>,
-    SelectedAccountUseCase {
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+) : UseCase<Unit, GetSelectedAccountDataUseCase.Output> {
     override fun execute(input: Unit): Output {
-        val accountData = accountDataRepository.getAccountData(selectedAccountId)
+        val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val accountData = accountDataRepository.getAccountData(userId)
 
         return Output(
             firstName = accountData.firstName,

@@ -1,7 +1,8 @@
-package com.passbolt.mobile.android.domain.accounts.usecase
+package com.passbolt.mobile.android.domain.privatekey.usecase
 
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 
 /**
  * Passbolt - Open source password manager for teams
@@ -25,10 +26,17 @@ import org.koin.core.component.get
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-interface SelectedAccountUseCase : KoinComponent {
-    val selectedAccountId: String
-        get() =
-            requireNotNull(get<GetSelectedAccountUseCase>().execute(Unit).selectedAccount) {
-                "${javaClass.name} is a selected account use case, but no account is selected"
-            }
+class SavePrivateKeyUseCase(
+    private val privateKeyRepository: PrivateKeyRepository,
+) : UseCase<SavePrivateKeyUseCase.Input, SavePrivateKeyUseCase.Output> {
+    override fun execute(input: Input): Output = Output(privateKeyRepository.savePrivateKey(input.userId, input.privateKey))
+
+    data class Input(
+        val userId: String,
+        val privateKey: PrivateKey,
+    )
+
+    data class Output(
+        val saved: Boolean,
+    )
 }

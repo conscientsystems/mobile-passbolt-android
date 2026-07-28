@@ -30,9 +30,8 @@ import com.passbolt.mobile.android.common.BiometricInformationProvider
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SavePassphraseUseCase
-import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
+import com.passbolt.mobile.android.domain.biometrickey.usecase.SaveBiometricKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor
 import com.passbolt.mobile.android.feature.setup.biometric.BiometricSetupIntent.AuthenticationSuccess
@@ -92,8 +91,7 @@ class BiometricSetupViewModelTest : KoinTest {
                         single { mock<PassphraseMemoryCache>() }
                         single { mock<SavePassphraseUseCase>() }
                         single { mock<BiometricCipher>() }
-                        single { mock<BiometricKeyRepository>() }
-                        single { mock<GetSelectedAccountUseCase>() }
+                        single { mock<SaveBiometricKeyUseCase>() }
                         single { mock<BiometryInteractor>() }
                         factoryOf(::BiometricSetupViewModel)
                     },
@@ -108,11 +106,6 @@ class BiometricSetupViewModelTest : KoinTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
-        whenever(getSelectedAccountUseCase.execute(Unit)) doReturn
-            GetSelectedAccountUseCase.Output(
-                selectedAccount = SELECTED_ACCOUNT_ID,
-            )
     }
 
     @After
@@ -374,7 +367,7 @@ class BiometricSetupViewModelTest : KoinTest {
             val passphraseMemoryCache: PassphraseMemoryCache = get()
             val autofillInformationProvider: AutofillInformationProvider = get()
             val savePassphraseUseCase: SavePassphraseUseCase = get()
-            val biometricKeyRepository: BiometricKeyRepository = get()
+            val saveBiometricKeyUseCase: SaveBiometricKeyUseCase = get()
 
             val mockAuthenticatedCipher = mock<Cipher>()
             whenever(mockAuthenticatedCipher.iv) doReturn TEST_AUTHENTICATED_IV
@@ -393,7 +386,7 @@ class BiometricSetupViewModelTest : KoinTest {
             }
 
             verify(savePassphraseUseCase).execute(any())
-            verify(biometricKeyRepository).saveBiometricKey(any(), any())
+            verify(saveBiometricKeyUseCase).execute(any())
         }
 
     @OptIn(ExperimentalTime::class)
@@ -403,7 +396,7 @@ class BiometricSetupViewModelTest : KoinTest {
             val passphraseMemoryCache: PassphraseMemoryCache = get()
             val autofillInformationProvider: AutofillInformationProvider = get()
             val savePassphraseUseCase: SavePassphraseUseCase = get()
-            val biometricKeyRepository: BiometricKeyRepository = get()
+            val saveBiometricKeyUseCase: SaveBiometricKeyUseCase = get()
 
             val mockAuthenticatedCipher = mock<Cipher>()
             whenever(mockAuthenticatedCipher.iv) doReturn TEST_AUTHENTICATED_IV
@@ -422,7 +415,7 @@ class BiometricSetupViewModelTest : KoinTest {
             }
 
             verify(savePassphraseUseCase).execute(any())
-            verify(biometricKeyRepository).saveBiometricKey(any(), any())
+            verify(saveBiometricKeyUseCase).execute(any())
         }
 
     @OptIn(ExperimentalTime::class)
@@ -523,7 +516,6 @@ class BiometricSetupViewModelTest : KoinTest {
         }
 
     companion object {
-        private const val SELECTED_ACCOUNT_ID = "selected-account-id"
         private val TEST_PASSPHRASE = "testPassphrase123".toByteArray()
         private val TEST_AUTHENTICATED_IV = ByteArray(16) { (it * 2).toByte() }
     }

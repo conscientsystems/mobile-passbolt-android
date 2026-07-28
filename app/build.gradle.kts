@@ -220,6 +220,7 @@ dependencies {
     implementation(project(":metadata-domain"))
     implementation(project(":metadata-data"))
     implementation(project(":biometrickey-data"))
+    implementation(project(":biometrickey-domain"))
     implementation(project(":encryptedstorage"))
     implementation(project(":preferences-domain"))
     implementation(project(":preferences-data"))

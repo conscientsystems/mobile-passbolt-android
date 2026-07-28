@@ -54,7 +54,6 @@ class ResourceShareInteractor(
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val sharePermissionsModelMapper: SharePermissionsModelMapper,
 ) {
-    // TODO FolderShareInteractor belongs in :share-domain, refactor after all dependencies are moved
     suspend fun simulateAndShareResource(
         resourceId: String,
         recipients: List<PermissionModelUi>,

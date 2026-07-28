@@ -4,7 +4,6 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.ManageAccount
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Startup
-import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAllAccountsDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
@@ -67,7 +66,6 @@ class AccountsListViewModelTest : KoinTest {
                     single { mock<SaveCurrentApiUrlUseCase>() }
                     single { mock<RemoveAllAccountDataUseCase>() }
                     single { mock<SignOutUseCase>() }
-                    single { mock<DatabaseProvider>() }
                     factoryOf(::AccountModelMapper)
                     factory { params ->
                         AccountsListViewModel(
@@ -79,7 +77,6 @@ class AccountsListViewModelTest : KoinTest {
                             removeAllAccountDataUseCase = get(),
                             signOutUseCase = get(),
                             saveCurrentApiUrlUseCase = get(),
-                            databaseProvider = get(),
                         )
                     }
                 },
@@ -99,11 +96,6 @@ class AccountsListViewModelTest : KoinTest {
 
         val getAllAccountsDataUseCase = get<GetAllAccountsDataUseCase>()
         whenever(getAllAccountsDataUseCase.execute(Unit)) doReturn GetAllAccountsDataUseCase.Output(SAVED_ACCOUNT)
-
-        val databaseProvider = get<DatabaseProvider>()
-        databaseProvider.stub {
-            onBlocking { delete(any()) } doReturn Unit
-        }
     }
 
     @After

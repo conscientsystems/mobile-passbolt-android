@@ -27,7 +27,6 @@ import com.passbolt.mobile.android.data.preferences.AccountPreferencesFileName
 import com.passbolt.mobile.android.data.preferences.KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN
 import com.passbolt.mobile.android.data.preferences.KEY_LAST_USED_HOME_VIEW
 import com.passbolt.mobile.android.data.preferences.KEY_USER_SET_HOME_VIEW
-import com.passbolt.mobile.android.domain.accounts.usecase.SelectedAccountUseCase
 import com.passbolt.mobile.android.domain.preferences.AccountFlagsUpdate
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesLocalDataSource
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
@@ -39,14 +38,9 @@ import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
 
 internal class AccountPreferencesLocalDataSourceImpl(
     private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
-) : AccountPreferencesLocalDataSource,
-    SelectedAccountUseCase {
-    private val sharedPreferences
-        get() =
-            encryptedSharedPreferencesFactory.get("${AccountPreferencesFileName(selectedAccountId).name}.xml")
-
-    override fun getHomeDisplayViewPreferences(): HomeDisplayViewPreferencesUiModel {
-        with(sharedPreferences) {
+) : AccountPreferencesLocalDataSource {
+    override fun getHomeDisplayViewPreferences(userId: String): HomeDisplayViewPreferencesUiModel {
+        with(sharedPreferences(userId)) {
             val lastUsedHomeViewOrdinal = getInt(KEY_LAST_USED_HOME_VIEW, DEFAULT_LAST_USED_FILTER_ORDINAL)
             val lastUsedHomeView = HomeDisplayViewUiModel.entries[lastUsedHomeViewOrdinal]
 
@@ -65,28 +59,36 @@ internal class AccountPreferencesLocalDataSourceImpl(
         }
     }
 
-    override fun updateHomeDisplayViewPreferences(update: HomeDisplayViewPreferencesUpdate) {
-        with(sharedPreferences.edit()) {
+    override fun updateHomeDisplayViewPreferences(
+        update: HomeDisplayViewPreferencesUpdate,
+        userId: String,
+    ) {
+        with(sharedPreferences(userId).edit()) {
             update.lastUsedHomeView?.let { putInt(KEY_LAST_USED_HOME_VIEW, it.ordinal) }
             update.userSetHomeView?.let { putInt(KEY_USER_SET_HOME_VIEW, it.ordinal) }
             apply()
         }
     }
 
-    override fun getAccountFlags(): AccountFlagsUiModel {
-        with(sharedPreferences) {
+    override fun getAccountFlags(userId: String): AccountFlagsUiModel {
+        with(sharedPreferences(userId)) {
             return AccountFlagsUiModel(
                 wasChromeNativeAutofillDialogShown = getBoolean(KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN, false),
             )
         }
     }
 
-    override fun updateAccountFlags(update: AccountFlagsUpdate) {
-        with(sharedPreferences.edit()) {
+    override fun updateAccountFlags(
+        update: AccountFlagsUpdate,
+        userId: String,
+    ) {
+        with(sharedPreferences(userId).edit()) {
             update.wasChromeNativeAutofillDialogShown?.let { putBoolean(KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN, it) }
             apply()
         }
     }
+
+    private fun sharedPreferences(userId: String) = encryptedSharedPreferencesFactory.get("${AccountPreferencesFileName(userId).name}.xml")
 
     private companion object {
         private val DEFAULT_LAST_USED_FILTER_ORDINAL = HomeDisplayViewUiModel.ALL_ITEMS.ordinal

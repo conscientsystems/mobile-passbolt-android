@@ -2,10 +2,10 @@ package com.passbolt.mobile.android.feature.startup
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountsUseCase
 import com.passbolt.mobile.android.feature.startup.StartUpSideEffect.NavigateToSetup
 import com.passbolt.mobile.android.feature.startup.StartUpSideEffect.NavigateToSignIn
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher

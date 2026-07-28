@@ -36,15 +36,20 @@ internal class AccountPreferencesRepositoryImpl(
     private val localDataSource: AccountPreferencesLocalDataSource,
     private val homeDisplayViewPrefsValidator: HomeDisplayViewPrefsValidator,
 ) : AccountPreferencesRepository {
-    override fun getHomeDisplayViewPreferences(): HomeDisplayViewPreferencesUiModel =
-        homeDisplayViewPrefsValidator.validated(localDataSource.getHomeDisplayViewPreferences())
+    override fun getHomeDisplayViewPreferences(userId: String): HomeDisplayViewPreferencesUiModel =
+        homeDisplayViewPrefsValidator.validated(localDataSource.getHomeDisplayViewPreferences(userId))
 
-    override fun updateHomeDisplayViewPreferences(update: HomeDisplayViewPreferencesUpdate) =
-        localDataSource.updateHomeDisplayViewPreferences(update)
+    override fun updateHomeDisplayViewPreferences(
+        update: HomeDisplayViewPreferencesUpdate,
+        userId: String,
+    ) = localDataSource.updateHomeDisplayViewPreferences(update, userId)
 
     override fun availableDefaultFilters(): List<DefaultFilterUiModel> = homeDisplayViewPrefsValidator.validatedDefaultFiltersList()
 
-    override fun getAccountFlags(): AccountFlagsUiModel = localDataSource.getAccountFlags()
+    override fun getAccountFlags(userId: String): AccountFlagsUiModel = localDataSource.getAccountFlags(userId)
 
-    override fun updateAccountFlags(update: AccountFlagsUpdate) = localDataSource.updateAccountFlags(update)
+    override fun updateAccountFlags(
+        update: AccountFlagsUpdate,
+        userId: String,
+    ) = localDataSource.updateAccountFlags(update, userId)
 }

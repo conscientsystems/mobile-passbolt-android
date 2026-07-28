@@ -41,7 +41,7 @@ import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDat
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
-import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionResult
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
@@ -125,7 +125,8 @@ class HomeViewModelMenuTest : KoinTest {
                     singleOf(::DataRefreshTrackingFlow)
                     singleOf(::SessionRefreshTrackingFlow)
                     single { mock<GetSelectedAccountDataUseCase>() }
-                    single { mock<AccountPreferencesRepository>() }
+                    single { mock<GetSelectedAccountUseCase> { on { execute(Unit) } doReturn GetSelectedAccountUseCase.Output("userId") } }
+                    single { mock<GetHomeDisplayViewPreferencesUseCase>() }
                     single { mock<HomeDisplayViewMapper>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
@@ -174,7 +175,7 @@ class HomeViewModelMenuTest : KoinTest {
             ),
         )
 
-        whenever(get<AccountPreferencesRepository>().getHomeDisplayViewPreferences()).thenReturn(
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)).thenReturn(
             HomeDisplayViewPreferencesUiModel(
                 lastUsedHomeView = HomeDisplayViewUiModel.ALL_ITEMS,
                 userSetHomeView = DefaultFilterUiModel.ALL_ITEMS,

@@ -27,11 +27,17 @@ import com.passbolt.mobile.android.ui.AccountFlagsUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
 
 interface AccountPreferencesLocalDataSource {
-    fun getHomeDisplayViewPreferences(): HomeDisplayViewPreferencesUiModel
+    fun getHomeDisplayViewPreferences(userId: String): HomeDisplayViewPreferencesUiModel
 
-    fun updateHomeDisplayViewPreferences(update: HomeDisplayViewPreferencesUpdate)
+    fun updateHomeDisplayViewPreferences(
+        update: HomeDisplayViewPreferencesUpdate,
+        userId: String,
+    )
 
-    fun getAccountFlags(): AccountFlagsUiModel
+    fun getAccountFlags(userId: String): AccountFlagsUiModel
 
-    fun updateAccountFlags(update: AccountFlagsUpdate)
+    fun updateAccountFlags(
+        update: AccountFlagsUpdate,
+        userId: String,
+    )
 }

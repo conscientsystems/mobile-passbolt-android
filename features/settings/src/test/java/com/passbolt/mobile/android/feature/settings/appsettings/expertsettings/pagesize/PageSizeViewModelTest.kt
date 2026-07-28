@@ -24,9 +24,10 @@ package com.passbolt.mobile.android.feature.settings.appsettings.expertsettings.
  */
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
 import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.PageSizeChanged
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeSideEffect.NavigateBack
@@ -64,8 +65,9 @@ class PageSizeViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<GlobalPreferencesRepository>() }
-                        factory { PageSizeViewModel(get()) }
+                        single { mock<GetGlobalPreferencesUseCase>() }
+                        single { mock<UpdateGlobalPreferencesUseCase>() }
+                        factory { PageSizeViewModel(get(), get()) }
                     },
                 ),
             )
@@ -86,8 +88,8 @@ class PageSizeViewModelTest : KoinTest {
     }
 
     private fun stubPreferences() {
-        val globalPreferencesRepository: GlobalPreferencesRepository = get()
-        whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+        val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
+        whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
             GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
@@ -116,8 +118,8 @@ class PageSizeViewModelTest : KoinTest {
             stubPreferences()
             viewModel = get()
 
-            val globalPreferencesRepository: GlobalPreferencesRepository = get()
-            verify(globalPreferencesRepository, never()).updateGlobalPreferences(any())
+            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
+            verify(updateGlobalPreferencesUseCase, never()).execute(any())
         }
 
     @Test
@@ -131,9 +133,9 @@ class PageSizeViewModelTest : KoinTest {
             val state = viewModel.viewState.value
             assertThat(state.selectedIndex).isEqualTo(6)
 
-            val globalPreferencesRepository: GlobalPreferencesRepository = get()
+            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
             argumentCaptor<GlobalPreferencesUpdate> {
-                verify(globalPreferencesRepository).updateGlobalPreferences(capture())
+                verify(updateGlobalPreferencesUseCase).execute(capture())
                 assertThat(firstValue.apiFetchPageSize).isEqualTo(5000)
             }
         }

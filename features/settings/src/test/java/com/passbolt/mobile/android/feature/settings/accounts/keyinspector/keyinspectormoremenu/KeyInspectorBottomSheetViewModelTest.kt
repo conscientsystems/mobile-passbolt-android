@@ -25,11 +25,12 @@ package com.passbolt.mobile.android.feature.settings.accounts.keyinspector.keyin
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.ExportPrivateKey
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.ExportPublicKey
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.RefreshedPassphrase
@@ -76,7 +77,7 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
                 listOf(
                     module {
                         single { mock<GetSelectedAccountUseCase>() }
-                        single { mock<PrivateKeyRepository>() }
+                        single { mock<GetPrivateKeyUseCase>() }
                         single { mock<OpenPgp>() }
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factoryOf(::KeyInspectorBottomSheetViewModel)
@@ -107,8 +108,9 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
             val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
             whenever(getSelectedAccountUseCase.execute(Unit)) doReturn
                 GetSelectedAccountUseCase.Output("userId")
-            val privateKeyRepository: PrivateKeyRepository = get()
-            whenever(privateKeyRepository.getPrivateKey("userId")) doReturn PrivateKey(mockPrivateKey)
+            val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
+            whenever(getPrivateKeyUseCase.execute(UserIdInput("userId"))) doReturn
+                GetPrivateKeyUseCase.Output(PrivateKey(mockPrivateKey))
 
             viewModel = get()
             viewModel.onIntent(ExportPrivateKey)
@@ -134,8 +136,9 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
             val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
             whenever(getSelectedAccountUseCase.execute(Unit)) doReturn
                 GetSelectedAccountUseCase.Output("userId")
-            val privateKeyRepository: PrivateKeyRepository = get()
-            whenever(privateKeyRepository.getPrivateKey("userId")) doReturn PrivateKey(mockPrivateKey)
+            val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
+            whenever(getPrivateKeyUseCase.execute(UserIdInput("userId"))) doReturn
+                GetPrivateKeyUseCase.Output(PrivateKey(mockPrivateKey))
 
             val mockOpenPgp = get<OpenPgp>()
             whenever(mockOpenPgp.generatePublicKey(mockPrivateKey)) doReturn
@@ -165,8 +168,9 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
             val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
             whenever(getSelectedAccountUseCase.execute(Unit)) doReturn
                 GetSelectedAccountUseCase.Output("userId")
-            val privateKeyRepository: PrivateKeyRepository = get()
-            whenever(privateKeyRepository.getPrivateKey("userId")) doReturn PrivateKey(mockPrivateKey)
+            val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
+            whenever(getPrivateKeyUseCase.execute(UserIdInput("userId"))) doReturn
+                GetPrivateKeyUseCase.Output(PrivateKey(mockPrivateKey))
 
             val mockOpenPgp = get<OpenPgp>()
             whenever(mockOpenPgp.generatePublicKey(mockPrivateKey)) doReturn

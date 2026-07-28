@@ -29,21 +29,20 @@ import com.passbolt.mobile.android.common.HttpsVerifier
 import com.passbolt.mobile.android.common.UuidProvider
 import com.passbolt.mobile.android.common.usecase.FetchFileAsStringUseCase
 import com.passbolt.mobile.android.core.accounts.AccountKitParser
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.core.qrscan.analyzer.BarcodeScanResult
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.domain.accounts.usecase.CheckAccountExistsUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
-import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.usecase.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.dto.response.qrcode.AccountKitPageDto
 import com.passbolt.mobile.android.dto.response.qrcode.QrFirstPageDto
 import com.passbolt.mobile.android.dto.response.qrcode.ReservedBytesDto
@@ -75,6 +74,7 @@ import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.Use
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NO_BARCODES_IN_RANGE
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import com.passbolt.mobile.android.ui.ResultStatus.AlreadyLinked
 import com.passbolt.mobile.android.ui.ResultStatus.Failure
 import com.passbolt.mobile.android.ui.ResultStatus.HttpNotSupported
@@ -125,7 +125,7 @@ class ScanQrViewModelTest : KoinTest {
                         single { mock<UpdateTransferUseCase>() }
                         single { mockScanQrParser }
                         single { mock<UuidProvider>() }
-                        single { mock<PrivateKeyRepository>() }
+                        single { mock<SavePrivateKeyUseCase>() }
                         single { mock<UpdateAccountDataUseCase>() }
                         single { mock<CheckAccountExistsUseCase>() }
                         single { mock<HttpsVerifier>() }
@@ -474,7 +474,7 @@ class ScanQrViewModelTest : KoinTest {
             val checkAccountExistsUseCase: CheckAccountExistsUseCase = get()
             val httpsVerifier: HttpsVerifier = get()
             val updateTransferUseCase: UpdateTransferUseCase = get()
-            val privateKeyRepository: PrivateKeyRepository = get()
+            val savePrivateKeyUseCase: SavePrivateKeyUseCase = get()
 
             whenever(uuidProvider.get()) doReturn NEW_USER_ID
             whenever(checkAccountExistsUseCase.execute(any())) doReturn CheckAccountExistsUseCase.Output(false)
@@ -483,7 +483,7 @@ class ScanQrViewModelTest : KoinTest {
                 UpdateTransferUseCase.Output.Success(
                     UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
-            whenever(privateKeyRepository.savePrivateKey(any(), any())) doReturn true
+            whenever(savePrivateKeyUseCase.execute(any())) doReturn SavePrivateKeyUseCase.Output(true)
 
             viewModel = get()
             viewModel.onIntent(Initialize(barcodeScanFlow = barcodeScanFlow, accountSetupDataModel = null))
@@ -498,7 +498,7 @@ class ScanQrViewModelTest : KoinTest {
                 assertIs<Success>(effect.status)
             }
 
-            verify(privateKeyRepository).savePrivateKey(any(), any())
+            verify(savePrivateKeyUseCase).execute(any())
         }
 
     @OptIn(ExperimentalTime::class)
@@ -509,7 +509,7 @@ class ScanQrViewModelTest : KoinTest {
             val checkAccountExistsUseCase: CheckAccountExistsUseCase = get()
             val httpsVerifier: HttpsVerifier = get()
             val updateTransferUseCase: UpdateTransferUseCase = get()
-            val privateKeyRepository: PrivateKeyRepository = get()
+            val savePrivateKeyUseCase: SavePrivateKeyUseCase = get()
 
             whenever(uuidProvider.get()) doReturn NEW_USER_ID
             whenever(checkAccountExistsUseCase.execute(any())) doReturn CheckAccountExistsUseCase.Output(false)
@@ -518,7 +518,7 @@ class ScanQrViewModelTest : KoinTest {
                 UpdateTransferUseCase.Output.Success(
                     UpdateTransferUiModel(TEST_TRANSFER_ID.toString(), null, null, null, null),
                 )
-            whenever(privateKeyRepository.savePrivateKey(any(), any())) doReturn false
+            whenever(savePrivateKeyUseCase.execute(any())) doReturn SavePrivateKeyUseCase.Output(false)
 
             viewModel = get()
             viewModel.onIntent(Initialize(barcodeScanFlow = barcodeScanFlow, accountSetupDataModel = null))

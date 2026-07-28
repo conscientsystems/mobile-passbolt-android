@@ -3,8 +3,8 @@ package com.passbolt.mobile.android.feature.home.filtersmenu
 import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.AllItemsClick
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.Close
@@ -60,7 +60,7 @@ import kotlinx.coroutines.launch
 class FiltersMenuViewModel(
     private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
     private val getRbacRulesUseCase: GetRbacRulesUseCase,
-    private val accountPreferencesRepository: AccountPreferencesRepository,
+    private val updateHomeDisplayViewPreferencesUseCase: UpdateHomeDisplayViewPreferencesUseCase,
     private val homeDisplayViewMapper: HomeDisplayViewMapper,
     private val coroutineLaunchContext: CoroutineLaunchContext,
 ) : SideEffectViewModel<FiltersMenuState, FiltersMenuSideEffect>(FiltersMenuState()) {
@@ -86,7 +86,7 @@ class FiltersMenuViewModel(
 
     private fun handleHomeViewChanged(homeDisplayViewUiModel: HomeDisplayViewUiModel) {
         viewModelScope.launch(coroutineLaunchContext.io) {
-            accountPreferencesRepository.updateHomeDisplayViewPreferences(
+            updateHomeDisplayViewPreferencesUseCase.execute(
                 HomeDisplayViewPreferencesUpdate(lastUsedHomeView = homeDisplayViewUiModel),
             )
             emitSideEffect(HomeViewChanged(homeDisplayViewMapper.map(homeDisplayViewUiModel)))

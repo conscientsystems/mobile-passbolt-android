@@ -28,13 +28,19 @@ import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
 
 interface AccountPreferencesRepository {
-    fun getHomeDisplayViewPreferences(): HomeDisplayViewPreferencesUiModel
+    fun getHomeDisplayViewPreferences(userId: String): HomeDisplayViewPreferencesUiModel
 
-    fun updateHomeDisplayViewPreferences(update: HomeDisplayViewPreferencesUpdate)
+    fun updateHomeDisplayViewPreferences(
+        update: HomeDisplayViewPreferencesUpdate,
+        userId: String,
+    )
 
     fun availableDefaultFilters(): List<DefaultFilterUiModel>
 
-    fun getAccountFlags(): AccountFlagsUiModel
+    fun getAccountFlags(userId: String): AccountFlagsUiModel
 
-    fun updateAccountFlags(update: AccountFlagsUpdate)
+    fun updateAccountFlags(
+        update: AccountFlagsUpdate,
+        userId: String,
+    )
 }

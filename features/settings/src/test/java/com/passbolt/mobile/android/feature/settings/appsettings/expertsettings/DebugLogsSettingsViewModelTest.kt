@@ -23,8 +23,9 @@ package com.passbolt.mobile.android.feature.settings.appsettings.expertsettings
  * @since v1.0
  */
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleHideRootWarning
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsViewModel
 import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
@@ -57,7 +58,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<GlobalPreferencesRepository>() }
+                        single { mock<GetGlobalPreferencesUseCase>() }
+                        single { mock<UpdateGlobalPreferencesUseCase>() }
                         factoryOf(::ExpertSettingsViewModel)
                     },
                 ),
@@ -81,8 +83,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     @Test
     fun `initial state should be unchecked when hide root dialog preference is disabled`() =
         runTest {
-            val globalPreferencesRepository: GlobalPreferencesRepository = get()
-            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
+            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
                 GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
@@ -101,8 +103,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     @Test
     fun `initial state should be checked when hide root dialog preference is enabled`() =
         runTest {
-            val globalPreferencesRepository: GlobalPreferencesRepository = get()
-            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
+            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
                 GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
@@ -121,8 +123,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     @Test
     fun `toggleHideRootWarning should flip checked state`() =
         runTest {
-            val globalPreferencesRepository: GlobalPreferencesRepository = get()
-            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
+            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
                 GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,

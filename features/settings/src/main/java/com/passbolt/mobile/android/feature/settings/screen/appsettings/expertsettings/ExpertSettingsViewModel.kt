@@ -24,8 +24,9 @@
 package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoToPageSize
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleAuthRequiredOnEveryEntry
@@ -34,7 +35,8 @@ import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertset
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateUp
 
 internal class ExpertSettingsViewModel(
-    private val globalPreferencesRepository: GlobalPreferencesRepository,
+    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
+    private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase,
 ) : SideEffectViewModel<ExpertSettingsState, ExpertSettingsScreenSideEffect>(ExpertSettingsState()) {
     init {
         loadInitialValues()
@@ -50,7 +52,7 @@ internal class ExpertSettingsViewModel(
     }
 
     private fun loadInitialValues() {
-        val globalPreferences = globalPreferencesRepository.getGlobalPreferences()
+        val globalPreferences = getGlobalPreferencesUseCase.execute(Unit)
         updateViewState {
             copy(
                 isAuthRequiredOnEveryEntryChecked = globalPreferences.isAuthRequiredOnEveryEntry,
@@ -61,7 +63,7 @@ internal class ExpertSettingsViewModel(
 
     private fun toggleAuthRequiredOnEveryEntry() {
         val isChecked = !viewState.value.isAuthRequiredOnEveryEntryChecked
-        globalPreferencesRepository.updateGlobalPreferences(
+        updateGlobalPreferencesUseCase.execute(
             GlobalPreferencesUpdate(isAuthRequiredOnEveryEntry = isChecked),
         )
         updateViewState {
@@ -72,7 +74,7 @@ internal class ExpertSettingsViewModel(
     private fun toggleHideRootWarning() {
         val isHideRootWarningChecked = !viewState.value.isHideRootWarningChecked
 
-        globalPreferencesRepository.updateGlobalPreferences(
+        updateGlobalPreferencesUseCase.execute(
             GlobalPreferencesUpdate(isHideRootDialogEnabled = isHideRootWarningChecked),
         )
         updateViewState {

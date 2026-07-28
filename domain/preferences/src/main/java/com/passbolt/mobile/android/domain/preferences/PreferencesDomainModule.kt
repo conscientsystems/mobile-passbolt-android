@@ -23,6 +23,11 @@
 
 package com.passbolt.mobile.android.domain.preferences
 
+import com.passbolt.mobile.android.domain.preferences.usecase.GetAvailableDefaultFiltersUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.preferences.validation.HomeDisplayViewPrefsValidator
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -30,4 +35,9 @@ import org.koin.dsl.module
 val preferencesDomainModule =
     module {
         singleOf(::HomeDisplayViewPrefsValidator)
+        singleOf(::GetGlobalPreferencesUseCase)
+        singleOf(::UpdateGlobalPreferencesUseCase)
+        singleOf(::GetHomeDisplayViewPreferencesUseCase)
+        singleOf(::UpdateHomeDisplayViewPreferencesUseCase)
+        singleOf(::GetAvailableDefaultFiltersUseCase)
     }

@@ -37,9 +37,10 @@ import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
 import com.passbolt.mobile.android.domain.accounts.AccountSwitchFlow
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
-import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
@@ -140,7 +141,8 @@ internal class HomeViewModel(
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
-    private val accountPreferencesRepository: AccountPreferencesRepository,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val getHomeDisplayViewPreferencesUseCase: GetHomeDisplayViewPreferencesUseCase,
     private val homeModelMapper: HomeDisplayViewMapper,
     private val homeDataProvider: HomeDataProvider,
     private val getLocalFolderUseCase: GetLocalFolderDetailsUseCase,
@@ -494,8 +496,8 @@ internal class HomeViewModel(
             return
         }
         lastInitializeIntent = intent
-        loadedAccountId = getSelectedAccountDataUseCase.selectedAccountId
-        val filterPreferences = accountPreferencesRepository.getHomeDisplayViewPreferences()
+        loadedAccountId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val filterPreferences = getHomeDisplayViewPreferencesUseCase.execute(Unit)
 
         viewModelScope.launch {
             updateViewState { copy(appContext = intent.appContext) }
@@ -548,7 +550,7 @@ internal class HomeViewModel(
      */
     private fun refreshForChangedAccount() {
         val loadedAccount = loadedAccountId ?: return
-        val selectedAccountId = getSelectedAccountDataUseCase.selectedAccountId
+        val selectedAccountId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         if (selectedAccountId != loadedAccount) {
             loadedAccountId = selectedAccountId
             viewModelScope.launch {
