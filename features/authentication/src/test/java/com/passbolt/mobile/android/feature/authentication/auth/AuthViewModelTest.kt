@@ -17,10 +17,10 @@ import com.passbolt.mobile.android.domain.accounts.usecase.SaveServerFingerprint
 import com.passbolt.mobile.android.domain.auth.usecase.GetPassphraseUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
-import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationError
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationSuccess
@@ -94,14 +94,14 @@ class AuthViewModelTest : KoinTest {
             modules(
                 module {
                     single { mock<GetAccountDataUseCase>() }
-                    single { mock<PrivateKeyRepository>() }
+                    single { mock<GetPrivateKeyUseCase>() }
                     single { mock<VerifyPassphraseUseCase>() }
                     single { mock<BiometricCipher>() }
                     single { mock<GetPassphraseUseCase>() }
                     single { mock<PassphraseMemoryCache>() }
                     single { mock<RootDetector>() }
                     single { mock<BiometryInteractor>() }
-                    single { mock<GlobalPreferencesRepository>() }
+                    single { mock<GetGlobalPreferencesUseCase>() }
                     single { mock<SaveSessionUseCase>() }
                     single { mock<SaveSelectedAccountUseCase>() }
                     single { mock<SignOutUseCase>() }
@@ -122,14 +122,14 @@ class AuthViewModelTest : KoinTest {
                             userId = params.get(),
                             appContext = params.get(),
                             getAccountDataUseCase = get(),
-                            privateKeyRepository = get(),
+                            getPrivateKeyUseCase = get(),
                             verifyPassphraseUseCase = get(),
                             biometricCipher = get(),
                             getPassphraseUseCase = get(),
                             passphraseMemoryCache = get(),
                             rootDetector = get(),
                             biometryInteractor = get(),
-                            globalPreferencesRepository = get(),
+                            getGlobalPreferencesUseCase = get(),
                             runtimeAuthenticatedFlag = get(),
                             saveSessionUseCase = get(),
                             saveSelectedAccountUseCase = get(),
@@ -158,8 +158,8 @@ class AuthViewModelTest : KoinTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
 
-        val globalPreferencesRepository: GlobalPreferencesRepository = get()
-        whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+        val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
+        whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
             GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
@@ -173,8 +173,8 @@ class AuthViewModelTest : KoinTest {
         val getAccountDataUseCase: GetAccountDataUseCase = get()
         whenever(getAccountDataUseCase.execute(UserIdInput(USER_ID))) doReturn accountData
 
-        val privateKeyRepository: PrivateKeyRepository = get()
-        whenever(privateKeyRepository.getPrivateKey(any())) doReturn PrivateKey("privateKey")
+        val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
+        whenever(getPrivateKeyUseCase.execute(any())) doReturn GetPrivateKeyUseCase.Output(PrivateKey("privateKey"))
     }
 
     @After

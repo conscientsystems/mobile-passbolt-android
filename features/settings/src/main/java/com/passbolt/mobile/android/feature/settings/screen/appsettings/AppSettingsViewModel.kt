@@ -34,8 +34,8 @@ import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUse
 import com.passbolt.mobile.android.domain.auth.usecase.CheckIfPassphraseFileExistsUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.RemovePassphraseUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SavePassphraseUseCase
-import com.passbolt.mobile.android.domain.biometrickey.BiometricKeyRepository
 import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey
+import com.passbolt.mobile.android.domain.biometrickey.usecase.SaveBiometricKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.AppSettingsIntent.CancelConfigureBiometric
@@ -78,7 +78,7 @@ internal class AppSettingsViewModel(
     private val biometricCipher: BiometricCipher,
     private val biometryInteractor: BiometryInteractor,
     private val savePassphraseUseCase: SavePassphraseUseCase,
-    private val biometricKeyRepository: BiometricKeyRepository,
+    private val saveBiometricKeyUseCase: SaveBiometricKeyUseCase,
     private val detectAutofillConflict: DetectAutofillConflict,
 ) : SideEffectViewModel<AppSettingsState, AppSettingsSideEffect>(AppSettingsState()) {
     init {
@@ -160,10 +160,7 @@ internal class AppSettingsViewModel(
                     authenticatedCipher,
                 ),
             )
-            biometricKeyRepository.saveBiometricKey(
-                userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount),
-                biometricKey = BiometricKey(authenticatedCipher.iv),
-            )
+            saveBiometricKeyUseCase.execute(SaveBiometricKeyUseCase.Input(BiometricKey(authenticatedCipher.iv)))
             updateViewState { copy(isBiometricEnabled = true) }
         } else {
             Timber.e("Error during turing biometrics on. Passphrase not in cache after auth.")

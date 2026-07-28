@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":accounts-domain"))
     implementation(project(":preferences-domain"))
     implementation(project(":encryptedstorage"))
     implementation(project(":common"))

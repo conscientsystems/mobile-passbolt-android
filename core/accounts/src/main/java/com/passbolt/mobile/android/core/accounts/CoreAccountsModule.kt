@@ -32,7 +32,6 @@ import org.koin.dsl.module
 
 val accountsCoreModule =
     module {
-        singleOf(::AccountsInteractor)
         singleOf(::AccountKitParser)
         factoryOf(::BiometricCipherImpl) bind BiometricCipher::class
     }

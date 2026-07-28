@@ -25,14 +25,13 @@ package com.passbolt.mobile.android.feature.setup.welcome
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.accounts.AccountKitParser
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AcknowledgeDeviceRooted
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.ConnectToExistingAccount
@@ -49,6 +48,7 @@ import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.Navig
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateToSummary
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateToTransferDetails
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateUp
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import com.passbolt.mobile.android.ui.ResultStatus.AlreadyLinked
 import com.passbolt.mobile.android.ui.ResultStatus.Failure
@@ -90,7 +90,7 @@ class WelcomeViewModelTest : KoinTest {
                 listOf(
                     module {
                         single { mock<RootDetector>() }
-                        single { mock<GlobalPreferencesRepository>() }
+                        single { mock<GetGlobalPreferencesUseCase>() }
                         single { mock<AccountsInteractor>() }
                         single { mock<AccountKitParser>() }
                         factoryOf(::WelcomeViewModel)
@@ -110,8 +110,8 @@ class WelcomeViewModelTest : KoinTest {
         val rootDetector: RootDetector = get()
         whenever(rootDetector.isDeviceRooted()) doReturn false
 
-        val globalPreferencesRepository = get<GlobalPreferencesRepository>()
-        whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+        val getGlobalPreferencesUseCase = get<GetGlobalPreferencesUseCase>()
+        whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
             GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
@@ -189,8 +189,8 @@ class WelcomeViewModelTest : KoinTest {
             val rootDetector: RootDetector = get()
             whenever(rootDetector.isDeviceRooted()) doReturn true
 
-            val globalPreferencesRepository = get<GlobalPreferencesRepository>()
-            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            val getGlobalPreferencesUseCase = get<GetGlobalPreferencesUseCase>()
+            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
                 GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,

@@ -1,3 +1,9 @@
+package com.passbolt.mobile.android.domain.preferences.usecase
+
+import com.passbolt.mobile.android.common.usecase.UseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -20,40 +26,10 @@
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-package com.passbolt.mobile.android.core.navigation
-
-import kotlinx.serialization.Serializable
-
-/**
- * This class is used as data transfer object of account data (private key, user data, etc) which is injected via the
- * launch arguments.
- */
-@Serializable
-data class AccountSetupDataModel(
-    val serverUserId: String,
-    val domain: String,
-    val userName: String,
-    val firstName: String,
-    val lastName: String,
-    val avatarUrl: String?,
-    val keyFingerprint: String,
-    val armoredKey: String,
-) {
-    companion object {
-        fun withRequiredValues(
-            serverUserId: String,
-            domain: String,
-            armoredKey: String,
-        ) = AccountSetupDataModel(
-            serverUserId = serverUserId,
-            domain = domain,
-            armoredKey = armoredKey,
-            firstName = "",
-            lastName = "",
-            avatarUrl = "",
-            userName = "",
-            keyFingerprint = "",
-        )
+class UpdateGlobalPreferencesUseCase(
+    private val globalPreferencesRepository: GlobalPreferencesRepository,
+) : UseCase<GlobalPreferencesUpdate, Unit> {
+    override fun execute(input: GlobalPreferencesUpdate) {
+        globalPreferencesRepository.updateGlobalPreferences(input)
     }
 }

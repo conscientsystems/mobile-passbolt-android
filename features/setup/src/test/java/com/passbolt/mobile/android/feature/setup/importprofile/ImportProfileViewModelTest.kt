@@ -25,11 +25,10 @@ package com.passbolt.mobile.android.feature.setup.importprofile
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.feature.setup.importprofile.ImportProfileIntent.ChangeAccountUrl
 import com.passbolt.mobile.android.feature.setup.importprofile.ImportProfileIntent.ChangePrivateKey
 import com.passbolt.mobile.android.feature.setup.importprofile.ImportProfileIntent.ChangeUserId
@@ -37,6 +36,7 @@ import com.passbolt.mobile.android.feature.setup.importprofile.ImportProfileInte
 import com.passbolt.mobile.android.feature.setup.importprofile.ImportProfileIntent.Import
 import com.passbolt.mobile.android.feature.setup.importprofile.ImportProfileSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.setup.importprofile.ImportProfileSideEffect.NavigateToSummary
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import com.passbolt.mobile.android.ui.ResultStatus.AlreadyLinked
 import com.passbolt.mobile.android.ui.ResultStatus.Failure
 import com.passbolt.mobile.android.ui.ResultStatus.HttpNotSupported

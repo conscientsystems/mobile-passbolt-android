@@ -24,15 +24,19 @@
 package com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.GetAvailableDefaultFiltersUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterIntent.SelectDefaultFilter
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterSideEffect.NavigateUp
 import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 
 internal class DefaultFilterViewModel(
-    private val accountPreferencesRepository: AccountPreferencesRepository,
+    private val getAvailableDefaultFiltersUseCase: GetAvailableDefaultFiltersUseCase,
+    private val getHomeDisplayViewPreferencesUseCase: GetHomeDisplayViewPreferencesUseCase,
+    private val updateHomeDisplayViewPreferencesUseCase: UpdateHomeDisplayViewPreferencesUseCase,
 ) : SideEffectViewModel<DefaultFilterState, DefaultFilterSideEffect>(DefaultFilterState()) {
     init {
         loadInitialValues()
@@ -46,15 +50,15 @@ internal class DefaultFilterViewModel(
     }
 
     private fun loadInitialValues() {
-        val filterValues = accountPreferencesRepository.availableDefaultFilters()
-        val selectedFilter = accountPreferencesRepository.getHomeDisplayViewPreferences().userSetHomeView
+        val filterValues = getAvailableDefaultFiltersUseCase.execute(Unit)
+        val selectedFilter = getHomeDisplayViewPreferencesUseCase.execute(Unit).userSetHomeView
         updateViewState {
             copy(allFilters = filterValues, selectedFilter = selectedFilter)
         }
     }
 
     private fun selectFilter(selectedFilter: DefaultFilterUiModel) {
-        accountPreferencesRepository.updateHomeDisplayViewPreferences(
+        updateHomeDisplayViewPreferencesUseCase.execute(
             HomeDisplayViewPreferencesUpdate(userSetHomeView = selectedFilter),
         )
         updateViewState {

@@ -1,10 +1,11 @@
 package com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu
 
 import androidx.lifecycle.viewModelScope
+import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.Close
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.ExportPrivateKey
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.ExportPublicKey
@@ -24,7 +25,7 @@ import timber.log.Timber
 
 internal class KeyInspectorBottomSheetViewModel(
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-    private val privateKeyRepository: PrivateKeyRepository,
+    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
     private val openPgp: OpenPgp,
     private val coroutineLaunchContext: CoroutineLaunchContext,
 ) : SideEffectViewModel<KeyInspectorBottomSheetState, KeyInspectorBottomSheetSideEffect>(KeyInspectorBottomSheetState()) {
@@ -57,7 +58,7 @@ internal class KeyInspectorBottomSheetViewModel(
     private fun sharePublicKey() {
         viewModelScope.launch(coroutineLaunchContext.io) {
             val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-            privateKeyRepository.getPrivateKey(userId)?.armoredKey?.let {
+            getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey?.armoredKey?.let {
                 when (val publicKeyResult = openPgp.generatePublicKey(it)) {
                     is Error ->
                         emitSideEffect(
@@ -78,7 +79,7 @@ internal class KeyInspectorBottomSheetViewModel(
     private fun sharePrivateKey() {
         viewModelScope.launch(coroutineLaunchContext.io) {
             val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-            privateKeyRepository.getPrivateKey(userId)?.armoredKey?.let {
+            getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey?.armoredKey?.let {
                 emitSideEffect(Dismiss)
                 emitSideEffect(ShowTextShareSheet(it))
             }

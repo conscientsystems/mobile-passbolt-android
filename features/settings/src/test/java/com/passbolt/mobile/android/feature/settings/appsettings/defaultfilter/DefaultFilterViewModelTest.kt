@@ -1,8 +1,10 @@
 package com.passbolt.mobile.android.feature.settings.appsettings.defaultfilter
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.GetAvailableDefaultFiltersUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterIntent.SelectDefaultFilter
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterViewModel
 import com.passbolt.mobile.android.ui.DefaultFilterUiModel
@@ -63,7 +65,9 @@ class DefaultFilterViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<AccountPreferencesRepository>() }
+                        single { mock<GetAvailableDefaultFiltersUseCase>() }
+                        single { mock<GetHomeDisplayViewPreferencesUseCase>() }
+                        single { mock<UpdateHomeDisplayViewPreferencesUseCase>() }
                         factoryOf(::DefaultFilterViewModel)
                     },
                 ),
@@ -86,9 +90,8 @@ class DefaultFilterViewModelTest : KoinTest {
 
     @Test
     fun `should show validated filter list and selected filter initially`() {
-        val accountPreferencesRepository: AccountPreferencesRepository = get()
-        whenever(accountPreferencesRepository.availableDefaultFilters()) doReturn DefaultFilterUiModel.entries
-        whenever(accountPreferencesRepository.getHomeDisplayViewPreferences()) doReturn
+        whenever(get<GetAvailableDefaultFiltersUseCase>().execute(Unit)) doReturn DefaultFilterUiModel.entries
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)) doReturn
             HomeDisplayViewPreferencesUiModel(
                 lastUsedHomeView = ALL_ITEMS,
                 userSetHomeView = EXPIRY,
@@ -102,9 +105,8 @@ class DefaultFilterViewModelTest : KoinTest {
 
     @Test
     fun `selected filter should be updated`() {
-        val accountPreferencesRepository: AccountPreferencesRepository = get()
-        whenever(accountPreferencesRepository.availableDefaultFilters()) doReturn DefaultFilterUiModel.entries
-        whenever(accountPreferencesRepository.getHomeDisplayViewPreferences()) doReturn
+        whenever(get<GetAvailableDefaultFiltersUseCase>().execute(Unit)) doReturn DefaultFilterUiModel.entries
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)) doReturn
             HomeDisplayViewPreferencesUiModel(
                 lastUsedHomeView = ALL_ITEMS,
                 userSetHomeView = EXPIRY,
@@ -116,7 +118,7 @@ class DefaultFilterViewModelTest : KoinTest {
         assertThat(viewModel.viewState.value.allFilters).containsExactlyElementsIn(DefaultFilterUiModel.entries)
         assertThat(viewModel.viewState.value.selectedFilter).isEqualTo(FAVOURITES)
         argumentCaptor<HomeDisplayViewPreferencesUpdate> {
-            verify(accountPreferencesRepository).updateHomeDisplayViewPreferences(capture())
+            verify(get<UpdateHomeDisplayViewPreferencesUseCase>()).execute(capture())
             assertThat(firstValue.userSetHomeView).isEqualTo(FAVOURITES)
         }
     }

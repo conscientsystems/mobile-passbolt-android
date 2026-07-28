@@ -27,7 +27,6 @@ import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.ManageAccount
-import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.domain.accounts.usecase.GetAllAccountsDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
@@ -58,7 +57,6 @@ class AccountsListViewModel(
     private val removeAllAccountDataUseCase: RemoveAllAccountDataUseCase,
     private val signOutUseCase: SignOutUseCase,
     private val saveCurrentApiUrlUseCase: SaveCurrentApiUrlUseCase,
-    private val databaseProvider: DatabaseProvider,
 ) : SideEffectViewModel<AccountsListState, AccountsListSideEffect>(
         AccountsListState(
             showManageAccountsTopBar = authConfig is ManageAccount,
@@ -120,7 +118,6 @@ class AccountsListViewModel(
                 }
             }
             removeAllAccountDataUseCase.execute(UserIdInput(account.userId))
-            databaseProvider.delete(account.userId)
 
             updateViewState { copy(showProgress = false) }
             emitSideEffect(ShowSuccessSnackBar(ACCOUNT_REMOVED))

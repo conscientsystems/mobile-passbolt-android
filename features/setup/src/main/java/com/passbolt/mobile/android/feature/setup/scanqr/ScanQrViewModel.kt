@@ -28,21 +28,20 @@ import com.passbolt.mobile.android.common.HttpsVerifier
 import com.passbolt.mobile.android.common.UuidProvider
 import com.passbolt.mobile.android.common.usecase.FetchFileAsStringUseCase
 import com.passbolt.mobile.android.core.accounts.AccountKitParser
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
 import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
 import com.passbolt.mobile.android.domain.accounts.usecase.CheckAccountExistsUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
 import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
-import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+import com.passbolt.mobile.android.domain.privatekey.usecase.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.ConfirmSetupLeave
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.DismissHelpMenu
@@ -71,6 +70,7 @@ import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.Use
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NOT_A_PASSBOLT_QR
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NO_BARCODES_IN_RANGE
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import com.passbolt.mobile.android.ui.ResultStatus
 import com.passbolt.mobile.android.ui.Status
 import kotlinx.coroutines.Job
@@ -82,7 +82,7 @@ internal class ScanQrViewModel(
     private val updateTransferUseCase: UpdateTransferUseCase,
     private val qrParser: ScanQrParser,
     private val uuidProvider: UuidProvider,
-    private val privateKeyRepository: PrivateKeyRepository,
+    private val savePrivateKeyUseCase: SavePrivateKeyUseCase,
     private val updateAccountDataUseCase: UpdateAccountDataUseCase,
     private val checkAccountExistsUseCase: CheckAccountExistsUseCase,
     private val httpsVerifier: HttpsVerifier,
@@ -232,7 +232,7 @@ internal class ScanQrViewModel(
     }
 
     private suspend fun parserFinishedWithSuccess(armoredKey: String) {
-        if (privateKeyRepository.savePrivateKey(userId, PrivateKey(armoredKey))) {
+        if (savePrivateKeyUseCase.execute(SavePrivateKeyUseCase.Input(userId, PrivateKey(armoredKey))).saved) {
             updateTransfer(pageNumber = currentPage, Status.COMPLETE)
             emitSideEffect(NavigateToSummary(ResultStatus.Success(userId)))
         } else {

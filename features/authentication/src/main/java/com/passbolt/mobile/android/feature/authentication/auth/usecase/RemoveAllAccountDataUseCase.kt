@@ -2,6 +2,7 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
+import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountDataUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountUseCase
@@ -42,6 +43,7 @@ class RemoveAllAccountDataUseCase(
     private val sessionRepository: SessionRepository,
     private val removeAccountUseCase: RemoveAccountUseCase,
     private val removeServerPublicRsaKeyUseCase: RemoveServerPublicRsaKeyUseCase,
+    private val databaseProvider: DatabaseProvider,
 ) : AsyncUseCase<UserIdInput, Unit> {
     override suspend fun execute(input: UserIdInput) {
         val accountToRemoveId = UserIdInput(input.userId)
@@ -53,12 +55,13 @@ class RemoveAllAccountDataUseCase(
         }
     }
 
-    private fun removeAccountData(userIdInput: UserIdInput) {
+    private suspend fun removeAccountData(userIdInput: UserIdInput) {
         removeAccountDataUseCase.execute(userIdInput)
         passphraseRepository.removePassphrase(userIdInput.userId)
         privateKeyRepository.removePrivateKey(userIdInput.userId)
         sessionRepository.removeSession(userIdInput.userId)
         removeAccountUseCase.execute(userIdInput)
         removeServerPublicRsaKeyUseCase.execute(userIdInput)
+        databaseProvider.delete(userIdInput.userId)
     }
 }

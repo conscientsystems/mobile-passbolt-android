@@ -28,8 +28,8 @@ import com.passbolt.mobile.android.domain.accounts.usecase.SaveServerFingerprint
 import com.passbolt.mobile.android.domain.auth.usecase.GetPassphraseUseCase
 import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
-import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AcceptChangedServerFingerprint
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AccessLogs
@@ -119,14 +119,14 @@ class AuthViewModel(
     private val userId: String,
     private val appContext: AppContext,
     private val getAccountDataUseCase: GetAccountDataUseCase,
-    private val privateKeyRepository: PrivateKeyRepository,
+    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
     private val verifyPassphraseUseCase: VerifyPassphraseUseCase,
     private val biometricCipher: BiometricCipher,
     private val getPassphraseUseCase: GetPassphraseUseCase,
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val rootDetector: RootDetector,
     private val biometryInteractor: BiometryInteractor,
-    private val globalPreferencesRepository: GlobalPreferencesRepository,
+    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase,
     private val runtimeAuthenticatedFlag: RuntimeAuthenticatedFlag,
     private val saveSessionUseCase: SaveSessionUseCase,
     private val saveSelectedAccountUseCase: SaveSelectedAccountUseCase,
@@ -246,7 +246,7 @@ class AuthViewModel(
     }
 
     private fun checkRootAndBiometry() {
-        if (!globalPreferencesRepository.getGlobalPreferences().isHideRootDialogEnabled && rootDetector.isDeviceRooted()) {
+        if (!getGlobalPreferencesUseCase.execute(Unit).isHideRootDialogEnabled && rootDetector.isDeviceRooted()) {
             updateViewState { copy(showDeviceRooted = true) }
         } else {
             handleBiometry()
@@ -294,7 +294,7 @@ class AuthViewModel(
     private fun validatePassphrase(passphrase: ByteArray) {
         launch {
             val privateKey =
-                requireNotNull(privateKeyRepository.getPrivateKey(userId)) {
+                requireNotNull(getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey) {
                     "Unable to restore private key."
                 }.armoredKey
             val isPassphraseCorrect =

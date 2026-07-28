@@ -4,8 +4,8 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.AllItemsClick
@@ -96,7 +96,7 @@ class FiltersMenuViewModelTest : KoinTest {
                     module {
                         single { mock<GetFeatureFlagsUseCase>() }
                         single { mock<GetRbacRulesUseCase>() }
-                        single { mock<AccountPreferencesRepository>() }
+                        single { mock<UpdateHomeDisplayViewPreferencesUseCase>() }
                         singleOf(::HomeDisplayViewMapper)
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factoryOf(::FiltersMenuViewModel)
@@ -163,7 +163,7 @@ class FiltersMenuViewModelTest : KoinTest {
     fun `should handle all home view changes and emit correct side effects`() =
         runTest {
             viewModel = get()
-            val accountPreferencesRepository = get<AccountPreferencesRepository>()
+            val updateHomeDisplayViewPreferencesUseCase = get<UpdateHomeDisplayViewPreferencesUseCase>()
             val homeDisplayViewMapper = get<HomeDisplayViewMapper>()
 
             // (Intent, HomeDisplayView, Expected HomeDisplayViewModel)
@@ -187,7 +187,7 @@ class FiltersMenuViewModelTest : KoinTest {
                     assertIs<HomeViewChanged>(effect)
                     assertThat(effect.homeDisplay).isEqualTo(homeDisplayViewMapper.map(homeDisplayView))
                     assertIs<Dismiss>(awaitItem())
-                    verify(accountPreferencesRepository).updateHomeDisplayViewPreferences(
+                    verify(updateHomeDisplayViewPreferencesUseCase).execute(
                         HomeDisplayViewPreferencesUpdate(lastUsedHomeView = homeDisplayView),
                     )
                 }

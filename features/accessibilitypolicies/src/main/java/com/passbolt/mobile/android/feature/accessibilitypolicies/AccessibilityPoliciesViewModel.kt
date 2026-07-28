@@ -24,8 +24,8 @@
 package com.passbolt.mobile.android.feature.accessibilitypolicies
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Accept
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Decline
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesSideEffect.NavigateToAcceptedScreen
@@ -33,13 +33,13 @@ import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPo
 import timber.log.Timber
 
 class AccessibilityPoliciesViewModel(
-    private val globalPreferencesRepository: GlobalPreferencesRepository,
+    private val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase,
 ) : SideEffectViewModel<AccessibilityPoliciesState, AccessibilityPoliciesSideEffect>(AccessibilityPoliciesState) {
     fun onIntent(intent: AccessibilityPoliciesIntent) {
         when (intent) {
             Accept -> {
                 Timber.d("Accessibility policies accepted")
-                globalPreferencesRepository.updateGlobalPreferences(
+                updateGlobalPreferencesUseCase.execute(
                     GlobalPreferencesUpdate(accessibilityPoliciesConsentGiven = true),
                 )
                 emitSideEffect(NavigateToAcceptedScreen)

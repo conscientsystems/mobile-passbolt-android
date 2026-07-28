@@ -7,6 +7,7 @@ import com.passbolt.mobile.android.core.navigation.constants.Autofillresources
 import com.passbolt.mobile.android.core.navigation.constants.Main
 import com.passbolt.mobile.android.core.navigation.constants.Setup
 import com.passbolt.mobile.android.core.navigation.constants.Startup
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import kotlinx.serialization.json.Json
 import java.io.Serializable
 

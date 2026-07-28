@@ -27,8 +27,8 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.DISABLED
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.NOT_SUPPORTED
-import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAccessibilityPoliciesConsent
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToAutofillEnabled
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.autofill.AutofillScreenSideEffect.NavigateToChromeNativeAutofill
@@ -71,7 +71,7 @@ class AutofillSettingsViewModelTest : KoinTest {
                 listOf(
                     module {
                         single { mock<AutofillInformationProvider>() }
-                        single { mock<GlobalPreferencesRepository>() }
+                        single { mock<GetGlobalPreferencesUseCase>() }
                         factoryOf(::AutofillSettingsViewModel)
                     },
                 ),
@@ -210,12 +210,12 @@ class AutofillSettingsViewModelTest : KoinTest {
     fun `when accessibility autofill disabled a click should navigate to encourage accessibility`() =
         runTest {
             val autofillInformationProvider: AutofillInformationProvider = get()
-            val globalPreferencesRepository: GlobalPreferencesRepository = get()
+            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
             whenever(autofillInformationProvider.isAutofillServiceSupported()) doReturn true
             whenever(autofillInformationProvider.isPassboltAutofillServiceSet()) doReturn true
             whenever(autofillInformationProvider.getChromeNativeAutofillStatus()) doReturn DISABLED
             whenever(autofillInformationProvider.isAccessibilityAutofillSetup()) doReturn false
-            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
                 GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
@@ -244,12 +244,12 @@ class AutofillSettingsViewModelTest : KoinTest {
     fun `when consent not given a click should navigate to consent screen`() =
         runTest {
             val autofillInformationProvider: AutofillInformationProvider = get()
-            val globalPreferencesRepository: GlobalPreferencesRepository = get()
+            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
             whenever(autofillInformationProvider.isAutofillServiceSupported()) doReturn true
             whenever(autofillInformationProvider.isPassboltAutofillServiceSet()) doReturn true
             whenever(autofillInformationProvider.getChromeNativeAutofillStatus()) doReturn DISABLED
             whenever(autofillInformationProvider.isAccessibilityAutofillSetup()) doReturn false
-            whenever(globalPreferencesRepository.getGlobalPreferences()) doReturn
+            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
                 GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,

@@ -5,6 +5,8 @@ plugins {
 dependencies {
     implementation(project(":common"))
     implementation(project(":entity"))
+    implementation(project(":privatekey-domain"))
+    implementation(project(":uimodel"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

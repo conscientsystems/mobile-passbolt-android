@@ -50,7 +50,7 @@ import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDat
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
-import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.domain.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseCreateResourceMenu
@@ -146,7 +146,8 @@ class HomeViewModelTest : KoinTest {
                     singleOf(::DataRefreshTrackingFlow)
                     singleOf(::SessionRefreshTrackingFlow)
                     single { mock<GetSelectedAccountDataUseCase>() }
-                    single { mock<AccountPreferencesRepository>() }
+                    single { mock<GetSelectedAccountUseCase> { on { execute(Unit) } doReturn GetSelectedAccountUseCase.Output("userId") } }
+                    single { mock<GetHomeDisplayViewPreferencesUseCase>() }
                     single { mock<HomeDisplayViewMapper>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
@@ -195,7 +196,7 @@ class HomeViewModelTest : KoinTest {
             ),
         )
 
-        whenever(get<AccountPreferencesRepository>().getHomeDisplayViewPreferences()).thenReturn(
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)).thenReturn(
             HomeDisplayViewPreferencesUiModel(
                 lastUsedHomeView = HomeDisplayViewUiModel.ALL_ITEMS,
                 userSetHomeView = DefaultFilterUiModel.ALL_ITEMS,
@@ -705,7 +706,10 @@ class HomeViewModelTest : KoinTest {
         runTest {
             mockHomeData()
             // first read (initialize) returns the initial account, second read (resume) a new one
-            whenever(get<GetSelectedAccountDataUseCase>().selectedAccountId).thenReturn("id1", "id2")
+            whenever(get<GetSelectedAccountUseCase>().execute(Unit)).thenReturn(
+                GetSelectedAccountUseCase.Output("id1"),
+                GetSelectedAccountUseCase.Output("id2"),
+            )
 
             viewModel = get()
             viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
@@ -738,7 +742,7 @@ class HomeViewModelTest : KoinTest {
     fun `should not reload home data on resume when selected account unchanged`() =
         runTest {
             mockHomeData()
-            whenever(get<GetSelectedAccountDataUseCase>().selectedAccountId).thenReturn("id1")
+            whenever(get<GetSelectedAccountUseCase>().execute(Unit)).thenReturn(GetSelectedAccountUseCase.Output("id1"))
             val provider: HomeDataProvider = get()
 
             viewModel = get()

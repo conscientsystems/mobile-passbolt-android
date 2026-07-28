@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.feature.setup
 
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 
 /**
  * Passbolt - Open source password manager for teams
