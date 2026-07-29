@@ -26,6 +26,7 @@ package com.passbolt.mobile.android.data.preferences.datasource.local
 import com.passbolt.mobile.android.data.preferences.GLOBAL_PREFERENCES_FILE_NAME
 import com.passbolt.mobile.android.data.preferences.KEY_ACCESSIBILITY_POLICIES_CONSENT_GIVEN
 import com.passbolt.mobile.android.data.preferences.KEY_API_FETCH_PAGE_SIZE
+import com.passbolt.mobile.android.data.preferences.KEY_API_FETCH_PAGE_SIZE_MANUAL
 import com.passbolt.mobile.android.data.preferences.KEY_DEBUG_LOGS_ENABLED
 import com.passbolt.mobile.android.data.preferences.KEY_DEBUG_LOGS_FILE_CREATION_DATE_TIME
 import com.passbolt.mobile.android.data.preferences.KEY_DEBUG_LOGS_LAST_APP_VERSION
@@ -53,6 +54,7 @@ internal class GlobalPreferencesLocalDataSourceImpl(
         val isHideRootDialogEnabled = sharedPreferences.getBoolean(KEY_IS_HIDE_ROOT_DIALOG_ENABLED, false)
         val isAuthRequiredOnEveryEntry = sharedPreferences.getBoolean(KEY_IS_AUTH_REQUIRED_ON_EVERY_ENTRY, false)
         val apiFetchPageSize = sharedPreferences.getInt(KEY_API_FETCH_PAGE_SIZE, PreferencesDefaults.API_FETCH_PAGE_SIZE)
+        val isApiFetchPageSizeManuallySet = sharedPreferences.getBoolean(KEY_API_FETCH_PAGE_SIZE_MANUAL, false)
         val accessibilityPoliciesConsentGiven =
             sharedPreferences.getBoolean(KEY_ACCESSIBILITY_POLICIES_CONSENT_GIVEN, false)
         return GlobalPreferencesUiModel(
@@ -62,6 +64,7 @@ internal class GlobalPreferencesLocalDataSourceImpl(
             isHideRootDialogEnabled = isHideRootDialogEnabled,
             isAuthRequiredOnEveryEntry = isAuthRequiredOnEveryEntry,
             apiFetchPageSize = apiFetchPageSize,
+            isApiFetchPageSizeManuallySet = isApiFetchPageSizeManuallySet,
             accessibilityPoliciesConsentGiven = accessibilityPoliciesConsentGiven,
         )
     }
@@ -86,6 +89,9 @@ internal class GlobalPreferencesLocalDataSourceImpl(
             }
             update.apiFetchPageSize?.let {
                 putInt(KEY_API_FETCH_PAGE_SIZE, it)
+            }
+            update.isApiFetchPageSizeManuallySet?.let {
+                putBoolean(KEY_API_FETCH_PAGE_SIZE_MANUAL, it)
             }
             update.accessibilityPoliciesConsentGiven?.let {
                 putBoolean(KEY_ACCESSIBILITY_POLICIES_CONSENT_GIVEN, it)

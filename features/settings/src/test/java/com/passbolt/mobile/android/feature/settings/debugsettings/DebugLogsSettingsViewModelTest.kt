@@ -98,6 +98,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                     apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -121,6 +122,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                     apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -145,6 +147,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                     apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
@@ -174,6 +177,7 @@ class DebugLogsSettingsViewModelTest : KoinTest {
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
                     apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 

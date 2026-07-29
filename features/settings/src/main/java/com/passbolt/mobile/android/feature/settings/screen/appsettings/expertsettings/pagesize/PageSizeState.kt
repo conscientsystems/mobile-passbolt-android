@@ -26,5 +26,18 @@ package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertse
 import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
 
 internal data class PageSizeState(
-    val selectedIndex: Int = ALLOWED_PAGE_SIZES.indexOf(PreferencesDefaults.API_FETCH_PAGE_SIZE),
-)
+    val selectedIndex: Int = INITIAL_INDEX,
+    val savedIndex: Int = INITIAL_INDEX,
+    val automaticDefaultIndex: Int = INITIAL_INDEX,
+    val recommendedLimitIndex: Int = ALLOWED_PAGE_SIZES.lastIndex,
+) {
+    val isOverRecommendedLimit: Boolean
+        get() = selectedIndex > recommendedLimitIndex
+
+    val hasUnsavedChange: Boolean
+        get() = selectedIndex != savedIndex
+
+    private companion object {
+        private val INITIAL_INDEX = ALLOWED_PAGE_SIZES.indexOf(PreferencesDefaults.API_FETCH_PAGE_SIZE)
+    }
+}

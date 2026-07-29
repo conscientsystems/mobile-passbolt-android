@@ -26,6 +26,10 @@ package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertse
 internal sealed interface PageSizeIntent {
     data object GoBack : PageSizeIntent
 
+    data object SaveClick : PageSizeIntent
+
+    data object RestoreDefaultsClick : PageSizeIntent
+
     data class PageSizeChanged(
         val sliderIndex: Int,
     ) : PageSizeIntent

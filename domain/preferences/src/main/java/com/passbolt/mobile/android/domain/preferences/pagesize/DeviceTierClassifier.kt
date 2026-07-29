@@ -1,6 +1,6 @@
 /**
  * Passbolt - Open source password manager for teams
- * Copyright (c) 2021 Passbolt SA
+ * Copyright (c) 2026 Passbolt SA
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
  * Public License (AGPL) as published by the Free Software Foundation version 3.
@@ -21,7 +21,27 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize
+package com.passbolt.mobile.android.domain.preferences.pagesize
 
-@Suppress("MagicNumber")
-internal val ALLOWED_PAGE_SIZES = listOf(250, 500, 1_000, 2_000, 3_000, 5_000, 10_000)
+import com.passbolt.mobile.android.domain.preferences.pagesize.DeviceTier.HIGH
+import com.passbolt.mobile.android.domain.preferences.pagesize.DeviceTier.LOW
+import com.passbolt.mobile.android.domain.preferences.pagesize.DeviceTier.MEDIUM
+
+class DeviceTierClassifier {
+    fun classify(fingerprint: DevicePerformanceFingerprint): DeviceTier =
+        when {
+            fingerprint.isLowRamDevice ||
+                fingerprint.totalMemMb < LOW_MAX_TOTAL_MEM_MB ||
+                fingerprint.memoryClassMb <= LOW_MAX_MEMORY_CLASS_MB -> LOW
+            fingerprint.totalMemMb < HIGH_MIN_TOTAL_MEM_MB ||
+                fingerprint.memoryClassMb < HIGH_MIN_MEMORY_CLASS_MB -> MEDIUM
+            else -> HIGH
+        }
+
+    private companion object {
+        private const val LOW_MAX_TOTAL_MEM_MB = 7_000L
+        private const val LOW_MAX_MEMORY_CLASS_MB = 128
+        private const val HIGH_MIN_TOTAL_MEM_MB = 10_000L
+        private const val HIGH_MIN_MEMORY_CLASS_MB = 256
+    }
+}

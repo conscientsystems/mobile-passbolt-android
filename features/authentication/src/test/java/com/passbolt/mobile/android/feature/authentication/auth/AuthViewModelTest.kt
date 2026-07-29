@@ -167,6 +167,7 @@ class AuthViewModelTest : KoinTest {
                 isHideRootDialogEnabled = true,
                 isAuthRequiredOnEveryEntry = true,
                 apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                isApiFetchPageSizeManuallySet = false,
                 accessibilityPoliciesConsentGiven = false,
             )
 
