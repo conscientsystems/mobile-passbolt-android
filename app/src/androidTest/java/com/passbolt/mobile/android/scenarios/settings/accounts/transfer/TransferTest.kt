@@ -40,6 +40,7 @@ import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.feature.authentication.AuthenticationMainActivity
 import com.passbolt.mobile.android.helpers.getString
 import com.passbolt.mobile.android.helpers.signIn
+import com.passbolt.mobile.android.helpers.waitForText
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
 import com.passbolt.mobile.android.rules.IdlingResourceRule
@@ -295,6 +296,9 @@ class TransferTest : KoinTest {
             // re-authentication before start transfer
             onNodeWithTag(Auth.PASSPHRASE_INPUT).performTextReplacement(managedAccountIntentCreator.getPassphrase())
             onNodeWithTag(Auth.SIGN_IN_BUTTON).performClick()
+            // The transferring screen (QR code + "Cancel transfer") is composed asynchronously after
+            // re-authentication; wait for it before asserting on it or interacting with it.
+            waitForText(getString(LocalizationR.string.transfer_account_cancel_button))
         }
     }
 

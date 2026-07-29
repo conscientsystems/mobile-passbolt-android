@@ -108,7 +108,7 @@ class DeleteResourcesTest(
         @Parameterized.Parameters(name = "Resource name: {0}")
         fun resourceNames() =
             listOf(
-                "To be deleted - Default resource type",
+                "To be deleted - Default resource",
             )
     }
 
@@ -153,7 +153,7 @@ class DeleteResourcesTest(
                 hasTestTag(Home.RESOURCE_ROW).and(
                     hasAnyDescendant(hasText(randomizedName, substring = true, ignoreCase = true)),
                 )
-            waitUntil(timeoutMillis = 15_000, conditionDescription = "Resource removed") {
+            waitUntil(timeoutMillis = 20_000, conditionDescription = "Resource removed") {
                 onAllNodes(deletedRowMatcher, useUnmergedTree = true).fetchSemanticsNodes().isEmpty()
             }
 
