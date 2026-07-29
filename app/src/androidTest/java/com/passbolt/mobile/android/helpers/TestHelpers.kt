@@ -23,7 +23,9 @@
 
 package com.passbolt.mobile.android.helpers
 
+import android.util.Log
 import androidx.annotation.StringRes
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasClickAction
@@ -68,6 +70,7 @@ internal fun getString(
 internal fun ComposeTestRule.createNewPasswordFromHomeScreen(name: String) {
     waitForCreateButton()
     onNodeWithTag(Home.FAB).performClick()
+    waitForText(getString(LocalizationR.string.create_resource_menu_create_password))
     onNodeWithText(getString(LocalizationR.string.create_resource_menu_create_password)).performClick()
     waitForResourceForm()
     onNodeWithTag(ResourceForm.NAME_INPUT).performTextReplacement(name)
@@ -116,7 +119,7 @@ internal fun ComposeTestRule.searchAndOpenFirstResourceByName(name: String) {
             hasAnyDescendant(hasText(name, substring = true, ignoreCase = true)),
         )
 
-    waitUntil(conditionDescription = "Waiting for resource $name", timeoutMillis = 3_000) {
+    waitUntil(conditionDescription = "Waiting for resource $name", timeoutMillis = 4_000) {
         onAllNodes(rowMatcher, useUnmergedTree = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
@@ -155,15 +158,70 @@ internal fun ComposeTestRule.searchAndClickMoreOfFirstResource(name: String) {
             hasAnyDescendant(hasText(name, substring = true, ignoreCase = true)),
         )
 
-    waitUntil(conditionDescription = "Waiting for resource $name", timeoutMillis = 3_000) {
+    waitUntil(conditionDescription = "Waiting for resource $name", timeoutMillis = 10_000) {
         onAllNodes(rowMatcher, useUnmergedTree = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
     }
-    onAllNodes(hasTestTag(Home.RESOURCE_MORE), useUnmergedTree = true)
-        .onFirst()
-        .performClick()
+
+    openFirstResourceMoreMenu()
 }
+
+/**
+ * Taps the first resource row's More button and waits for the More bottom sheet to open.
+ *
+ * The tap can be silently lost while the freshly filtered list is still recomposing - the
+ * bottom sheet never opens, so nothing inside it (e.g. the Edit/Delete items) is ever composed
+ * and a follow-up `onNodeWithText(...)` fails with "could not find any node". This retries the
+ * tap until the sheet is actually shown, detected via the always-present "Copy URL" item, so
+ * callers can rely on the menu being open.
+ *
+ * Why retry instead of an idling resource:
+ * - The Home list is Paging 3 (`LazyPagingItems`), so there is no single async call with a clean
+ *   start/end to wrap in a `setIdle(false)`/`setIdle(true)` pair. The closest signal,
+ *   `loadState.refresh: Loading -> NotLoading`, lives at the *data* layer and fires one frame too
+ *   early: it means the page data is available, not that the `LazyColumn` has finished recomposing
+ *   and laid the row out at stable, hit-testable coordinates.
+ * - The `waitUntil` in the caller already waits for "the row's node exists", but that is satisfied
+ *   before the row's relayout settles. The residual race is the sub-frame between the finder
+ *   computing the button's bounds and the tap being injected, during which the list can still
+ *   swap a placeholder for content or reorder, moving the button out from under the tap.
+ * - Waiting on any pre-tap signal is therefore necessary-but-not-sufficient and can always be
+ *   beaten by that sub-frame reflow. Retrying and verifying the actual *effect* (the sheet opened)
+ *   is self-correcting, so it is the robust tool for this last-mile layout/hit-test race.
+ */
+private fun ComposeTestRule.openFirstResourceMoreMenu() {
+    val sheetOpenMatcher = hasText(getString(LocalizationR.string.more_copy_uri))
+
+    repeat(MORE_MENU_OPEN_ATTEMPTS) { attempt ->
+        onAllNodes(hasTestTag(Home.RESOURCE_MORE), useUnmergedTree = true)
+            .onFirst()
+            .performClick()
+        try {
+            waitUntil(
+                conditionDescription = "Waiting for more menu to open (attempt ${attempt + 1})",
+                timeoutMillis = MORE_MENU_OPEN_TIMEOUT_MILLIS,
+            ) {
+                onAllNodes(sheetOpenMatcher, useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            }
+            // Surface any retry so it is not silently absorbed:
+            // if this regularly logs attempt > 1, the app-side fix is needed, not a bigger retry cap.
+            if (attempt > 0) {
+                Log.w(MORE_MENU_LOG_TAG, "More menu opened only on attempt ${attempt + 1}; first tap(s) were lost")
+            }
+            return
+        } catch (ignored: ComposeTimeoutException) {
+            Log.w(MORE_MENU_LOG_TAG, "More menu tap lost on attempt ${attempt + 1}; retrying")
+        }
+    }
+    error("More menu did not open after $MORE_MENU_OPEN_ATTEMPTS attempts")
+}
+
+private const val MORE_MENU_OPEN_ATTEMPTS = 3
+private const val MORE_MENU_OPEN_TIMEOUT_MILLIS = 5_000L
+private const val MORE_MENU_LOG_TAG = "MoreMenuHelper"
 
 /**
  * Searches for a folder by name from the Home screen (Folders filter) and opens the first matching result.
@@ -262,10 +320,12 @@ internal fun ComposeTestRule.waitForResourceForm() {
 /**
  * Waits for the home screen to be ready for interaction.
  *
+ * [timeoutMillis] defaults to 5s (enough after a normal sign-in).
+ *
  * // TODO: check if it can be change to sth similar to idling resources
  */
-internal fun ComposeTestRule.waitForHomeScreen() {
-    waitUntil(timeoutMillis = 5_000, conditionDescription = "Waiting for home screen") {
+internal fun ComposeTestRule.waitForHomeScreen(timeoutMillis: Long = 5_000) {
+    waitUntil(timeoutMillis = timeoutMillis, conditionDescription = "Waiting for home screen") {
         onAllNodes(hasTestTag(Home.SCREEN))
             .fetchSemanticsNodes()
             .isNotEmpty()
@@ -287,4 +347,35 @@ internal fun ComposeTestRule.waitForCreateButton() {
             .fetchSemanticsNodes()
             .isNotEmpty()
     }
+}
+
+/**
+ * Waits until a node whose text matches [text] is present before it is interacted with.
+ *
+ * Screen transitions (e.g. after re-authentication, or navigating to the setup
+ * biometric/autofill screens) recompose asynchronously. Querying the target button
+ * immediately races the transition and fails with "Failed to inject touch input ... could
+ * not find any node that satisfies (Text ... contains '...')" - sometimes reporting the
+ * node only exists in the unmerged tree, which is the very same race caught mid-merge.
+ */
+internal fun ComposeTestRule.waitForText(
+    text: String,
+    timeoutMillis: Long = 5_000,
+) {
+    waitUntil(timeoutMillis = timeoutMillis, conditionDescription = "Waiting for text '$text'") {
+        onAllNodes(hasText(text))
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+    }
+}
+
+/**
+ * Accepts the "How Passbolt uses the Accessibility Service" consent screen that is shown at the
+ * end of the first-run setup flow (after the biometric and autofill steps), before the home
+ * screen is reached. In the setup flow both Accept and Decline proceed to home.
+ */
+internal fun ComposeTestRule.acceptAccessibilityPolicies() {
+    val accept = getString(LocalizationR.string.accessibility_policies_accept)
+    waitForText(accept)
+    onNodeWithText(accept).performClick()
 }

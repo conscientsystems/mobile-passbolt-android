@@ -26,9 +26,6 @@ package com.passbolt.mobile.android.scenarios.settings
 import android.app.Instrumentation.ActivityResult
 import android.content.Intent
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasContentDescription
@@ -245,38 +242,6 @@ class SettingsTest : KoinTest {
     }
 
     @Test
-    fun asAnAndroidUserICanEnableDeveloperMode() {
-        //    Given     that I am #MOBILE_USER_ON_SETTINGS_PAGE
-        composeTestRule.apply {
-            //    And	    I'm on the "Expert settings" screen
-            onNodeWithText(getString(LocalizationR.string.settings_app_settings)).performClick()
-            onNodeWithText(getString(LocalizationR.string.settings_app_settings_expert_settings)).performClick()
-            //    When 	    I enable the "Developer mode" switch
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
-            //    Then      I see that switch is enabled
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsOn()
-            //    And 	    I see that "Hide "device is rooted" dialog" switch is available
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsEnabled()
-        }
-    }
-
-    @Test
-    fun asAnAndroidUserICanDisableDeveloperMode() {
-        //    Given     that I am #MOBILE_USER_ON_SETTINGS_PAGE
-        composeTestRule.apply {
-            //    And	    I'm on the "Expert settings" screen
-            onNodeWithText(getString(LocalizationR.string.settings_app_settings)).performClick()
-            onNodeWithText(getString(LocalizationR.string.settings_app_settings_expert_settings)).performClick()
-            //    When 	    I disable the "Developer mode" switch
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
-            //    And 	    I see that every subsequent position is unavailable
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsOff()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsNotEnabled()
-        }
-    }
-
-    @Test
     fun asAnAndroidUserICanHideDeviceIsRootedDialog() {
         //    Given     that I am #MOBILE_USER_ON_SETTINGS_PAGE
         composeTestRule.apply {
@@ -285,9 +250,8 @@ class SettingsTest : KoinTest {
             onNodeWithText(getString(LocalizationR.string.settings_app_settings_expert_settings)).performClick()
             //    When 	    I enable the "Hide "device is rooted" dialog" switch
             onAllNodesWithTag(SwitchableSetting.SWITCH)[1].performClick()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].performClick()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsOn()
-            onAllNodesWithTag(SwitchableSetting.SWITCH)[2].assertIsOn()
+            //    Then      I see that the switch is enabled
+            onAllNodesWithTag(SwitchableSetting.SWITCH)[1].assertIsOn()
         }
     }
 

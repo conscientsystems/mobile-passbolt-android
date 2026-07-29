@@ -42,6 +42,7 @@ import com.passbolt.mobile.android.core.idlingresource.ResourcesFullRefreshIdlin
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
 import com.passbolt.mobile.android.feature.setup.SetUpActivity
 import com.passbolt.mobile.android.helpers.getString
+import com.passbolt.mobile.android.helpers.waitForText
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
 import com.passbolt.mobile.android.rules.IdlingResourceRule
@@ -139,6 +140,7 @@ class SetupConfigureBiometricUnavailableTest : KoinTest {
                 onNodeWithTag(Auth.PASSPHRASE_INPUT).performTextReplacement(managedAccountIntentCreator.getPassphrase())
                 onNodeWithTag(Auth.SIGN_IN_BUTTON).performClick()
                 //    When      I click on Configure {biometrics provider} button
+                waitForText(getString(LocalizationR.string.biometric_setup_use_biometric_button))
                 onNodeWithText(getString(LocalizationR.string.biometric_setup_use_biometric_button)).performClick()
             }
             //    Then      I am taken to the phone security settings / OS-specific process where I can complete the biometric setup
@@ -162,6 +164,7 @@ class SetupConfigureBiometricUnavailableTest : KoinTest {
             onNodeWithTag(Auth.PASSPHRASE_INPUT).performTextReplacement(managedAccountIntentCreator.getPassphrase())
             onNodeWithTag(Auth.SIGN_IN_BUTTON).performClick()
             //    When      I click the "Maybe later" button
+            waitForText(getString(LocalizationR.string.common_maybe_later))
             onNodeWithText(getString(LocalizationR.string.common_maybe_later)).performClick()
             waitForIdle()
             //    Then      I am redirected to the setup of the autofill screen
