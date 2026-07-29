@@ -118,6 +118,7 @@ retrofit-gsonconverter = { module = "com.squareup.retrofit2:converter-gson", ver
 retrofit-scalarsconverter = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okHttp" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okHttp" }
+mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okHttp" }
 
 # database
 room-core = { module = "androidx.room:room-ktx", version.ref = "room" }

@@ -251,6 +251,13 @@ dependencies {
     testImplementation(project(":commontest"))
 
     androidTestImplementation(project(":testtags"))
+    androidTestImplementation(project(":resourcetypes-domain"))
+    androidTestImplementation(project(":dto"))
+    androidTestImplementation(project(":supportedresourcetypes"))
+    androidTestImplementation(":gopenpgp@aar")
+    androidTestImplementation(libs.mockwebserver)
+    androidTestImplementation(libs.room.runtime)
+    androidTestImplementation(libs.sqlite)
     androidTestImplementation(platform(libs.koin.bom))
     androidTestImplementation(libs.android.tests.runner)
     androidTestImplementation(libs.android.test.rules)
