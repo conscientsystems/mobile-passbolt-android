@@ -28,6 +28,7 @@ import com.passbolt.mobile.android.core.networking.ResponseHandler
 import com.passbolt.mobile.android.core.networking.callWithHandler
 import com.passbolt.mobile.android.core.networking.toDomainResult
 import com.passbolt.mobile.android.data.resources.datasource.remote.api.ResourceApi
+import com.passbolt.mobile.android.data.resources.mapper.toUiModel
 import com.passbolt.mobile.android.domain.resources.ResourcesRemoteDataSource
 import com.passbolt.mobile.android.domain.resources.mapper.toDomain
 import com.passbolt.mobile.android.domain.resources.model.Resource
@@ -37,14 +38,12 @@ import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypeIdTo
 import com.passbolt.mobile.android.dto.request.CreateResourceDto
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
-import com.passbolt.mobile.android.mappers.TagsModelMapper
 import com.passbolt.mobile.android.ui.ResourceUiModelWithAttributes
 
 internal class ResourcesRemoteDataSourceImpl(
     private val resourceApi: ResourceApi,
     private val responseHandler: ResponseHandler,
     private val resourceModelMapper: ResourceModelMapper,
-    private val tagModelMapper: TagsModelMapper,
     private val permissionsModelMapper: PermissionsModelMapper,
     private val resourceTypeIdToSlugMappingProvider: ResourceTypeIdToSlugMappingProvider,
 ) : ResourcesRemoteDataSource {
@@ -64,7 +63,7 @@ internal class ResourcesRemoteDataSourceImpl(
                             val slug = requireNotNull(slugMapping[it.resourceTypeId])
                             ResourceUiModelWithAttributes(
                                 resourceModelMapper.map(it, slug = slug),
-                                it.tags?.map { tag -> tagModelMapper.map(tag) }.orEmpty(),
+                                it.tags?.map { tag -> tag.toUiModel() }.orEmpty(),
                                 it.permissions?.map { permission -> permissionsModelMapper.map(permission) }.orEmpty(),
                                 it.favorite?.id?.toString(),
                             ).toDomain()

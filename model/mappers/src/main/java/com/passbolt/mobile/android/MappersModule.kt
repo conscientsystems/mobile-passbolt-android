@@ -24,22 +24,14 @@
 package com.passbolt.mobile.android
 
 import com.passbolt.mobile.android.mappers.AccountModelMapper
-import com.passbolt.mobile.android.mappers.CreateResourceMapper
-import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.mappers.GroupsModelMapper
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.mappers.MetadataMapper
-import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
 import com.passbolt.mobile.android.mappers.ResourcePickerMapper
-import com.passbolt.mobile.android.mappers.ResourceTypesModelMapper
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper
-import com.passbolt.mobile.android.mappers.SignInMapper
-import com.passbolt.mobile.android.mappers.SignOutMapper
 import com.passbolt.mobile.android.mappers.SwitchAccountModelMapper
-import com.passbolt.mobile.android.mappers.TagsModelMapper
 import com.passbolt.mobile.android.mappers.UsersModelMapper
 import com.passbolt.mobile.android.mappers.comparator.SwitchAccountUiModelComparator
 import org.koin.core.module.dsl.singleOf
@@ -48,22 +40,14 @@ import org.koin.dsl.module
 val mappersModule =
     module {
         singleOf(::AccountModelMapper)
-        singleOf(::SignInMapper)
         singleOf(::ResourceModelMapper)
-        singleOf(::SignOutMapper)
-        singleOf(::CreateResourceMapper)
-        singleOf(::ResourceTypesModelMapper)
         singleOf(::UsersModelMapper)
         singleOf(::SwitchAccountUiModelComparator)
         singleOf(::SwitchAccountModelMapper)
-        singleOf(::HomeDisplayViewMapper)
-        singleOf(::TagsModelMapper)
         singleOf(::GroupsModelMapper)
         singleOf(::PermissionsModelMapper)
         singleOf(::SharePermissionsModelMapper)
-        singleOf(::OtpModelMapper)
         singleOf(::ResourcePickerMapper)
         singleOf(::MetadataMapper)
-        singleOf(::EntropyViewMapper)
         singleOf(::ResourceFormMapper)
     }

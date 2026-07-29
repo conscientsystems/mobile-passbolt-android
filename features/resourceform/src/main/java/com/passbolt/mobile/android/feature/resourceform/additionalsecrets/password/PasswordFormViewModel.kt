@@ -5,6 +5,7 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.Success
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
+import com.passbolt.mobile.android.core.passwordgenerator.entropy.toPasswordStrength
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.AdvancedSecretGenerationResult
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.ApplyChanges
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormIntent.DismissUnableToGeneratePassword
@@ -21,7 +22,6 @@ import com.passbolt.mobile.android.feature.resourceform.main.GeneratorSettings
 import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase
 import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase.Input
 import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
-import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.ui.Entropy
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSPHRASE
 import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel.PASSWORD
@@ -31,7 +31,6 @@ import com.passbolt.mobile.android.ui.ResourceFormMode
 internal class PasswordFormViewModel(
     mode: ResourceFormMode,
     passwordModel: PasswordUiModel,
-    private val entropyViewMapper: EntropyViewMapper,
     private val entropyCalculator: EntropyCalculator,
     private val getOrLoadGeneratorSettingsUseCase: GetOrLoadGeneratorSettingsUseCase,
     private val secretGenerator: SecretGenerator,
@@ -50,7 +49,7 @@ internal class PasswordFormViewModel(
             updateViewState {
                 copy(
                     entropy = entropy,
-                    passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
+                    passwordStrength = Entropy.parse(entropy).toPasswordStrength(),
                 )
             }
         }
@@ -78,7 +77,7 @@ internal class PasswordFormViewModel(
             updateViewState {
                 copy(
                     entropy = entropy,
-                    passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
+                    passwordStrength = Entropy.parse(entropy).toPasswordStrength(),
                 )
             }
         }
@@ -106,7 +105,7 @@ internal class PasswordFormViewModel(
                         buildString {
                             result.password.forEach { append(Character.toChars(it.value)) }
                         }
-                    val strength = entropyViewMapper.map(Entropy.parse(result.entropy))
+                    val strength = Entropy.parse(result.entropy).toPasswordStrength()
                     updateViewState {
                         copy(
                             password = passwordString,
@@ -146,7 +145,7 @@ internal class PasswordFormViewModel(
                 copy(
                     password = result.generatedSecret,
                     entropy = entropy,
-                    passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
+                    passwordStrength = Entropy.parse(entropy).toPasswordStrength(),
                 )
             }
         }

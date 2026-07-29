@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.mappers
-
-import com.passbolt.mobile.android.ui.Entropy
-import com.passbolt.mobile.android.ui.PasswordStrength
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,15 +20,19 @@ import com.passbolt.mobile.android.ui.PasswordStrength
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class EntropyViewMapper {
-    fun map(entropy: Entropy): PasswordStrength =
-        when (entropy) {
-            Entropy.ZERO -> PasswordStrength.Empty
-            Entropy.VERY_WEAK -> PasswordStrength.VeryWeak
-            Entropy.WEAK -> PasswordStrength.Weak
-            Entropy.FAIR -> PasswordStrength.Fair
-            Entropy.STRONG -> PasswordStrength.Strong
-            Entropy.VERY_STRONG -> PasswordStrength.VeryStrong
-            Entropy.GREATEST_FINITE -> PasswordStrength.VeryStrong
-        }
-}
+
+package com.passbolt.mobile.android.core.passwordgenerator.entropy
+
+import com.passbolt.mobile.android.ui.Entropy
+import com.passbolt.mobile.android.ui.PasswordStrength
+
+fun Entropy.toPasswordStrength(): PasswordStrength =
+    when (this) {
+        Entropy.ZERO -> PasswordStrength.Empty
+        Entropy.VERY_WEAK -> PasswordStrength.VeryWeak
+        Entropy.WEAK -> PasswordStrength.Weak
+        Entropy.FAIR -> PasswordStrength.Fair
+        Entropy.STRONG -> PasswordStrength.Strong
+        Entropy.VERY_STRONG -> PasswordStrength.VeryStrong
+        Entropy.GREATEST_FINITE -> PasswordStrength.VeryStrong
+    }

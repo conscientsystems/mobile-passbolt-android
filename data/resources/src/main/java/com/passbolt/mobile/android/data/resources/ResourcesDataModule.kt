@@ -43,7 +43,6 @@ val resourcesDataModule =
                 resourceApi = get(),
                 responseHandler = get(),
                 resourceModelMapper = get(),
-                tagModelMapper = get(),
                 permissionsModelMapper = get(),
                 resourceTypeIdToSlugMappingProvider = get(),
             )
@@ -54,8 +53,6 @@ val resourcesDataModule =
                 databaseProvider = get(),
                 resourceModelMapper = get(),
                 permissionsModelMapper = get(),
-                tagsModelMapper = get(),
-                homeDisplayViewMapper = get(),
                 querySanitizer = get(),
             )
         }

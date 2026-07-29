@@ -53,7 +53,6 @@ import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.mappers.GroupsModelMapper
-import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.mappers.UsersModelMapper
@@ -94,7 +93,6 @@ internal val testModule =
         singleOf(::DataRefreshTrackingFlow)
         singleOf(::SessionRefreshTrackingFlow)
         factoryOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
-        factoryOf(::OtpModelMapper)
         factoryOf(::PermissionsModelMapper)
         factoryOf(::GroupsModelMapper)
         factoryOf(::UsersModelMapper)

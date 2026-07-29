@@ -69,9 +69,7 @@ import com.passbolt.mobile.android.feature.home.screen.data.HomeDataProvider
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.ui.DefaultFilterUiModel
-import com.passbolt.mobile.android.ui.HomeDisplayViewModel.AllItems
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.NotLoaded
 import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
@@ -127,7 +125,6 @@ class HomeViewModelMenuTest : KoinTest {
                     single { mock<GetSelectedAccountDataUseCase>() }
                     single { mock<GetSelectedAccountUseCase> { on { execute(Unit) } doReturn GetSelectedAccountUseCase.Output("userId") } }
                     single { mock<GetHomeDisplayViewPreferencesUseCase>() }
-                    single { mock<HomeDisplayViewMapper>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
                     single { mock<ResourceAccessInteractor>() }
@@ -181,8 +178,6 @@ class HomeViewModelMenuTest : KoinTest {
                 userSetHomeView = DefaultFilterUiModel.ALL_ITEMS,
             ),
         )
-
-        whenever(get<HomeDisplayViewMapper>().map(any(), any())).thenReturn(AllItems)
 
         get<HomeDataProvider>().stub {
             onBlocking {

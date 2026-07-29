@@ -7,7 +7,6 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":database"))
     implementation(project(":entity"))
-    implementation(project(":mappers"))
     implementation(project(":uimodel"))
 
     implementation(platform(libs.koin.bom))

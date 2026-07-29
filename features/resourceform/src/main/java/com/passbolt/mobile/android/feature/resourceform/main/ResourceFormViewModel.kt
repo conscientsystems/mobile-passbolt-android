@@ -13,6 +13,7 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.Secret
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.Success
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
+import com.passbolt.mobile.android.core.passwordgenerator.entropy.toPasswordStrength
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_NOTE
@@ -111,7 +112,6 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
-import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
@@ -155,7 +155,6 @@ class ResourceFormViewModel(
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val secretGenerator: SecretGenerator,
     private val pinCodeGenerator: PinCodeGenerator,
-    private val entropyViewMapper: EntropyViewMapper,
     private val entropyCalculator: EntropyCalculator,
     private val resourceFormMapper: ResourceFormMapper,
     private val resourceModelHandler: ResourceModelHandler,
@@ -365,7 +364,7 @@ class ResourceFormViewModel(
             PASSWORD -> {
                 val password = resourceSecret.getPassword(contentType).orEmpty()
                 val entropy = entropyCalculator.getSecretEntropy(password)
-                val passwordStrength = entropyViewMapper.map(Entropy.parse(entropy))
+                val passwordStrength = Entropy.parse(entropy).toPasswordStrength()
                 updateViewState {
                     copy(
                         passwordData =
@@ -436,7 +435,7 @@ class ResourceFormViewModel(
                 copy(
                     passwordData =
                         passwordData.copy(
-                            passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
+                            passwordStrength = Entropy.parse(entropy).toPasswordStrength(),
                             passwordEntropyBits = entropy,
                         ),
                 )
@@ -511,7 +510,7 @@ class ResourceFormViewModel(
                 passwordData =
                     passwordData.copy(
                         password = passwordStr,
-                        passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
+                        passwordStrength = Entropy.parse(entropy).toPasswordStrength(),
                         passwordEntropyBits = entropy,
                     ),
             )

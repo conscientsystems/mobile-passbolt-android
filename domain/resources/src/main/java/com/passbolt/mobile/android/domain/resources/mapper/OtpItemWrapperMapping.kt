@@ -1,7 +1,3 @@
-package com.passbolt.mobile.android.mappers
-
-import com.passbolt.mobile.android.dto.request.SignOutRequestDto
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -24,6 +20,19 @@ import com.passbolt.mobile.android.dto.request.SignOutRequestDto
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class SignOutMapper {
-    fun mapRequestToDto(refreshToken: String): SignOutRequestDto = SignOutRequestDto(refreshToken)
+
+package com.passbolt.mobile.android.domain.resources.mapper
+
+import com.passbolt.mobile.android.ui.OtpItemWrapper
+import com.passbolt.mobile.android.ui.ResourceUiModel
+
+fun ResourceUiModel.toOtpItemWrapper(): OtpItemWrapper {
+    metadataJsonModel.warmCache()
+    return OtpItemWrapper(
+        resource = this,
+        isVisible = false,
+        otpExpirySeconds = null,
+        otpValue = null,
+        isRefreshing = false,
+    )
 }

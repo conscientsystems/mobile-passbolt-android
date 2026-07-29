@@ -40,7 +40,6 @@ fun Module.resourceFormModule() {
             coroutineLaunchContext = get(),
             secretGenerator = get(),
             pinCodeGenerator = get(),
-            entropyViewMapper = get(),
             entropyCalculator = get(),
             resourceFormMapper = get(),
             resourceModelHandler = get(),

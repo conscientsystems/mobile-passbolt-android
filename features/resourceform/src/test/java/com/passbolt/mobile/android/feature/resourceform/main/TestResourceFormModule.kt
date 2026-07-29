@@ -34,7 +34,6 @@ import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.ui.MetadataTypeModel.V4
 import com.passbolt.mobile.android.ui.MetadataTypesSettingsModel
@@ -144,7 +143,6 @@ internal val testResourceFormModule =
     module {
         factoryOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
         factoryOf(::ResourceFormMapper)
-        factoryOf(::EntropyViewMapper)
         singleOf(::ResourceModelHandler)
         factoryOf(::ResourceTypesUpdatesAdjacencyGraph)
         factoryOf(::CreateResourceIdlingResource)
@@ -179,7 +177,6 @@ internal val testResourceFormModule =
                 entropyCalculator = mockEntropyCalculator,
                 metadataPrivateKeysHelperInteractor = mockMetadataPrivateKeysHelperInteractor,
                 getLocalResourceUseCase = get(),
-                entropyViewMapper = get(),
                 resourceFormMapper = get(),
                 resourceModelHandler = get(),
                 dataRefreshTrackingFlow = get(),

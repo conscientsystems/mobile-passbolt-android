@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.mappers
-
-import com.passbolt.mobile.android.dto.response.TagDto
-import com.passbolt.mobile.android.entity.resource.Tag
-import com.passbolt.mobile.android.entity.resource.TagWithTaggedItemsCount
-import com.passbolt.mobile.android.ui.TagModel
-import com.passbolt.mobile.android.ui.TagWithCount
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -28,35 +20,15 @@ import com.passbolt.mobile.android.ui.TagWithCount
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class TagsModelMapper {
-    fun map(tag: TagDto): TagModel =
-        TagModel(
-            id = tag.id.toString(),
-            slug = tag.slug,
-            isShared = tag.isShared,
-        )
 
-    fun map(tagModels: List<TagModel>) =
-        tagModels.map {
-            Tag(
-                id = it.id,
-                slug = it.slug,
-                isShared = it.isShared,
-            )
-        }
+package com.passbolt.mobile.android.data.resources.mapper
 
-    fun map(tagEntity: Tag): TagModel =
-        TagModel(
-            id = tagEntity.id,
-            slug = tagEntity.slug,
-            isShared = tagEntity.isShared,
-        )
+import com.passbolt.mobile.android.entity.resource.Tag
+import com.passbolt.mobile.android.ui.TagModel
 
-    fun map(tag: TagWithTaggedItemsCount): TagWithCount =
-        TagWithCount(
-            tag.id,
-            tag.slug,
-            tag.isShared,
-            tag.taggedItemsCount,
-        )
-}
+internal fun Tag.toUiModel(): TagModel =
+    TagModel(
+        id = id,
+        slug = slug,
+        isShared = isShared,
+    )
