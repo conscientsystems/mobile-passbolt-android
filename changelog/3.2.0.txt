@@ -38,9 +38,6 @@
 - Add base docker image pin
 
 ## Fixed
-- MOB-4711: Fix time sync issue
-- MOB-4758: Fix missing resources on cold boot
-- MOB-4759: Fix stale data during account switch in autofill mode
 - MOB-4717: Fix returning to the root folder after TOTP is created in a folder
 - MOB-4818: Pass current folder id to can create resource checks
 - MOB-4723: Fix revealing otp items when in search mode
