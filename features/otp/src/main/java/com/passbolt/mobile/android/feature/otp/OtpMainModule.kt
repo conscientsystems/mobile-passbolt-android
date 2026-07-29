@@ -43,7 +43,6 @@ val otpModule =
                 showSuggestedModel = params.get(),
                 getSelectedAccountDataUseCase = get(),
                 getLocalResourcesUseCase = get(),
-                otpModelMapper = get(),
                 totpParametersProvider = get(),
                 coroutineLaunchContext = get(),
                 dataRefreshTrackingFlow = get(),

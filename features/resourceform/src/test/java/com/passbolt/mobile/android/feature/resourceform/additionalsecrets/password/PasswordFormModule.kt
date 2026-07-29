@@ -4,7 +4,6 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
 import com.passbolt.mobile.android.domain.passwordpolicies.usecase.GetPasswordPoliciesUseCase
 import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase
-import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
 import org.mockito.Mockito.mock
@@ -15,7 +14,6 @@ internal val mockEntropyCalculator = mock<EntropyCalculator>()
 
 internal val testPasswordFormModule =
     module {
-        factoryOf(::EntropyViewMapper)
         single { mockEntropyCalculator }
         single { mockGetPasswordPoliciesUseCase }
         single { mockSecretGenerator }
@@ -24,7 +22,6 @@ internal val testPasswordFormModule =
             PasswordFormViewModel(
                 mode = params.get(),
                 passwordModel = params.get(),
-                entropyViewMapper = get(),
                 entropyCalculator = get(),
                 getOrLoadGeneratorSettingsUseCase = get(),
                 secretGenerator = get(),

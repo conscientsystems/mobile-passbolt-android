@@ -45,6 +45,7 @@ import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActi
 import com.passbolt.mobile.android.domain.resources.actions.performCommonResourceAction
 import com.passbolt.mobile.android.domain.resources.actions.performResourcePropertyAction
 import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
+import com.passbolt.mobile.android.domain.resources.mapper.toOtpItemWrapper
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceTagsUseCase
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
@@ -100,7 +101,6 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetai
 import com.passbolt.mobile.android.feature.resourcedetails.details.SuccessSnackbarType.RESOURCE_EDITED
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
-import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.ui.CustomFieldModel.BooleanCustomField
 import com.passbolt.mobile.android.ui.CustomFieldModel.NumberCustomField
@@ -133,7 +133,6 @@ class ResourceDetailsViewModel(
     private val getLocalResourceTagsUseCase: GetLocalResourceTagsUseCase,
     private val getLocalFolderLocation: GetLocalFolderLocationUseCase,
     private val totpParametersProvider: TotpParametersProvider,
-    private val otpModelMapper: OtpModelMapper,
     private val getRbacRulesUseCase: GetRbacRulesUseCase,
     private val resourceDetailActionIdlingResource: ResourceDetailActionIdlingResource,
     private val canShareResourceUseCase: CanShareResourceUseCase,
@@ -282,7 +281,7 @@ class ResourceDetailsViewModel(
                 totpData =
                     totpData.copy(
                         showTotpSection = contentType.hasTotp(),
-                        totpModel = otpModelMapper.map(resource),
+                        totpModel = resource.toOtpItemWrapper(),
                     ),
                 noteData =
                     noteData.copy(
@@ -437,7 +436,7 @@ class ResourceDetailsViewModel(
     private fun openMoreMenu() {
         updateViewState {
             copy(
-                totpData = totpData.copy(totpModel = otpModelMapper.map(resource)),
+                totpData = totpData.copy(totpModel = resource.toOtpItemWrapper()),
                 showMoreMenu = true,
             )
         }
@@ -671,12 +670,12 @@ class ResourceDetailsViewModel(
     private fun toggleTotpVisibility() {
         val currentOtpModel = viewState.value.totpData.totpModel
         if (currentOtpModel?.isVisible == true) {
-            updateViewState { copy(totpData = totpData.copy(totpModel = otpModelMapper.map(resource))) }
+            updateViewState { copy(totpData = totpData.copy(totpModel = resource.toOtpItemWrapper())) }
         } else {
             resourceDetailActionIdlingResource.setIdle(false)
             updateViewState {
                 copy(
-                    totpData = totpData.copy(totpModel = otpModelMapper.map(resource).copy(isRefreshing = true)),
+                    totpData = totpData.copy(totpModel = resource.toOtpItemWrapper().copy(isRefreshing = true)),
                 )
             }
 
@@ -686,7 +685,7 @@ class ResourceDetailsViewModel(
                         totpData =
                             totpData.copy(
                                 totpModel =
-                                    otpModelMapper.map(resource).copy(
+                                    resource.toOtpItemWrapper().copy(
                                         otpValue = otpParameters.otpValue,
                                         isVisible = true,
                                         otpExpirySeconds = otp.period,

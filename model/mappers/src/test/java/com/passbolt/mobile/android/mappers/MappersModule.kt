@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.mappers
 
-import com.google.gson.GsonBuilder
 import org.koin.dsl.module
 
 /**
@@ -30,12 +29,6 @@ val testMappersModule =
     module {
         factory {
             AccountModelMapper()
-        }
-        factory {
-            GsonBuilder().create()
-        }
-        factory {
-            ResourceTypesModelMapper()
         }
         factory {
             SharePermissionsModelMapper(

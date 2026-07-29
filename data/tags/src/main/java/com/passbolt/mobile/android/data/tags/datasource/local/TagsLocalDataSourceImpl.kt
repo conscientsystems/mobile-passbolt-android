@@ -4,11 +4,12 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.passbolt.mobile.android.data.tags.mapper.toEntity
+import com.passbolt.mobile.android.data.tags.mapper.toUiModel
 import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.database.QuerySanitizer
 import com.passbolt.mobile.android.domain.tags.datasource.TagsLocalDataSource
 import com.passbolt.mobile.android.entity.resource.ResourceAndTagsCrossRef
-import com.passbolt.mobile.android.mappers.TagsModelMapper
 import com.passbolt.mobile.android.ui.ResourceUiModelWithAttributes
 import com.passbolt.mobile.android.ui.TagWithCount
 import kotlinx.coroutines.flow.Flow
@@ -38,7 +39,6 @@ import kotlinx.coroutines.flow.map
  */
 internal class TagsLocalDataSourceImpl(
     private val databaseProvider: DatabaseProvider,
-    private val tagModelMapper: TagsModelMapper,
     private val querySanitizer: QuerySanitizer,
 ) : TagsLocalDataSource {
     override suspend fun addTags(
@@ -64,7 +64,7 @@ internal class TagsLocalDataSourceImpl(
                             ResourceAndTagsCrossRef(tagId, resourceId)
                         }
                     }
-            tagsDao.insertAll(tagModelMapper.map(tags))
+            tagsDao.insertAll(tags.toEntity())
             tagsAndResourcesCrossRefDao.insertAll(resourceAndTagCrossRefs)
         }
     }
@@ -77,7 +77,7 @@ internal class TagsLocalDataSourceImpl(
             .get(userId)
             .tagsDao()
             .getAllWithTaggedItemsCount(querySanitizer.sanitize(searchQuery))
-            .map { tagModelMapper.map(it) }
+            .map { it.toUiModel() }
 
     override fun getTagsWithCountPaginated(
         searchQuery: String?,
@@ -94,7 +94,7 @@ internal class TagsLocalDataSourceImpl(
             },
         ).flow.map { pagingData ->
             pagingData.map {
-                tagModelMapper.map(it)
+                it.toUiModel()
             }
         }
 

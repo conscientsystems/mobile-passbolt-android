@@ -1,7 +1,3 @@
-package com.passbolt.mobile.android.mappers
-
-import com.passbolt.mobile.android.dto.request.SignInRequestDto
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -24,9 +20,15 @@ import com.passbolt.mobile.android.dto.request.SignInRequestDto
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class SignInMapper {
-    fun mapRequestToDto(
-        userId: String,
-        challenge: String,
-    ): SignInRequestDto = SignInRequestDto(userId, challenge)
-}
+
+package com.passbolt.mobile.android.data.resources.mapper
+
+import com.passbolt.mobile.android.dto.response.TagDto
+import com.passbolt.mobile.android.ui.TagModel
+
+internal fun TagDto.toUiModel(): TagModel =
+    TagModel(
+        id = id.toString(),
+        slug = slug,
+        isShared = isShared,
+    )

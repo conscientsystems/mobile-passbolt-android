@@ -71,42 +71,47 @@ class DatabaseProvider(
         System.loadLibrary("sqlcipher")
         val currentUser = messageDigestHash.sha256(userId)
         return instance.computeIfAbsent(currentUser) {
-            val passphrase = getResourcesDatabasePassphraseUseCase.execute(Unit).passphrase
-            val factory = SupportOpenHelperFactory(passphrase.toByteArray(StandardCharsets.UTF_8))
-            Room
-                .databaseBuilder(
-                    context,
-                    ResourceDatabase::class.java,
-                    "${currentUser}_$RESOURCE_DATABASE_NAME",
-                ).addMigrations(
-                    Migration1to2,
-                    Migration2to3,
-                    Migration3to4,
-                    Migration4to5,
-                    Migration5to6,
-                    Migration6to7,
-                    Migration7to8,
-                    Migration8to9,
-                    Migration9to10,
-                    Migration10to11,
-                    Migration11to12,
-                    Migration12to13,
-                    Migration13to14,
-                    Migration14to15,
-                    Migration15to16,
-                    Migration16to17,
-                    Migration17to18,
-                    Migration18to19,
-                    Migration19to20,
-                    Migration20to21,
-                    Migration21to22,
-                    Migration22to23,
-                    Migration23to24,
-                    Migration24to25,
-                    Migration25to26,
-                    Migration26to27,
-                ).openHelperFactory(factory)
-                .build()
+            try {
+                val passphrase = getResourcesDatabasePassphraseUseCase.execute(Unit).passphrase
+                val factory = SupportOpenHelperFactory(passphrase.toByteArray(StandardCharsets.UTF_8))
+                Room
+                    .databaseBuilder(
+                        context,
+                        ResourceDatabase::class.java,
+                        "${currentUser}_$RESOURCE_DATABASE_NAME",
+                    ).addMigrations(
+                        Migration1to2,
+                        Migration2to3,
+                        Migration3to4,
+                        Migration4to5,
+                        Migration5to6,
+                        Migration6to7,
+                        Migration7to8,
+                        Migration8to9,
+                        Migration9to10,
+                        Migration10to11,
+                        Migration11to12,
+                        Migration12to13,
+                        Migration13to14,
+                        Migration14to15,
+                        Migration15to16,
+                        Migration16to17,
+                        Migration17to18,
+                        Migration18to19,
+                        Migration19to20,
+                        Migration20to21,
+                        Migration21to22,
+                        Migration22to23,
+                        Migration23to24,
+                        Migration24to25,
+                        Migration25to26,
+                        Migration26to27,
+                    ).openHelperFactory(factory)
+                    .build()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to open resources database")
+                throw e
+            }
         }
     }
 

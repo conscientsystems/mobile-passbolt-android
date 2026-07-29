@@ -51,6 +51,7 @@ import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyAction
 import com.passbolt.mobile.android.domain.resources.actions.performCommonResourceAction
 import com.passbolt.mobile.android.domain.resources.actions.performResourceUpdateAction
 import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
+import com.passbolt.mobile.android.domain.resources.mapper.toOtpItemWrapper
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
@@ -99,7 +100,6 @@ import com.passbolt.mobile.android.feature.otp.screen.SnackbarSuccessType.RESOUR
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarSuccessType.RESOURCE_EDITED
 import com.passbolt.mobile.android.feature.otp.screen.ToastType.WAIT_FOR_DATA_REFRESH_FINISH
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
-import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.RESOURCE
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity.SECRET
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordDescriptionTotp
@@ -132,7 +132,6 @@ internal class OtpViewModel(
     private val showSuggestedModel: ShowSuggestedModel,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
     private val getLocalResourcesUseCase: GetLocalResourcesUseCase,
-    private val otpModelMapper: OtpModelMapper,
     private val totpParametersProvider: TotpParametersProvider,
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
@@ -595,7 +594,7 @@ internal class OtpViewModel(
         getLocalResourcesUseCase
             .execute(GetLocalResourcesUseCase.Input(totpSlugs, searchQuery = searchQuery))
             .resources
-            .map(otpModelMapper::map)
+            .map(ResourceUiModel::toOtpItemWrapper)
 
     private fun stopRefreshingAndShowError(message: String) {
         Timber.e(message)

@@ -8,7 +8,6 @@ internal fun Module.passwordFormModule() {
         PasswordFormViewModel(
             mode = params.get(),
             passwordModel = params.get(),
-            entropyViewMapper = get(),
             entropyCalculator = get(),
             getOrLoadGeneratorSettingsUseCase = get(),
             secretGenerator = get(),

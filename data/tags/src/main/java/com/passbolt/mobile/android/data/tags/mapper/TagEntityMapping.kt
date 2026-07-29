@@ -1,11 +1,3 @@
-package com.passbolt.mobile.android.mappers
-
-import com.passbolt.mobile.android.dto.response.ResourceTypeDto
-import com.passbolt.mobile.android.entity.resource.ResourceType
-import com.passbolt.mobile.android.ui.ResourceTypeModel
-import java.time.ZonedDateTime
-import java.util.UUID
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -29,22 +21,26 @@ import java.util.UUID
  * @since v1.0
  */
 
-class ResourceTypesModelMapper {
-    fun map(resourceTypesDto: List<ResourceTypeDto>): List<ResourceType> =
-        resourceTypesDto.map {
-            ResourceType(
-                resourceTypeId = it.id.toString(),
-                name = it.name,
-                slug = it.slug,
-                deleted = it.deleted?.let { deleted -> ZonedDateTime.parse(deleted) },
-            )
-        }
+package com.passbolt.mobile.android.data.tags.mapper
 
-    fun map(resourceTypesEntity: ResourceType): ResourceTypeModel =
-        ResourceTypeModel(
-            id = UUID.fromString(resourceTypesEntity.resourceTypeId),
-            slug = resourceTypesEntity.slug,
-            name = resourceTypesEntity.name,
-            deleted = resourceTypesEntity.deleted,
+import com.passbolt.mobile.android.entity.resource.Tag
+import com.passbolt.mobile.android.entity.resource.TagWithTaggedItemsCount
+import com.passbolt.mobile.android.ui.TagModel
+import com.passbolt.mobile.android.ui.TagWithCount
+
+internal fun List<TagModel>.toEntity(): List<Tag> =
+    map {
+        Tag(
+            id = it.id,
+            slug = it.slug,
+            isShared = it.isShared,
         )
-}
+    }
+
+internal fun TagWithTaggedItemsCount.toUiModel(): TagWithCount =
+    TagWithCount(
+        id,
+        slug,
+        isShared,
+        taggedItemsCount,
+    )

@@ -26,6 +26,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.passbolt.mobile.android.data.resources.mapper.toResourceDatabaseView
+import com.passbolt.mobile.android.data.resources.mapper.toUiModel
 import com.passbolt.mobile.android.database.DatabaseProvider
 import com.passbolt.mobile.android.database.QuerySanitizer
 import com.passbolt.mobile.android.domain.resources.ResourcesLocalDataSource
@@ -43,10 +45,8 @@ import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.IsFavour
 import com.passbolt.mobile.android.entity.resource.ResourceUpdateState
 import com.passbolt.mobile.android.entity.resource.ResourceUpdateState.UPDATED
 import com.passbolt.mobile.android.entity.user.ResourceAndUsersCrossRef
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceModelMapper
-import com.passbolt.mobile.android.mappers.TagsModelMapper
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
 import com.passbolt.mobile.android.ui.PermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
@@ -59,8 +59,6 @@ internal class ResourcesLocalDataSourceImpl(
     private val databaseProvider: DatabaseProvider,
     private val resourceModelMapper: ResourceModelMapper,
     private val permissionsModelMapper: PermissionsModelMapper,
-    private val tagsModelMapper: TagsModelMapper,
-    private val homeDisplayViewMapper: HomeDisplayViewMapper,
     private val querySanitizer: QuerySanitizer,
 ) : ResourcesLocalDataSource {
     override suspend fun getLocalResource(
@@ -96,7 +94,7 @@ internal class ResourcesLocalDataSourceImpl(
             .get(userId)
             .tagsDao()
             .getResourceTags(resourceId)
-            .map(tagsModelMapper::map)
+            .map { it.toUiModel() }
 
     override suspend fun getLocalResourcesFilteredByTag(
         tagSearchQuery: String,
@@ -124,7 +122,7 @@ internal class ResourcesLocalDataSourceImpl(
                 .get(userId)
                 .resourcesDao()
                 .let {
-                    when (val viewType = homeDisplayViewMapper.map(homeDisplayView)) {
+                    when (val viewType = homeDisplayView.toResourceDatabaseView()) {
                         is ResourceDatabaseView.ByModifiedDateDescending -> it.getAllOrderedByModifiedDate(slugs, ftsQuery)
                         is ResourceDatabaseView.ByNameAscending -> it.getAllOrderedByName(slugs, ftsQuery)
                         is ResourceDatabaseView.IsFavourite -> it.getFavourites(slugs, ftsQuery)
@@ -193,7 +191,7 @@ internal class ResourcesLocalDataSourceImpl(
                 val resourceDao = databaseProvider.get(userId).paginatedResourcesDao()
                 val ftsQuery = querySanitizer.sanitize(searchQuery)
 
-                when (val viewType = homeDisplayViewMapper.map(homeDisplayView)) {
+                when (val viewType = homeDisplayView.toResourceDatabaseView()) {
                     is ByModifiedDateDescending, is ByNameAscending ->
                         resourceDao.getAllOrderedByModifiedDatePaginated(slugs, ftsQuery)
                     is IsFavourite -> resourceDao.getFavouritesPaginated(slugs, ftsQuery)

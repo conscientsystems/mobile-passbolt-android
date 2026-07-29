@@ -40,6 +40,7 @@ import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDat
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.preferences.mapper.toHomeDisplayViewModel
 import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
@@ -114,7 +115,6 @@ import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOU
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_SHARED
 import com.passbolt.mobile.android.feature.home.screen.ToastType.WAIT_FOR_DATA_REFRESH_FINISH
 import com.passbolt.mobile.android.feature.home.screen.data.HomeDataProvider
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.autofillSlugs
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.Folder.Child
@@ -143,7 +143,6 @@ internal class HomeViewModel(
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val getHomeDisplayViewPreferencesUseCase: GetHomeDisplayViewPreferencesUseCase,
-    private val homeModelMapper: HomeDisplayViewMapper,
     private val homeDataProvider: HomeDataProvider,
     private val getLocalFolderUseCase: GetLocalFolderDetailsUseCase,
     private val resourceAccessInteractor: ResourceAccessInteractor,
@@ -502,10 +501,8 @@ internal class HomeViewModel(
         viewModelScope.launch {
             updateViewState { copy(appContext = intent.appContext) }
             val homeView =
-                intent.homeView ?: homeModelMapper.map(
-                    filterPreferences.userSetHomeView,
-                    filterPreferences.lastUsedHomeView,
-                )
+                intent.homeView
+                    ?: filterPreferences.userSetHomeView.toHomeDisplayViewModel(filterPreferences.lastUsedHomeView)
             val homeData = getHomeData(homeView, viewState.value.searchQuery, intent.showSuggestedModel)
             val isAutofillConflictDetected = detectAutofillConflict()
 

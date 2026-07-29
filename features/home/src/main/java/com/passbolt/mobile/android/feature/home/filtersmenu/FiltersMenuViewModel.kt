@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.mapper.toHomeDisplayViewModel
 import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.AllItemsClick
@@ -20,7 +21,6 @@ import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.Ta
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuSideEffect.Dismiss
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuSideEffect.HomeViewChanged
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.ALL_ITEMS
 import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.EXPIRY
@@ -61,7 +61,6 @@ class FiltersMenuViewModel(
     private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
     private val getRbacRulesUseCase: GetRbacRulesUseCase,
     private val updateHomeDisplayViewPreferencesUseCase: UpdateHomeDisplayViewPreferencesUseCase,
-    private val homeDisplayViewMapper: HomeDisplayViewMapper,
     private val coroutineLaunchContext: CoroutineLaunchContext,
 ) : SideEffectViewModel<FiltersMenuState, FiltersMenuSideEffect>(FiltersMenuState()) {
     init {
@@ -89,7 +88,7 @@ class FiltersMenuViewModel(
             updateHomeDisplayViewPreferencesUseCase.execute(
                 HomeDisplayViewPreferencesUpdate(lastUsedHomeView = homeDisplayViewUiModel),
             )
-            emitSideEffect(HomeViewChanged(homeDisplayViewMapper.map(homeDisplayViewUiModel)))
+            emitSideEffect(HomeViewChanged(homeDisplayViewUiModel.toHomeDisplayViewModel()))
             emitSideEffect(Dismiss)
         }
     }

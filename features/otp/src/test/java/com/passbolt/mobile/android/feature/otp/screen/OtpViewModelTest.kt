@@ -73,7 +73,6 @@ import com.passbolt.mobile.android.feature.otp.screen.SnackbarSuccessType.RESOUR
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
@@ -137,7 +136,6 @@ class OtpViewModelTest : KoinTest {
                                 showSuggestedModel = showSuggestedModel,
                                 getSelectedAccountDataUseCase = get(),
                                 getLocalResourcesUseCase = get(),
-                                otpModelMapper = get(),
                                 totpParametersProvider = get(),
                                 coroutineLaunchContext = get(),
                                 dataRefreshTrackingFlow = get(),
@@ -159,7 +157,6 @@ class OtpViewModelTest : KoinTest {
                                 .options(EnumSet.noneOf(Option::class.java))
                                 .build()
                         }
-                        factoryOf(::OtpModelMapper)
                         factoryOf(::SearchableMatcher)
                         singleOf(::DataRefreshTrackingFlow)
                         singleOf(::SessionRefreshTrackingFlow)
