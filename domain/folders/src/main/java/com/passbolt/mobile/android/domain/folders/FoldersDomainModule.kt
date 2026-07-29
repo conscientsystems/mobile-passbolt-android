@@ -39,7 +39,6 @@ import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForF
 import com.passbolt.mobile.android.domain.folders.usecase.RemoveLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.RemoveLocalFoldersWithUpdateStateUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.SetLocalFoldersUpdateStateUseCase
-import com.passbolt.mobile.android.domain.folders.usecase.ShareFolderUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.UpdateLocalFoldersIsSharedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.UpsertLocalFoldersUseCase
 import org.koin.core.module.dsl.factoryOf
@@ -53,7 +52,6 @@ val foldersDomainModule =
         singleOf(::FoldersInteractor)
         singleOf(::RemoveLocalFolderPermissionsUseCase)
         singleOf(::AddLocalFolderPermissionsUseCase)
-        singleOf(::ShareFolderUseCase)
         singleOf(::FolderShareInteractor)
         singleOf(::SetLocalFoldersUpdateStateUseCase)
         singleOf(::UpsertLocalFoldersUseCase)

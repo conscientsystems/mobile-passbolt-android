@@ -28,16 +28,24 @@ import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUse
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.featureflags.FeatureFlagsRepository
 import com.passbolt.mobile.android.featureflags.mapper.toFeatureFlagsModel
+import timber.log.Timber
 
 class FeatureFlagsInteractor(
     private val featureFlagsRepository: FeatureFlagsRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
     suspend fun fetchAndSaveFeatureFlags(): Output {
+        Timber.d("Refreshing feature flags")
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         return when (val result = featureFlagsRepository.refreshFeatureFlags(userId)) {
-            is DomainResult.Incomplete -> Output.Failure
-            is DomainResult.Finished -> Output.Success(result.value.toFeatureFlagsModel())
+            is DomainResult.Incomplete -> {
+                Timber.e("Failed to refresh feature flags")
+                Output.Failure
+            }
+            is DomainResult.Finished -> {
+                Timber.d("Feature flags refreshed")
+                Output.Success(result.value.toFeatureFlagsModel())
+            }
         }
     }
 

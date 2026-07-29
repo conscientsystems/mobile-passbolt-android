@@ -32,7 +32,10 @@ class GetResourcesDatabasePassphraseUseCase(
 ) : UseCase<Unit, GetResourcesDatabasePassphraseUseCase.Output> {
     override fun execute(input: Unit): Output {
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
-        val passphrase = requireNotNull(databasePassphraseRepository.getDatabasePassphrase(userId))
+        val passphrase =
+            requireNotNull(databasePassphraseRepository.getDatabasePassphrase(userId)) {
+                "Database passphrase not found for the selected account"
+            }
 
         return Output(passphrase)
     }

@@ -26,15 +26,21 @@ package com.passbolt.mobile.android.domain.secrets.usecase.decrypt
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.secrets.SecretsRepository
+import timber.log.Timber
 
 class FetchSecretUseCase(
     private val secretsRepository: SecretsRepository,
 ) : AsyncUseCase<FetchSecretUseCase.Input, FetchSecretUseCase.Output> {
-    override suspend fun execute(input: Input): Output =
-        when (val result = secretsRepository.getSecret(input.resourceId)) {
+    override suspend fun execute(input: Input): Output {
+        Timber.d("Fetching secret")
+        return when (val result = secretsRepository.getSecret(input.resourceId)) {
             is DomainResult.Finished -> Output.EncryptedSecret(result.value.data)
-            is DomainResult.Incomplete -> Output.Failure(result)
+            is DomainResult.Incomplete -> {
+                Timber.e("Failed to fetch secret")
+                Output.Failure(result)
+            }
         }
+    }
 
     data class Input(
         val resourceId: String,

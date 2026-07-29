@@ -33,6 +33,7 @@ import com.passbolt.mobile.android.database.migrations.Migration9to10
 import com.passbolt.mobile.android.domain.auth.usecase.GetResourcesDatabasePassphraseUseCase
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import timber.log.Timber
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
@@ -115,6 +116,7 @@ class DatabaseProvider(
     ): T = get(userId).withTransaction { block() }
 
     suspend fun delete(userId: String) {
+        Timber.d("Deleting resources database")
         val currentUser = messageDigestHash.sha256(userId)
         if (currentUser in instance.keys) {
             suspendCancellableCoroutine { continuation ->

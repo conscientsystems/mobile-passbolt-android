@@ -3,6 +3,7 @@ package com.passbolt.mobile.android.data.accounts.datasource.local
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.passbolt.mobile.android.domain.accounts.datasource.AccountsLocalDataSource
+import timber.log.Timber
 
 /**
  * Passbolt - Open source password manager for teams
@@ -32,6 +33,7 @@ internal class AccountsLocalDataSourceImpl(
     override fun getAccounts(): Set<String> = sharedPreferences.getStringSet(Constants.ACCOUNTS_ALIAS, emptySet()).orEmpty()
 
     override fun saveAccount(userId: String) {
+        Timber.d("Account added to accounts list")
         sharedPreferences.edit {
             val currentList = sharedPreferences.getStringSet(Constants.ACCOUNTS_ALIAS, emptySet()).orEmpty()
             putStringSet(Constants.ACCOUNTS_ALIAS, currentList.plus(userId))
@@ -39,6 +41,7 @@ internal class AccountsLocalDataSourceImpl(
     }
 
     override fun removeAccount(userId: String) {
+        Timber.d("Account removed from accounts list")
         sharedPreferences.edit {
             val modifiedAccountsSet =
                 sharedPreferences
