@@ -29,6 +29,7 @@ import com.passbolt.mobile.android.core.navigation.AppForegroundListener
 import com.passbolt.mobile.android.core.navigation.isAuthenticated
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.usecase.ApplyAutomaticPageSizeUseCase
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -49,9 +50,11 @@ class PassboltApplication :
     private val runtimeAuthenticatedFlag: RuntimeAuthenticatedFlag by inject()
     private val globalPreferencesRepository: GlobalPreferencesRepository by inject()
     private val backgroundGracePeriodTimer: BackgroundGracePeriodTimer by inject()
+    private val applyAutomaticPageSizeUseCase: ApplyAutomaticPageSizeUseCase by inject()
 
     override fun onCreate() {
         super.onCreate()
+        applyAutomaticPageSizeUseCase.execute(Unit)
         registerAppForegroundListener()
     }
 

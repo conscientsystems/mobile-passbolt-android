@@ -23,6 +23,9 @@
 
 package com.passbolt.mobile.android.domain.preferences
 
+import com.passbolt.mobile.android.domain.preferences.pagesize.DeviceTierClassifier
+import com.passbolt.mobile.android.domain.preferences.usecase.ApplyAutomaticPageSizeUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.GetAutomaticPageSizeUseCase
 import com.passbolt.mobile.android.domain.preferences.usecase.GetAvailableDefaultFiltersUseCase
 import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
@@ -40,4 +43,7 @@ val preferencesDomainModule =
         singleOf(::GetHomeDisplayViewPreferencesUseCase)
         singleOf(::UpdateHomeDisplayViewPreferencesUseCase)
         singleOf(::GetAvailableDefaultFiltersUseCase)
+        singleOf(::DeviceTierClassifier)
+        singleOf(::GetAutomaticPageSizeUseCase)
+        singleOf(::ApplyAutomaticPageSizeUseCase)
     }

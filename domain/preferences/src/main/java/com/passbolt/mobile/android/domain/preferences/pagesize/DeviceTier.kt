@@ -1,6 +1,6 @@
 /**
  * Passbolt - Open source password manager for teams
- * Copyright (c) 2021 Passbolt SA
+ * Copyright (c) 2026 Passbolt SA
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
  * Public License (AGPL) as published by the Free Software Foundation version 3.
@@ -21,7 +21,10 @@
  * @since v1.0
  */
 
-package com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize
+package com.passbolt.mobile.android.domain.preferences.pagesize
 
-@Suppress("MagicNumber")
-internal val ALLOWED_PAGE_SIZES = listOf(250, 500, 1_000, 2_000, 3_000, 5_000, 10_000)
+enum class DeviceTier {
+    LOW,
+    MEDIUM,
+    HIGH,
+}

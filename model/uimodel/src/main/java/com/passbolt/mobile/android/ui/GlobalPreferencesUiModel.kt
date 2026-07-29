@@ -9,5 +9,6 @@ data class GlobalPreferencesUiModel(
     val isHideRootDialogEnabled: Boolean,
     val isAuthRequiredOnEveryEntry: Boolean,
     val apiFetchPageSize: Int,
+    val isApiFetchPageSizeManuallySet: Boolean,
     val accessibilityPoliciesConsentGiven: Boolean,
 )

@@ -32,5 +32,6 @@ data class GlobalPreferencesUpdate(
     val isHideRootDialogEnabled: Boolean? = null,
     val isAuthRequiredOnEveryEntry: Boolean? = null,
     val apiFetchPageSize: Int? = null,
+    val isApiFetchPageSizeManuallySet: Boolean? = null,
     val accessibilityPoliciesConsentGiven: Boolean? = null,
 )

@@ -23,12 +23,15 @@
 
 package com.passbolt.mobile.android.data.preferences
 
+import android.app.ActivityManager
 import com.passbolt.mobile.android.data.preferences.datasource.local.AccountPreferencesLocalDataSourceImpl
 import com.passbolt.mobile.android.data.preferences.datasource.local.GlobalPreferencesLocalDataSourceImpl
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesLocalDataSource
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesLocalDataSource
 import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.pagesize.DevicePerformanceFingerprintProvider
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -39,4 +42,6 @@ val preferencesDataModule =
         singleOf(::AccountPreferencesLocalDataSourceImpl) bind AccountPreferencesLocalDataSource::class
         singleOf(::GlobalPreferencesRepositoryImpl) bind GlobalPreferencesRepository::class
         singleOf(::AccountPreferencesRepositoryImpl) bind AccountPreferencesRepository::class
+        factory { androidContext().getSystemService(ActivityManager::class.java) }
+        singleOf(::DevicePerformanceFingerprintProviderImpl) bind DevicePerformanceFingerprintProvider::class
     }
