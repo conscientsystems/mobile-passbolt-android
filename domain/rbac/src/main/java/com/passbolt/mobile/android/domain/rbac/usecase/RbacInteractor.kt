@@ -28,16 +28,24 @@ import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUse
 import com.passbolt.mobile.android.domain.rbac.RbacRepository
 import com.passbolt.mobile.android.domain.rbac.mapper.toUiModel
 import com.passbolt.mobile.android.ui.RbacModel
+import timber.log.Timber
 
 class RbacInteractor(
     private val rbacRepository: RbacRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
     suspend fun fetchAndSaveRbacRulesFlags(): Output {
+        Timber.d("Refreshing RBAC rules")
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
         return when (val result = rbacRepository.refreshRbac(userId)) {
-            is DomainResult.Incomplete -> Output.Failure
-            is DomainResult.Finished -> Output.Success(result.value.toUiModel())
+            is DomainResult.Incomplete -> {
+                Timber.e("Failed to refresh RBAC rules")
+                Output.Failure
+            }
+            is DomainResult.Finished -> {
+                Timber.d("RBAC rules refreshed")
+                Output.Success(result.value.toUiModel())
+            }
         }
     }
 

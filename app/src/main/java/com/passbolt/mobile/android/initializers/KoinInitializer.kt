@@ -88,6 +88,7 @@ import com.passbolt.mobile.android.domain.rbac.rbacDomainModule
 import com.passbolt.mobile.android.domain.resources.resourcesDomainModule
 import com.passbolt.mobile.android.domain.resourcetypes.resourceTypesDomainModule
 import com.passbolt.mobile.android.domain.secrets.secretsDomainModule
+import com.passbolt.mobile.android.domain.share.shareDomainModule
 import com.passbolt.mobile.android.domain.tags.tagsDomainModule
 import com.passbolt.mobile.android.domain.users.usersDomainModule
 import com.passbolt.mobile.android.encryptedstorage.encryptedStorageModule
@@ -223,6 +224,7 @@ class KoinInitializer : Initializer<Unit> {
                 passwordExpiryDomainModule,
                 passwordExpiryDataModule,
                 usersDataModule,
+                shareDomainModule,
                 shareDataModule,
                 mfaDataModule,
                 pwnedPasswordsApiModule,

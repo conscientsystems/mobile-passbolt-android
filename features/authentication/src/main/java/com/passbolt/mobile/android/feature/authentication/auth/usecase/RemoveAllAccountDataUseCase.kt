@@ -11,6 +11,7 @@ import com.passbolt.mobile.android.domain.auth.PassphraseRepository
 import com.passbolt.mobile.android.domain.auth.SessionRepository
 import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase
 import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import timber.log.Timber
 
 /**
  * Passbolt - Open source password manager for teams
@@ -46,12 +47,13 @@ class RemoveAllAccountDataUseCase(
     private val databaseProvider: DatabaseProvider,
 ) : AsyncUseCase<UserIdInput, Unit> {
     override suspend fun execute(input: UserIdInput) {
+        Timber.d("Removing all account data")
         val accountToRemoveId = UserIdInput(input.userId)
         removeAccountData(accountToRemoveId)
 
         val selectedAccountId = getSelectedAccountUseCase.execute(Unit).selectedAccount
         if (accountToRemoveId.userId == selectedAccountId) {
-            removeSelectedAccountUseCase.execute(accountToRemoveId)
+            removeSelectedAccountUseCase.execute(Unit)
         }
     }
 

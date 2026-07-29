@@ -1,8 +1,3 @@
-package com.passbolt.mobile.android.domain.accounts.usecase
-
-import com.passbolt.mobile.android.common.usecase.UseCase
-import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
-
 /**
  * Passbolt - Open source password manager for teams
  * Copyright (c) 2021 Passbolt SA
@@ -25,10 +20,14 @@ import com.passbolt.mobile.android.domain.accounts.SelectedAccountRepository
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-class RemoveSelectedAccountUseCase(
-    private val selectedAccountRepository: SelectedAccountRepository,
-) : UseCase<Unit, Unit> {
-    override fun execute(input: Unit) {
-        selectedAccountRepository.removeSelectedAccount()
+
+package com.passbolt.mobile.android.domain.share
+
+import com.passbolt.mobile.android.domain.share.usecase.ShareFolderUseCase
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+
+val shareDomainModule =
+    module {
+        singleOf(::ShareFolderUseCase)
     }
-}

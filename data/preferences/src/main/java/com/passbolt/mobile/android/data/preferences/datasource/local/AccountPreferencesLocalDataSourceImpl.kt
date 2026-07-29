@@ -35,27 +35,36 @@ import com.passbolt.mobile.android.ui.AccountFlagsUiModel
 import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
+import timber.log.Timber
 
 internal class AccountPreferencesLocalDataSourceImpl(
     private val encryptedSharedPreferencesFactory: EncryptedSharedPreferencesFactory,
 ) : AccountPreferencesLocalDataSource {
     override fun getHomeDisplayViewPreferences(userId: String): HomeDisplayViewPreferencesUiModel {
         with(sharedPreferences(userId)) {
-            val lastUsedHomeViewOrdinal = getInt(KEY_LAST_USED_HOME_VIEW, DEFAULT_LAST_USED_FILTER_ORDINAL)
-            val lastUsedHomeView = HomeDisplayViewUiModel.entries[lastUsedHomeViewOrdinal]
+            return try {
+                val lastUsedHomeViewOrdinal = getInt(KEY_LAST_USED_HOME_VIEW, DEFAULT_LAST_USED_FILTER_ORDINAL)
+                val lastUsedHomeView = HomeDisplayViewUiModel.entries[lastUsedHomeViewOrdinal]
 
-            val userSetHomeViewOrdinal = getInt(KEY_USER_SET_HOME_VIEW, -1)
-            val userSetHomeView =
-                if (userSetHomeViewOrdinal != -1) {
-                    DefaultFilterUiModel.entries[userSetHomeViewOrdinal]
-                } else {
-                    DefaultFilterUiModel.LAST_USED
-                }
+                val userSetHomeViewOrdinal = getInt(KEY_USER_SET_HOME_VIEW, -1)
+                val userSetHomeView =
+                    if (userSetHomeViewOrdinal != -1) {
+                        DefaultFilterUiModel.entries[userSetHomeViewOrdinal]
+                    } else {
+                        DefaultFilterUiModel.LAST_USED
+                    }
 
-            return HomeDisplayViewPreferencesUiModel(
-                lastUsedHomeView = lastUsedHomeView,
-                userSetHomeView = userSetHomeView,
-            )
+                HomeDisplayViewPreferencesUiModel(
+                    lastUsedHomeView = lastUsedHomeView,
+                    userSetHomeView = userSetHomeView,
+                )
+            } catch (e: IndexOutOfBoundsException) {
+                Timber.w(e, "Stored home view ordinal is invalid, falling back to defaults")
+                HomeDisplayViewPreferencesUiModel(
+                    lastUsedHomeView = HomeDisplayViewUiModel.ALL_ITEMS,
+                    userSetHomeView = DefaultFilterUiModel.LAST_USED,
+                )
+            }
         }
     }
 

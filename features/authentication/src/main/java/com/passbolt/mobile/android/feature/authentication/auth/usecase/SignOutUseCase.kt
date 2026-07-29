@@ -1,13 +1,13 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.core.idlingresource.SignOutIdlingResource
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.accounts.usecase.RemoveSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.auth.AuthRepository
 import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
+import timber.log.Timber
 
 /**
  * Passbolt - Open source password manager for teams
@@ -40,13 +40,14 @@ class SignOutUseCase(
     private val signOutIdlingResource: SignOutIdlingResource,
 ) : AsyncUseCase<Unit, Unit> {
     override suspend fun execute(input: Unit) {
+        Timber.d("Signing out")
         signOutIdlingResource.setIdle(false)
         getSessionUseCase.execute(Unit).refreshToken?.let {
             authRepository.signOut(it)
         }
         passphraseMemoryCache.clear()
-        getSelectedAccountUseCase.execute(Unit).selectedAccount?.let { selectedAccount ->
-            removeSelectedAccountUseCase.execute(UserIdInput(selectedAccount))
+        getSelectedAccountUseCase.execute(Unit).selectedAccount?.let {
+            removeSelectedAccountUseCase.execute(Unit)
         }
         signOutIdlingResource.setIdle(true)
     }
