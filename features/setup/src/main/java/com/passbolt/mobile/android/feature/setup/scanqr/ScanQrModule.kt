@@ -3,7 +3,6 @@ package com.passbolt.mobile.android.feature.setup.scanqr
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.KeyAssembler
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.QrScanResultsMapper
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
-import com.passbolt.mobile.android.feature.setup.scanqr.usecase.UpdateTransferUseCase
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
@@ -37,7 +36,6 @@ fun Module.scanQrModule() {
     viewModelOf(::ScanQrViewModel)
     singleOf(::QrScanResultsMapper)
     singleOf(::KeyAssembler)
-    singleOf(::UpdateTransferUseCase)
     factoryOf(::ScanQrParser)
     single { Json { ignoreUnknownKeys = true } }
 }

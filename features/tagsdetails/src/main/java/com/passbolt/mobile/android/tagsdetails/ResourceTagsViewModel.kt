@@ -31,8 +31,8 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgre
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceTagsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsIntent.GoBack
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsSideEffect.NavigateBack
 import com.passbolt.mobile.android.tagsdetails.ResourceTagsSideEffect.NavigateToHome
@@ -67,7 +67,7 @@ internal class ResourceTagsViewModel(
     private suspend fun synchronizeWithDataRefresh(resourceId: String) {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
-                InProgress -> updateViewState { copy(isRefreshing = true) }
+                is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = it.progress) }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                     updateViewState { copy(isRefreshing = false) }
@@ -101,7 +101,7 @@ internal class ResourceTagsViewModel(
                     tags = tagsResult.tags,
                 )
             }
-        } catch (_: NullPointerException) {
+        } catch (_: IllegalStateException) {
             emitSideEffect(ShowContentNotAvailable)
             emitSideEffect(NavigateToHome)
         } catch (throwable: Exception) {

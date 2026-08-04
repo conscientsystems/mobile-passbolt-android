@@ -1,10 +1,10 @@
 package com.passbolt.mobile.android.feature.authentication
 
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
 
 class AuthenticationStartUpResolver(
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,

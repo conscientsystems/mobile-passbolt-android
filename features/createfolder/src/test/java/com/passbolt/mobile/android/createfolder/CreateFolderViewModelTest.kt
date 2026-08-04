@@ -26,20 +26,12 @@ package com.passbolt.mobile.android.createfolder
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.commonfolders.usecase.AddLocalFolderPermissionsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.FolderShareInteractor
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.AddLocalFolderUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.idlingresource.CreateFolderIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.createfolder.CreateFolderIntent.FolderNameChanged
 import com.passbolt.mobile.android.createfolder.CreateFolderIntent.GoBack
 import com.passbolt.mobile.android.createfolder.CreateFolderIntent.Initialize
@@ -49,15 +41,24 @@ import com.passbolt.mobile.android.createfolder.CreateFolderSideEffect.NavigateU
 import com.passbolt.mobile.android.createfolder.CreateFolderSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.createfolder.CreateFolderValidationError.MaxLengthExceeded
 import com.passbolt.mobile.android.createfolder.CreateFolderViewModel.Companion.FOLDER_NAME_MAX_LENGTH
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
+import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttributes
+import com.passbolt.mobile.android.domain.folders.usecase.AddLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.AddLocalFolderUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.CreateFolderUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.FolderShareInteractor
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase.Output.JwtWillExpire
 import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.ui.FolderModel
-import com.passbolt.mobile.android.ui.FolderModelWithAttributes
 import com.passbolt.mobile.android.ui.PermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -398,10 +399,10 @@ class CreateFolderViewModelTest : KoinTest {
 
     private suspend fun setupMocksForRootFolder() {
         val getCurrentUserUseCase = get<GetLocalCurrentUserUseCase>()
-        whenever(getCurrentUserUseCase.execute(Unit)) doReturn GetLocalCurrentUserUseCase.Output(mockUserModel)
+        whenever(getCurrentUserUseCase.execute(Unit)) doReturn GetLocalCurrentUserUseCase.Output(mockUserUiModel)
 
         val usersModelMapper = get<UsersModelMapper>()
-        whenever(usersModelMapper.mapToUserWithAvatar(mockUserModel)) doReturn mockUserWithAvatar
+        whenever(usersModelMapper.mapToUserWithAvatar(mockUserUiModel)) doReturn mockUserWithAvatar
     }
 
     private suspend fun setupMocksForParentFolder() {
@@ -465,7 +466,7 @@ class CreateFolderViewModelTest : KoinTest {
 
         whenever(createFolderUseCase.execute(any())) doReturn
             CreateFolderUseCase.Output.Failure(
-                NetworkResult.Failure.NetworkError<Any>(Exception("Network error"), "Network error"),
+                DomainResult.Incomplete.Error(UNKNOWN, "Network error"),
             )
     }
 
@@ -480,7 +481,7 @@ class CreateFolderViewModelTest : KoinTest {
 
         whenever(folderShareInteractor.shareFolder(any(), any())) doReturn
             FolderShareInteractor.Output.ShareFailure(
-                Exception("Share failed"),
+                DomainResult.Incomplete.Error(UNKNOWN, "Share failed"),
             )
     }
 
@@ -489,8 +490,8 @@ class CreateFolderViewModelTest : KoinTest {
         private const val NEW_FOLDER_ID = "new-folder-id"
         private const val USER_ID = "user-id"
 
-        private val mockUserModel =
-            mock<UserModel>()
+        private val mockUserUiModel =
+            mock<UserUiModel>()
 
         private val mockUserWithAvatar =
             UserWithAvatar(

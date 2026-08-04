@@ -3,16 +3,17 @@ package com.passbolt.mobile.android.feature.home.switchaccount
 import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.GetAllAccountsDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.navigation.AppContext
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAllAccountsDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.Close
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.CloseSignOutDialog
-import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.Initialize
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.ManageAccounts
+import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.Refresh
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.SeeCurrentAccountDetails
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.SignOut
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountIntent.SignOutConfirmed
@@ -47,20 +48,30 @@ import kotlinx.coroutines.launch
  */
 
 class SwitchAccountViewModel(
+    appContext: AppContext,
     private val getAllAccountsDataUseCase: GetAllAccountsDataUseCase,
     private val switchAccountModelMapper: SwitchAccountModelMapper,
     private val signOutUseCase: SignOutUseCase,
     private val saveSelectedAccountUseCase: SaveSelectedAccountUseCase,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
-) : SideEffectViewModel<SwitchAccountState, SwitchAccountSideEffect>(SwitchAccountState()) {
-    val appContext: AppContext
-        get() = requireNotNull(viewState.value.appContext) { "App context was not initialized" }
+    private val userProfileRefreshTrackingFlow: UserProfileRefreshTrackingFlow,
+) : SideEffectViewModel<SwitchAccountState, SwitchAccountSideEffect>(
+        initialState = SwitchAccountState(appContext = appContext),
+    ) {
+    init {
+        loadAccounts()
+        viewModelScope.launch {
+            userProfileRefreshTrackingFlow.isRefreshing.collect { isRefreshing ->
+                updateViewState { copy(isCurrentAccountProfileLoading = isRefreshing) }
+            }
+        }
+    }
 
     fun onIntent(intent: SwitchAccountIntent) {
         when (intent) {
+            is Refresh -> loadAccounts()
             is Close -> emitSideEffect(SwitchAccountSideEffect.Dismiss)
-            is Initialize -> initialize(intent)
             is SeeCurrentAccountDetails -> emitSideEffect(SwitchAccountSideEffect.NavigateToAccountDetails)
             is SignOut -> updateViewState { copy(showSignOutDialog = true) }
             is SignOutConfirmed -> signOut()
@@ -70,12 +81,10 @@ class SwitchAccountViewModel(
         }
     }
 
-    private fun initialize(initialize: Initialize) {
-        updateViewState { copy(appContext = initialize.appContext) }
-
+    private fun loadAccounts() {
         val selectedAccount = getSelectedAccountUseCase.execute(Unit).selectedAccount
         val accounts = getAllAccountsDataUseCase.execute(Unit).accounts
-        val accountsList = switchAccountModelMapper.map(accounts, selectedAccount, initialize.appContext)
+        val accountsList = switchAccountModelMapper.map(accounts, selectedAccount, viewState.value.appContext)
 
         updateViewState {
             copy(accountsList = accountsList)
@@ -88,12 +97,12 @@ class SwitchAccountViewModel(
             dataRefreshTrackingFlow.awaitIdle()
             signOutUseCase.execute(Unit)
             updateViewState { copy(showProgress = false) }
-            emitSideEffect(NavigateToStartup(appContext))
+            emitSideEffect(NavigateToStartup(viewState.value.appContext))
         }
     }
 
     private fun switchToAccount(account: AccountItem) {
         saveSelectedAccountUseCase.execute(UserIdInput(account.userId))
-        emitSideEffect(NavigateToSignInForAccount(appContext))
+        emitSideEffect(NavigateToSignInForAccount(viewState.value.appContext))
     }
 }

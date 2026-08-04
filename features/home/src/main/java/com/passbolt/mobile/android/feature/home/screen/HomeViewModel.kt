@@ -29,22 +29,30 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.NotCompleted
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
-import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.navigation.AppContext
-import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.performCommonResourceAction
-import com.passbolt.mobile.android.core.resources.actions.performResourcePropertyAction
-import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.NONE
+import com.passbolt.mobile.android.domain.accounts.AccountSwitchFlow
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.preferences.mapper.toHomeDisplayViewModel
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.performCommonResourceAction
+import com.passbolt.mobile.android.domain.resources.actions.performResourcePropertyAction
+import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor.Output.Failure
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor.Output.Success
+import com.passbolt.mobile.android.domain.users.profile.UserProfileRefreshTrackingFlow
+import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseFiltersBottomSheet
@@ -67,6 +75,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.EditResource
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.FolderCreateReturned
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.Initialize
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.LaunchResourceWebsite
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OnResume
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenFiltersBottomSheet
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenFolderMoreMenu
@@ -98,6 +107,7 @@ import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_TO_REFRESH_DATA
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
+import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.PROFILE_FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.TOGGLE_FAVOURITE_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_CREATED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_DELETED
@@ -105,9 +115,6 @@ import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOU
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_SHARED
 import com.passbolt.mobile.android.feature.home.screen.ToastType.WAIT_FOR_DATA_REFRESH_FINISH
 import com.passbolt.mobile.android.feature.home.screen.data.HomeDataProvider
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
-import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.autofillSlugs
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.homeSlugs
 import com.passbolt.mobile.android.ui.Folder.Child
@@ -134,14 +141,15 @@ internal class HomeViewModel(
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
-    private val getHomeDisplayViewPrefsUseCase: GetHomeDisplayViewPrefsUseCase,
-    private val homeModelMapper: HomeDisplayViewMapper,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val getHomeDisplayViewPreferencesUseCase: GetHomeDisplayViewPreferencesUseCase,
     private val homeDataProvider: HomeDataProvider,
     private val getLocalFolderUseCase: GetLocalFolderDetailsUseCase,
-    private val canCreateResourceUse: CanCreateResourceUseCase,
-    private val canShareResourceUse: CanShareResourceUseCase,
+    private val resourceAccessInteractor: ResourceAccessInteractor,
     private val detectAutofillConflict: DetectAutofillConflict,
     private val accountSwitchFlow: AccountSwitchFlow,
+    private val userProfileInteractor: UserProfileInteractor,
+    private val userProfileRefreshTrackingFlow: UserProfileRefreshTrackingFlow,
 ) : SideEffectViewModel<HomeState, HomeSideEffect>(HomeState()),
     KoinComponent {
     private val resourcePropertiesActionsInteractor: ResourcePropertiesActionsInteractor
@@ -154,9 +162,11 @@ internal class HomeViewModel(
     private var dataRefreshJob: Job? = null
     private var accountSwitchJob: Job? = null
     private var lastInitializeIntent: Initialize? = null
+    private var loadedAccountId: String? = null
 
     init {
         loadUserAvatar()
+        refreshUserProfile()
     }
 
     private fun loadUserAvatar() {
@@ -167,6 +177,25 @@ internal class HomeViewModel(
                         .execute(Unit)
                         .avatarUrl,
             )
+        }
+    }
+
+    private fun refreshUserProfile() {
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            userProfileRefreshTrackingFlow.setRefreshing(true)
+            try {
+                when (
+                    val result =
+                        runAuthenticatedOperation {
+                            userProfileInteractor.fetchAndUpdateUserProfile()
+                        }
+                ) {
+                    is Success -> loadUserAvatar()
+                    is Failure -> emitSideEffect(ShowErrorSnackbar(PROFILE_FETCH_FAILURE, result.message))
+                }
+            } finally {
+                userProfileRefreshTrackingFlow.setRefreshing(false)
+            }
         }
     }
 
@@ -191,6 +220,7 @@ internal class HomeViewModel(
             CreateFolder -> createFolder()
             CreatePinCode -> createPinCode()
             is Initialize -> initialize(intent)
+            OnResume -> refreshForChangedAccount()
             is OpenResourceMenu -> openResourceMoreMenu(intent)
             is Search -> searchQueryChanged(intent.searchQuery)
             SearchEndIconAction -> searchEndIconAction()
@@ -202,7 +232,10 @@ internal class HomeViewModel(
             CopyResourceUsername -> copyResourceUsername()
             EditResource -> emitSideEffect(NavigateToEditResourceForm(viewState.value.requireMoreMenuResource))
             LaunchResourceWebsite -> launchResourceWebsite()
-            ShareResource -> onCanShareResource { emitSideEffect(NavigateToShare(viewState.value.requireMoreMenuResource)) }
+            ShareResource ->
+                withResourceAccess({ resourceAccessInteractor.canShareResource() }) {
+                    emitSideEffect(NavigateToShare(viewState.value.requireMoreMenuResource))
+                }
             is ToggleResourceFavourite -> toggleFavourite(intent.option)
             is FolderCreateReturned -> folderCreationReturned(intent)
             is OtpQRScanReturned -> processOtpScanResult(intent)
@@ -240,12 +273,14 @@ internal class HomeViewModel(
 
     private fun createTotp() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource { emitSideEffect(NavigateToCreateTotp(folderId = viewState.value.currentFolderId)) }
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
+            emitSideEffect(NavigateToCreateTotp(folderId = viewState.value.currentFolderId))
+        }
     }
 
     private fun createPassword() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = PASSWORD,
@@ -257,7 +292,7 @@ internal class HomeViewModel(
 
     private fun createNote() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = STANDALONE_NOTE,
@@ -269,7 +304,7 @@ internal class HomeViewModel(
 
     private fun createPinCode() {
         updateViewState { copy(showCreateResourceBottomSheet = false) }
-        onCanCreateResource {
+        withResourceAccess({ resourceAccessInteractor.canCreateResource(viewState.value.currentFolderId) }) {
             emitSideEffect(
                 NavigateToCreateResourceForm(
                     leadingContentType = PIN_CODE,
@@ -460,15 +495,14 @@ internal class HomeViewModel(
             return
         }
         lastInitializeIntent = intent
-        val filterPreferences = getHomeDisplayViewPrefsUseCase.execute(Unit)
+        loadedAccountId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        val filterPreferences = getHomeDisplayViewPreferencesUseCase.execute(Unit)
 
         viewModelScope.launch {
             updateViewState { copy(appContext = intent.appContext) }
             val homeView =
-                intent.homeView ?: homeModelMapper.map(
-                    filterPreferences.userSetHomeView,
-                    filterPreferences.lastUsedHomeView,
-                )
+                intent.homeView
+                    ?: filterPreferences.userSetHomeView.toHomeDisplayViewModel(filterPreferences.lastUsedHomeView)
             val homeData = getHomeData(homeView, viewState.value.searchQuery, intent.showSuggestedModel)
             val isAutofillConflictDetected = detectAutofillConflict()
 
@@ -490,7 +524,8 @@ internal class HomeViewModel(
                 viewModelScope.launch(coroutineLaunchContext.io) {
                     accountSwitchFlow.selectedAccountFlow
                         .drop(1)
-                        .collect {
+                        .collect { switchedAccountId ->
+                            loadedAccountId = switchedAccountId
                             loadUserAvatar()
                             val homeData =
                                 getHomeData(
@@ -501,6 +536,30 @@ internal class HomeViewModel(
                             updateViewState { copy(homeData = homeData) }
                         }
                 }
+        }
+    }
+
+    /*
+    Unlike the app's Home, the autofill flow does NOT recreate this activity when
+    switching accounts: finishAffinity would destroy the pending autofill request
+    this activity holds, so it is only reordered to front and
+    its ViewModels survive with stale, previous-account state.
+     */
+    private fun refreshForChangedAccount() {
+        val loadedAccount = loadedAccountId ?: return
+        val selectedAccountId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+        if (selectedAccountId != loadedAccount) {
+            loadedAccountId = selectedAccountId
+            viewModelScope.launch {
+                loadUserAvatar()
+                val homeData =
+                    getHomeData(
+                        viewState.value.homeView,
+                        viewState.value.searchQuery,
+                        viewState.value.showSuggestedModel,
+                    )
+                updateViewState { copy(homeData = homeData) }
+            }
         }
     }
 
@@ -566,7 +625,10 @@ internal class HomeViewModel(
     private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
-                InProgress -> updateViewState { copy(isRefreshing = true, canCreateResource = false) }
+                is InProgress ->
+                    updateViewState {
+                        copy(isRefreshing = true, refreshProgress = it.progress, canCreateResource = false)
+                    }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                     updateViewState { copy(isRefreshing = false, canCreateResource = false) }
@@ -581,26 +643,23 @@ internal class HomeViewModel(
                     }
                 }
                 NotCompleted -> {
-                    // do nothing
+                    // autofill does not perform automatic data refresh - evaluate from local data
+                    if (viewState.value.appContext == AppContext.AUTOFILL) {
+                        val showCreateResourceButton = shouldShowCreateButton()
+                        updateViewState { copy(canCreateResource = showCreateResourceButton) }
+                    }
                 }
             }
         }
     }
 
-    private fun onCanShareResource(function: () -> Unit) {
+    private fun withResourceAccess(
+        hasAccess: suspend () -> Boolean,
+        onAllowed: () -> Unit,
+    ) {
         viewModelScope.launch(coroutineLaunchContext.io) {
-            if (canShareResourceUse.execute(Unit).canShareResource) {
-                function()
-            } else {
-                emitSideEffect(ShowErrorSnackbar(NO_SHARED_KEY_ACCESS))
-            }
-        }
-    }
-
-    private fun onCanCreateResource(function: () -> Unit) {
-        viewModelScope.launch(coroutineLaunchContext.io) {
-            if (canCreateResourceUse.execute(CanCreateResourceUseCase.Input(folderId = null)).canCreateResource) {
-                function()
+            if (hasAccess()) {
+                onAllowed()
             } else {
                 emitSideEffect(ShowErrorSnackbar(NO_SHARED_KEY_ACCESS))
             }

@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.resourceform.main.ui
 
-import PassboltTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.button.SecondaryIconButton
 import com.passbolt.mobile.android.core.ui.section.Section
 import com.passbolt.mobile.android.core.ui.text.PasswordInput
@@ -34,6 +34,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.OpenAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordUsernameTextChanged
@@ -131,6 +132,12 @@ private fun PasswordSection(
                 entropy = passwordEntropyBits,
                 onPasswordChange = { onIntent(PasswordTextChanged(it)) },
                 onGenerateClick = { onIntent(GeneratePassword) },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            SettingRow(
+                leadingIconResId = CoreUiR.drawable.ic_cog,
+                text = stringResource(LocalizationR.string.resource_form_advanced_password_generation),
+                onClick = { onIntent(OpenAdvancedSecretGeneration) },
             )
         }
     }

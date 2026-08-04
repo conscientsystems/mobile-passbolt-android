@@ -2,8 +2,7 @@ package com.passbolt.mobile.android.feature.authentication.auth.challenge
 
 import com.google.gson.Gson
 import com.passbolt.mobile.android.common.extension.erase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.response.ChallengeResponseDto
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
@@ -32,7 +31,7 @@ import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
  */
 class ChallengeDecryptor(
     private val openPgp: OpenPgp,
-    private val getPrivateKeyUseCase: GetPrivateKeyUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val gson: Gson,
 ) {
     suspend fun decrypt(
@@ -42,7 +41,7 @@ class ChallengeDecryptor(
         challenge: String,
     ): Output {
         val passphraseCopy = passphrase.copyOf()
-        val privateKey = getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey
+        val privateKey = requireNotNull(privateKeyRepository.getPrivateKey(userId)) { "Unable to restore private key." }.armoredKey
         return when (
             val decryptedChallenge =
                 openPgp.decryptVerifyMessageArmored(

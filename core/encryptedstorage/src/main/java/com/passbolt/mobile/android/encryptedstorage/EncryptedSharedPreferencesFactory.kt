@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import timber.log.Timber
 
 /**
  * Passbolt - Open source password manager for teams
@@ -33,11 +34,16 @@ class EncryptedSharedPreferencesFactory internal constructor(
     private val masterKey: MasterKey,
 ) {
     fun get(fileName: String): SharedPreferences =
-        EncryptedSharedPreferences.create(
-            context,
-            fileName,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
+        try {
+            EncryptedSharedPreferences.create(
+                context,
+                fileName,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to open encrypted preferences")
+            throw e
+        }
 }

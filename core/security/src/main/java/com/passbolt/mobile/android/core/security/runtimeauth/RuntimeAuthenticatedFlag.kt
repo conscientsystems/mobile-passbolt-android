@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.core.security.runtimeauth
 
+import android.app.Activity
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import timber.log.Timber
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
@@ -32,7 +32,7 @@ import com.passbolt.mobile.android.core.localization.R as LocalizationR
 class RuntimeAuthenticatedFlag(
     var isAuthenticated: Boolean = false,
 ) {
-    fun require(activity: AppCompatActivity) {
+    fun require(activity: Activity) {
         if (!isAuthenticated) {
             with(activity) {
                 val message = "Started ${this.javaClass.name} without authenticating first"

@@ -24,12 +24,12 @@
 package com.passbolt.mobile.android.resourcepicker.screen
 
 import com.passbolt.mobile.android.resourcepicker.model.PickResourceAction
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 internal sealed class ResourcePickerSideEffect {
     data class NavigateBackWithResult(
         val pickAction: PickResourceAction,
-        val resourceModel: ResourceModel,
+        val resourceModel: ResourceUiModel,
     ) : ResourcePickerSideEffect()
 
     data class ShowErrorSnackbar(

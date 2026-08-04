@@ -19,11 +19,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.passbolt.mobile.android.core.compose.rememberDebouncedBoolean
 import com.passbolt.mobile.android.core.localization.R
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.HomeNavigationKey
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.empty.EmptyResourceListState
 import com.passbolt.mobile.android.core.ui.lists.HeaderItem
+import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.data.HeaderSectionConfiguration
 import com.passbolt.mobile.android.feature.home.screen.list.FolderItem
@@ -33,12 +35,11 @@ import com.passbolt.mobile.android.feature.home.screen.list.ResourceItem
 import com.passbolt.mobile.android.feature.home.screen.list.ResourceItemPlaceholder
 import com.passbolt.mobile.android.feature.home.screen.list.TagItem
 import com.passbolt.mobile.android.ui.Folder.Child
-import com.passbolt.mobile.android.ui.FolderWithCountAndPath
 import com.passbolt.mobile.android.ui.GroupWithCount
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Folders
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Groups
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.Tags
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.TagWithCount
 import org.koin.compose.koinInject
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
@@ -250,19 +251,22 @@ fun HomeResourceList(
 }
 
 private data class HomeListData(
-    val suggestedResources: LazyPagingItems<ResourceModel>,
-    val resources: LazyPagingItems<ResourceModel>,
+    val suggestedResources: LazyPagingItems<ResourceUiModel>,
+    val resources: LazyPagingItems<ResourceUiModel>,
     val tags: LazyPagingItems<TagWithCount>,
     val groups: LazyPagingItems<GroupWithCount>,
     val folders: LazyPagingItems<FolderWithCountAndPath>,
     val filteredSubfolders: LazyPagingItems<FolderWithCountAndPath>,
-    val filteredSubfoldersResources: LazyPagingItems<ResourceModel>,
+    val filteredSubfoldersResources: LazyPagingItems<ResourceUiModel>,
 )
 
 @Composable
-private fun rememberHomeListData(state: HomeState): HomeListData {
-    val suggestedResources = state.homeData.suggestedResourceList.collectAsLazyPagingItems()
-    val resources = state.homeData.resourceList.collectAsLazyPagingItems()
+private fun rememberHomeListData(
+    state: HomeState,
+    coroutineLaunchContext: CoroutineLaunchContext = koinInject(),
+): HomeListData {
+    val suggestedResources = state.homeData.suggestedResourceList.collectAsLazyPagingItems(coroutineLaunchContext.default)
+    val resources = state.homeData.resourceList.collectAsLazyPagingItems(coroutineLaunchContext.default)
     val tags = state.homeData.tagsList.collectAsLazyPagingItems()
     val groups = state.homeData.groupsList.collectAsLazyPagingItems()
     val folders = state.homeData.foldersList.collectAsLazyPagingItems()

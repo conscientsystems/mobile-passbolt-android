@@ -24,10 +24,10 @@
 package com.passbolt.mobile.android.core.accounts
 
 import android.util.Base64
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
 import com.passbolt.mobile.android.dto.response.AccountKitDto
 import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 

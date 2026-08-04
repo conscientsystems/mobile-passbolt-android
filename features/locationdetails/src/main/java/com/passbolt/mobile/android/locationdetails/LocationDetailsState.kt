@@ -23,15 +23,16 @@
 
 package com.passbolt.mobile.android.locationdetails
 
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTree
-import com.passbolt.mobile.android.ui.FolderModel
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 data class LocationDetailsState(
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
     val itemName: String = "",
     val isSharedFolder: Boolean = false,
-    val resource: ResourceModel? = null,
+    val resource: ResourceUiModel? = null,
     val parentFolders: List<FolderModel> = emptyList(),
     val folderTree: ExpandableFolderTree? = null,
     val expandedItemIds: Set<String> = emptySet(),

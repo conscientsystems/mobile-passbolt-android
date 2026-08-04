@@ -1,6 +1,8 @@
-extra["projectVersionName"] = "3.1.0"
-extra["projectVersionCode"] = 55
+import org.gradle.internal.extensions.core.extra
 
-extra["projectCompileSdk"] = 36
+extra["projectVersionName"] = "3.2.0"
+extra["projectVersionCode"] = 56
+
 extra["projectMinSdk"] = 29
+extra["projectCompileSdk"] = 37
 extra["projectTargetSdk"] = 35

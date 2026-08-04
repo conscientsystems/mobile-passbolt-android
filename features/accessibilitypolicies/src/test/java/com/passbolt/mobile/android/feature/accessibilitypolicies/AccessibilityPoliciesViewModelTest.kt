@@ -24,7 +24,8 @@
 package com.passbolt.mobile.android.feature.accessibilitypolicies
 
 import app.cash.turbine.test
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Accept
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Decline
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesSideEffect.NavigateToAcceptedScreen
@@ -78,7 +79,7 @@ class AccessibilityPoliciesViewModelTest {
             viewModel.onIntent(Accept)
 
             verify(updateGlobalPreferencesUseCase).execute(
-                UpdateGlobalPreferencesUseCase.Input(accessibilityPoliciesConsentGiven = true),
+                GlobalPreferencesUpdate(accessibilityPoliciesConsentGiven = true),
             )
         }
 

@@ -27,19 +27,19 @@ import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.common.validation.validation
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.performResourceUpdateAction
-import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor
-import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor.Output
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.performResourceUpdateAction
+import com.passbolt.mobile.android.domain.resources.usecase.ResourceShareInteractor
+import com.passbolt.mobile.android.domain.resources.usecase.ResourceShareInteractor.Output
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
-import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.AddPermission
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.DismissMetadataKeyDeletedDialog
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.DismissMetadataKeyModifiedDialog
@@ -106,7 +106,7 @@ class PermissionsViewModel(
     private val permissionModelUiComparator: PermissionModelUiComparator,
     private val resourceShareInteractor: ResourceShareInteractor,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
-    private val canShareResourceUseCase: CanShareResourceUseCase,
+    private val resourceAccessInteractor: ResourceAccessInteractor,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
@@ -120,7 +120,7 @@ class PermissionsViewModel(
     ) {
     private val missingItemHandler =
         CoroutineExceptionHandler { _, throwable ->
-            if (throwable is NullPointerException) {
+            if (throwable is IllegalStateException) {
                 emitSideEffect(ShowContentNotAvailable)
                 emitSideEffect(NavigateToHome)
             }
@@ -157,7 +157,7 @@ class PermissionsViewModel(
     private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect { status ->
             when (status) {
-                DataRefreshStatus.InProgress -> { // no-op
+                is DataRefreshStatus.InProgress -> { // no-op
                 }
                 DataRefreshStatus.Idle.FinishedWithFailure ->
                     emitSideEffect(ShowErrorSnackbar(DATA_REFRESH_ERROR))
@@ -256,7 +256,7 @@ class PermissionsViewModel(
 
     private fun onCanShareResource(action: () -> Unit) {
         viewModelScope.launch(coroutineLaunchContext.io) {
-            if (canShareResourceUseCase.execute(Unit).canShareResource) {
+            if (resourceAccessInteractor.canShareResource()) {
                 action()
             } else {
                 emitSideEffect(ShowErrorSnackbar(CANNOT_SHARE_RESOURCE))

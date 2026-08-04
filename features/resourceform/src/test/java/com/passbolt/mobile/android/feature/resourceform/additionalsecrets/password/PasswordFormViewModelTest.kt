@@ -6,13 +6,14 @@ import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ApplyAndGoBack
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateBack
-import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.ShowUnableToGeneratePassword
-import com.passbolt.mobile.android.ui.CaseTypeModel
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormSideEffect.NavigateToAdvancedSecretGeneration
+import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
 import com.passbolt.mobile.android.ui.LeadingContentType
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
-import com.passbolt.mobile.android.ui.PasswordPolicies
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordPoliciesUiModel
 import com.passbolt.mobile.android.ui.PasswordStrength.Empty
 import com.passbolt.mobile.android.ui.PasswordStrength.VeryStrong
 import com.passbolt.mobile.android.ui.PasswordStrength.Weak
@@ -224,10 +225,11 @@ class PasswordFormViewModelTest : KoinTest {
                     },
                 )
 
-            viewModel.onIntent(PasswordFormIntent.GeneratePassword)
+            viewModel.viewState.test {
+                viewModel.onIntent(PasswordFormIntent.GeneratePassword)
+                testScheduler.advanceUntilIdle()
 
-            viewModel.viewState.drop(1).test {
-                val state = awaitItem()
+                val state = expectMostRecentItem()
                 assertThat(state.password).isEqualTo("generated123!")
                 assertThat(state.entropy).isEqualTo(130.0)
                 assertThat(state.passwordStrength).isEqualTo(VeryStrong)
@@ -235,7 +237,7 @@ class PasswordFormViewModelTest : KoinTest {
         }
 
     @Test
-    fun `generate password failure should emit ShowUnableToGeneratePassword side effect`() =
+    fun `generate password failure should show unable to generate password dialog`() =
         runTest {
             mockEntropyCalculator.stub {
                 onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
@@ -254,14 +256,110 @@ class PasswordFormViewModelTest : KoinTest {
                     },
                 )
 
-            viewModel.viewState.drop(1).test { }
-            viewModel.sideEffect.test {
+            viewModel.viewState.test {
                 viewModel.onIntent(PasswordFormIntent.GeneratePassword)
                 testScheduler.advanceUntilIdle()
 
+                val state = expectMostRecentItem()
+                assertThat(state.isUnableToGeneratePasswordDialogVisible).isTrue()
+                assertThat(state.minimumEntropyBits).isEqualTo(80)
+            }
+        }
+
+    @Test
+    fun `dismiss unable to generate password should hide the dialog`() =
+        runTest {
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            whenever(mockGetPasswordPoliciesUseCase.execute(any())).thenReturn(
+                defaultPasswordPolicies,
+            )
+            whenever(mockSecretGenerator.generatePassword(any())).thenReturn(
+                SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy(80),
+            )
+
+            viewModel =
+                get(
+                    parameters = {
+                        parametersOf(resourceFormMode, password)
+                    },
+                )
+
+            viewModel.onIntent(PasswordFormIntent.GeneratePassword)
+            testScheduler.advanceUntilIdle()
+            viewModel.onIntent(PasswordFormIntent.DismissUnableToGeneratePassword)
+
+            viewModel.viewState.test {
+                val state = awaitItem()
+                assertThat(state.isUnableToGeneratePasswordDialogVisible).isFalse()
+            }
+        }
+
+    @Test
+    fun `open advanced secret generation emits navigate side effect with loaded settings`() =
+        runTest {
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            whenever(mockGetPasswordPoliciesUseCase.execute(any())).thenReturn(
+                defaultPasswordPolicies,
+            )
+
+            viewModel =
+                get(
+                    parameters = {
+                        parametersOf(resourceFormMode, password)
+                    },
+                )
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(PasswordFormIntent.OpenAdvancedSecretGeneration)
+                testScheduler.advanceUntilIdle()
+
                 val sideEffect = awaitItem()
-                assertIs<ShowUnableToGeneratePassword>(sideEffect)
-                assertThat(sideEffect.minimumEntropyBits).isEqualTo(80)
+                assertIs<NavigateToAdvancedSecretGeneration>(sideEffect)
+                assertThat(sideEffect.selectedTab).isEqualTo(PasswordGeneratorTypeUiModel.PASSWORD)
+                assertThat(sideEffect.passwordSettings).isEqualTo(defaultPasswordPolicies.passwordGeneratorSettings)
+                assertThat(sideEffect.passphraseSettings).isEqualTo(defaultPasswordPolicies.passphraseGeneratorSettings)
+            }
+        }
+
+    @Test
+    fun `advanced secret generation result applies generated secret and settings`() =
+        runTest {
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+                onBlocking { getSecretEntropy("advanced-secret") }.thenReturn(130.0)
+            }
+
+            viewModel =
+                get(
+                    parameters = {
+                        parametersOf(resourceFormMode, password)
+                    },
+                )
+
+            val result =
+                AdvancedSecretGenerationFormResult(
+                    passwordSettings = defaultPasswordPolicies.passwordGeneratorSettings,
+                    passphraseSettings = defaultPasswordPolicies.passphraseGeneratorSettings,
+                    selectedTab = PasswordGeneratorTypeUiModel.PASSPHRASE,
+                    generatedSecret = "advanced-secret",
+                )
+
+            viewModel.onIntent(PasswordFormIntent.AdvancedSecretGenerationResult(result))
+            testScheduler.advanceUntilIdle()
+
+            viewModel.viewState.test {
+                val state = awaitItem()
+                assertThat(state.password).isEqualTo("advanced-secret")
+                assertThat(state.entropy).isEqualTo(130.0)
+                assertThat(state.passwordStrength).isEqualTo(VeryStrong)
+                assertThat(state.generatorType).isEqualTo(PasswordGeneratorTypeUiModel.PASSPHRASE)
+                assertThat(state.passwordGeneratorSettings).isEqualTo(defaultPasswordPolicies.passwordGeneratorSettings)
+                assertThat(state.passphraseGeneratorSettings)
+                    .isEqualTo(defaultPasswordPolicies.passphraseGeneratorSettings)
             }
         }
 
@@ -284,10 +382,10 @@ class PasswordFormViewModelTest : KoinTest {
             )
 
         private val defaultPasswordPolicies =
-            PasswordPolicies(
-                defaultGenerator = PasswordGeneratorTypeModel.PASSWORD,
+            PasswordPoliciesUiModel(
+                defaultGenerator = PasswordGeneratorTypeUiModel.PASSWORD,
                 passwordGeneratorSettings =
-                    PasswordGeneratorSettingsModel(
+                    PasswordGeneratorSettingsUiModel(
                         length = 18,
                         maskUpper = true,
                         maskLower = true,
@@ -302,10 +400,10 @@ class PasswordFormViewModelTest : KoinTest {
                         excludeLookAlikeChars = true,
                     ),
                 passphraseGeneratorSettings =
-                    PassphraseGeneratorSettingsModel(
+                    PassphraseGeneratorSettingsUiModel(
                         words = 9,
                         wordSeparator = " ",
-                        wordCase = CaseTypeModel.LOWERCASE,
+                        wordCase = CaseTypeUiModel.LOWERCASE,
                     ),
                 isExternalDictionaryCheckEnabled = true,
             )

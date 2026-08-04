@@ -24,8 +24,8 @@
 package com.passbolt.mobile.android.resourcemoremenu.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.DescriptionOption.HAS_METADATA_DESCRIPTION

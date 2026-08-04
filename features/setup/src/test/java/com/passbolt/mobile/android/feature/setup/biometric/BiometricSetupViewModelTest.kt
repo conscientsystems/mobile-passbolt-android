@@ -27,11 +27,11 @@ import android.security.keystore.KeyPermanentlyInvalidatedException
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.common.BiometricInformationProvider
-import com.passbolt.mobile.android.core.accounts.usecase.biometrickey.SaveBiometricKeyIvUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.SavePassphraseUseCase
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.auth.usecase.SavePassphraseUseCase
+import com.passbolt.mobile.android.domain.biometrickey.usecase.SaveBiometricKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor
 import com.passbolt.mobile.android.feature.setup.biometric.BiometricSetupIntent.AuthenticationSuccess
@@ -91,7 +91,7 @@ class BiometricSetupViewModelTest : KoinTest {
                         single { mock<PassphraseMemoryCache>() }
                         single { mock<SavePassphraseUseCase>() }
                         single { mock<BiometricCipher>() }
-                        single { mock<SaveBiometricKeyIvUseCase>() }
+                        single { mock<SaveBiometricKeyUseCase>() }
                         single { mock<BiometryInteractor>() }
                         factoryOf(::BiometricSetupViewModel)
                     },
@@ -367,7 +367,7 @@ class BiometricSetupViewModelTest : KoinTest {
             val passphraseMemoryCache: PassphraseMemoryCache = get()
             val autofillInformationProvider: AutofillInformationProvider = get()
             val savePassphraseUseCase: SavePassphraseUseCase = get()
-            val saveBiometricKeyIvUseCase: SaveBiometricKeyIvUseCase = get()
+            val saveBiometricKeyUseCase: SaveBiometricKeyUseCase = get()
 
             val mockAuthenticatedCipher = mock<Cipher>()
             whenever(mockAuthenticatedCipher.iv) doReturn TEST_AUTHENTICATED_IV
@@ -386,7 +386,7 @@ class BiometricSetupViewModelTest : KoinTest {
             }
 
             verify(savePassphraseUseCase).execute(any())
-            verify(saveBiometricKeyIvUseCase).execute(any())
+            verify(saveBiometricKeyUseCase).execute(any())
         }
 
     @OptIn(ExperimentalTime::class)
@@ -396,7 +396,7 @@ class BiometricSetupViewModelTest : KoinTest {
             val passphraseMemoryCache: PassphraseMemoryCache = get()
             val autofillInformationProvider: AutofillInformationProvider = get()
             val savePassphraseUseCase: SavePassphraseUseCase = get()
-            val saveBiometricKeyIvUseCase: SaveBiometricKeyIvUseCase = get()
+            val saveBiometricKeyUseCase: SaveBiometricKeyUseCase = get()
 
             val mockAuthenticatedCipher = mock<Cipher>()
             whenever(mockAuthenticatedCipher.iv) doReturn TEST_AUTHENTICATED_IV
@@ -415,7 +415,7 @@ class BiometricSetupViewModelTest : KoinTest {
             }
 
             verify(savePassphraseUseCase).execute(any())
-            verify(saveBiometricKeyIvUseCase).execute(any())
+            verify(saveBiometricKeyUseCase).execute(any())
         }
 
     @OptIn(ExperimentalTime::class)

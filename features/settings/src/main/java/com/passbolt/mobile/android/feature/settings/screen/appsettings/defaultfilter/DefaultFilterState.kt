@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter
 
-import com.passbolt.mobile.android.ui.DefaultFilterModel
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 
 /**
  * Passbolt - Open source password manager for teams
@@ -26,6 +26,6 @@ import com.passbolt.mobile.android.ui.DefaultFilterModel
  */
 
 data class DefaultFilterState(
-    val allFilters: List<DefaultFilterModel> = emptyList(),
-    val selectedFilter: DefaultFilterModel? = null,
+    val allFilters: List<DefaultFilterUiModel> = emptyList(),
+    val selectedFilter: DefaultFilterUiModel? = null,
 )

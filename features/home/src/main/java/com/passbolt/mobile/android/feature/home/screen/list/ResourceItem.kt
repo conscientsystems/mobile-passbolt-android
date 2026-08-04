@@ -59,20 +59,20 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.passbolt.mobile.android.common.extension.isInFuture
 import com.passbolt.mobile.android.common.extension.toSingleLine
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.R
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.testtags.composetags.Home
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.isExpired
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
 @Composable
 fun ResourceItem(
-    resource: ResourceModel,
+    resource: ResourceUiModel,
     resourceIconProvider: ResourceIconProvider,
-    onItemClick: (ResourceModel) -> Unit,
-    onMoreClick: (ResourceModel) -> Unit,
+    onItemClick: (ResourceUiModel) -> Unit,
+    onMoreClick: (ResourceUiModel) -> Unit,
     modifier: Modifier = Modifier,
     showMoreMenu: Boolean = true,
 ) {

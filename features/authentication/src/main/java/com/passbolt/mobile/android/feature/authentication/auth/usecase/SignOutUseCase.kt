@@ -1,14 +1,13 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.RemoveSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
 import com.passbolt.mobile.android.core.idlingresource.SignOutIdlingResource
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
-import com.passbolt.mobile.android.mappers.SignOutMapper
-import com.passbolt.mobile.android.passboltapi.auth.AuthRepository
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.auth.AuthRepository
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
+import timber.log.Timber
 
 /**
  * Passbolt - Open source password manager for teams
@@ -37,18 +36,18 @@ class SignOutUseCase(
     private val removeSelectedAccountUseCase: RemoveSelectedAccountUseCase,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val authRepository: AuthRepository,
-    private val signOutMapper: SignOutMapper,
     private val getSessionUseCase: GetSessionUseCase,
     private val signOutIdlingResource: SignOutIdlingResource,
 ) : AsyncUseCase<Unit, Unit> {
     override suspend fun execute(input: Unit) {
+        Timber.d("Signing out")
         signOutIdlingResource.setIdle(false)
         getSessionUseCase.execute(Unit).refreshToken?.let {
-            authRepository.signOut(signOutMapper.mapRequestToDto(it))
+            authRepository.signOut(it)
         }
         passphraseMemoryCache.clear()
-        getSelectedAccountUseCase.execute(Unit).selectedAccount?.let { selectedAccount ->
-            removeSelectedAccountUseCase.execute(UserIdInput(selectedAccount))
+        getSelectedAccountUseCase.execute(Unit).selectedAccount?.let {
+            removeSelectedAccountUseCase.execute(Unit)
         }
         signOutIdlingResource.setIdle(true)
     }

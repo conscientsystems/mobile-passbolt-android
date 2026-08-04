@@ -4,8 +4,8 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider.ChromeNativeAutofillStatus.ENABLED
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.inappreview.InAppReviewInteractor
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
+import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
 import com.passbolt.mobile.android.feature.main.mainscreen.MainIntent.AppUpdateDownloaded
 import com.passbolt.mobile.android.feature.main.mainscreen.MainIntent.CloseChromeNativeAutofill
 import com.passbolt.mobile.android.feature.main.mainscreen.MainIntent.GoToSettings

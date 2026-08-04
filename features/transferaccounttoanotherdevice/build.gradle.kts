@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
     implementation(project(":coreui"))
     implementation(project(":common"))
@@ -13,20 +14,17 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":dto"))
     implementation(project(":gopenpgp"))
-    implementation(project(":passboltapi"))
-    implementation(project(":mappers"))
-    implementation(project(":ui"))
+    implementation(project(":mobiletransfer-domain"))
+    implementation(project(":uimodel"))
     implementation(project(":idlingresource"))
     implementation(project(":localization"))
-    implementation(project(":authenticationcore"))
-    implementation(project(":accounts"))
+    implementation(project(":auth-domain"))
+    implementation(project(":privatekey-domain"))
     implementation(project(":testtags"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.koin.compose)
-    implementation(libs.fragment)
-    implementation(libs.activity)
     implementation(libs.gson)
     implementation(libs.kotlin.serializationjson)
     implementation(libs.qr.generation)

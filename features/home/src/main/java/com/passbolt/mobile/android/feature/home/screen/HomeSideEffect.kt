@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.feature.home.screen
 
 import com.passbolt.mobile.android.ui.LeadingContentType
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 /**
  * Passbolt - Open source password manager for teams
@@ -46,7 +46,7 @@ internal sealed interface HomeSideEffect {
     ) : HomeSideEffect
 
     data class NavigateToEditResourceForm(
-        val resourceModel: ResourceModel,
+        val resourceModel: ResourceUiModel,
     ) : HomeSideEffect
 
     data class NavigateToResourceUri(
@@ -54,7 +54,7 @@ internal sealed interface HomeSideEffect {
     ) : HomeSideEffect
 
     data class NavigateToShare(
-        val resourceModel: ResourceModel,
+        val resourceModel: ResourceUiModel,
     ) : HomeSideEffect
 
     data class CopyToClipboard(
@@ -91,6 +91,7 @@ internal enum class SnackbarErrorType {
     FAILED_TO_TRUST_METADATA_KEY,
     FAILED_TO_REFRESH_DATA,
     NO_SHARED_KEY_ACCESS,
+    PROFILE_FETCH_FAILURE,
     ERROR,
 }
 

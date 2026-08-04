@@ -23,54 +23,68 @@
 
 package com.passbolt.mobile.android.resourcepicker.screen.data
 
-import com.passbolt.mobile.android.common.search.SearchableMatcher
+import androidx.paging.PagingData
+import androidx.paging.filter
+import androidx.paging.map
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesPaginatedUseCase
 import com.passbolt.mobile.android.mappers.ResourcePickerMapper
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerViewModel.Companion.SELECTABLE_RESOURCE_TYPES_SLUGS
 import com.passbolt.mobile.android.supportedresourceTypes.SupportedContentTypes.allSlugs
+import com.passbolt.mobile.android.ui.ResourceUiModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 class ResourcePickerDataProvider(
-    private val getLocalResourcesUseCase: GetLocalResourcesUseCase,
+    private val getLocalResourcesPaginatedUseCase: GetLocalResourcesPaginatedUseCase,
     private val resourcePickerMapper: ResourcePickerMapper,
-    private val searchableMatcher: SearchableMatcher,
     private val autofillUriMatcher: AutofillUriMatcher,
 ) {
     suspend fun provideData(
         searchQuery: String?,
         suggestionUri: String?,
     ): ResourcePickerData {
-        val allResources =
-            getLocalResourcesUseCase
-                .execute(GetLocalResourcesUseCase.Input(allSlugs))
-                .resources
-                .map { resourcePickerMapper.map(it, SELECTABLE_RESOURCE_TYPES_SLUGS) }
+        val resources =
+            getLocalResourcesPaginatedUseCase
+                .execute(
+                    GetLocalResourcesPaginatedUseCase.Input(
+                        slugs = allSlugs,
+                        searchQuery = searchQuery,
+                        enablePlaceholders = true,
+                    ),
+                ).pagedResourcesFlow
+                .mapToPickerItems()
 
         val suggestedResources =
-            if (!suggestionUri.isNullOrBlank()) {
-                allResources.filter {
-                    autofillUriMatcher.isMatching(
-                        suggestionUri,
-                        it.resourceModel.metadataJsonModel.uris
-                            .orEmpty() +
-                            it.resourceModel.metadataJsonModel.uri
-                                .orEmpty(),
-                    )
-                }
+            if (!suggestionUri.isNullOrBlank() && searchQuery.isNullOrBlank()) {
+                getLocalResourcesPaginatedUseCase
+                    .execute(GetLocalResourcesPaginatedUseCase.Input(slugs = allSlugs))
+                    .pagedResourcesFlow
+                    .mapToPickerItems()
+                    .map { pagingData ->
+                        pagingData.filter {
+                            autofillUriMatcher.isMatching(
+                                suggestionUri,
+                                it.resourceModel.metadataJsonModel.uris
+                                    .orEmpty() +
+                                    it.resourceModel.metadataJsonModel.uri
+                                        .orEmpty(),
+                            )
+                        }
+                    }
             } else {
-                emptyList()
-            }
-
-        val filteredResources =
-            if (!searchQuery.isNullOrBlank()) {
-                allResources.filter { searchableMatcher.matches(it, searchQuery) }
-            } else {
-                allResources
+                flowOf(PagingData.empty())
             }
 
         return ResourcePickerData(
             suggestedResources = suggestedResources,
-            resources = filteredResources,
+            resources = resources,
         )
     }
+
+    private fun Flow<PagingData<ResourceUiModel>>.mapToPickerItems() =
+        map { pagingData ->
+            pagingData.map { resourcePickerMapper.map(it, SELECTABLE_RESOURCE_TYPES_SLUGS) }
+        }
 }

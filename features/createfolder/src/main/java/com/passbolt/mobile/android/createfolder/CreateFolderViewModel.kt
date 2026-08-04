@@ -28,21 +28,10 @@ import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.common.validation.StringMaxLength
 import com.passbolt.mobile.android.common.validation.StringNotBlank
 import com.passbolt.mobile.android.common.validation.validation
-import com.passbolt.mobile.android.core.commonfolders.usecase.AddLocalFolderPermissionsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase.Output.Failure
-import com.passbolt.mobile.android.core.commonfolders.usecase.CreateFolderUseCase.Output.Success
-import com.passbolt.mobile.android.core.commonfolders.usecase.FolderShareInteractor
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.AddLocalFolderUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.ItemIdFolderId
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.CreateFolderIdlingResource
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.createfolder.CreateFolderIntent.FolderNameChanged
 import com.passbolt.mobile.android.createfolder.CreateFolderIntent.GoBack
 import com.passbolt.mobile.android.createfolder.CreateFolderIntent.Initialize
@@ -53,10 +42,22 @@ import com.passbolt.mobile.android.createfolder.CreateFolderSideEffect.ShowError
 import com.passbolt.mobile.android.createfolder.CreateFolderValidationError.MaxLengthExceeded
 import com.passbolt.mobile.android.createfolder.SnackbarErrorType.CREATE_FOLDER_ERROR
 import com.passbolt.mobile.android.createfolder.SnackbarErrorType.SHARE_FOLDER_ERROR
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
+import com.passbolt.mobile.android.domain.folders.usecase.AddLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.AddLocalFolderUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.CreateFolderUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.CreateFolderUseCase.Output.Failure
+import com.passbolt.mobile.android.domain.folders.usecase.CreateFolderUseCase.Output.Success
+import com.passbolt.mobile.android.domain.folders.usecase.FolderShareInteractor
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.ItemIdFolderId
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper
 import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
 import kotlinx.coroutines.launch
@@ -172,7 +173,7 @@ internal class CreateFolderViewModel(
                     }
             ) {
                 is Failure -> {
-                    emitSideEffect(ShowErrorSnackbar(CREATE_FOLDER_ERROR, output.result.headerMessage))
+                    emitSideEffect(ShowErrorSnackbar(CREATE_FOLDER_ERROR, output.incomplete.displayMessage()))
                 }
                 is Success -> {
                     addLocalFolderUseCase.execute(AddLocalFolderUseCase.Input(output.folderWithAttributes.folderModel))
@@ -228,7 +229,7 @@ internal class CreateFolderViewModel(
                 }
         ) {
             is FolderShareInteractor.Output.ShareFailure -> {
-                emitSideEffect(ShowErrorSnackbar(SHARE_FOLDER_ERROR, output.exception.message))
+                emitSideEffect(ShowErrorSnackbar(SHARE_FOLDER_ERROR, output.message))
             }
             is FolderShareInteractor.Output.Success -> {
                 emitSideEffect(FolderCreated(folderName))

@@ -25,14 +25,13 @@ package com.passbolt.mobile.android.feature.setup.welcome
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.accounts.AccountKitParser
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.AcknowledgeDeviceRooted
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeIntent.ConnectToExistingAccount
@@ -49,6 +48,8 @@ import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.Navig
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateToSummary
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateToTransferDetails
 import com.passbolt.mobile.android.feature.setup.welcome.WelcomeSideEffect.NavigateUp
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import com.passbolt.mobile.android.ui.ResultStatus.AlreadyLinked
 import com.passbolt.mobile.android.ui.ResultStatus.Failure
 import com.passbolt.mobile.android.ui.ResultStatus.HttpNotSupported
@@ -111,14 +112,14 @@ class WelcomeViewModelTest : KoinTest {
 
         val getGlobalPreferencesUseCase = get<GetGlobalPreferencesUseCase>()
         whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-            GetGlobalPreferencesUseCase.Output(
+            GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
-                isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = false,
                 isAuthRequiredOnEveryEntry = true,
                 debugLogLastAppVersion = null,
                 apiFetchPageSize = 2000,
+                isApiFetchPageSizeManuallySet = false,
                 accessibilityPoliciesConsentGiven = true,
             )
     }
@@ -191,14 +192,14 @@ class WelcomeViewModelTest : KoinTest {
 
             val getGlobalPreferencesUseCase = get<GetGlobalPreferencesUseCase>()
             whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 

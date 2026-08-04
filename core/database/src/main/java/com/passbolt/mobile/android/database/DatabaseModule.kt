@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.database
 
+import com.passbolt.mobile.android.common.transaction.DatabaseTransactionRunner
 import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
-import com.passbolt.mobile.android.database.usecase.databaseModule
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -31,8 +31,8 @@ import org.koin.dsl.module
  */
 val databaseModule =
     module {
-        databaseModule()
         singleOf(::ResourcesSnapshot)
+        singleOf(::DatabaseTransactionRunnerImpl) bind DatabaseTransactionRunner::class
         singleOf(::FtsQuerySanitizer) bind QuerySanitizer::class
         single {
             DatabaseProvider(

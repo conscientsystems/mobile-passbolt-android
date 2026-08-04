@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.resourcedetails.details.ui.metadata
 
-import PassboltTheme
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
@@ -13,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.span.RoundedBackgroundSpan
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 

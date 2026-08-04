@@ -1,8 +1,8 @@
 package com.passbolt.mobile.android.feature.otp.navigation
 
-import PassboltTheme
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.remember
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.base.EntryProviderInstaller
 import com.passbolt.mobile.android.core.navigation.compose.base.FeatureModuleNavigation

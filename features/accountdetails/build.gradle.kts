@@ -1,12 +1,12 @@
 plugins {
     id("passbolt.android.library")
-    id(libs.plugins.kotlin.parcelize.get().pluginId)
     id(libs.plugins.compose.compiler.get().pluginId)
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     api(project(":architecture"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":authentication"))
     implementation(project(":common"))
@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":transferaccounttoanotherdevice"))
     implementation(project(":navigation"))
-    implementation(project(":accounts"))
+    implementation(project(":users-domain"))
 
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)

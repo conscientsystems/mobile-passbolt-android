@@ -23,9 +23,9 @@
 
 package com.passbolt.mobile.android.groupdetails.groupmembers
 
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 data class GroupMembersState(
     val groupName: String = "",
-    val members: List<UserModel> = emptyList(),
+    val members: List<UserUiModel> = emptyList(),
 )

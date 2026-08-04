@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.feature.authentication.auth.challenge
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpError
 import com.passbolt.mobile.android.gopenpgp.exception.OpenPgpResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +34,7 @@ class ChallengeDecryptorTest : KoinTest {
             val challenge =
                 "{version: \"1.0\", domain: \"domain\", verify_token: \"verify_token\"," +
                     " access_token: \"access_token\", refresh_token: \"refresh_token\"}"
-            whenever(getPrivateKeyUseCase.execute(any())).thenReturn(GetPrivateKeyUseCase.Output(privateKey))
+            whenever(privateKeyRepository.getPrivateKey(any())).thenReturn(PrivateKey(privateKey))
             whenever(openPgp.decryptVerifyMessageArmored(eq(publicKey), eq(privateKey), any(), any())).thenReturn(
                 OpenPgpResult.Result(challenge),
             )
@@ -61,7 +61,7 @@ class ChallengeDecryptorTest : KoinTest {
             val privateKey = "private_key"
             val publicKey = "public_key"
             val errorMessage = "message"
-            whenever(getPrivateKeyUseCase.execute(any())).thenReturn(GetPrivateKeyUseCase.Output(privateKey))
+            whenever(privateKeyRepository.getPrivateKey(any())).thenReturn(PrivateKey(privateKey))
             whenever(openPgp.decryptVerifyMessageArmored(any(), any(), any(), any()))
                 .thenReturn(OpenPgpResult.Error(OpenPgpError(errorMessage)))
 

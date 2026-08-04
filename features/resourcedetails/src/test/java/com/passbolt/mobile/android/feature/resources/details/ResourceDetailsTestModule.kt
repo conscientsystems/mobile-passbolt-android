@@ -31,20 +31,21 @@ import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
 import com.passbolt.mobile.android.common.coroutinetimer.TimerFactory
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.core.idlingresource.ResourceDetailActionIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertyActionResult
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertyActionResult
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceTagsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsViewModel
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
@@ -52,11 +53,9 @@ import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.mappers.GroupsModelMapper
-import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
 import com.passbolt.mobile.android.mappers.UsersModelMapper
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import org.koin.core.Koin
@@ -94,7 +93,6 @@ internal val testModule =
         singleOf(::DataRefreshTrackingFlow)
         singleOf(::SessionRefreshTrackingFlow)
         factoryOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
-        factoryOf(::OtpModelMapper)
         factoryOf(::PermissionsModelMapper)
         factoryOf(::GroupsModelMapper)
         factoryOf(::UsersModelMapper)

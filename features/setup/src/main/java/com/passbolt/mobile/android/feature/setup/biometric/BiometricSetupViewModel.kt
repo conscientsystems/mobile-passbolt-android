@@ -1,12 +1,13 @@
 package com.passbolt.mobile.android.feature.setup.biometric
 
 import com.passbolt.mobile.android.common.BiometricInformationProvider
-import com.passbolt.mobile.android.core.accounts.usecase.biometrickey.SaveBiometricKeyIvUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.SavePassphraseUseCase
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
+import com.passbolt.mobile.android.domain.auth.usecase.SavePassphraseUseCase
+import com.passbolt.mobile.android.domain.biometrickey.model.BiometricKey
+import com.passbolt.mobile.android.domain.biometrickey.usecase.SaveBiometricKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryInteractor
 import com.passbolt.mobile.android.feature.setup.biometric.BiometricSetupIntent.AuthenticationSuccess
@@ -68,7 +69,7 @@ class BiometricSetupViewModel(
     private val passphraseMemoryCache: PassphraseMemoryCache,
     private val savePassphraseUseCase: SavePassphraseUseCase,
     private val biometricCipher: BiometricCipher,
-    private val saveBiometricKeyIvUseCase: SaveBiometricKeyIvUseCase,
+    private val saveBiometricKeyUseCase: SaveBiometricKeyUseCase,
     private val biometryInteractor: BiometryInteractor,
 ) : SideEffectViewModel<BiometricSetupState, BiometricSetupSideEffect>(BiometricSetupState()) {
     fun onIntent(intent: BiometricSetupIntent) {
@@ -138,9 +139,7 @@ class BiometricSetupViewModel(
             savePassphraseUseCase.execute(
                 SavePassphraseUseCase.Input(passphrase, cipher),
             )
-            saveBiometricKeyIvUseCase.execute(
-                SaveBiometricKeyIvUseCase.Input(cipher.iv),
-            )
+            saveBiometricKeyUseCase.execute(SaveBiometricKeyUseCase.Input(BiometricKey(cipher.iv)))
             true
         } catch (e: Exception) {
             Timber.e(e, "Error encrypting passphrase with biometric cipher")

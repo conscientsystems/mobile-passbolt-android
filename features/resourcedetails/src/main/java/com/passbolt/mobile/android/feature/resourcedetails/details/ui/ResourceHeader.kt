@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.resourcedetails.details.ui
 
-import PassboltTheme
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -23,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.passbolt.mobile.android.common.extension.toSingleLine
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.R
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 

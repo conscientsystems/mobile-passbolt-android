@@ -2,6 +2,9 @@ package com.passbolt.mobile.android.feature.resourceform.main
 
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.CustomFieldsUiModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
 import com.passbolt.mobile.android.ui.PasswordUiModel
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel
@@ -22,6 +25,12 @@ sealed interface ResourceFormSideEffect {
     data class NavigateToTotpAdvancedSettings(
         val mode: ResourceFormMode,
         val totpUiModel: TotpUiModel,
+    ) : ResourceFormSideEffect
+
+    data class NavigateToAdvancedSecretGeneration(
+        val selectedTab: PasswordGeneratorTypeUiModel,
+        val passwordSettings: PasswordGeneratorSettingsUiModel,
+        val passphraseSettings: PassphraseGeneratorSettingsUiModel,
     ) : ResourceFormSideEffect
 
     data class NavigateToNote(
@@ -80,6 +89,10 @@ sealed interface ResourceFormSideEffect {
         val type: ToastMessage,
         val args: List<Any> = emptyList(),
     ) : ResourceFormSideEffect
+
+    data class OpenWebsite(
+        val url: String,
+    ) : ResourceFormSideEffect
 }
 
 enum class SnackbarMessage {
@@ -91,6 +104,10 @@ enum class SnackbarMessage {
     METADATA_KEY_TRUST_FAILED,
     ENCRYPTION_FAILURE,
     METADATA_KEY_IS_TRUSTED,
+    RESOURCE_UPGRADED,
+    UPGRADE_FAILURE,
+    PASSWORD_POLICIES_FETCH_FAILED,
+    PASSWORD_EXPIRY_FETCH_FAILED,
 }
 
 enum class ToastMessage {

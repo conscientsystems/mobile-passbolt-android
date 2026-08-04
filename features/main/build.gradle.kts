@@ -4,8 +4,9 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":architecture"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":home"))
     implementation(project(":settings"))
@@ -14,20 +15,20 @@ dependencies {
     implementation(project(":authentication"))
     implementation(project(":security"))
     implementation(project(":fulldatarefresh"))
-    implementation(project(":inappreview"))
+    implementation(project(":inappreview-domain"))
     implementation(project(":otp"))
     implementation(project(":database"))
-    implementation(project(":resourcetypes"))
     implementation(project(":entity"))
     implementation(project(":scanotp"))
     implementation(project(":resourcepicker"))
-    implementation(project(":featureflags"))
-    implementation(project(":accounts"))
+    implementation(project(":featureflags-domain"))
     implementation(project(":autofillresources"))
-    implementation(project(":preferences"))
+    implementation(project(":preferences-domain"))
     implementation(project(":navigation"))
     implementation(project(":autofill"))
     implementation(project(":testtags"))
+
+    implementation(libs.fragment)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

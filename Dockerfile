@@ -10,14 +10,26 @@ ENV ANDROID_HOME="/usr/local/android-sdk" \
 # wget + unzip: needed for android sdk download
 # git + config: needed for gradle lockfiles verification
 # jdk 17: gradle compile toolchain (gradle daemon toolchain runs on jdk 21)
+# python3: required by gcloud cli
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         wget \
         unzip \
         git \
         openjdk-17-jdk-headless \
+        python3 \
     && git config --system --add safe.directory '*' \
     && rm -rf /var/lib/apt/lists/*
+
+# install gcloud cli used by the firebase test lab job
+ENV GCLOUD_VERSION="570.0.0" \
+    CLOUDSDK_PYTHON="/usr/bin/python3" \
+    PATH="/usr/local/google-cloud-sdk/bin:${PATH}"
+RUN wget --quiet --output-document=/tmp/gcloud.tar.gz \
+        https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-${GCLOUD_VERSION}-linux-x86_64.tar.gz \
+    && tar -xzf /tmp/gcloud.tar.gz -C /usr/local \
+    && rm /tmp/gcloud.tar.gz \
+    && gcloud --version
 
 # setup android home path for moving the downloaded sdk into it
 RUN install -d $ANDROID_HOME

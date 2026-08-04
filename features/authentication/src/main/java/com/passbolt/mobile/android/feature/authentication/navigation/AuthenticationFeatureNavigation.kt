@@ -1,6 +1,6 @@
 package com.passbolt.mobile.android.feature.authentication.navigation
 
-import PassboltTheme
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.LocalAuthenticationParams

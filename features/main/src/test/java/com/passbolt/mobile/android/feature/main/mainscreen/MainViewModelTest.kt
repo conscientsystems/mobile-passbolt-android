@@ -5,8 +5,8 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.core.autofill.AutofillInformationProvider
-import com.passbolt.mobile.android.core.inappreview.InAppReviewInteractor
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
+import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.feature.main.mainscreen.MainSideEffect.CheckForAppUpdates
 import com.passbolt.mobile.android.feature.main.mainscreen.MainSideEffect.PerformFullDataRefresh

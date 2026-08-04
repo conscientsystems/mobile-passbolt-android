@@ -24,12 +24,8 @@
 package com.passbolt.mobile.android.scenarios.home.filters
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasAnyDescendant
-import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.LargeTest
@@ -39,7 +35,7 @@ import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.feature.authentication.AuthenticationMainActivity
-import com.passbolt.mobile.android.helpers.getString
+import com.passbolt.mobile.android.helpers.chooseFilter
 import com.passbolt.mobile.android.helpers.signIn
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
@@ -121,14 +117,7 @@ class FilteringResourcesTest : KoinTest {
     @FlakyTest(detail = "It is currently failing nondeterministic on Android 12 - reason unknown")
     fun asALoggedInMobileUserOnTheHomepageICanChangeTheCurrentActiveFilter() {
         ResourceFilterModel.entries.forEach { model ->
-            composeTestRule.onNodeWithTag(Home.SEARCH_FILTER).performClick()
-            composeTestRule
-                .onNode(
-                    hasClickAction().and(
-                        hasAnyDescendant(hasText(getString(model.filterNameId))),
-                    ),
-                    useUnmergedTree = true,
-                ).performClick()
+            composeTestRule.chooseFilter(model.filterNameId)
             composeTestRule.onNodeWithTag(Home.SCREEN).assertIsDisplayed()
         }
     }

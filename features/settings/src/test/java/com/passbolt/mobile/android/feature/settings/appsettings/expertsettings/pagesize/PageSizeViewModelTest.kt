@@ -24,13 +24,18 @@ package com.passbolt.mobile.android.feature.settings.appsettings.expertsettings.
  */
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetAutomaticPageSizeUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.PageSizeChanged
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.RestoreDefaultsClick
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeIntent.SaveClick
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.pagesize.PageSizeViewModel
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -63,9 +68,10 @@ class PageSizeViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<UpdateGlobalPreferencesUseCase>() }
                         single { mock<GetGlobalPreferencesUseCase>() }
-                        factory { PageSizeViewModel(get(), get()) }
+                        single { mock<UpdateGlobalPreferencesUseCase>() }
+                        single { mock<GetAutomaticPageSizeUseCase>() }
+                        factory { PageSizeViewModel(get(), get(), get()) }
                     },
                 ),
             )
@@ -85,44 +91,61 @@ class PageSizeViewModelTest : KoinTest {
         Dispatchers.resetMain()
     }
 
-    private fun stubPreferences() {
+    private fun stubPreferences(pageSize: Int = PreferencesDefaults.API_FETCH_PAGE_SIZE) {
         val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
         whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-            GetGlobalPreferencesUseCase.Output(
+            GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
-                isDeveloperModeEnabled = true,
                 isHideRootDialogEnabled = true,
                 isAuthRequiredOnEveryEntry = true,
                 debugLogLastAppVersion = null,
-                apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                apiFetchPageSize = pageSize,
+                isApiFetchPageSizeManuallySet = false,
                 accessibilityPoliciesConsentGiven = true,
             )
+        val getAutomaticPageSizeUseCase: GetAutomaticPageSizeUseCase = get()
+        whenever(getAutomaticPageSizeUseCase.execute(Unit)) doReturn
+            GetAutomaticPageSizeUseCase.Output(defaultPageSize = 3_000, recommendedLimit = 5_000)
     }
 
     @Test
-    fun `initial state should show correct index when stored value matches`() =
+    fun `initial state should reflect stored value and automatic page sizes`() =
         runTest {
             stubPreferences()
             viewModel = get()
 
             val state = viewModel.viewState.value
 
-            assertThat(state.selectedIndex).isEqualTo(5)
+            assertThat(state.selectedIndex).isEqualTo(3)
+            assertThat(state.savedIndex).isEqualTo(3)
+            assertThat(state.automaticDefaultIndex).isEqualTo(4)
+            assertThat(state.recommendedLimitIndex).isEqualTo(5)
+            assertThat(state.hasUnsavedChange).isFalse()
+            assertThat(state.isOverRecommendedLimit).isFalse()
         }
 
     @Test
-    fun `initial state should not re-save when stored value matches an allowed size`() =
+    fun `initial state should not persist anything`() =
         runTest {
             stubPreferences()
             viewModel = get()
 
-            val updateUseCase: UpdateGlobalPreferencesUseCase = get()
-            verify(updateUseCase, never()).execute(any())
+            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
+            verify(updateGlobalPreferencesUseCase, never()).execute(any())
         }
 
     @Test
-    fun `changing page size should save immediately and update state`() =
+    fun `stored value outside allowed sizes should fall back to the first index`() =
+        runTest {
+            stubPreferences(pageSize = 100_000)
+            viewModel = get()
+
+            assertThat(viewModel.viewState.value.selectedIndex).isEqualTo(0)
+        }
+
+    @Test
+    fun `changing page size should update state without persisting`() =
         runTest {
             stubPreferences()
             viewModel = get()
@@ -131,12 +154,66 @@ class PageSizeViewModelTest : KoinTest {
 
             val state = viewModel.viewState.value
             assertThat(state.selectedIndex).isEqualTo(6)
+            assertThat(state.hasUnsavedChange).isTrue()
 
-            val updateUseCase: UpdateGlobalPreferencesUseCase = get()
-            argumentCaptor<UpdateGlobalPreferencesUseCase.Input> {
-                verify(updateUseCase).execute(capture())
-                assertThat(firstValue.apiFetchPageSize).isEqualTo(5000)
+            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
+            verify(updateGlobalPreferencesUseCase, never()).execute(any())
+        }
+
+    @Test
+    fun `values above the recommended limit should be flagged as over the limit`() =
+        runTest {
+            stubPreferences()
+            viewModel = get()
+
+            viewModel.onIntent(PageSizeChanged(sliderIndex = 6))
+            assertThat(viewModel.viewState.value.isOverRecommendedLimit).isTrue()
+
+            viewModel.onIntent(PageSizeChanged(sliderIndex = 5))
+            assertThat(viewModel.viewState.value.isOverRecommendedLimit).isFalse()
+        }
+
+    @Test
+    fun `save should persist the selected page size as a manual choice`() =
+        runTest {
+            stubPreferences()
+            viewModel = get()
+
+            viewModel.onIntent(PageSizeChanged(sliderIndex = 6))
+            viewModel.onIntent(SaveClick)
+
+            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
+            argumentCaptor<GlobalPreferencesUpdate> {
+                verify(updateGlobalPreferencesUseCase).execute(capture())
+                assertThat(firstValue.apiFetchPageSize).isEqualTo(10_000)
+                assertThat(firstValue.isApiFetchPageSizeManuallySet).isTrue()
             }
+
+            val state = viewModel.viewState.value
+            assertThat(state.savedIndex).isEqualTo(6)
+            assertThat(state.hasUnsavedChange).isFalse()
+        }
+
+    @Test
+    fun `restore defaults should persist the automatic value and reset the slider`() =
+        runTest {
+            stubPreferences()
+            viewModel = get()
+
+            viewModel.onIntent(PageSizeChanged(sliderIndex = 6))
+            viewModel.onIntent(RestoreDefaultsClick)
+
+            val updateGlobalPreferencesUseCase: UpdateGlobalPreferencesUseCase = get()
+            argumentCaptor<GlobalPreferencesUpdate> {
+                verify(updateGlobalPreferencesUseCase).execute(capture())
+                assertThat(firstValue.apiFetchPageSize).isEqualTo(3_000)
+                assertThat(firstValue.isApiFetchPageSizeManuallySet).isFalse()
+            }
+
+            val state = viewModel.viewState.value
+            assertThat(state.selectedIndex).isEqualTo(4)
+            assertThat(state.savedIndex).isEqualTo(4)
+            assertThat(state.hasUnsavedChange).isFalse()
         }
 
     @Test

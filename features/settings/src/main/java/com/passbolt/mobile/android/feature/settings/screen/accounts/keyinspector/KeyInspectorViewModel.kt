@@ -24,12 +24,12 @@
 package com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector
 
 import androidx.lifecycle.viewModelScope
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.formatter.DateFormatter
 import com.passbolt.mobile.android.core.formatter.FingerprintFormatter
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.users.user.FetchCurrentUserUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.users.usecase.FetchCurrentUserUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorIntent.CloseMoreMenu
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorIntent.CopyFingerprint
@@ -76,9 +76,9 @@ internal class KeyInspectorViewModel(
 
     private suspend fun fetchKeyData() {
         when (val keyData = runAuthenticatedOperation { fetchCurrentUserUseCase.execute(Unit) }) {
-            is FetchCurrentUserUseCase.Output.Failure<*> -> emitSideEffect(ShowErrorSnackbar(FAILED_TO_FETCH_KEY, keyData.message))
+            is FetchCurrentUserUseCase.Output.Failure -> emitSideEffect(ShowErrorSnackbar(FAILED_TO_FETCH_KEY, keyData.message))
             is FetchCurrentUserUseCase.Output.Success -> {
-                val keyData = keyData.userModel.gpgKey
+                val keyData = keyData.userUiModel.gpgKey
                 updateViewState {
                     copy(
                         fingerprint = fingerprintFormatter.format(keyData.fingerprint, appendMiddleSpacing = false).orEmpty(),

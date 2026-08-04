@@ -29,12 +29,12 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.NotCompleted
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.folderdetails.FolderDetailsIntent.GoBack
 import com.passbolt.mobile.android.folderdetails.FolderDetailsIntent.GoToLocationDetails
 import com.passbolt.mobile.android.folderdetails.FolderDetailsIntent.GoToPermissionDetails
@@ -119,7 +119,7 @@ internal class FolderDetailsViewModel(
                     permissions = permissions,
                 )
             }
-        } catch (_: NullPointerException) {
+        } catch (_: IllegalStateException) {
             emitSideEffect(ShowToast(CONTENT_NOT_AVAILABLE))
             emitSideEffect(NavigateToHome)
         } catch (throwable: Exception) {
@@ -130,7 +130,7 @@ internal class FolderDetailsViewModel(
     private suspend fun synchronizeWithDataRefresh(folderId: String) {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
-                InProgress -> updateViewState { copy(isRefreshing = true) }
+                is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = it.progress) }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                     updateViewState { copy(isRefreshing = false) }

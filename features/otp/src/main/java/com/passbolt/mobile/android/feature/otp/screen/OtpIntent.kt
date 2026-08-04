@@ -25,7 +25,7 @@ package com.passbolt.mobile.android.feature.otp.screen
 
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 sealed interface OtpIntent {
     // screen
@@ -34,7 +34,7 @@ sealed interface OtpIntent {
     ) : OtpIntent
 
     data class RevealOtp(
-        val resource: ResourceModel,
+        val resource: ResourceUiModel,
     ) : OtpIntent
 
     data class OtpQRScanReturned(
@@ -50,21 +50,13 @@ sealed interface OtpIntent {
 
     data object SearchEndIconAction : OtpIntent
 
+    data object Dispose : OtpIntent
+
     // switch account
     object CloseSwitchAccount : OtpIntent
 
-    // create resource menu
-    data object OpenCreateResourceMenu : OtpIntent
-
-    data object CreatePassword : OtpIntent
-
+    // create totp
     data object CreateTotp : OtpIntent
-
-    data object CreateNote : OtpIntent
-
-    data object CreatePinCode : OtpIntent
-
-    data object CloseCreateResourceMenu : OtpIntent
 
     // otp more menu
     data class OpenOtpMoreMenu(

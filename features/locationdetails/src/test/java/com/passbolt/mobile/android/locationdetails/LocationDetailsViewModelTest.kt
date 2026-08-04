@@ -34,10 +34,11 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Not
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
 import com.passbolt.mobile.android.locationdetails.LocationDetailsIntent.GoBack
@@ -53,10 +54,9 @@ import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTree
 import com.passbolt.mobile.android.locationdetails.data.ExpandableFolderTreeCreator
 import com.passbolt.mobile.android.locationdetails.ui.LocationItem.FOLDER
 import com.passbolt.mobile.android.locationdetails.ui.LocationItem.RESOURCE
-import com.passbolt.mobile.android.ui.FolderModel
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -251,7 +251,7 @@ class LocationDetailsViewModelTest : KoinTest {
                 awaitItem()
 
                 val dataRefreshTrackingFlow = get<DataRefreshTrackingFlow>()
-                dataRefreshTrackingFlow.updateStatus(InProgress)
+                dataRefreshTrackingFlow.updateStatus(InProgress(progress = 0f))
 
                 val refreshingState = awaitItem()
                 assertThat(refreshingState.isRefreshing).isTrue()
@@ -278,11 +278,11 @@ class LocationDetailsViewModelTest : KoinTest {
 
     @OptIn(ExperimentalTime::class)
     @Test
-    fun `should handle null pointer exception when loading resource and navigate to home`() =
+    fun `should handle missing item exception when loading resource and navigate to home`() =
         runTest {
             val getLocalResourceUseCase = get<GetLocalResourceUseCase>()
             getLocalResourceUseCase.stub {
-                onBlocking { execute(any()) } doThrow NullPointerException("Resource not found")
+                onBlocking { execute(any()) } doThrow IllegalStateException("The query result was empty")
             }
 
             viewModel = get { parametersOf(RESOURCE, testResource.resourceId) }
@@ -295,11 +295,11 @@ class LocationDetailsViewModelTest : KoinTest {
 
     @OptIn(ExperimentalTime::class)
     @Test
-    fun `should handle null pointer exception when loading folder and navigate to home`() =
+    fun `should handle missing item exception when loading folder and navigate to home`() =
         runTest {
             val getLocalFolderDetailsUseCase = get<GetLocalFolderDetailsUseCase>()
             getLocalFolderDetailsUseCase.stub {
-                onBlocking { execute(any()) } doThrow NullPointerException("Folder not found")
+                onBlocking { execute(any()) } doThrow IllegalStateException("The query result was empty")
             }
 
             viewModel = get { parametersOf(FOLDER, testFolder.folderId) }
@@ -356,7 +356,7 @@ class LocationDetailsViewModelTest : KoinTest {
 
     private companion object {
         private val testResource by lazy {
-            ResourceModel(
+            ResourceUiModel(
                 resourceId = "resource-id-123",
                 resourceTypeId = "resource-type-id",
                 slug = "password-and-description",

@@ -34,9 +34,12 @@ fun Module.resourceFormModule() {
         ResourceFormViewModel(
             mode = params.get(),
             getPasswordPoliciesUseCase = get(),
+            passwordPoliciesInteractor = get(),
+            passwordExpiryPoliciesInteractor = get(),
+            getFeatureFlagsUseCase = get(),
+            coroutineLaunchContext = get(),
             secretGenerator = get(),
             pinCodeGenerator = get(),
-            entropyViewMapper = get(),
             entropyCalculator = get(),
             resourceFormMapper = get(),
             resourceModelHandler = get(),
@@ -47,6 +50,8 @@ fun Module.resourceFormModule() {
             updateResourceIdlingResource = get(),
             resourceUpdateActionsInteractorFactory = get(),
             checkPasswordPropertiesUseCase = get(),
+            getMetadataTypesSettingsUseCase = get(),
+            getOrLoadGeneratorSettingsUseCase = get(),
         )
     }
     factoryOf(::ResourceModelHandler)

@@ -25,11 +25,11 @@ package com.passbolt.mobile.android.permissions.permissionrecipients
 
 import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.common.search.SearchableMatcher
-import com.passbolt.mobile.android.core.commongroups.usecase.db.GetLocalGroupsUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUsersUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GetLocalGroupsUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUsersUseCase
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.SharePermissionsModelMapper.Companion.TEMPORARY_NEW_PERMISSION_ID
 import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRecipientsIntent.GoBack
@@ -42,7 +42,7 @@ import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRe
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import kotlinx.coroutines.launch
 
 class PermissionRecipientsViewModel(
@@ -150,7 +150,7 @@ class PermissionRecipientsViewModel(
         recomputeDisplayPermissions()
     }
 
-    private fun toggleUserSelection(user: UserModel) {
+    private fun toggleUserSelection(user: UserUiModel) {
         val currentIds = viewState.value.selectedUserIds
         val newIds =
             if (user.id in currentIds) {

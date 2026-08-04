@@ -38,8 +38,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -57,20 +57,19 @@ import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtp
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtpMode
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.MainResourceForm
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.dialogs.ConfirmResourceDeleteAlertDialog
 import com.passbolt.mobile.android.core.ui.empty.EmptyResourceListState
 import com.passbolt.mobile.android.core.ui.fab.AddFloatingActionButton
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
+import com.passbolt.mobile.android.core.ui.pulltorefresh.SlidingFeedbackPullToRefreshBox
 import com.passbolt.mobile.android.core.ui.scaffold.HomeScaffold
 import com.passbolt.mobile.android.core.ui.search.SearchInput
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
-import com.passbolt.mobile.android.createresourcemenu.CreateResourceMenuBottomSheet
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.feature.home.screen.ResourceHandlingStrategy
 import com.passbolt.mobile.android.feature.home.switchaccount.SwitchAccountBottomSheet
 import com.passbolt.mobile.android.feature.metadatakeytrust.NewMetadataKeyTrustDialog
 import com.passbolt.mobile.android.feature.metadatakeytrust.TrustedMetadataKeyDeletedDialog
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
@@ -78,13 +77,10 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseTrustNewKey
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseTrustedKeyDeletedDialog
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.ConfirmDeleteTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CopyOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateNote
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.DeleteOtp
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Dispose
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.RevealOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Search
@@ -136,6 +132,12 @@ internal fun OtpScreen(
         resourceHandlingStrategy = resourceHandlingStrategy,
         modifier = modifier,
     )
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.onIntent(Dispose)
+        }
+    }
 
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
@@ -213,20 +215,22 @@ fun OtpScreen(
                         .fillMaxWidth()
                         .padding(end = 16.dp),
                 avatarUrl = state.userAvatar,
+                initialValue = state.searchQuery,
                 onEndIconClick = { onIntent(SearchEndIconAction) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             )
         },
         floatingActionButton = {
             if (!isAutofillMode && !state.isRefreshing) {
-                AddFloatingActionButton(onClick = { onIntent(OpenCreateResourceMenu) })
+                AddFloatingActionButton(onClick = { onIntent(CreateTotp) })
             }
         },
         content =
             { paddingValues ->
                 val context = LocalContext.current
-                PullToRefreshBox(
+                SlidingFeedbackPullToRefreshBox(
                     isRefreshing = state.isRefreshing,
+                    refreshProgress = state.refreshProgress,
                     onRefresh = { DataRefreshService.start(context) },
                     modifier =
                         Modifier
@@ -294,16 +298,6 @@ fun OtpScreen(
                         }
                     }
                 }
-                if (state.showCreateResourceBottomSheet) {
-                    CreateResourceMenuBottomSheet(
-                        onCreatePassword = { onIntent(CreatePassword) },
-                        onCreateTotp = { onIntent(CreateTotp) },
-                        onCreateNote = { onIntent(CreateNote) },
-                        onCreatePinCode = { onIntent(CreatePinCode) },
-                        onDismissRequest = { onIntent(CloseCreateResourceMenu) },
-                    )
-                }
-
                 if (state.showOtpMoreBottomSheet) {
                     val moreMenuResource = requireNotNull(state.moreMenuResource)
                     OtpMoreMenuBottomSheet(

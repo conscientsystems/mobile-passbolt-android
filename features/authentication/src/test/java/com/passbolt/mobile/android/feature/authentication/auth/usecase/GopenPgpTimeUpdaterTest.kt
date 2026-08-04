@@ -24,73 +24,111 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.gopenpgp.OpenPgp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
+import org.koin.core.module.dsl.factoryOf
+import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.inject
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class GopenPgpTimeUpdaterTest : KoinTest {
+    private val mockOpenPgp = mock<OpenPgp>()
     private val gopenPgpTimeUpdater: GopenPgpTimeUpdater by inject()
 
     @get:Rule
     val koinTestRule =
         KoinTestRule.create {
             printLogger(Level.ERROR)
-            modules(testSignInUseCaseModule)
+            modules(
+                module {
+                    factory { mockOpenPgp }
+                    factoryOf(::GopenPgpTimeUpdater)
+                },
+            )
         }
 
     @Before
     fun setup() {
+        reset(mockOpenPgp)
         whenever(mockOpenPgp.setTimeOffsetSeconds(any())).then { }
     }
 
     @Test
     fun `time should be synced if time delta is in range and device time is ahead`() {
-        val serverTime = 0L
-        whenever(mockTimeProvider.getCurrentEpochSeconds())
-            .doReturn(serverTime + GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS - 1)
+        val serverTime = SERVER_TIME
+        val deviceTimeAtFetch = serverTime + GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS - 1
         val requestDuration = 0L
 
-        val resultForDeviceTimeAhead = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, requestDuration)
-        assertThat(resultForDeviceTimeAhead).isEqualTo(GopenPgpTimeUpdater.Result.TIME_SYNCED)
+        val result = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, deviceTimeAtFetch, requestDuration)
+
+        assertThat(result).isEqualTo(GopenPgpTimeUpdater.Result.TIME_SYNCED)
     }
 
     @Test
     fun `time should be synced if time delta is in range and device time is behind`() {
-        val serverTime = 0L
-        whenever(mockTimeProvider.getCurrentEpochSeconds())
-            .doReturn(serverTime - GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS + 1)
+        val serverTime = SERVER_TIME
+        val deviceTimeAtFetch = serverTime - GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS + 1
         val requestDuration = 0L
 
-        val resultForDeviceTimeAhead = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, requestDuration)
-        assertThat(resultForDeviceTimeAhead).isEqualTo(GopenPgpTimeUpdater.Result.TIME_SYNCED)
+        val result = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, deviceTimeAtFetch, requestDuration)
+
+        assertThat(result).isEqualTo(GopenPgpTimeUpdater.Result.TIME_SYNCED)
     }
 
     @Test
     fun `time should not be synced if time delta is out of range and device time is ahead`() {
-        val serverTime = 0L
-        whenever(mockTimeProvider.getCurrentEpochSeconds())
-            .doReturn(serverTime + GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS + 1)
+        val serverTime = SERVER_TIME
+        val deviceTimeAtFetch = serverTime + GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS + 1
         val requestDuration = 0L
 
-        val resultForDeviceTimeAhead = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, requestDuration)
-        assertThat(resultForDeviceTimeAhead).isEqualTo(GopenPgpTimeUpdater.Result.TIME_DELTA_TOO_BIG_FOR_SYNC)
+        val result = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, deviceTimeAtFetch, requestDuration)
+
+        assertThat(result).isEqualTo(GopenPgpTimeUpdater.Result.TIME_DELTA_TOO_BIG_FOR_SYNC)
     }
 
     @Test
     fun `time should not be synced if time delta is out of range and device time is behind`() {
-        val serverTime = 0L
-        whenever(mockTimeProvider.getCurrentEpochSeconds())
-            .doReturn(serverTime - GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS - 1)
+        val serverTime = SERVER_TIME
+        val deviceTimeAtFetch = serverTime - GopenPgpTimeUpdater.TIME_DELTA_FOR_LOCAL_SYNC_SECS - 1
         val requestDuration = 0L
 
-        val resultForDeviceTimeAhead = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, requestDuration)
-        assertThat(resultForDeviceTimeAhead).isEqualTo(GopenPgpTimeUpdater.Result.TIME_DELTA_TOO_BIG_FOR_SYNC)
+        val result = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, deviceTimeAtFetch, requestDuration)
+
+        assertThat(result).isEqualTo(GopenPgpTimeUpdater.Result.TIME_DELTA_TOO_BIG_FOR_SYNC)
+    }
+
+    @Test
+    fun `time should be synced on a slow connection when clocks agree`() {
+        val requestDuration = 30L
+        val serverTime = SERVER_TIME
+        val deviceTimeAtFetch = serverTime + requestDuration / 2
+
+        val result = gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, deviceTimeAtFetch, requestDuration)
+
+        assertThat(result).isEqualTo(GopenPgpTimeUpdater.Result.TIME_SYNCED)
+    }
+
+    @Test
+    fun `applies the fetch-time offset to gopenpgp when synced`() {
+        val serverTime = SERVER_TIME
+        val deviceTimeAtFetch = serverTime + 3
+        val requestDuration = 0L
+
+        gopenPgpTimeUpdater.updateTimeIfNeeded(serverTime, deviceTimeAtFetch, requestDuration)
+
+        verify(mockOpenPgp).setTimeOffsetSeconds(-3)
+    }
+
+    private companion object {
+        const val SERVER_TIME = 1_700_000_000L
     }
 }

@@ -25,14 +25,15 @@ package com.passbolt.mobile.android.feature.settings.accounts.keyinspector
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.formatter.DateFormatter
 import com.passbolt.mobile.android.core.formatter.FingerprintFormatter
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.networking.NetworkResult
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
-import com.passbolt.mobile.android.core.users.user.FetchCurrentUserUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.users.usecase.FetchCurrentUserUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase.Output.JwtWillExpire
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorIntent.CopyFingerprint
@@ -42,9 +43,9 @@ import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorScreenSideEffect.ErrorSnackbarType.FAILED_TO_FETCH_KEY
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorScreenSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.KeyInspectorViewModel
-import com.passbolt.mobile.android.ui.GpgKeyModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -69,7 +70,6 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
-import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.time.ExperimentalTime
@@ -141,18 +141,18 @@ class KeyInspectorViewModelTest : KoinTest {
                 val state = awaitItem()
                 assertThat(state.avatarUrl).isEqualTo(selectedAccountData.avatarUrl)
                 assertThat(state.label).isEqualTo(selectedAccountData.label)
-                assertThat(state.fingerprint).isEqualTo(user.userModel.gpgKey.fingerprint)
-                assertThat(state.keyLength).isEqualTo(user.userModel.gpgKey.bits)
-                assertThat(state.uid).isEqualTo(user.userModel.gpgKey.uid)
+                assertThat(state.fingerprint).isEqualTo(user.userUiModel.gpgKey.fingerprint)
+                assertThat(state.keyLength).isEqualTo(user.userUiModel.gpgKey.bits)
+                assertThat(state.uid).isEqualTo(user.userUiModel.gpgKey.uid)
                 assertThat(state.created).isEqualTo(
-                    user.userModel.gpgKey.keyCreationDate
+                    user.userUiModel.gpgKey.keyCreationDate
                         .toString(),
                 )
                 assertThat(state.expires).isEqualTo(
-                    user.userModel.gpgKey.keyExpirationDate
+                    user.userUiModel.gpgKey.keyExpirationDate
                         .toString(),
                 )
-                assertThat(state.algorithm).isEqualTo(user.userModel.gpgKey.type)
+                assertThat(state.algorithm).isEqualTo(user.userUiModel.gpgKey.type)
             }
         }
 
@@ -165,11 +165,7 @@ class KeyInspectorViewModelTest : KoinTest {
             fetchCurrentUserUseCase.stub {
                 onBlocking { execute(Unit) }.thenReturn(
                     FetchCurrentUserUseCase.Output.Failure(
-                        NetworkResult.Failure.NetworkError(
-                            UnknownHostException(),
-                            errorMessage,
-                        ),
-                        errorMessage,
+                        DomainResult.Incomplete.Error(UNKNOWN, errorMessage),
                     ),
                 )
             }
@@ -194,13 +190,13 @@ class KeyInspectorViewModelTest : KoinTest {
                 val copyUidEffect = awaitItem()
                 assertThat(copyUidEffect).isInstanceOf(AddUidToClipboard::class.java)
                 assertThat((copyUidEffect as AddUidToClipboard).uid)
-                    .isEqualTo(user.userModel.gpgKey.uid)
+                    .isEqualTo(user.userUiModel.gpgKey.uid)
 
                 viewModel.onIntent(CopyFingerprint)
                 val copyFingerprintEffect = awaitItem()
                 assertThat(copyFingerprintEffect).isInstanceOf(AddFingerprintToClipboard::class.java)
                 assertThat((copyFingerprintEffect as AddFingerprintToClipboard).fingerprint)
-                    .isEqualTo(user.userModel.gpgKey.fingerprint)
+                    .isEqualTo(user.userUiModel.gpgKey.fingerprint)
             }
         }
 
@@ -219,12 +215,12 @@ class KeyInspectorViewModelTest : KoinTest {
 
         private val user =
             FetchCurrentUserUseCase.Output.Success(
-                UserModel(
+                UserUiModel(
                     id = "newUserId",
                     userName = "newUserName",
                     disabled = false,
                     gpgKey =
-                        GpgKeyModel(
+                        GpgKeyUiModel(
                             armoredKey = "keyData",
                             fingerprint = "fingerprint",
                             bits = 1,
@@ -236,7 +232,7 @@ class KeyInspectorViewModelTest : KoinTest {
                             id = UUID.randomUUID().toString(),
                         ),
                     profile =
-                        UserProfileModel(
+                        UserProfileUiModel(
                             username = "username",
                             firstName = "first",
                             lastName = "last",

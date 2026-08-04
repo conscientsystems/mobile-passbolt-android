@@ -8,7 +8,6 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
-    implementation(libs.lifecycle.annotationprocessor)
     implementation(libs.lifecycle.process)
 
     androidTestImplementation(project(":commontest"))

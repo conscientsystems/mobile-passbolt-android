@@ -3,7 +3,7 @@ package com.passbolt.mobile.android.core.passwordgenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.core.passwordgenerator.dice.Dice
-import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
 import kotlinx.coroutines.flow.takeWhile
 
 /**
@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.takeWhile
 class PassphraseGenerator(
     private val dice: Dice,
 ) {
-    suspend fun generate(settings: PassphraseGeneratorSettingsModel): List<Codepoint> {
+    suspend fun generate(settings: PassphraseGeneratorSettingsUiModel): List<Codepoint> {
         dice.apply {
             initialize()
             isInitializedFlow.takeWhile { !it }

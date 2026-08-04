@@ -2,11 +2,28 @@ package com.passbolt.mobile.android.feature.resourceform.main
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
+import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionResult
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.GetMetadataTypesSettingsUseCase
+import com.passbolt.mobile.android.domain.passwordexpiry.model.PasswordExpirySettings
+import com.passbolt.mobile.android.domain.passwordexpiry.usecase.PasswordExpiryPoliciesInteractor
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.PasswordPoliciesInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult.CannotUpdateWithCurrentConfig
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionResult.Failure
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetEditContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.secrets.model.SecretJsonModel
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
@@ -26,6 +43,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToMetadataDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.LearnMoreAboutUpgrade
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
@@ -37,6 +55,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpSecretChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpUrlChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.UpgradeResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdditionalUris
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAppearance
@@ -48,12 +67,28 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.OpenWebsite
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowSnackbar
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowToast
+import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG
+import com.passbolt.mobile.android.feature.resourceform.main.SnackbarMessage.COMMON_FAILURE
+import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
+import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
+import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
+import com.passbolt.mobile.android.ui.CaseTypeUiModel
+import com.passbolt.mobile.android.ui.CaseTypeUiModel.LOWERCASE
 import com.passbolt.mobile.android.ui.LeadingContentType
+import com.passbolt.mobile.android.ui.MetadataJsonModel
+import com.passbolt.mobile.android.ui.MetadataKeyTypeModel.PERSONAL
 import com.passbolt.mobile.android.ui.MetadataTypeModel
+import com.passbolt.mobile.android.ui.MetadataTypeModel.V4
 import com.passbolt.mobile.android.ui.OtpParseResult
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordPoliciesUiModel
 import com.passbolt.mobile.android.ui.PasswordStrength
 import com.passbolt.mobile.android.ui.PinCodeUiModel
 import com.passbolt.mobile.android.ui.ResourceFormMode
@@ -63,6 +98,8 @@ import com.passbolt.mobile.android.ui.ResourceFormUiModel.Metadata.DESCRIPTION
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.NOTE
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.PASSWORD
 import com.passbolt.mobile.android.ui.ResourceFormUiModel.Secret.TOTP
+import com.passbolt.mobile.android.ui.ResourcePermission.OWNER
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -81,11 +118,17 @@ import org.koin.core.parameter.parametersOf
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
+import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import java.time.ZonedDateTime
 import kotlin.test.assertIs
 
 /**
@@ -126,11 +169,27 @@ class ResourceFormViewModelTest : KoinTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+
+        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor, mockPasswordExpiryPoliciesInteractor)
+        mockGetFeatureFlagsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS))
+        }
+
+        val passphraseMemoryCache: PassphraseMemoryCache = get()
+        whenever(passphraseMemoryCache.getSessionDurationSeconds()) doReturn 5 * 60
+
+        val getSessionExpiryUseCase: GetSessionExpiryUseCase = get()
+        whenever(getSessionExpiryUseCase.execute(Unit)) doReturn
+            GetSessionExpiryUseCase.Output.JwtWillExpire(ZonedDateTime.now().plusMinutes(5))
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        reset(mockGetFeatureFlagsUseCase, mockPasswordPoliciesInteractor, mockPasswordExpiryPoliciesInteractor)
+        mockGetFeatureFlagsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS))
+        }
     }
 
     @Test
@@ -182,7 +241,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -275,7 +334,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -329,7 +388,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -390,7 +449,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -422,7 +481,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -467,7 +526,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -502,7 +561,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -532,7 +591,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -562,7 +621,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -599,13 +658,13 @@ class ResourceFormViewModelTest : KoinTest {
         }
 
     @Test
-    fun `generate password should show toast on low entropy failure`() =
+    fun `generate password should show unable to generate dialog on low entropy failure`() =
         runTest {
             mockGetDefaultCreateContentTypeUseCase.stub {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -631,13 +690,12 @@ class ResourceFormViewModelTest : KoinTest {
                 )
             }
 
-            viewModel.sideEffect.test {
-                viewModel.onIntent(GeneratePassword)
-                advanceUntilIdle()
-                val sideEffect = awaitItem()
-                assertIs<ShowToast>(sideEffect)
-                assertThat(sideEffect.type).isEqualTo(ToastMessage.UNABLE_TO_GENERATE_PASSWORD)
-            }
+            viewModel.onIntent(GeneratePassword)
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.isUnableToGeneratePasswordDialogVisible).isTrue()
+            assertThat(state.minimumEntropyBits).isEqualTo(80)
         }
 
     @Test
@@ -647,7 +705,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -914,7 +972,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -973,7 +1031,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1036,7 +1094,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1216,7 +1274,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1249,7 +1307,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1282,7 +1340,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1315,7 +1373,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1339,6 +1397,143 @@ class ResourceFormViewModelTest : KoinTest {
                 assertIs<ResourceFormSideEffect.NavigateToCustomFields>(sideEffect)
                 assertIs<ResourceFormMode.Create>(sideEffect.mode)
             }
+        }
+
+    @Test
+    fun `open advanced secret generation loads policies and emits navigate side effect`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(ResourceFormIntent.OpenAdvancedSecretGeneration)
+                advanceUntilIdle()
+
+                val sideEffect = awaitItem()
+                assertIs<ResourceFormSideEffect.NavigateToAdvancedSecretGeneration>(sideEffect)
+                assertThat(sideEffect.selectedTab).isEqualTo(MOCK_PASSWORD_POLICIES.defaultGenerator)
+                assertThat(sideEffect.passwordSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passwordGeneratorSettings)
+                assertThat(sideEffect.passphraseSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passphraseGeneratorSettings)
+            }
+
+            val state = viewModel.viewState.value
+            assertThat(state.generatorType).isEqualTo(MOCK_PASSWORD_POLICIES.defaultGenerator)
+            assertThat(state.passwordGeneratorSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passwordGeneratorSettings)
+            assertThat(state.passphraseGeneratorSettings).isEqualTo(MOCK_PASSWORD_POLICIES.passphraseGeneratorSettings)
+        }
+
+    @Test
+    fun `open advanced secret generation reuses cached settings when present`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(75.0)
+            }
+            mockGetPasswordPoliciesUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(MOCK_PASSWORD_POLICIES)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            val result =
+                AdvancedSecretGenerationFormResult(
+                    passwordSettings = CUSTOM_PASSWORD_SETTINGS,
+                    passphraseSettings = CUSTOM_PASSPHRASE_SETTINGS,
+                    selectedTab = PasswordGeneratorTypeUiModel.PASSPHRASE,
+                    generatedSecret = "cached secret",
+                )
+            viewModel.onIntent(ResourceFormIntent.AdvancedSecretGenerationResult(result))
+            advanceUntilIdle()
+            reset(mockGetPasswordPoliciesUseCase)
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(ResourceFormIntent.OpenAdvancedSecretGeneration)
+                advanceUntilIdle()
+
+                val sideEffect = awaitItem()
+                assertIs<ResourceFormSideEffect.NavigateToAdvancedSecretGeneration>(sideEffect)
+                assertThat(sideEffect.selectedTab).isEqualTo(PasswordGeneratorTypeUiModel.PASSPHRASE)
+                assertThat(sideEffect.passwordSettings).isEqualTo(CUSTOM_PASSWORD_SETTINGS)
+                assertThat(sideEffect.passphraseSettings).isEqualTo(CUSTOM_PASSPHRASE_SETTINGS)
+            }
+
+            verifyNoInteractions(mockGetPasswordPoliciesUseCase)
+        }
+
+    @Test
+    fun `advanced secret generation result stores settings and applies generated password`() =
+        runTest {
+            mockGetDefaultCreateContentTypeUseCase.stub {
+                onBlocking { execute(any()) }.thenReturn(
+                    GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                        metadataType = MetadataTypeModel.V5,
+                        contentType = V5Default,
+                    ),
+                )
+            }
+            mockEntropyCalculator.stub {
+                onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+                onBlocking { getSecretEntropy("generated secret") }.thenReturn(150.0)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+            advanceUntilIdle()
+
+            val result =
+                AdvancedSecretGenerationFormResult(
+                    passwordSettings = CUSTOM_PASSWORD_SETTINGS,
+                    passphraseSettings = CUSTOM_PASSPHRASE_SETTINGS,
+                    selectedTab = PasswordGeneratorTypeUiModel.PASSWORD,
+                    generatedSecret = "generated secret",
+                )
+            viewModel.onIntent(ResourceFormIntent.AdvancedSecretGenerationResult(result))
+            advanceUntilIdle()
+
+            val state = viewModel.viewState.value
+            assertThat(state.generatorType).isEqualTo(PasswordGeneratorTypeUiModel.PASSWORD)
+            assertThat(state.passwordGeneratorSettings).isEqualTo(CUSTOM_PASSWORD_SETTINGS)
+            assertThat(state.passphraseGeneratorSettings).isEqualTo(CUSTOM_PASSPHRASE_SETTINGS)
+            assertThat(state.passwordData.password).isEqualTo("generated secret")
+            assertThat(state.passwordData.passwordEntropyBits).isEqualTo(150.0)
+            assertThat(state.passwordData.passwordStrength).isEqualTo(PasswordStrength.VeryStrong)
         }
 
     @Test
@@ -1427,7 +1622,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1459,7 +1654,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1501,7 +1696,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1543,7 +1738,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1590,7 +1785,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1602,7 +1797,7 @@ class ResourceFormViewModelTest : KoinTest {
             }
             mockCheckPasswordPropertiesUseCase.stub {
                 onBlocking { execute(any()) }.thenReturn(
-                    mock<CheckPasswordPropertiesUseCase.Output.Failure<Any>>(),
+                    CheckPasswordPropertiesUseCase.Output.Failure,
                 )
             }
             mockResourceCreateActionsInteractor.stub {
@@ -1637,7 +1832,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1684,7 +1879,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1735,7 +1930,7 @@ class ResourceFormViewModelTest : KoinTest {
                 onBlocking { execute(any()) }.thenReturn(
                     GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
                         metadataType = MetadataTypeModel.V5,
-                        contentType = ContentType.V5Default,
+                        contentType = V5Default,
                     ),
                 )
             }
@@ -1774,12 +1969,388 @@ class ResourceFormViewModelTest : KoinTest {
             }
         }
 
+    @Test
+    fun `password expiry is not fetched when feature flag is off`() =
+        runTest {
+            stubCreatePasswordMode()
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordExpiryPoliciesInteractor, never()).fetchAndSavePasswordExpiryPolicies()
+        }
+
+    @Test
+    fun `password expiry is fetched when feature flag is on and fetch succeeds`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_EXPIRY))
+            }
+            mockPasswordExpiryPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordExpiryPolicies() }
+                    .thenReturn(PasswordExpiryPoliciesInteractor.Output.Success(MOCK_PASSWORD_EXPIRY_SETTINGS))
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordExpiryPoliciesInteractor).fetchAndSavePasswordExpiryPolicies()
+        }
+
+    @Test
+    fun `snackbar is emitted when password expiry fetch fails`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_EXPIRY))
+            }
+            mockPasswordExpiryPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordExpiryPolicies() }
+                    .thenReturn(
+                        PasswordExpiryPoliciesInteractor.Output.Failure.FetchFailure(
+                            DomainResult.Incomplete.Error(UNKNOWN, "boom"),
+                        ),
+                    )
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            viewModel.sideEffect.test {
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(SnackbarMessage.PASSWORD_EXPIRY_FETCH_FAILED)
+            }
+        }
+
+    @Test
+    fun `password policies are not fetched when feature flag is off`() =
+        runTest {
+            stubCreatePasswordMode()
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordPoliciesInteractor, never()).fetchAndSavePasswordPolicies()
+        }
+
+    @Test
+    fun `password policies are fetched when feature flag is on and fetch succeeds`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_POLICIES))
+            }
+            mockPasswordPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordPolicies() }
+                    .thenReturn(PasswordPoliciesInteractor.Output.Success(MOCK_PASSWORD_POLICIES))
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            get<ResourceFormViewModel> { parametersOf(mode) }
+            advanceUntilIdle()
+
+            verify(mockPasswordPoliciesInteractor).fetchAndSavePasswordPolicies()
+        }
+
+    @Test
+    fun `snackbar is emitted when password policies fetch fails`() =
+        runTest {
+            stubCreatePasswordMode()
+            mockGetFeatureFlagsUseCase.stub {
+                onBlocking { execute(Unit) }
+                    .thenReturn(GetFeatureFlagsUseCase.Output(FEATURE_FLAGS_WITH_PASSWORD_POLICIES))
+            }
+            mockPasswordPoliciesInteractor.stub {
+                onBlocking { fetchAndSavePasswordPolicies() }
+                    .thenReturn(PasswordPoliciesInteractor.Output.Failure.ValidationFailure)
+            }
+
+            val mode =
+                ResourceFormMode.Create(
+                    leadingContentType = LeadingContentType.PASSWORD,
+                    parentFolderId = null,
+                )
+            val viewModel: ResourceFormViewModel = get { parametersOf(mode) }
+
+            viewModel.sideEffect.test {
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(SnackbarMessage.PASSWORD_POLICIES_FETCH_FAILED)
+            }
+        }
+
+    private fun stubCreatePasswordMode() {
+        mockGetDefaultCreateContentTypeUseCase.stub {
+            onBlocking { execute(any()) }.thenReturn(
+                GetDefaultCreateContentTypeUseCase.Output.CreationContentType(
+                    metadataType = MetadataTypeModel.V5,
+                    contentType = V5Default,
+                ),
+            )
+        }
+        mockEntropyCalculator.stub {
+            onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+        }
+    }
+
+    @Test
+    fun `upgrade panel should be shown when feature flag, settings and v4 resource all allow it`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isTrue()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when v5 metadata feature flag is off`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = false, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when v4 to v5 upgrade is not allowed`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = false, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when v5 resource creation is not allowed`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = false)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade panel should be hidden when resource is already v5`() =
+        runTest {
+            stubEditModeFor(slug = V5Default.slug, contentType = V5Default)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.showUpgradePanel).isFalse()
+        }
+
+    @Test
+    fun `upgrade resource should emit resource upgraded snackbar on success`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+            stubUpgradeResult(ResourceUpdateActionResult.Success(resourceId = "id", resourceName = "name"))
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(UpgradeResource)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(SnackbarMessage.RESOURCE_UPGRADED)
+            }
+        }
+
+    @Test
+    fun `upgrade resource should emit common failure snackbar when update fails`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+            stubUpgradeResult(Failure())
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(UpgradeResource)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(COMMON_FAILURE)
+            }
+        }
+
+    @Test
+    fun `upgrade resource should emit cannot create snackbar when config disallows update`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+            stubUpgradeResult(CannotUpdateWithCurrentConfig)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(UpgradeResource)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<ShowSnackbar>(sideEffect)
+                assertThat(sideEffect.type).isEqualTo(CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG)
+            }
+        }
+
+    @Test
+    fun `learn more about upgrade should emit open website side effect`() =
+        runTest {
+            stubEditModeFor(slug = PasswordAndDescription.slug, contentType = PasswordAndDescription)
+            stubFeatureFlagsAndSettings(isV5MetadataAvailable = true, allowV4V5Upgrade = true, allowCreationOfV5Resources = true)
+
+            val viewModel: ResourceFormViewModel = get { parametersOf(EDIT_MODE) }
+            advanceUntilIdle()
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(LearnMoreAboutUpgrade)
+                advanceUntilIdle()
+                val sideEffect = awaitItem()
+                assertIs<OpenWebsite>(sideEffect)
+                assertThat(sideEffect.url).isNotEmpty()
+            }
+        }
+
+    private fun stubEditModeFor(
+        slug: String,
+        contentType: ContentType,
+    ) {
+        val resource = createResourceModel(slug = slug)
+        mockGetLocalResourceUseCase.stub {
+            onBlocking { execute(any()) }.thenReturn(GetLocalResourceUseCase.Output(resource))
+        }
+        mockGetEditContentTypeUseCase.stub {
+            onBlocking { execute(any()) }.thenReturn(
+                GetEditContentTypeUseCase.Output(contentType = contentType, metadataType = V4),
+            )
+        }
+        mockEntropyCalculator.stub {
+            onBlocking { getSecretEntropy(any()) }.thenReturn(0.0)
+        }
+        val secretInteractorMock = mock<SecretPropertiesActionsInteractor>()
+        secretInteractorMock.stub {
+            onBlocking { provideDecryptedSecret() }.thenReturn(
+                flowOf(
+                    SecretPropertyActionResult.Success(
+                        label = "secret",
+                        isSecret = true,
+                        result = SecretJsonModel("""{"password": ""}"""),
+                    ),
+                ),
+            )
+        }
+        mockSecretPropertiesActionsInteractorSecretPropertiesActionsInteractorFactory.stub {
+            on { create(any()) }.thenReturn(secretInteractorMock)
+        }
+    }
+
+    private fun stubFeatureFlagsAndSettings(
+        isV5MetadataAvailable: Boolean,
+        allowV4V5Upgrade: Boolean,
+        allowCreationOfV5Resources: Boolean,
+    ) {
+        mockGetFeatureFlagsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(
+                GetFeatureFlagsUseCase.Output(
+                    DEFAULT_FEATURE_FLAGS.copy(isV5MetadataAvailable = isV5MetadataAvailable),
+                ),
+            )
+        }
+        mockGetMetadataTypesSettingsUseCase.stub {
+            onBlocking { execute(Unit) }.thenReturn(
+                GetMetadataTypesSettingsUseCase.Output(
+                    DEFAULT_METADATA_TYPES_SETTINGS.copy(
+                        allowV4V5Upgrade = allowV4V5Upgrade,
+                        allowCreationOfV5Resources = allowCreationOfV5Resources,
+                    ),
+                ),
+            )
+        }
+    }
+
+    private fun stubUpgradeResult(result: ResourceUpdateActionResult) {
+        val upgradeInteractor = mock<ResourceUpdateActionsInteractor>()
+        upgradeInteractor.stub {
+            onBlocking { upgradeToV5() }.thenReturn(flowOf(result))
+        }
+        mockResourceUpdateActionsInteractorFactory.stub {
+            on { create(any()) }.thenReturn(upgradeInteractor)
+        }
+    }
+
+    private fun createResourceModel(slug: String): ResourceUiModel =
+        ResourceUiModel(
+            resourceId = "resourceId",
+            resourceTypeId = "resourceTypeId",
+            slug = slug,
+            folderId = null,
+            permission = OWNER,
+            favouriteId = null,
+            modified = ZonedDateTime.now(),
+            expiry = null,
+            metadataKeyId = null,
+            metadataKeyType = PERSONAL,
+            metadataJsonModel = MetadataJsonModel("""{"name": "Test"}"""),
+        )
+
     private companion object {
+        val FEATURE_FLAGS_WITH_PASSWORD_POLICIES =
+            DEFAULT_TEST_FEATURE_FLAGS.copy(arePasswordPoliciesAvailable = true)
+
+        val EDIT_MODE = ResourceFormMode.Edit(resourceId = "resourceId", resourceName = "Test")
+
         val MOCK_PASSWORD_POLICIES =
-            com.passbolt.mobile.android.ui.PasswordPolicies(
-                defaultGenerator = PasswordGeneratorTypeModel.PASSWORD,
+            PasswordPoliciesUiModel(
+                defaultGenerator = PasswordGeneratorTypeUiModel.PASSWORD,
                 passwordGeneratorSettings =
-                    com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel(
+                    PasswordGeneratorSettingsUiModel(
                         length = 18,
                         maskUpper = true,
                         maskLower = true,
@@ -1794,15 +2365,48 @@ class ResourceFormViewModelTest : KoinTest {
                         excludeLookAlikeChars = true,
                     ),
                 passphraseGeneratorSettings =
-                    com.passbolt.mobile.android.ui.PassphraseGeneratorSettingsModel(
+                    PassphraseGeneratorSettingsUiModel(
                         words = 9,
                         wordSeparator = " ",
-                        wordCase = com.passbolt.mobile.android.ui.CaseTypeModel.LOWERCASE,
+                        wordCase = LOWERCASE,
                     ),
                 isExternalDictionaryCheckEnabled = true,
             )
 
         val MOCK_PASSWORD_POLICIES_DICTIONARY_CHECK_DISABLED =
             MOCK_PASSWORD_POLICIES.copy(isExternalDictionaryCheckEnabled = false)
+
+        val CUSTOM_PASSWORD_SETTINGS =
+            PasswordGeneratorSettingsUiModel(
+                length = 24,
+                maskUpper = true,
+                maskLower = true,
+                maskDigit = true,
+                maskParenthesis = false,
+                maskEmoji = false,
+                maskChar1 = false,
+                maskChar2 = false,
+                maskChar3 = false,
+                maskChar4 = false,
+                maskChar5 = false,
+                excludeLookAlikeChars = false,
+            )
+
+        val CUSTOM_PASSPHRASE_SETTINGS =
+            PassphraseGeneratorSettingsUiModel(
+                words = 7,
+                wordSeparator = "-",
+                wordCase = CaseTypeUiModel.UPPERCASE,
+            )
+
+        val FEATURE_FLAGS_WITH_PASSWORD_EXPIRY =
+            DEFAULT_TEST_FEATURE_FLAGS.copy(isPasswordExpiryAvailable = true)
+
+        val MOCK_PASSWORD_EXPIRY_SETTINGS =
+            PasswordExpirySettings(
+                automaticExpiry = true,
+                automaticUpdate = true,
+                defaultExpiryPeriodDays = 90,
+            )
     }
 }

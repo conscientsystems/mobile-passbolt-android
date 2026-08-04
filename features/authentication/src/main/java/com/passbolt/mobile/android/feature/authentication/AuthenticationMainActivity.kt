@@ -3,8 +3,8 @@ package com.passbolt.mobile.android.feature.authentication
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.IntentCompat
+import androidx.fragment.app.FragmentActivity
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.AppContext
@@ -18,7 +18,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
 import java.util.UUID
 
 // NOTE: When changing name or package read core/navigation/README.md
-class AuthenticationMainActivity : AppCompatActivity() {
+class AuthenticationMainActivity : FragmentActivity() {
     private val flagSecureSetter: FlagSecureSetter by inject()
     private val startUpResolver: AuthenticationStartUpResolver by inject()
     private val authNavigatorScopeId = "auth_navigator_${UUID.randomUUID()}"

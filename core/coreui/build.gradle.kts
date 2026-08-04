@@ -1,19 +1,16 @@
 plugins {
     id("passbolt.android.library")
     id(libs.plugins.compose.compiler.get().pluginId)
-    id(libs.plugins.kotlin.parcelize.get().pluginId)
+    alias(libs.plugins.screenshot)
 }
 
 dependencies {
     implementation(project(":localization"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":common"))
     implementation(project(":testtags"))
 
     implementation(libs.androidx.core)
-    implementation(libs.appcompat)
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.coil.compose)
@@ -29,11 +26,20 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     debugImplementation(libs.compose.ui.tooling.preview)
+
+    screenshotTestImplementation(libs.screenshot.validation.api)
+    screenshotTestImplementation(libs.compose.ui.tooling)
 }
 
 android {
     namespace = "com.passbolt.mobile.android.core.ui"
     buildFeatures {
         compose = true
+    }
+    experimentalProperties["android.experimental.enableScreenshotTest"] = true
+
+    // tolerate sub-pixel antialiasing differences between macOS (dev) and Linux (CI) layoutlib renderers
+    screenshotTests {
+        imageDifferenceThreshold = 0.001f
     }
 }

@@ -3,12 +3,12 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":common"))
     implementation(project(":dto"))
     implementation(project(":architecture"))
     implementation(project(":localization"))
-    implementation(project(":authenticationcore"))
-    implementation(project(":accounts"))
+    implementation(project(":auth-domain"))
 
     api(libs.retrofit)
     api(libs.okhttp)

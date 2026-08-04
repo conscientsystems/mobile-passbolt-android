@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.feature.home.switchaccount
 
 import org.koin.core.module.Module
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
 
 /**
  * Passbolt - Open source password manager for teams
@@ -27,5 +27,16 @@ import org.koin.core.module.dsl.viewModelOf
  */
 
 fun Module.switchAccountModule() {
-    viewModelOf(::SwitchAccountViewModel)
+    viewModel { params ->
+        SwitchAccountViewModel(
+            appContext = params.get(),
+            getAllAccountsDataUseCase = get(),
+            switchAccountModelMapper = get(),
+            signOutUseCase = get(),
+            saveSelectedAccountUseCase = get(),
+            dataRefreshTrackingFlow = get(),
+            getSelectedAccountUseCase = get(),
+            userProfileRefreshTrackingFlow = get(),
+        )
+    }
 }

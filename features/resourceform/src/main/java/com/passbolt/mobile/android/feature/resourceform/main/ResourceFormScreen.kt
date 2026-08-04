@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.resourceform.main
 
-import PassboltTheme
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -33,11 +32,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtp
 import com.passbolt.mobile.android.core.navigation.compose.keys.OtpNavigationKey.ScanOtpMode
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AdditionalUrisForm
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AdvancedSecretGenerationForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AppearanceForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.CustomFieldsForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.DescriptionForm
@@ -50,6 +51,7 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavi
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
 import com.passbolt.mobile.android.core.navigation.compose.results.ResourceFormCompleteResult
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
+import com.passbolt.mobile.android.core.ui.dialogs.UnableToGeneratePasswordAlertDialog
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.core.ui.text.TextInput
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
@@ -59,6 +61,7 @@ import com.passbolt.mobile.android.feature.metadatakeytrust.TrustedMetadataKeyDe
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissMetadataKeyDialog
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
@@ -70,6 +73,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithCreateSuccess
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithEditSuccess
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdditionalUris
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAppearance
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToDescription
@@ -80,11 +84,13 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.OpenWebsite
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowSnackbar
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowToast
 import com.passbolt.mobile.android.feature.resourceform.main.ui.AdditionalSecretsSection
 import com.passbolt.mobile.android.feature.resourceform.main.ui.LeadingContent
 import com.passbolt.mobile.android.feature.resourceform.main.ui.MetadataSection
+import com.passbolt.mobile.android.feature.resourceform.main.ui.UpgradeAvailableSection
 import com.passbolt.mobile.android.testtags.composetags.ResourceForm
 import com.passbolt.mobile.android.ui.LeadingContentType
 import com.passbolt.mobile.android.ui.PasswordStrength
@@ -122,6 +128,14 @@ internal fun ResourceFormScreen(
                 navigator.navigateToKey(TotpForm(sideEffect.mode, sideEffect.totpUiModel))
             is NavigateToTotpAdvancedSettings ->
                 navigator.navigateToKey(TotpAdvancedSettingsForm(sideEffect.mode, sideEffect.totpUiModel))
+            is NavigateToAdvancedSecretGeneration ->
+                navigator.navigateToKey(
+                    AdvancedSecretGenerationForm(
+                        selectedTab = sideEffect.selectedTab,
+                        passwordSettings = sideEffect.passwordSettings,
+                        passphraseSettings = sideEffect.passphraseSettings,
+                    ),
+                )
             is NavigateToNote ->
                 navigator.navigateToKey(NoteForm(sideEffect.mode, sideEffect.note))
             is NavigateToPinCode ->
@@ -163,6 +177,7 @@ internal fun ResourceFormScreen(
                 navigator.navigateBack()
             }
             NavigateBack -> navigator.navigateBack()
+            is OpenWebsite -> navigator.openExternalWebsite(context, sideEffect.url)
             is ShowSnackbar ->
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(getSnackbarMessage(context, sideEffect.type))
@@ -244,6 +259,11 @@ private fun ResourceFormScreen(
                     testTag = ResourceForm.NAME_INPUT,
                 )
 
+                if (state.showUpgradePanel) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    UpgradeAvailableSection(onIntent = onIntent)
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LeadingContent(
@@ -288,6 +308,12 @@ private fun ResourceFormScreen(
         }
 
         ProgressDialog(isVisible = state.shouldShowDialogProgress)
+
+        UnableToGeneratePasswordAlertDialog(
+            isVisible = state.isUnableToGeneratePasswordDialogVisible,
+            requiredEntropy = state.minimumEntropyBits,
+            onDismiss = { onIntent(DismissUnableToGeneratePassword) },
+        )
 
         state.metadataKeyModifiedDialog?.let { model ->
             NewMetadataKeyTrustDialog(
@@ -433,6 +459,12 @@ private fun getSnackbarMessage(
             SnackbarMessage.METADATA_KEY_TRUST_FAILED -> LocalizationR.string.common_metadata_key_trust_failed
             SnackbarMessage.ENCRYPTION_FAILURE -> LocalizationR.string.common_encryption_failure
             SnackbarMessage.METADATA_KEY_IS_TRUSTED -> LocalizationR.string.common_metadata_key_is_trusted
+            SnackbarMessage.RESOURCE_UPGRADED -> LocalizationR.string.resource_details_upgrade_success
+            SnackbarMessage.UPGRADE_FAILURE -> LocalizationR.string.resource_details_upgrade_failure
+            SnackbarMessage.PASSWORD_POLICIES_FETCH_FAILED ->
+                LocalizationR.string.common_password_policies_fetch_failed
+            SnackbarMessage.PASSWORD_EXPIRY_FETCH_FAILED ->
+                LocalizationR.string.common_password_expiry_fetch_failed
         },
     )
 

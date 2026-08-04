@@ -23,12 +23,13 @@
 
 package com.passbolt.mobile.android.folderdetails
 
-import com.passbolt.mobile.android.ui.FolderModel
+import com.passbolt.mobile.android.domain.folders.model.FolderModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 
 data class FolderDetailsState(
     val folderId: String? = null,
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
     val locationPath: List<String> = emptyList(),
     val folder: FolderModel? = null,
     val canViewPermissions: Boolean = false,

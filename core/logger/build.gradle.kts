@@ -3,11 +3,12 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":accounts-domain"))
     implementation(project(":localization"))
     implementation(project(":envinfo"))
     implementation(project(":common"))
-    implementation(project(":preferences"))
-    implementation(project(":accounts"))
+    implementation(project(":preferences-domain"))
+    implementation(project(":uimodel"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

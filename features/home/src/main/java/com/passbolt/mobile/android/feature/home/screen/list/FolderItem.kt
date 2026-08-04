@@ -48,8 +48,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.passbolt.mobile.android.common.extension.toSingleLine
+import com.passbolt.mobile.android.domain.folders.model.FolderWithCountAndPath
 import com.passbolt.mobile.android.testtags.composetags.Home
-import com.passbolt.mobile.android.ui.FolderWithCountAndPath
 import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR

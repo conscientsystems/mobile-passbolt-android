@@ -3,15 +3,8 @@ package com.passbolt.mobile.android.feature.authentication.auth
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import com.passbolt.mobile.android.common.extension.erase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.SaveServerFingerprintUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.GetPassphraseUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
-import com.passbolt.mobile.android.core.inappreview.InAppReviewInteractor
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider.DUO
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider.TOTP
@@ -19,15 +12,24 @@ import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.U
 import com.passbolt.mobile.android.core.mvp.authentication.MfaProvidersHandler
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.ManageAccount
+import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Mfa
+import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.RefreshPassphrase
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Setup
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Startup
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase.Passphrase
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveServerFingerprintUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.GetPassphraseUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
+import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AcceptChangedServerFingerprint
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AccessLogs
@@ -64,9 +66,13 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Sh
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.AUTHENTICATION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_CHANGED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_DECRYPT_ERROR
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT_PERMANENT
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_NO_CRYPTO_CIPHER
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_INVALID_SIGNATURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_TOKEN_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_VERIFICATION_FAILURE
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CONNECTION_FAILURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.DECRYPTION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.GENERIC
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.TIME_OUT_OF_SYNC
@@ -82,8 +88,8 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVer
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor.Error.TimeIsOutOfSync
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor.Error.ConfigurationFetchError
-import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor.Error.UserProfileFetchError
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmup
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.AccountDoesNotExist
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ChallengeDecryptionError
@@ -92,6 +98,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVer
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ChallengeVerificationError.Type.INVALID_SIGNATURE
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ChallengeVerificationError.Type.TOKEN_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.IncorrectPassphrase
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.NoNetwork
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.SignInFailure
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyPassphraseUseCase
@@ -103,6 +110,8 @@ import com.passbolt.mobile.android.mappers.AccountModelMapper
 import com.passbolt.mobile.android.ui.BiometricAuthError
 import timber.log.Timber
 import javax.crypto.Cipher
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor.Error.NoNetwork as ServerKeysNoNetwork
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor.Error.ServerNotReachable as SignInServerNotReachable
 
 @Suppress("LongParameterList", "TooManyFunctions")
 class AuthViewModel(
@@ -131,6 +140,7 @@ class AuthViewModel(
     private val postSignInActionsInteractor: PostSignInActionsInteractor,
     private val refreshSessionUseCase: RefreshSessionUseCase,
     private val mfaProvidersHandler: MfaProvidersHandler,
+    private val serverKeysWarmup: ServerKeysWarmup,
 ) : SideEffectViewModel<AuthState, AuthSideEffect>(
         AuthState(
             authReason = mapAuthReason(authConfig),
@@ -150,6 +160,14 @@ class AuthViewModel(
     init {
         loadAccountData()
         checkRootAndBiometry()
+        warmUpServerKeysIfNeeded()
+    }
+
+    private fun warmUpServerKeysIfNeeded() {
+        when (authConfig) {
+            is RefreshPassphrase, is Mfa -> Unit
+            else -> serverKeysWarmup.warmUp(userId)
+        }
     }
 
     override fun onCleared() {
@@ -276,9 +294,9 @@ class AuthViewModel(
     private fun validatePassphrase(passphrase: ByteArray) {
         launch {
             val privateKey =
-                requireNotNull(
-                    getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey,
-                )
+                requireNotNull(getPrivateKeyUseCase.execute(UserIdInput(userId)).privateKey) {
+                    "Unable to restore private key."
+                }.armoredKey
             val isPassphraseCorrect =
                 verifyPassphraseUseCase.execute(VerifyPassphraseUseCase.Input(privateKey, passphrase)).isCorrect
             if (isPassphraseCorrect) {
@@ -363,6 +381,9 @@ class AuthViewModel(
                                 copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl)
                             }
                         }
+                        is ServerKeysNoNetwork -> {
+                            emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+                        }
                         is TimeIsOutOfSync -> {
                             emitSideEffect(ShowErrorSnackbar(TIME_OUT_OF_SYNC))
                         }
@@ -408,6 +429,9 @@ class AuthViewModel(
                             FAILURE -> emitSideEffect(ShowErrorSnackbar(CHALLENGE_VERIFICATION_FAILURE))
                         }
                     }
+                    is NoNetwork -> emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+                    is SignInServerNotReachable ->
+                        updateViewState { copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl) }
                     is IncorrectPassphrase -> emitSideEffect(ShowErrorSnackbar(WRONG_PASSPHRASE))
                     is SignInFailure -> emitSideEffect(ShowErrorSnackbar(AUTHENTICATION_ERROR, it.message))
                 }
@@ -476,10 +500,6 @@ class AuthViewModel(
                     signInIdlingResource.setIdle(true)
                     when (it) {
                         ConfigurationFetchError -> updateViewState { copy(showFetchFeatureFlagsError = true) }
-                        UserProfileFetchError ->
-                            emitSideEffect(
-                                ShowErrorSnackbar(AuthSideEffect.SnackbarErrorType.PROFILE_FETCH_FAILURE),
-                            )
                     }
                 },
             ) {
@@ -535,8 +555,10 @@ class AuthViewModel(
     private fun biometricAuthenticationError(error: BiometricAuthError) {
         val errorType =
             when (error) {
-                BiometricAuthError.NO_CRYPTO_CIPHER -> AuthSideEffect.SnackbarErrorType.BIOMETRIC_NO_CRYPTO_CIPHER
-                else -> AUTHENTICATION_ERROR
+                BiometricAuthError.ERROR_LOCKOUT -> BIOMETRIC_LOCKOUT
+                BiometricAuthError.ERROR_LOCKOUT_PERMANENT -> BIOMETRIC_LOCKOUT_PERMANENT
+                BiometricAuthError.NO_CRYPTO_CIPHER -> BIOMETRIC_NO_CRYPTO_CIPHER
+                BiometricAuthError.GENERIC -> BIOMETRIC_DECRYPT_ERROR
             }
         emitSideEffect(ShowErrorSnackbar(errorType))
     }

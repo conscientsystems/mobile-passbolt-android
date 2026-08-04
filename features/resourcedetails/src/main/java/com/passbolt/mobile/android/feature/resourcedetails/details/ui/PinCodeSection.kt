@@ -23,12 +23,12 @@
 
 package com.passbolt.mobile.android.feature.resourcedetails.details.ui
 
-import PassboltTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.localization.R
 import com.passbolt.mobile.android.core.ui.header.ActionIcon
 import com.passbolt.mobile.android.core.ui.header.ItemWithHeader

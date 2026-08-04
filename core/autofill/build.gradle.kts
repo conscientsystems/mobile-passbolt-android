@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":localization"))
     implementation(project(":navigation"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":jsonmodel"))
 
     implementation(platform(libs.koin.bom))

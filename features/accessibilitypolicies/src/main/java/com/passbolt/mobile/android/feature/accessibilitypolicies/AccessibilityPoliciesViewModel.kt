@@ -24,7 +24,8 @@
 package com.passbolt.mobile.android.feature.accessibilitypolicies
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Accept
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesIntent.Decline
 import com.passbolt.mobile.android.feature.accessibilitypolicies.AccessibilityPoliciesSideEffect.NavigateToAcceptedScreen
@@ -39,7 +40,7 @@ class AccessibilityPoliciesViewModel(
             Accept -> {
                 Timber.d("Accessibility policies accepted")
                 updateGlobalPreferencesUseCase.execute(
-                    UpdateGlobalPreferencesUseCase.Input(accessibilityPoliciesConsentGiven = true),
+                    GlobalPreferencesUpdate(accessibilityPoliciesConsentGiven = true),
                 )
                 emitSideEffect(NavigateToAcceptedScreen)
             }

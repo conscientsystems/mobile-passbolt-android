@@ -25,8 +25,9 @@ package com.passbolt.mobile.android.helpmenu
 
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.logger.FileLoggingTree
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.helpmenu.HelpMenuBottomSheetIntent.AccessLogs
 import com.passbolt.mobile.android.helpmenu.HelpMenuBottomSheetIntent.AccountKitRead
 import com.passbolt.mobile.android.helpmenu.HelpMenuBottomSheetIntent.Close
@@ -100,7 +101,7 @@ class HelpMenuBottomSheetViewModel(
     }
 
     private fun handleEnableLogsToggled(enabled: Boolean) {
-        updateGlobalPreferencesUseCase.execute(UpdateGlobalPreferencesUseCase.Input(enabled))
+        updateGlobalPreferencesUseCase.execute(GlobalPreferencesUpdate(enabled))
 
         updateViewState {
             copy(

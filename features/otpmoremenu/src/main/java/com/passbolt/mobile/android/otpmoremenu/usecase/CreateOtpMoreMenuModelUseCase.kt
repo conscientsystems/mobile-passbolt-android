@@ -24,7 +24,7 @@
 package com.passbolt.mobile.android.otpmoremenu.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.ui.OtpMoreMenuModel
 import com.passbolt.mobile.android.ui.ResourcePermission
 

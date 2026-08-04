@@ -2,15 +2,17 @@ package com.passbolt.mobile.android.feature.resourceform
 
 import com.passbolt.mobile.android.core.navigation.compose.base.Feature
 import com.passbolt.mobile.android.core.navigation.compose.base.FeatureModuleNavigation
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
-import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetEditContentTypeUseCase
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.customfields.customFieldsFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.noteFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.passwordFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.advanced.pinCodeAdvancedGenerationFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.pinCodeFormModule
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.advancedSecretGenerationModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.advanced.totpAdvancedSettingsFormModule
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.totpFormModule
+import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase
 import com.passbolt.mobile.android.feature.resourceform.main.resourceFormModule
 import com.passbolt.mobile.android.feature.resourceform.metadata.additionaluris.additionalUrisFormModule
 import com.passbolt.mobile.android.feature.resourceform.metadata.appearance.appearanceFormModule
@@ -51,6 +53,7 @@ val resourceFormModule =
         totpAdvancedSettingsFormModule()
         noteFormModule()
         passwordFormModule()
+        advancedSecretGenerationModule()
         additionalUrisFormModule()
         appearanceFormModule()
         customFieldsFormModule()
@@ -59,6 +62,7 @@ val resourceFormModule =
 
         factoryOf(::GetDefaultCreateContentTypeUseCase)
         factoryOf(::GetEditContentTypeUseCase)
+        factoryOf(::GetOrLoadGeneratorSettingsUseCase)
 
         single<FeatureModuleNavigation>(named(Feature.RESOURCE_FORM)) { ResourceFormFeatureNavigation() }
     }

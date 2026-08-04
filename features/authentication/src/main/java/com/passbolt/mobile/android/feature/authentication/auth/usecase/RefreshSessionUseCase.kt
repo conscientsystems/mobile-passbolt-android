@@ -1,17 +1,13 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
-import com.passbolt.mobile.android.common.CookieExtractor
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
-import com.passbolt.mobile.android.dto.request.RefreshSessionRequest
-import com.passbolt.mobile.android.passboltapi.auth.AuthRepository
-import retrofit2.HttpException
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.auth.AuthRepository
+import com.passbolt.mobile.android.domain.auth.SessionRepository
 import timber.log.Timber
-import java.net.HttpURLConnection
 
 /**
  * Passbolt - Open source password manager for teams
@@ -39,40 +35,25 @@ class RefreshSessionUseCase(
     private val authRepository: AuthRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val getAccountDataUseCase: GetAccountDataUseCase,
-    private val getSessionUseCase: GetSessionUseCase,
-    private val saveSessionUseCase: SaveSessionUseCase,
-    private val cookieExtractor: CookieExtractor,
+    private val sessionRepository: SessionRepository,
 ) : AsyncUseCase<Unit, RefreshSessionUseCase.Output> {
     override suspend fun execute(input: Unit): Output =
         try {
             val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
             val serverUserId = requireNotNull(getAccountDataUseCase.execute(UserIdInput(userId)).serverId)
-            val refreshToken = requireNotNull(getSessionUseCase.execute(Unit).refreshToken)
-            val refreshSessionRequest = RefreshSessionRequest(refreshToken, serverUserId)
+            val refreshToken = requireNotNull(sessionRepository.getSession(userId).refreshToken)
 
-            val response = authRepository.refreshSession(refreshSessionRequest)
-            if (response.code() == HttpURLConnection.HTTP_OK) {
-                val newAccessToken =
-                    requireNotNull(
-                        response.body(),
-                    ).body.accessToken
-                val newRefreshToken =
-                    requireNotNull(
-                        cookieExtractor.getCookieValue(response, CookieExtractor.REFRESH_TOKEN_COOKIE),
+            when (val result = authRepository.refreshSession(refreshToken, serverUserId)) {
+                is DomainResult.Finished -> {
+                    sessionRepository.saveSession(
+                        userId = userId,
+                        accessToken = result.value.accessToken,
+                        refreshToken = result.value.refreshToken,
+                        mfaToken = result.value.mfaToken,
                     )
-                val mfaToken = cookieExtractor.get(response, CookieExtractor.MFA_COOKIE)
-
-                saveSessionUseCase.execute(
-                    SaveSessionUseCase.Input(
-                        userId,
-                        newRefreshToken,
-                        newAccessToken,
-                        mfaToken,
-                    ),
-                )
-                Output.Success
-            } else {
-                throw HttpException(response)
+                    Output.Success
+                }
+                is DomainResult.Incomplete -> Output.Failure
             }
         } catch (throwable: Throwable) {
             Timber.e(throwable)

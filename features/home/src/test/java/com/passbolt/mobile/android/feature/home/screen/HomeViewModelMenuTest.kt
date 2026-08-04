@@ -33,20 +33,23 @@ import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
 import com.passbolt.mobile.android.common.autofill.DetectAutofillConflict
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.commontest.session.validSessionTestModule
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionResult
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertyActionResult
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
-import com.passbolt.mobile.android.entity.home.HomeDisplayView
+import com.passbolt.mobile.android.domain.accounts.AccountSwitchFlow
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionResult
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertyActionResult
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.domain.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyPassword
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CopyResourceMetadataDescription
@@ -66,17 +69,15 @@ import com.passbolt.mobile.android.feature.home.screen.data.HomeDataProvider
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
-import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
-import com.passbolt.mobile.android.ui.DefaultFilterModel
-import com.passbolt.mobile.android.ui.HomeDisplayViewModel.AllItems
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.NotLoaded
+import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.ADD_TO_FAVOURITES
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.REMOVE_FROM_FAVOURITES
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -122,13 +123,18 @@ class HomeViewModelMenuTest : KoinTest {
                     singleOf(::DataRefreshTrackingFlow)
                     singleOf(::SessionRefreshTrackingFlow)
                     single { mock<GetSelectedAccountDataUseCase>() }
-                    single { mock<GetHomeDisplayViewPrefsUseCase>() }
-                    single { mock<HomeDisplayViewMapper>() }
+                    single { mock<GetSelectedAccountUseCase> { on { execute(Unit) } doReturn GetSelectedAccountUseCase.Output("userId") } }
+                    single { mock<GetHomeDisplayViewPreferencesUseCase>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
-                    single { mock<CanCreateResourceUseCase>() }
-                    single { mock<CanShareResourceUseCase>() }
+                    single { mock<ResourceAccessInteractor>() }
                     single { mock<DetectAutofillConflict>() }
+                    single {
+                        mock<UserProfileInteractor> {
+                            onBlocking { fetchAndUpdateUserProfile() } doReturn UserProfileInteractor.Output.Success
+                        }
+                    }
+                    singleOf(::UserProfileRefreshTrackingFlow)
                     single { AccountSwitchFlow(mock { on { execute(any()) } doReturn GetSelectedAccountUseCase.Output("id1") }) }
                     single(named(JSON_MODEL_GSON)) { GsonBuilder().serializeNulls().create() }
                     single {
@@ -142,6 +148,7 @@ class HomeViewModelMenuTest : KoinTest {
                     singleOf(::JsonPathJsonPathOps) bind JsonPathsOps::class
                     factoryOf(::HomeViewModel)
                 },
+                validSessionTestModule,
             )
         }
 
@@ -165,14 +172,12 @@ class HomeViewModelMenuTest : KoinTest {
             ),
         )
 
-        whenever(get<GetHomeDisplayViewPrefsUseCase>().execute(any())).thenReturn(
-            GetHomeDisplayViewPrefsUseCase.Output(
-                lastUsedHomeView = HomeDisplayView.ALL_ITEMS,
-                userSetHomeView = DefaultFilterModel.ALL_ITEMS,
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)).thenReturn(
+            HomeDisplayViewPreferencesUiModel(
+                lastUsedHomeView = HomeDisplayViewUiModel.ALL_ITEMS,
+                userSetHomeView = DefaultFilterUiModel.ALL_ITEMS,
             ),
         )
-
-        whenever(get<HomeDisplayViewMapper>().map(any(), any())).thenReturn(AllItems)
 
         get<HomeDataProvider>().stub {
             onBlocking {
@@ -185,12 +190,9 @@ class HomeViewModelMenuTest : KoinTest {
             }.doReturn(HomeData())
         }
 
-        get<CanCreateResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanCreateResourceUseCase.Output(canCreateResource = true))
-        }
-
-        get<CanShareResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanShareResourceUseCase.Output(canShareResource = true))
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) }.doReturn(true)
+            onBlocking { canShareResource() }.doReturn(true)
         }
     }
 
@@ -485,7 +487,7 @@ class HomeViewModelMenuTest : KoinTest {
         }
 
     private fun mockResourceModel(name: String) =
-        ResourceModel(
+        ResourceUiModel(
             resourceId = "id1",
             resourceTypeId = "resTypeId",
             slug = "password-and-description",

@@ -2,13 +2,16 @@ package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.account.RemoveAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.RemoveAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.RemovePrivateKeyUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.RemoveSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.RemovePassphraseUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.RemoveSessionUseCase
+import com.passbolt.mobile.android.database.DatabaseProvider
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.RemoveSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.auth.PassphraseRepository
+import com.passbolt.mobile.android.domain.auth.SessionRepository
+import com.passbolt.mobile.android.domain.auth.usecase.RemoveServerPublicRsaKeyUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
+import timber.log.Timber
 
 /**
  * Passbolt - Open source password manager for teams
@@ -35,29 +38,32 @@ import com.passbolt.mobile.android.core.authenticationcore.session.RemoveSession
 class RemoveAllAccountDataUseCase(
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val removeAccountDataUseCase: RemoveAccountDataUseCase,
-    private val removePassphraseUseCase: RemovePassphraseUseCase,
-    private val removePrivateKeyUseCase: RemovePrivateKeyUseCase,
+    private val passphraseRepository: PassphraseRepository,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val removeSelectedAccountUseCase: RemoveSelectedAccountUseCase,
-    private val removeSessionUseCase: RemoveSessionUseCase,
+    private val sessionRepository: SessionRepository,
     private val removeAccountUseCase: RemoveAccountUseCase,
     private val removeServerPublicRsaKeyUseCase: RemoveServerPublicRsaKeyUseCase,
+    private val databaseProvider: DatabaseProvider,
 ) : AsyncUseCase<UserIdInput, Unit> {
     override suspend fun execute(input: UserIdInput) {
+        Timber.d("Removing all account data")
         val accountToRemoveId = UserIdInput(input.userId)
         removeAccountData(accountToRemoveId)
 
         val selectedAccountId = getSelectedAccountUseCase.execute(Unit).selectedAccount
         if (accountToRemoveId.userId == selectedAccountId) {
-            removeSelectedAccountUseCase.execute(accountToRemoveId)
+            removeSelectedAccountUseCase.execute(Unit)
         }
     }
 
-    private fun removeAccountData(userIdInput: UserIdInput) {
+    private suspend fun removeAccountData(userIdInput: UserIdInput) {
         removeAccountDataUseCase.execute(userIdInput)
-        removePassphraseUseCase.execute(userIdInput)
-        removePrivateKeyUseCase.execute(userIdInput)
-        removeSessionUseCase.execute(userIdInput)
+        passphraseRepository.removePassphrase(userIdInput.userId)
+        privateKeyRepository.removePrivateKey(userIdInput.userId)
+        sessionRepository.removeSession(userIdInput.userId)
         removeAccountUseCase.execute(userIdInput)
         removeServerPublicRsaKeyUseCase.execute(userIdInput)
+        databaseProvider.delete(userIdInput.userId)
     }
 }
