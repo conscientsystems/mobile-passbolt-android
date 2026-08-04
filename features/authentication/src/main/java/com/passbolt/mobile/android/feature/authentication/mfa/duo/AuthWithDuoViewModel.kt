@@ -69,7 +69,7 @@ class AuthWithDuoViewModel(
                 when (val result = getDuoPromptUseCase.execute(GetDuoPromptUseCase.Input(token))) {
                     is DuoPromptUrlNotFound ->
                         emitSideEffect(ShowErrorSnackbar(GENERIC))
-                    is Failure<*> ->
+                    is Failure ->
                         emitSideEffect(ShowErrorSnackbar(GENERIC))
                     is NetworkFailure ->
                         emitSideEffect(ShowErrorSnackbar(GENERIC))
@@ -109,7 +109,7 @@ class AuthWithDuoViewModel(
                 ) {
                     is VerifyDuoCallbackUseCase.Output.Error ->
                         emitSideEffect(ShowErrorSnackbar(GENERIC))
-                    is VerifyDuoCallbackUseCase.Output.Failure<*> ->
+                    is VerifyDuoCallbackUseCase.Output.Failure ->
                         emitSideEffect(ShowErrorSnackbar(GENERIC))
                     is VerifyDuoCallbackUseCase.Output.Unauthorized -> {
                         if (backgroundSessionRefreshSucceeded()) {

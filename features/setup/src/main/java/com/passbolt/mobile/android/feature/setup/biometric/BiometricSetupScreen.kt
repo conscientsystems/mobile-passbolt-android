@@ -23,11 +23,9 @@
 
 package com.passbolt.mobile.android.feature.setup.biometric
 
-import PassboltTheme
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -56,7 +54,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.Setup
@@ -108,7 +108,7 @@ fun BiometricSetupScreen(
         when (sideEffect) {
             is ShowBiometricPrompt ->
                 showBiometricPrompt(
-                    activity = environment.context as AppCompatActivity,
+                    activity = environment.context as FragmentActivity,
                     executor = environment.executor,
                     biometricPromptBuilder = environment.biometricPromptBuilder,
                     biometricEncryptionCipher = sideEffect.cipher,

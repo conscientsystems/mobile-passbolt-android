@@ -37,16 +37,22 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.accounts.AccountSwitchFlow
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.commontest.session.validSessionTestModule
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.UNKNOWN
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
+import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
-import com.passbolt.mobile.android.entity.home.HomeDisplayView
+import com.passbolt.mobile.android.domain.accounts.AccountSwitchFlow
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor
+import com.passbolt.mobile.android.domain.users.profile.UserProfileRefreshTrackingFlow
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CloseSwitchAccount
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateFolder
@@ -54,6 +60,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateNote
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreatePassword
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.CreateTotp
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.Initialize
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OnResume
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.Search
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.SearchEndIconAction
@@ -66,6 +73,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeSideEffect.ShowSucces
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel.DoNotShow
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_TO_REFRESH_DATA
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
+import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.PROFILE_FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.FOLDER_CREATED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_CREATED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_DELETED
@@ -76,19 +84,17 @@ import com.passbolt.mobile.android.feature.home.screen.data.HomeDataProvider
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
-import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
-import com.passbolt.mobile.android.ui.DefaultFilterModel
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel
 import com.passbolt.mobile.android.ui.Folder
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
-import com.passbolt.mobile.android.ui.HomeDisplayViewModel.AllItems
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel.NotLoaded
+import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel
 import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
 import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.MetadataJsonModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -138,13 +144,18 @@ class HomeViewModelTest : KoinTest {
                     singleOf(::DataRefreshTrackingFlow)
                     singleOf(::SessionRefreshTrackingFlow)
                     single { mock<GetSelectedAccountDataUseCase>() }
-                    single { mock<GetHomeDisplayViewPrefsUseCase>() }
-                    single { mock<HomeDisplayViewMapper>() }
+                    single { mock<GetSelectedAccountUseCase> { on { execute(Unit) } doReturn GetSelectedAccountUseCase.Output("userId") } }
+                    single { mock<GetHomeDisplayViewPreferencesUseCase>() }
                     single { mock<HomeDataProvider>() }
                     single { mock<GetLocalFolderDetailsUseCase>() }
-                    single { mock<CanCreateResourceUseCase>() }
-                    single { mock<CanShareResourceUseCase>() }
+                    single { mock<ResourceAccessInteractor>() }
                     single { mock<DetectAutofillConflict>() }
+                    single {
+                        mock<UserProfileInteractor> {
+                            onBlocking { fetchAndUpdateUserProfile() } doReturn UserProfileInteractor.Output.Success
+                        }
+                    }
+                    singleOf(::UserProfileRefreshTrackingFlow)
                     single { AccountSwitchFlow(mock { on { execute(any()) } doReturn GetSelectedAccountUseCase.Output("id1") }) }
                     single(named(JSON_MODEL_GSON)) { GsonBuilder().serializeNulls().create() }
                     single {
@@ -158,6 +169,7 @@ class HomeViewModelTest : KoinTest {
                     singleOf(::JsonPathJsonPathOps) bind JsonPathsOps::class
                     factoryOf(::HomeViewModel)
                 },
+                validSessionTestModule,
             )
         }
 
@@ -181,14 +193,12 @@ class HomeViewModelTest : KoinTest {
             ),
         )
 
-        whenever(get<GetHomeDisplayViewPrefsUseCase>().execute(any())).thenReturn(
-            GetHomeDisplayViewPrefsUseCase.Output(
-                lastUsedHomeView = HomeDisplayView.ALL_ITEMS,
-                userSetHomeView = DefaultFilterModel.ALL_ITEMS,
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)).thenReturn(
+            HomeDisplayViewPreferencesUiModel(
+                lastUsedHomeView = HomeDisplayViewUiModel.ALL_ITEMS,
+                userSetHomeView = DefaultFilterUiModel.ALL_ITEMS,
             ),
         )
-
-        whenever(get<HomeDisplayViewMapper>().map(any(), any())).thenReturn(AllItems)
 
         get<HomeDataProvider>().stub {
             onBlocking {
@@ -201,12 +211,9 @@ class HomeViewModelTest : KoinTest {
             }.doReturn(HomeData())
         }
 
-        get<CanCreateResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanCreateResourceUseCase.Output(canCreateResource = true))
-        }
-
-        get<CanShareResourceUseCase>().stub {
-            onBlocking { execute(any()) }.doReturn(CanShareResourceUseCase.Output(canShareResource = true))
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) }.doReturn(true)
+            onBlocking { canShareResource() }.doReturn(true)
         }
     }
 
@@ -235,6 +242,25 @@ class HomeViewModelTest : KoinTest {
             viewModel = get()
 
             assertThat(viewModel.viewState.value.userAvatar).isEqualTo(avatar)
+        }
+
+    @Test
+    fun `should show error snackbar when profile refresh fails on init`() =
+        runTest {
+            val errorMessage = "profile fetch failed"
+            get<UserProfileInteractor>().stub {
+                onBlocking { fetchAndUpdateUserProfile() } doReturn
+                    UserProfileInteractor.Output.Failure(DomainResult.Incomplete.Error(UNKNOWN, errorMessage))
+            }
+
+            viewModel = get()
+
+            viewModel.sideEffect.test {
+                val effect = awaitItem()
+                assertIs<ShowErrorSnackbar>(effect)
+                assertThat(effect.type).isEqualTo(PROFILE_FETCH_FAILURE)
+                assertThat(effect.message).isEqualTo(errorMessage)
+            }
         }
 
     @Test
@@ -404,7 +430,7 @@ class HomeViewModelTest : KoinTest {
             viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
 
             viewModel.viewState.drop(2).test {
-                dataRefreshFlow.updateStatus(InProgress)
+                dataRefreshFlow.updateStatus(InProgress(progress = 0f))
                 val inProgress = awaitItem()
                 assertThat(inProgress.isRefreshing).isTrue()
                 assertThat(inProgress.canCreateResource).isFalse()
@@ -417,6 +443,25 @@ class HomeViewModelTest : KoinTest {
         }
 
     @Test
+    fun `should show create button from local data without refresh in autofill context`() =
+        runTest {
+            mockHomeData()
+            mockCanCreateResource(true)
+
+            viewModel = get()
+
+            viewModel.viewState.test {
+                viewModel.onIntent(Initialize(DoNotShow, NotLoaded, appContext = AppContext.AUTOFILL))
+
+                var state = awaitItem()
+                while (!state.canCreateResource) {
+                    state = awaitItem()
+                }
+                assertThat(state.isRefreshing).isFalse()
+            }
+        }
+
+    @Test
     fun `should show error on refresh failure`() =
         runTest {
             val dataRefreshFlow: DataRefreshTrackingFlow = get()
@@ -425,7 +470,7 @@ class HomeViewModelTest : KoinTest {
             viewModel.onIntent(Initialize(DoNotShow, null))
 
             viewModel.viewState.drop(2).test {
-                dataRefreshFlow.updateStatus(InProgress)
+                dataRefreshFlow.updateStatus(InProgress(progress = 0f))
                 val inProgress = awaitItem()
                 assertThat(inProgress.isRefreshing).isTrue()
                 assertThat(inProgress.canCreateResource).isFalse()
@@ -611,7 +656,7 @@ class HomeViewModelTest : KoinTest {
 
             clearInvocations(provider)
 
-            dataRefreshFlow.updateStatus(InProgress)
+            dataRefreshFlow.updateStatus(InProgress(progress = 0f))
             dataRefreshFlow.updateStatus(FinishedWithSuccess)
             advanceUntilIdle()
 
@@ -651,13 +696,65 @@ class HomeViewModelTest : KoinTest {
             assertThat(viewModel.viewState.value.homeData).isEqualTo(newHomeData)
         }
 
-    private fun mockCanCreateResource(canCreate: Boolean) {
-        get<CanCreateResourceUseCase>().stub {
-            onBlocking {
-                execute(any())
-            }.doReturn(
-                CanCreateResourceUseCase.Output(canCreateResource = canCreate),
+    @Test
+    fun `should reload home data and avatar on resume when selected account changed`() =
+        runTest {
+            mockHomeData()
+            // first read (initialize) returns the initial account, second read (resume) a new one
+            whenever(get<GetSelectedAccountUseCase>().execute(Unit)).thenReturn(
+                GetSelectedAccountUseCase.Output("id1"),
+                GetSelectedAccountUseCase.Output("id2"),
             )
+
+            viewModel = get()
+            viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
+            advanceUntilIdle()
+
+            val newAvatar = "new_avatar_url"
+            whenever(get<GetSelectedAccountDataUseCase>().execute(anyOrNull())).thenReturn(
+                GetSelectedAccountDataUseCase.Output(
+                    firstName = "New",
+                    lastName = "User",
+                    email = "new@passbolt.com",
+                    avatarUrl = newAvatar,
+                    url = "www.passbolt.com",
+                    serverId = "2",
+                    label = "label2",
+                    role = "user",
+                ),
+            )
+            val newHomeData = mockResourcesData()
+            whenever(get<HomeDataProvider>().provideData(any(), any(), any(), any())).thenReturn(newHomeData)
+
+            viewModel.onIntent(OnResume)
+            advanceUntilIdle()
+
+            assertThat(viewModel.viewState.value.userAvatar).isEqualTo(newAvatar)
+            assertThat(viewModel.viewState.value.homeData).isEqualTo(newHomeData)
+        }
+
+    @Test
+    fun `should not reload home data on resume when selected account unchanged`() =
+        runTest {
+            mockHomeData()
+            whenever(get<GetSelectedAccountUseCase>().execute(Unit)).thenReturn(GetSelectedAccountUseCase.Output("id1"))
+            val provider: HomeDataProvider = get()
+
+            viewModel = get()
+            viewModel.onIntent(Initialize(DoNotShow, NotLoaded))
+            advanceUntilIdle()
+
+            clearInvocations(provider)
+
+            viewModel.onIntent(OnResume)
+            advanceUntilIdle()
+
+            verify(provider, never()).provideData(any(), any(), any(), any())
+        }
+
+    private fun mockCanCreateResource(canCreate: Boolean) {
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) }.doReturn(canCreate)
         }
     }
 
@@ -691,7 +788,7 @@ class HomeViewModelTest : KoinTest {
     private fun mockResourceModel(
         id: String,
         name: String,
-    ) = ResourceModel(
+    ) = ResourceUiModel(
         resourceId = id,
         resourceTypeId = "resTypeId",
         slug = "password-and-description",

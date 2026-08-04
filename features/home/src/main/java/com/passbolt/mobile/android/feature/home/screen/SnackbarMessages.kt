@@ -12,6 +12,7 @@ import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FAILED_TO_VERIFY_METADATA_KEYS
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.NO_SHARED_KEY_ACCESS
+import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.PROFILE_FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.RESOURCE_SCHEMA_INVALID
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.SECRET_SCHEMA_INVALID
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.TOGGLE_FAVOURITE_FAILURE
@@ -58,6 +59,7 @@ internal fun getSuccessMessage(
             )
     }
 
+@Suppress("CyclomaticComplexMethod")
 internal fun getErrorMessage(
     context: Context,
     type: SnackbarErrorType,
@@ -79,5 +81,13 @@ internal fun getErrorMessage(
         FAILED_TO_TRUST_METADATA_KEY -> context.getString(LocalizationR.string.common_metadata_key_trust_failed)
         FAILED_TO_REFRESH_DATA -> context.getString(LocalizationR.string.common_data_refresh_error)
         NO_SHARED_KEY_ACCESS -> context.getString(LocalizationR.string.common_lack_shared_key_access)
+        PROFILE_FETCH_FAILURE -> {
+            val base = context.getString(LocalizationR.string.auth_error_profile_fetch_failure)
+            if (!additionalErrorMessage.isNullOrBlank()) {
+                "$base($additionalErrorMessage)"
+            } else {
+                base
+            }
+        }
         TOGGLE_FAVOURITE_FAILURE -> context.getString(LocalizationR.string.favourites_failure)
     }

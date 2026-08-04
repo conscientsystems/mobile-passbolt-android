@@ -39,7 +39,6 @@ import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.Ap
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.CloseConfirmationDialog
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.ConfirmOtpLink
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.GoBack
-import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.Initialize
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.ResourcePicked
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.Search
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.SearchEndIconAction
@@ -54,23 +53,21 @@ import com.passbolt.mobile.android.supportedresourceTypes.ContentType
 import com.passbolt.mobile.android.ui.ResourcePickerListItem
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_NO_PERMISSION
 import com.passbolt.mobile.android.ui.ResourcePickerListItem.Selection.NOT_SELECTABLE_UNSUPPORTED_RESOURCE_TYPE
-import com.passbolt.mobile.android.ui.selectedOnly
 import kotlinx.coroutines.launch
 
 internal class ResourcePickerViewModel(
+    private val suggestionUri: String?,
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val resourcePickerDataProvider: ResourcePickerDataProvider,
 ) : SideEffectViewModel<ResourcePickerState, ResourcePickerSideEffect>(ResourcePickerState()) {
-    private var suggestionUri: String? = null
-
     init {
+        loadResources()
         synchronizeWithDataRefresh()
     }
 
     fun onIntent(intent: ResourcePickerIntent) {
         when (intent) {
-            is Initialize -> initialize(intent.suggestionUri)
             is Search -> searchQueryChanged(intent.searchQuery)
             is ResourcePicked -> resourcePicked(intent.resource)
             is ConfirmOtpLink -> confirmOtpLink(intent.pickAction)
@@ -79,11 +76,6 @@ internal class ResourcePickerViewModel(
             CloseConfirmationDialog -> updateViewState { copy(showConfirmationDialog = false) }
             GoBack -> emitSideEffect(NavigateUp)
         }
-    }
-
-    private fun initialize(suggestionUri: String?) {
-        this.suggestionUri = suggestionUri
-        loadResources()
     }
 
     private fun searchQueryChanged(query: String) {
@@ -115,23 +107,10 @@ internal class ResourcePickerViewModel(
 
     private fun resourcePicked(resource: ResourcePickerListItem) {
         if (resource.isSelectable) {
-            val resourceId = resource.resourceModel.resourceId
-            val updatedSuggestedResources =
-                viewState.value.resourcePickerData.suggestedResources
-                    .selectedOnly(resourceId)
-            val updatedResources =
-                viewState.value.resourcePickerData.resources
-                    .selectedOnly(resourceId)
-
             updateViewState {
                 copy(
                     pickedResource = resource,
                     isApplyButtonEnabled = true,
-                    resourcePickerData =
-                        resourcePickerData.copy(
-                            suggestedResources = updatedSuggestedResources,
-                            resources = updatedResources,
-                        ),
                 )
             }
         } else {
@@ -185,18 +164,7 @@ internal class ResourcePickerViewModel(
                     suggestionUri = suggestionUri,
                 )
 
-            // Restore selection if exists
-            val pickedResourceId =
-                viewState.value.pickedResource
-                    ?.resourceModel
-                    ?.resourceId
-            val updatedData =
-                data.copy(
-                    suggestedResources = data.suggestedResources.selectedOnly(pickedResourceId),
-                    resources = data.resources.selectedOnly(pickedResourceId),
-                )
-
-            updateViewState { copy(resourcePickerData = updatedData) }
+            updateViewState { copy(resourcePickerData = data) }
         }
     }
 
@@ -204,7 +172,7 @@ internal class ResourcePickerViewModel(
         viewModelScope.launch(coroutineLaunchContext.ui) {
             dataRefreshTrackingFlow.dataRefreshStatusFlow.collect { status ->
                 when (status) {
-                    InProgress -> updateViewState { copy(isRefreshing = true) }
+                    is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = status.progress) }
                     FinishedWithFailure -> {
                         emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                         updateViewState { copy(isRefreshing = false) }

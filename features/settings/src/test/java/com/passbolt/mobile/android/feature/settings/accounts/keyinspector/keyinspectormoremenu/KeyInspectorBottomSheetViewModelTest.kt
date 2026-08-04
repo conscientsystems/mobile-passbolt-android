@@ -25,9 +25,12 @@ package com.passbolt.mobile.android.feature.settings.accounts.keyinspector.keyin
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.passbolt.mobile.android.common.usecase.UserIdInput
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.ExportPrivateKey
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.ExportPublicKey
 import com.passbolt.mobile.android.feature.settings.screen.accounts.keyinspector.keyinspectormoremenu.KeyInspectorBottomSheetIntent.RefreshedPassphrase
@@ -73,7 +76,8 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<GetSelectedUserPrivateKeyUseCase>() }
+                        single { mock<GetSelectedAccountUseCase>() }
+                        single { mock<GetPrivateKeyUseCase>() }
                         single { mock<OpenPgp>() }
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factoryOf(::KeyInspectorBottomSheetViewModel)
@@ -101,9 +105,12 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
     fun `should show share sheet for exporting private key`() =
         runTest {
             val mockPrivateKey = "PrivateKey"
-            val getSelectedUserPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase = get()
-            whenever(getSelectedUserPrivateKeyUseCase.execute(Unit)) doReturn
-                GetSelectedUserPrivateKeyUseCase.Output(mockPrivateKey)
+            val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
+            whenever(getSelectedAccountUseCase.execute(Unit)) doReturn
+                GetSelectedAccountUseCase.Output("userId")
+            val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
+            whenever(getPrivateKeyUseCase.execute(UserIdInput("userId"))) doReturn
+                GetPrivateKeyUseCase.Output(PrivateKey(mockPrivateKey))
 
             viewModel = get()
             viewModel.onIntent(ExportPrivateKey)
@@ -126,9 +133,12 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
         runTest {
             val mockPrivateKey = "PrivateKey"
             val mockPublicKey = "PublicKey"
-            val getSelectedUserPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase = get()
-            whenever(getSelectedUserPrivateKeyUseCase.execute(Unit)) doReturn
-                GetSelectedUserPrivateKeyUseCase.Output(mockPrivateKey)
+            val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
+            whenever(getSelectedAccountUseCase.execute(Unit)) doReturn
+                GetSelectedAccountUseCase.Output("userId")
+            val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
+            whenever(getPrivateKeyUseCase.execute(UserIdInput("userId"))) doReturn
+                GetPrivateKeyUseCase.Output(PrivateKey(mockPrivateKey))
 
             val mockOpenPgp = get<OpenPgp>()
             whenever(mockOpenPgp.generatePublicKey(mockPrivateKey)) doReturn
@@ -155,9 +165,12 @@ class KeyInspectorBottomSheetViewModelTest : KoinTest {
         runTest {
             val mockPrivateKey = "PrivateKey"
             val errorMessage = "errorMessage"
-            val getSelectedUserPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase = get()
-            whenever(getSelectedUserPrivateKeyUseCase.execute(Unit)) doReturn
-                GetSelectedUserPrivateKeyUseCase.Output(mockPrivateKey)
+            val getSelectedAccountUseCase: GetSelectedAccountUseCase = get()
+            whenever(getSelectedAccountUseCase.execute(Unit)) doReturn
+                GetSelectedAccountUseCase.Output("userId")
+            val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
+            whenever(getPrivateKeyUseCase.execute(UserIdInput("userId"))) doReturn
+                GetPrivateKeyUseCase.Output(PrivateKey(mockPrivateKey))
 
             val mockOpenPgp = get<OpenPgp>()
             whenever(mockOpenPgp.generatePublicKey(mockPrivateKey)) doReturn

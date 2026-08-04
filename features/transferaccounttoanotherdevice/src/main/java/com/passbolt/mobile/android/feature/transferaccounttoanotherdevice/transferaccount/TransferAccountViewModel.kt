@@ -2,10 +2,13 @@ package com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.trans
 
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.viewModelScope
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
+import com.passbolt.mobile.android.core.architecture.result.displayMessage
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.TransferAccountIdlingResource
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
+import com.passbolt.mobile.android.domain.mobiletransfer.usecase.CreateTransferUseCase
+import com.passbolt.mobile.android.domain.mobiletransfer.usecase.ViewTransferUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.TransferAccountIntent.CancelTransfer
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.TransferAccountIntent.ConfirmCancelTransfer
@@ -19,8 +22,6 @@ import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transf
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.TransferAccountScreenSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data.CreateTransferInputParametersGenerator
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data.TransferQrCodesDataGenerator
-import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.usecase.CreateTransferUseCase
-import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.usecase.ViewTransferUseCase
 import com.passbolt.mobile.android.ui.Status
 import com.passbolt.mobile.android.ui.TransferAccountStatusType
 import kotlinx.coroutines.Job
@@ -105,10 +106,9 @@ internal class TransferAccountViewModel(
                     )
                 }
         ) {
-            is CreateTransferUseCase.Output.Failure<*> -> {
-                val headerMessage = response.response.headerMessage
-                emitSideEffect(ShowErrorSnackbar(FAILED_TO_CREATE_TRANSFER, headerMessage))
-                Timber.e("Could not create transfer: $headerMessage")
+            is CreateTransferUseCase.Output.Failure -> {
+                emitSideEffect(ShowErrorSnackbar(FAILED_TO_CREATE_TRANSFER, response.incomplete.displayMessage()))
+                Timber.e("Could not create transfer. Failure: ${response.incomplete}")
             }
             is CreateTransferUseCase.Output.Success -> {
                 Timber.d("Transfer created.")
@@ -158,11 +158,12 @@ internal class TransferAccountViewModel(
         transferPollingJob =
             viewModelScope.launch {
                 while (shouldLoopForTransfer(totalPageCount)) {
+                    val session = getSessionUseCase.execute(Unit)
                     val accessToken =
                         "Bearer %s".format(
-                            requireNotNull(getSessionUseCase.execute(Unit).accessToken),
+                            requireNotNull(session.accessToken),
                         )
-                    val mfaCookie = getSessionUseCase.execute(Unit).mfaToken
+                    val mfaCookie = session.mfaToken
 
                     delay(GET_TRANSFER_LOOP_INTERVAL_DELAY_MILLIS)
                     when (
@@ -171,13 +172,10 @@ internal class TransferAccountViewModel(
                                 viewTransferUseCase.execute(ViewTransferUseCase.Input(accessToken, mfaCookie, transferId))
                             }
                     ) {
-                        is ViewTransferUseCase.Output.Failure<*> -> {
-                            Timber.e("Error during transfer details fetch: %s", response.response.headerMessage)
+                        is ViewTransferUseCase.Output.Failure -> {
+                            Timber.e("Error during transfer details fetch. Failure: %s", response.incomplete)
                             emitSideEffect(
-                                ShowErrorSnackbar(
-                                    FAILED_TO_FETCH_TRANSFER_DETAILS,
-                                    response.response.headerMessage,
-                                ),
+                                ShowErrorSnackbar(FAILED_TO_FETCH_TRANSFER_DETAILS, response.incomplete.displayMessage()),
                             )
                         }
                         is ViewTransferUseCase.Output.Success -> {

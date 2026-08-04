@@ -45,6 +45,7 @@ import com.passbolt.mobile.android.feature.authentication.AuthenticationMainActi
 import com.passbolt.mobile.android.helpers.chooseFilter
 import com.passbolt.mobile.android.helpers.getString
 import com.passbolt.mobile.android.helpers.signIn
+import com.passbolt.mobile.android.helpers.waitForText
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
 import com.passbolt.mobile.android.rules.IdlingResourceRule
@@ -235,6 +236,7 @@ class FolderCreationTest : KoinTest {
                 onAllNodesWithTag(Home.FAB).fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithTag(Home.FAB).performClick()
+            waitForText(getString(LocalisationR.string.create_resource_menu_create_folder))
             onNodeWithText(getString(LocalisationR.string.create_resource_menu_create_folder)).performClick()
             onNodeWithTag(CreateFolder.NAME_INPUT, useUnmergedTree = true)
                 .performClick()

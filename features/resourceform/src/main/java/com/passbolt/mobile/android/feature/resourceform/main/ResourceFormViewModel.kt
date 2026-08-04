@@ -6,17 +6,15 @@ import com.passbolt.mobile.android.common.validation.StringMaxLength
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.CreateResourceIdlingResource
 import com.passbolt.mobile.android.core.idlingresource.UpdateResourceIdlingResource
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.passwordgenerator.PinCodeGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
+import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy
+import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator.SecretGenerationResult.Success
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.toCodepoints
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
+import com.passbolt.mobile.android.core.passwordgenerator.entropy.toPasswordStrength
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
-import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.performResourceCreateAction
-import com.passbolt.mobile.android.core.resources.actions.performResourceUpdateAction
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_NOTE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.ADD_PASSWORD
@@ -30,19 +28,32 @@ import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAct
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_PASSWORD
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_PIN_CODE
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.UpdateAction.REMOVE_TOTP
+import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.domain.metadata.usecase.GetMetadataTypesSettingsUseCase
+import com.passbolt.mobile.android.domain.passwordexpiry.usecase.PasswordExpiryPoliciesInteractor
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.PasswordPoliciesInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.performResourceCreateAction
+import com.passbolt.mobile.android.domain.resources.actions.performResourceUpdateAction
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteFormViewModel
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.NoteValidationError.MaxLengthExceeded
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeValidationError
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustBeBase32
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpSecretValidationError.MustNotBeEmpty
+import com.passbolt.mobile.android.feature.resourceform.main.GetOrLoadGeneratorSettingsUseCase.Input
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdditionalUrisResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdvancedSecretGenerationResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AppearanceResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CreateResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CustomFieldsResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DescriptionResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissMetadataKeyDialog
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissPasswordWarning
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DismissUnableToGeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ExpandAdvancedSettings
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GeneratePinCode
@@ -50,13 +61,18 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalNote
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPassword
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalPinCode
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAdditionalUris
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToAppearance
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToMetadataDescription
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToPinCodeAdvancedGeneration
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.GoToTotpMoreSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.LearnMoreAboutUpgrade
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NameTextChanged
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.NoteResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.OpenAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordMainUriTextChanged
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PasswordTextChanged
@@ -66,6 +82,7 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.PinCodeResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ProceedWithPasswordWarning
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanOtpResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.ScanTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpAdvancedSettingsResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TotpSecretChanged
@@ -73,10 +90,12 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TrustNewMetadataKey
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.TrustedMetadataKeyDeleted
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.UpdateResource
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.UpgradeResource
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithCreateSuccess
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateBackWithEditSuccess
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdditionalUris
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAdvancedSecretGeneration
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToAppearance
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToCustomFields
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToDescription
@@ -87,12 +106,13 @@ import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEff
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToScanOtp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotp
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.NavigateToTotpAdvancedSettings
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.OpenWebsite
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowSnackbar
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormSideEffect.ShowToast
+import com.passbolt.mobile.android.feature.resourceform.navigation.AdvancedSecretGenerationFormResult
+import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
-import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
-import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.ui.AdditionalUrisUiModel
 import com.passbolt.mobile.android.ui.Entropy
@@ -105,8 +125,10 @@ import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataIconModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.OtpParseResult
-import com.passbolt.mobile.android.ui.PasswordGeneratorTypeModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorTypeUiModel
+import com.passbolt.mobile.android.ui.PasswordUiModel
 import com.passbolt.mobile.android.ui.PinCodeUiModel
+import com.passbolt.mobile.android.ui.ResourceAppearanceModel
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.DEFAULT_BACKGROUND_COLOR_HEX_STRING
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_KEEPASS
 import com.passbolt.mobile.android.ui.ResourceAppearanceModel.Companion.ICON_TYPE_PASSBOLT
@@ -115,6 +137,9 @@ import com.passbolt.mobile.android.ui.ResourceFormMode.Create
 import com.passbolt.mobile.android.ui.ResourceFormMode.Edit
 import com.passbolt.mobile.android.ui.ResourceFormUiModel
 import com.passbolt.mobile.android.ui.TotpUiModel
+import com.passbolt.mobile.android.ui.contentType
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import timber.log.Timber
@@ -123,9 +148,13 @@ import timber.log.Timber
 class ResourceFormViewModel(
     private val mode: ResourceFormMode,
     private val getPasswordPoliciesUseCase: GetPasswordPoliciesUseCase,
+    private val getOrLoadGeneratorSettingsUseCase: GetOrLoadGeneratorSettingsUseCase,
+    private val passwordPoliciesInteractor: PasswordPoliciesInteractor,
+    private val getFeatureFlagsUseCase: GetFeatureFlagsUseCase,
+    private val passwordExpiryPoliciesInteractor: PasswordExpiryPoliciesInteractor,
+    private val coroutineLaunchContext: CoroutineLaunchContext,
     private val secretGenerator: SecretGenerator,
     private val pinCodeGenerator: PinCodeGenerator,
-    private val entropyViewMapper: EntropyViewMapper,
     private val entropyCalculator: EntropyCalculator,
     private val resourceFormMapper: ResourceFormMapper,
     private val resourceModelHandler: ResourceModelHandler,
@@ -136,6 +165,7 @@ class ResourceFormViewModel(
     private val updateResourceIdlingResource: UpdateResourceIdlingResource,
     private val resourceUpdateActionsInteractorFactory: ResourceUpdateActionsInteractorFactory,
     private val checkPasswordPropertiesUseCase: CheckPasswordPropertiesUseCase,
+    private val getMetadataTypesSettingsUseCase: GetMetadataTypesSettingsUseCase,
 ) : SideEffectViewModel<ResourceFormState, ResourceFormSideEffect>(ResourceFormState(mode = mode)),
     KoinComponent {
     private val uiModel: ResourceFormUiModel by lazy {
@@ -156,13 +186,17 @@ class ResourceFormViewModel(
             UpdateResource -> updateResource()
             is PasswordTextChanged -> passwordTextChanged(intent.password)
             GeneratePassword -> generatePassword()
+            DismissUnableToGeneratePassword ->
+                updateViewState { copy(isUnableToGeneratePasswordDialogVisible = false) }
+            OpenAdvancedSecretGeneration -> openAdvancedSecretGeneration()
+            is AdvancedSecretGenerationResult -> advancedSecretGenerationResult(intent.result)
             is PasswordMainUriTextChanged -> passwordMainUriTextChanged(intent.mainUri)
             is PasswordUsernameTextChanged -> passwordUsernameTextChanged(intent.username)
             is TotpSecretChanged -> totpSecretChanged(intent.totpSecret)
             is TotpUrlChanged -> totpUrlChanged(intent.url)
-            is ResourceFormIntent.GoToTotpMoreSettings -> goToTotpMoreSettings()
-            is ResourceFormIntent.ScanTotp -> scanTotp()
-            is ResourceFormIntent.NoteChanged -> noteChanged(intent.note)
+            GoToTotpMoreSettings -> goToTotpMoreSettings()
+            ScanTotp -> scanTotp()
+            is NoteChanged -> noteChanged(intent.note)
             is PinCodeChanged -> pinCodeChanged(intent.pinCode)
             GeneratePinCode -> generatePinCode(viewState.value.pinCodeData.length)
             GoToPinCodeAdvancedGeneration -> goToPinCodeAdvancedGeneration()
@@ -170,7 +204,8 @@ class ResourceFormViewModel(
             GoToAdditionalNote -> goToAdditionalNote()
             GoToAdditionalPassword -> goToAdditionalPassword()
             GoToAdditionalPinCode -> goToAdditionalPinCode()
-            is ResourceFormIntent.GoToAdditionalTotp -> goToAdditionalTotp()
+            is GoToAdditionalTotp -> goToAdditionalTotp()
+            GoToAdditionalTotp -> goToAdditionalTotp()
             GoToCustomFields -> goToCustomFields()
             GoToMetadataDescription -> goToMetadataDescription()
             GoToAppearance -> goToAppearance()
@@ -190,6 +225,8 @@ class ResourceFormViewModel(
             DismissMetadataKeyDialog -> dismissMetadataKeyDialog()
             ProceedWithPasswordWarning -> proceedWithPasswordWarning()
             DismissPasswordWarning -> dismissPasswordWarning()
+            UpgradeResource -> upgradeResource()
+            LearnMoreAboutUpgrade -> emitSideEffect(OpenWebsite(LEARN_MORE_UPGRADE_URL))
             GoBack -> goBack()
         }
     }
@@ -211,6 +248,10 @@ class ResourceFormViewModel(
     private fun initialize() {
         launch {
             updateViewState { copy(shouldShowScreenProgress = true) }
+            awaitAll(
+                async(coroutineLaunchContext.io) { fetchPasswordPolicies() },
+                async(coroutineLaunchContext.io) { fetchPasswordExpiry() },
+            )
             dataRefreshTrackingFlow.awaitIdle()
             when (mode) {
                 is Create -> {
@@ -241,15 +282,49 @@ class ResourceFormViewModel(
         }
     }
 
+    private suspend fun fetchPasswordPolicies() {
+        if (getFeatureFlagsUseCase.execute(Unit).featureFlags.arePasswordPoliciesAvailable) {
+            Timber.d("Password policies available, fetching password policies settings")
+            when (val output = runAuthenticatedOperation { passwordPoliciesInteractor.fetchAndSavePasswordPolicies() }) {
+                is PasswordPoliciesInteractor.Output.Success ->
+                    Timber.d("Password policies fetched")
+                is PasswordPoliciesInteractor.Output.Failure -> {
+                    Timber.e("Failed to fetch password policies, using default values")
+                    emitSideEffect(ShowSnackbar(SnackbarMessage.PASSWORD_POLICIES_FETCH_FAILED))
+                }
+            }
+        } else {
+            Timber.d("Password policies not available")
+        }
+    }
+
+    private suspend fun fetchPasswordExpiry() {
+        if (getFeatureFlagsUseCase.execute(Unit).featureFlags.isPasswordExpiryAvailable) {
+            Timber.d("Password expiry available, fetching password expiry settings")
+            when (val output = runAuthenticatedOperation { passwordExpiryPoliciesInteractor.fetchAndSavePasswordExpiryPolicies() }) {
+                is PasswordExpiryPoliciesInteractor.Output.Success ->
+                    Timber.d("Password expiry fetched")
+                is PasswordExpiryPoliciesInteractor.Output.Failure -> {
+                    Timber.e("Failed to fetch password expiry, using default values")
+                    emitSideEffect(ShowSnackbar(SnackbarMessage.PASSWORD_EXPIRY_FETCH_FAILED))
+                }
+            }
+        } else {
+            Timber.d("Password expiry not available")
+        }
+    }
+
     private suspend fun setupState() {
         val leadingContentType = uiModel.leadingContentType
         val areAdvancedSettingsExpanded = viewState.value.areAdvancedSettingsExpanded
+        val showUpgradePanel = computeShowUpgradePanel()
 
         updateViewState {
             copy(
                 name = resourceModelHandler.resourceMetadata.name,
                 leadingContentType = leadingContentType,
                 isPrimaryButtonVisible = true,
+                showUpgradePanel = showUpgradePanel,
             )
         }
 
@@ -289,7 +364,7 @@ class ResourceFormViewModel(
             PASSWORD -> {
                 val password = resourceSecret.getPassword(contentType).orEmpty()
                 val entropy = entropyCalculator.getSecretEntropy(password)
-                val passwordStrength = entropyViewMapper.map(Entropy.parse(entropy))
+                val passwordStrength = Entropy.parse(entropy).toPasswordStrength()
                 updateViewState {
                     copy(
                         passwordData =
@@ -360,7 +435,7 @@ class ResourceFormViewModel(
                 copy(
                     passwordData =
                         passwordData.copy(
-                            passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
+                            passwordStrength = Entropy.parse(entropy).toPasswordStrength(),
                             passwordEntropyBits = entropy,
                         ),
                 )
@@ -370,42 +445,98 @@ class ResourceFormViewModel(
 
     private fun generatePassword() {
         launch {
-            val passwordPolicies = getPasswordPoliciesUseCase.execute(Unit)
+            val (type, passwordSettings, passphraseSettings) = getOrLoadGeneratorSettings()
             val secretGenerationResult =
-                when (passwordPolicies.defaultGenerator) {
-                    PasswordGeneratorTypeModel.PASSWORD ->
-                        secretGenerator.generatePassword(passwordPolicies.passwordGeneratorSettings)
-                    PasswordGeneratorTypeModel.PASSPHRASE ->
-                        secretGenerator.generatePassphrase(passwordPolicies.passphraseGeneratorSettings)
+                when (type) {
+                    PasswordGeneratorTypeUiModel.PASSWORD ->
+                        secretGenerator.generatePassword(passwordSettings)
+                    PasswordGeneratorTypeUiModel.PASSPHRASE ->
+                        secretGenerator.generatePassphrase(passphraseSettings)
                 }
             when (secretGenerationResult) {
-                is SecretGenerator.SecretGenerationResult.FailedToGenerateLowEntropy ->
-                    emitSideEffect(
-                        ShowToast(
-                            ToastMessage.UNABLE_TO_GENERATE_PASSWORD,
-                            listOf(secretGenerationResult.minimumEntropyBits),
-                        ),
-                    )
-                is SecretGenerator.SecretGenerationResult.Success -> {
+                is FailedToGenerateLowEntropy ->
+                    updateViewState {
+                        copy(
+                            isUnableToGeneratePasswordDialogVisible = true,
+                            minimumEntropyBits = secretGenerationResult.minimumEntropyBits,
+                        )
+                    }
+                is Success -> {
                     val password = secretGenerationResult.password
                     val entropy = secretGenerationResult.entropy
                     val passwordStr = password.map { Character.toChars(it.value) }.joinToString("") { String(it) }
-                    resourceModelHandler.applyModelChange(ADD_PASSWORD) { _, secret ->
-                        secret.setPassword(resourceModelHandler.contentType, passwordStr)
-                    }
-                    updateViewState {
-                        copy(
-                            passwordData =
-                                passwordData.copy(
-                                    password = passwordStr,
-                                    passwordStrength = entropyViewMapper.map(Entropy.parse(entropy)),
-                                    passwordEntropyBits = entropy,
-                                ),
-                        )
-                    }
+                    applyGeneratedPassword(passwordStr, entropy)
                 }
             }
         }
+    }
+
+    private fun openAdvancedSecretGeneration() {
+        launch {
+            val (type, passwordSettings, passphraseSettings) = getOrLoadGeneratorSettings()
+            emitSideEffect(
+                NavigateToAdvancedSecretGeneration(
+                    selectedTab = type,
+                    passwordSettings = passwordSettings,
+                    passphraseSettings = passphraseSettings,
+                ),
+            )
+        }
+    }
+
+    private fun advancedSecretGenerationResult(result: AdvancedSecretGenerationFormResult) {
+        updateViewState {
+            copy(
+                generatorType = result.selectedTab,
+                passwordGeneratorSettings = result.passwordSettings,
+                passphraseGeneratorSettings = result.passphraseSettings,
+            )
+        }
+        launch {
+            val entropy = entropyCalculator.getSecretEntropy(result.generatedSecret)
+            applyGeneratedPassword(result.generatedSecret, entropy)
+        }
+    }
+
+    private fun applyGeneratedPassword(
+        passwordStr: String,
+        entropy: Double,
+    ) {
+        resourceModelHandler.applyModelChange(ADD_PASSWORD) { _, secret ->
+            secret.setPassword(resourceModelHandler.contentType, passwordStr)
+        }
+        updateViewState {
+            copy(
+                passwordData =
+                    passwordData.copy(
+                        password = passwordStr,
+                        passwordStrength = Entropy.parse(entropy).toPasswordStrength(),
+                        passwordEntropyBits = entropy,
+                    ),
+            )
+        }
+    }
+
+    private suspend fun getOrLoadGeneratorSettings(): GeneratorSettings {
+        val state = viewState.value
+        val (settings, wasLoaded) =
+            getOrLoadGeneratorSettingsUseCase.execute(
+                Input(
+                    type = state.generatorType,
+                    passwordSettings = state.passwordGeneratorSettings,
+                    passphraseSettings = state.passphraseGeneratorSettings,
+                ),
+            )
+        if (wasLoaded) {
+            updateViewState {
+                copy(
+                    generatorType = settings.type,
+                    passwordGeneratorSettings = settings.passwordSettings,
+                    passphraseGeneratorSettings = settings.passphraseSettings,
+                )
+            }
+        }
+        return settings
     }
 
     private fun passwordMainUriTextChanged(mainUri: String) {
@@ -557,7 +688,7 @@ class ResourceFormViewModel(
         )
     }
 
-    private fun passwordResult(passwordUiModel: com.passbolt.mobile.android.ui.PasswordUiModel?) {
+    private fun passwordResult(passwordUiModel: PasswordUiModel?) {
         val contentType = resourceModelHandler.contentType
         passwordUiModel?.let {
             val passwordEvent = if (passwordUiModel.password.isBlank()) REMOVE_PASSWORD else ADD_PASSWORD
@@ -631,7 +762,7 @@ class ResourceFormViewModel(
         }
     }
 
-    private fun appearanceResult(model: com.passbolt.mobile.android.ui.ResourceAppearanceModel?) {
+    private fun appearanceResult(model: ResourceAppearanceModel?) {
         resourceModelHandler.applyModelChange(EDIT_APPEARANCE) { metadata, _ ->
             val iconType = model?.iconType ?: ICON_TYPE_PASSBOLT
             val iconValue =
@@ -732,7 +863,7 @@ class ResourceFormViewModel(
                     updateViewState { copy(showPasswordWarningDialog = true, passwordWarningType = PasswordWarningType.DATA_BREACH) }
                 is CheckPasswordPropertiesUseCase.Output.Weak ->
                     updateViewState { copy(showPasswordWarningDialog = true, passwordWarningType = PasswordWarningType.LOW_ENTROPY) }
-                is CheckPasswordPropertiesUseCase.Output.Failure<*> -> {
+                is CheckPasswordPropertiesUseCase.Output.Failure -> {
                     Timber.d("Failed to check password status")
                     onProceed()
                 }
@@ -923,5 +1054,73 @@ class ResourceFormViewModel(
             }
             updateViewState { copy(shouldShowDialogProgress = false) }
         }
+    }
+
+    private suspend fun computeShowUpgradePanel(): Boolean {
+        if (mode !is Edit) {
+            return false
+        }
+
+        val resource =
+            getLocalResourceUseCase
+                .execute(GetLocalResourceUseCase.Input(mode.resourceId))
+                .resource
+        val featureFlags = getFeatureFlagsUseCase.execute(Unit).featureFlags
+        val metadataTypesSettings = getMetadataTypesSettingsUseCase.execute(Unit).metadataTypesSettingsModel
+
+        return featureFlags.isV5MetadataAvailable &&
+            metadataTypesSettings.allowV4V5Upgrade &&
+            metadataTypesSettings.allowCreationOfV5Resources &&
+            !resource.contentType().isV5()
+    }
+
+    private fun upgradeResource() {
+        if (mode !is Edit) return
+        launch {
+            updateViewState { copy(shouldShowDialogProgress = true) }
+            val resource =
+                getLocalResourceUseCase
+                    .execute(GetLocalResourceUseCase.Input(mode.resourceId))
+                    .resource
+            val resourceUpdateActionsInteractor = resourceUpdateActionsInteractorFactory.create(resource)
+            val onUpgradeFailure: () -> Unit = { emitSideEffect(ShowSnackbar(SnackbarMessage.UPGRADE_FAILURE)) }
+            performResourceUpdateAction(
+                action = { resourceUpdateActionsInteractor.upgradeToV5() },
+                doOnSuccess = {
+                    launch {
+                        resourceModelHandler.initializeModelForEdition(mode.resourceId)
+                        setupState()
+                        emitSideEffect(ShowSnackbar(SnackbarMessage.RESOURCE_UPGRADED))
+                    }
+                },
+                doOnFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.COMMON_FAILURE)) },
+                doOnCryptoFailure = { emitSideEffect(ShowSnackbar(SnackbarMessage.ENCRYPTION_FAILURE)) },
+                doOnFetchFailure = onUpgradeFailure,
+                doOnUnauthorized = onUpgradeFailure,
+                doOnSchemaValidationFailure = ::handleSchemaValidationFailure,
+                doOnCannotEditWithCurrentConfig = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.CANNOT_CREATE_RESOURCE_WITH_CURRENT_CONFIG),
+                    )
+                },
+                doOnMetadataKeyModified = {
+                    updateViewState { copy(metadataKeyModifiedDialog = it) }
+                },
+                doOnMetadataKeyDeleted = {
+                    updateViewState { copy(metadataKeyDeletedDialog = it) }
+                },
+                doOnMetadataKeyVerificationFailure = {
+                    emitSideEffect(
+                        ShowSnackbar(SnackbarMessage.METADATA_KEY_VERIFICATION_FAILURE),
+                    )
+                },
+            )
+            updateViewState { copy(shouldShowDialogProgress = false) }
+        }
+    }
+
+    companion object {
+        private const val LEARN_MORE_UPGRADE_URL =
+            "https://www.passbolt.com/blog/the-road-to-passbolt-v5-encrypted-metadata-and-other-core-security-changes-2"
     }
 }

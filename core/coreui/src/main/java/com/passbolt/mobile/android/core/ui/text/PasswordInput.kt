@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.core.ui.text
 
-import PassboltTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +29,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.ui.R
 import com.passbolt.mobile.android.core.ui.extensions.optionalTestTag
 import com.passbolt.mobile.android.core.ui.textinputfield.StatefulInput

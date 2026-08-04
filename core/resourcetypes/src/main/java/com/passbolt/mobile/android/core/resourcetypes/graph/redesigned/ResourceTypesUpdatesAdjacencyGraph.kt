@@ -187,7 +187,6 @@ class ResourceTypesUpdatesAdjacencyGraph {
                 ResourceTypeEdge(v5PinCode, v5PinCode, UpdateAction.REMOVE_NOTE),
                 ResourceTypeEdge(v5PinCode, v5PinCode, UpdateAction.ADD_METADATA_DESCRIPTION),
                 ResourceTypeEdge(v5PinCode, v5PinCode, UpdateAction.REMOVE_METADATA_DESCRIPTION),
-                ResourceTypeEdge(v5PinCode, v5PinCode, UpdateAction.EDIT_ADDITIONAL_URIS),
                 ResourceTypeEdge(v5PinCode, v5PinCode, UpdateAction.EDIT_APPEARANCE),
             )
 

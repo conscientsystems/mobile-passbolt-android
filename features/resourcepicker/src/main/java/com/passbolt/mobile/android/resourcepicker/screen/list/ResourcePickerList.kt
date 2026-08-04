@@ -30,10 +30,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.passbolt.mobile.android.core.compose.rememberDebouncedBoolean
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
+import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.ui.empty.EmptyResourceListState
 import com.passbolt.mobile.android.core.ui.lists.HeaderItem
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.ResourcePicked
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerState
@@ -46,8 +49,18 @@ fun ResourcePickerList(
     onIntent: (ResourcePickerIntent) -> Unit,
     modifier: Modifier = Modifier,
     resourceIconProvider: ResourceIconProvider = koinInject(),
+    coroutineLaunchContext: CoroutineLaunchContext = koinInject(),
 ) {
-    val showEmpty = rememberDebouncedBoolean(!state.hasResources)
+    val suggestedResources = state.resourcePickerData.suggestedResources.collectAsLazyPagingItems(coroutineLaunchContext.default)
+    val resources = state.resourcePickerData.resources.collectAsLazyPagingItems(coroutineLaunchContext.default)
+    val pickedResourceId = state.pickedResource?.resourceModel?.resourceId
+
+    val isSuggestedSectionVisible = suggestedResources.itemSnapshotList.isNotEmpty()
+    val isOtherSectionVisible = isSuggestedSectionVisible && resources.itemSnapshotList.isNotEmpty()
+    val areAllSectionsEmpty =
+        suggestedResources.itemSnapshotList.isEmpty() && resources.itemSnapshotList.isEmpty()
+
+    val showEmpty = rememberDebouncedBoolean(areAllSectionsEmpty && !state.isRefreshing)
 
     if (showEmpty) {
         EmptyResourceListState(title = stringResource(LocalizationR.string.no_passwords))
@@ -57,43 +70,48 @@ fun ResourcePickerList(
             contentPadding = PaddingValues(vertical = 16.dp),
         ) {
             // Suggested
-            if (state.resourcePickerData.suggestedResources.isNotEmpty()) {
-                item {
+            if (isSuggestedSectionVisible) {
+                item(key = "header_suggested") {
                     HeaderItem(stringResource(LocalizationR.string.suggested))
                 }
                 items(
-                    count = state.resourcePickerData.suggestedResources.size,
-                    key = { index -> "suggested_${state.resourcePickerData.suggestedResources[index].resourceModel.resourceId}" },
+                    count = suggestedResources.itemCount,
+                    key = suggestedResources.itemKey { "suggested_${it.resourceModel.resourceId}" },
                 ) { index ->
-                    val resource = state.resourcePickerData.suggestedResources[index]
-                    ResourcePickerItem(
-                        resource = resource,
-                        resourceIconProvider = resourceIconProvider,
-                        onItemClick = { onIntent(ResourcePicked(resource)) },
-                    )
+                    suggestedResources[index]?.let { resource ->
+                        ResourcePickerItem(
+                            resource = resource,
+                            isSelected = resource.resourceModel.resourceId == pickedResourceId,
+                            resourceIconProvider = resourceIconProvider,
+                            onItemClick = { onIntent(ResourcePicked(resource)) },
+                        )
+                    }
                 }
             }
 
             // Other section header (only if there are suggested items)
-            if (state.resourcePickerData.suggestedResources.isNotEmpty() &&
-                state.resourcePickerData.resources.isNotEmpty()
-            ) {
-                item {
+            if (isOtherSectionVisible) {
+                item(key = "header_other") {
                     HeaderItem(stringResource(LocalizationR.string.other))
                 }
             }
 
             // Resources section
             items(
-                count = state.resourcePickerData.resources.size,
-                key = { index -> "resource_${state.resourcePickerData.resources[index].resourceModel.resourceId}" },
+                count = resources.itemCount,
+                key = resources.itemKey { "resource_${it.resourceModel.resourceId}" },
             ) { index ->
-                val resource = state.resourcePickerData.resources[index]
-                ResourcePickerItem(
-                    resource = resource,
-                    resourceIconProvider = resourceIconProvider,
-                    onItemClick = { onIntent(ResourcePicked(resource)) },
-                )
+                val resource = resources[index]
+                if (resource != null) {
+                    ResourcePickerItem(
+                        resource = resource,
+                        isSelected = resource.resourceModel.resourceId == pickedResourceId,
+                        resourceIconProvider = resourceIconProvider,
+                        onItemClick = { onIntent(ResourcePicked(resource)) },
+                    )
+                } else {
+                    ResourcePickerItemPlaceholder()
+                }
             }
         }
     }

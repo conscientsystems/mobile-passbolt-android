@@ -5,7 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUserUseCase
 import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermissionsIntent.CancelPermissionDelete
 import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermissionsIntent.ConfirmPermissionDelete
 import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermissionsIntent.DeletePermission
@@ -15,14 +15,14 @@ import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermis
 import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermissionsSideEffect.NavigateBack
 import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermissionsSideEffect.SetDeletePermissionResult
 import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermissionsSideEffect.SetUpdatedPermissionResult
-import com.passbolt.mobile.android.ui.GpgKeyModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.PermissionsMode
 import com.passbolt.mobile.android.ui.PermissionsMode.EDIT
 import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.ui.ResourcePermission.UPDATE
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -196,12 +196,12 @@ class UserPermissionsViewModelTest : KoinTest {
                 avatarUrl = "avatarUrl",
             )
         private val USER =
-            UserModel(
+            UserUiModel(
                 id = USER_WITH_AVATAR.userId,
                 userName = USER_WITH_AVATAR.userName,
                 disabled = false,
                 gpgKey =
-                    GpgKeyModel(
+                    GpgKeyUiModel(
                         armoredKey = "keyData",
                         fingerprint = "fingerprint",
                         bits = 1,
@@ -213,7 +213,7 @@ class UserPermissionsViewModelTest : KoinTest {
                         id = UUID.randomUUID().toString(),
                     ),
                 profile =
-                    UserProfileModel(
+                    UserProfileUiModel(
                         username = "username",
                         firstName = USER_WITH_AVATAR.firstName,
                         lastName = USER_WITH_AVATAR.lastName,

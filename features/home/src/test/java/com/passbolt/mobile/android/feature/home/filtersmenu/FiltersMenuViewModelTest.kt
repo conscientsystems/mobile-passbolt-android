@@ -4,18 +4,11 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateHomeDisplayViewPrefsUseCase
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.mapper.toHomeDisplayViewModel
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.ALL_ITEMS
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.EXPIRY
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.FAVOURITES
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.FOLDERS
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.GROUPS
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.OWNED_BY_ME
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.RECENTLY_MODIFIED
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.SHARED_WITH_ME
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.TAGS
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.AllItemsClick
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.Close
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.ExpiryClick
@@ -30,9 +23,17 @@ import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuIntent.Ta
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuSideEffect.Dismiss
 import com.passbolt.mobile.android.feature.home.filtersmenu.FiltersMenuSideEffect.HomeViewChanged
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
-import com.passbolt.mobile.android.mappers.HomeDisplayViewMapper
 import com.passbolt.mobile.android.ui.FiltersMenuModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.ALL_ITEMS
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.EXPIRY
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.FAVOURITES
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.FOLDERS
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.GROUPS
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.OWNED_BY_ME
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.RECENTLY_MODIFIED
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.SHARED_WITH_ME
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.TAGS
 import com.passbolt.mobile.android.ui.RbacModel
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
 import kotlinx.coroutines.Dispatchers
@@ -95,8 +96,7 @@ class FiltersMenuViewModelTest : KoinTest {
                     module {
                         single { mock<GetFeatureFlagsUseCase>() }
                         single { mock<GetRbacRulesUseCase>() }
-                        single { mock<UpdateHomeDisplayViewPrefsUseCase>() }
-                        singleOf(::HomeDisplayViewMapper)
+                        single { mock<UpdateHomeDisplayViewPreferencesUseCase>() }
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factoryOf(::FiltersMenuViewModel)
                     },
@@ -162,8 +162,7 @@ class FiltersMenuViewModelTest : KoinTest {
     fun `should handle all home view changes and emit correct side effects`() =
         runTest {
             viewModel = get()
-            val updateHomeDisplayViewPrefsUseCase = get<UpdateHomeDisplayViewPrefsUseCase>()
-            val homeDisplayViewMapper = get<HomeDisplayViewMapper>()
+            val updateHomeDisplayViewPreferencesUseCase = get<UpdateHomeDisplayViewPreferencesUseCase>()
 
             // (Intent, HomeDisplayView, Expected HomeDisplayViewModel)
             val testCases =
@@ -184,10 +183,10 @@ class FiltersMenuViewModelTest : KoinTest {
                     viewModel.onIntent(homeIntent)
                     val effect = awaitItem()
                     assertIs<HomeViewChanged>(effect)
-                    assertThat(effect.homeDisplay).isEqualTo(homeDisplayViewMapper.map(homeDisplayView))
+                    assertThat(effect.homeDisplay).isEqualTo(homeDisplayView.toHomeDisplayViewModel())
                     assertIs<Dismiss>(awaitItem())
-                    verify(updateHomeDisplayViewPrefsUseCase).execute(
-                        UpdateHomeDisplayViewPrefsUseCase.Input(lastUsedHomeView = homeDisplayView),
+                    verify(updateHomeDisplayViewPreferencesUseCase).execute(
+                        HomeDisplayViewPreferencesUpdate(lastUsedHomeView = homeDisplayView),
                     )
                 }
             }

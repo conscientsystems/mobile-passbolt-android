@@ -3,9 +3,9 @@ package com.passbolt.mobile.android.permissions.grouppermissionsdetails
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.commongroups.usecase.db.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsIntent.CancelPermissionDelete
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsIntent.ConfirmPermissionDelete
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsIntent.DeletePermission
@@ -17,7 +17,7 @@ import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPerm
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsSideEffect.NavigateToGroupMembers
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsSideEffect.SetDeletePermissionResult
 import com.passbolt.mobile.android.permissions.grouppermissionsdetails.GroupPermissionsSideEffect.SetUpdatedPermissionResult
-import com.passbolt.mobile.android.ui.GpgKeyModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.GroupWithUsersModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
@@ -25,8 +25,8 @@ import com.passbolt.mobile.android.ui.PermissionsMode
 import com.passbolt.mobile.android.ui.PermissionsMode.EDIT
 import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.ui.ResourcePermission.UPDATE
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -211,12 +211,12 @@ class GroupPermissionsViewModelTest : KoinTest {
 
     private companion object {
         private val USER =
-            UserModel(
+            UserUiModel(
                 id = "userId",
                 userName = "userName",
                 disabled = false,
                 gpgKey =
-                    GpgKeyModel(
+                    GpgKeyUiModel(
                         armoredKey = "keyData",
                         fingerprint = "fingerprint",
                         bits = 1,
@@ -228,7 +228,7 @@ class GroupPermissionsViewModelTest : KoinTest {
                         id = UUID.randomUUID().toString(),
                     ),
                 profile =
-                    UserProfileModel(
+                    UserProfileUiModel(
                         username = "username",
                         firstName = "first",
                         lastName = "last",

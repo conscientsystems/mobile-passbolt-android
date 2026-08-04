@@ -29,11 +29,11 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Fin
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.NotCompleted
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.locationdetails.LocationDetailsIntent.GoBack
 import com.passbolt.mobile.android.locationdetails.LocationDetailsIntent.ToggleExpanded
 import com.passbolt.mobile.android.locationdetails.LocationDetailsSideEffect.NavigateToHome
@@ -98,7 +98,7 @@ internal class LocationDetailsViewModel(
     ) {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect {
             when (it) {
-                InProgress -> updateViewState { copy(isRefreshing = true) }
+                is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = it.progress) }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(FAILED_TO_REFRESH_DATA))
                     updateViewState { copy(isRefreshing = false) }
@@ -143,7 +143,7 @@ internal class LocationDetailsViewModel(
                     expandedItemIds = expandedIds,
                 )
             }
-        } catch (_: NullPointerException) {
+        } catch (_: IllegalStateException) {
             emitSideEffect(ShowToast(CONTENT_NOT_AVAILABLE))
             emitSideEffect(NavigateToHome)
         } catch (throwable: Exception) {
@@ -176,7 +176,7 @@ internal class LocationDetailsViewModel(
                     expandedItemIds = expandedIds,
                 )
             }
-        } catch (_: NullPointerException) {
+        } catch (_: IllegalStateException) {
             emitSideEffect(ShowToast(CONTENT_NOT_AVAILABLE))
             emitSideEffect(NavigateToHome)
         } catch (throwable: Exception) {

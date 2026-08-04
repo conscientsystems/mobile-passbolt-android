@@ -28,7 +28,6 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,6 +49,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
@@ -178,7 +178,7 @@ private fun AppSettingsSideEffectsHandler(
             NavigateToSystemSettings -> environment.context.startActivity(Intent(Settings.ACTION_SETTINGS))
             is AppSettingsSideEffect.LaunchBiometricPrompt ->
                 showBiometricPrompt(
-                    activity = environment.context as AppCompatActivity,
+                    activity = environment.context as FragmentActivity,
                     executor = environment.executor,
                     biometricPromptBuilder = environment.biometricPromptBuilder,
                     biometricEncryptionCipher = it.cipher,

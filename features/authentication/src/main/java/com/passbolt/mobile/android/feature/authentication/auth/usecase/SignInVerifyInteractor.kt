@@ -1,8 +1,10 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.GetSessionUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.auth.model.SignInFailureType
+import com.passbolt.mobile.android.domain.auth.model.SignInResult
+import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.dto.response.ChallengeResponseDto
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.ChallengeDecryptor
 import com.passbolt.mobile.android.feature.authentication.auth.challenge.ChallengeProvider
@@ -108,7 +110,7 @@ class SignInVerifyInteractor(
             )
 
         when (val result = signInUseCase.execute(signInInput)) {
-            is SignInUseCase.Output.Failure -> {
+            is SignInResult.Failure -> {
                 Timber.e("Failure during sign in: ${result.message}")
                 val error =
                     when (result.type) {
@@ -123,13 +125,19 @@ class SignInVerifyInteractor(
                                 serverUrl = input.accountData.url,
                             )
                         }
+                        SignInFailureType.SERVER_NOT_REACHABLE -> {
+                            Error.ServerNotReachable(input.accountData.url)
+                        }
+                        SignInFailureType.NO_NETWORK -> {
+                            Error.NoNetwork
+                        }
                         SignInFailureType.OTHER -> {
                             Error.SignInFailure(result.message)
                         }
                     }
                 onError(error)
             }
-            is SignInUseCase.Output.Success -> {
+            is SignInResult.Success -> {
                 Timber.d("Sign in success")
                 decryptChallenge(
                     input =
@@ -234,7 +242,7 @@ class SignInVerifyInteractor(
     private data class DecryptChallengeInput(
         val config: SignInConfigInput,
         val currentMfaToken: String?,
-        val signInResult: SignInUseCase.Output.Success,
+        val signInResult: SignInResult.Success,
     )
 
     private data class VerifyChallengeInput(
@@ -254,6 +262,12 @@ class SignInVerifyInteractor(
 
     sealed class Error {
         data object IncorrectPassphrase : Error()
+
+        data object NoNetwork : Error()
+
+        data class ServerNotReachable(
+            val serverUrl: String,
+        ) : Error()
 
         data class AccountDoesNotExist(
             val label: String,

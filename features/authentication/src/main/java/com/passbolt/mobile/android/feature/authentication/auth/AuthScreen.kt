@@ -1,10 +1,8 @@
 package com.passbolt.mobile.android.feature.authentication.auth
 
-import PassboltTheme
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
-import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -45,7 +43,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AppContext
@@ -176,7 +176,7 @@ internal fun AuthScreen(
                         }
                     } ?: ""
                 showBiometricPrompt(
-                    activity = context as AppCompatActivity,
+                    activity = context as FragmentActivity,
                     executor = executor,
                     biometricPromptBuilder = biometricPromptBuilder,
                     biometricEncryptionCipher = sideEffect.cipher,

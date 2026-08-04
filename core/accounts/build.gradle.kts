@@ -4,13 +4,11 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":common"))
     implementation(project(":encryptedstorage"))
+    implementation(project(":uimodel"))
+    implementation(project(":biometrickey-domain"))
     implementation(project(":gopenpgp"))
     implementation(project(":dto"))
-    implementation(project(":entity"))
-    implementation(project(":navigation"))
-    implementation(project(":ui"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

@@ -25,8 +25,8 @@ package com.passbolt.mobile.android.feature.home.screen
 
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.ui.HomeDisplayViewModel
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption
+import com.passbolt.mobile.android.ui.ResourceUiModel
 
 sealed interface HomeIntent {
     // screen
@@ -45,6 +45,8 @@ sealed interface HomeIntent {
     ) : HomeIntent
 
     data object SearchEndIconAction : HomeIntent
+
+    data object OnResume : HomeIntent
 
     data object OpenFiltersBottomSheet : HomeIntent
 
@@ -103,7 +105,7 @@ sealed interface HomeIntent {
 
     // resource more menu
     data class OpenResourceMenu(
-        val resourceModel: ResourceModel,
+        val resourceModel: ResourceUiModel,
     ) : HomeIntent
 
     data object CloseResourceMoreMenu : HomeIntent

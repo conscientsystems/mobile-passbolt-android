@@ -4,11 +4,11 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.common.search.SearchableMatcher
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.commongroups.usecase.db.GetLocalGroupsUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUsersUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GetLocalGroupsUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUsersUseCase
 import com.passbolt.mobile.android.mappers.GroupsModelMapper
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.mappers.UsersModelMapper
@@ -19,13 +19,13 @@ import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRe
 import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRecipientsIntent.ToggleUserSelection
 import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRecipientsSideEffect.NavigateBack
 import com.passbolt.mobile.android.permissions.permissionrecipients.PermissionRecipientsSideEffect.NavigateBackWithResult
-import com.passbolt.mobile.android.ui.GpgKeyModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.PermissionModelUi.GroupPermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi.UserPermissionModel
 import com.passbolt.mobile.android.ui.ResourcePermission
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -301,12 +301,12 @@ class PermissionRecipientsViewModelTest : KoinTest {
                 avatarUrl = "avatarUrl",
             )
         private val USER =
-            UserModel(
+            UserUiModel(
                 id = USER_WITH_AVATAR.userId,
                 userName = USER_WITH_AVATAR.userName,
                 disabled = false,
                 gpgKey =
-                    GpgKeyModel(
+                    GpgKeyUiModel(
                         armoredKey = "keyData",
                         fingerprint = "fingerprint",
                         bits = 1,
@@ -318,7 +318,7 @@ class PermissionRecipientsViewModelTest : KoinTest {
                         id = UUID.randomUUID().toString(),
                     ),
                 profile =
-                    UserProfileModel(
+                    UserProfileUiModel(
                         username = "username",
                         firstName = USER_WITH_AVATAR.firstName,
                         lastName = USER_WITH_AVATAR.lastName,

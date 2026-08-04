@@ -27,8 +27,9 @@ import android.app.Application
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.AppForegroundListener
 import com.passbolt.mobile.android.core.navigation.isAuthenticated
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
+import com.passbolt.mobile.android.domain.preferences.GlobalPreferencesRepository
+import com.passbolt.mobile.android.domain.preferences.usecase.ApplyAutomaticPageSizeUseCase
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -47,11 +48,13 @@ class PassboltApplication :
     private val appForegroundListener: AppForegroundListener by inject()
     private val applicationScope = MainScope()
     private val runtimeAuthenticatedFlag: RuntimeAuthenticatedFlag by inject()
-    private val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase by inject()
+    private val globalPreferencesRepository: GlobalPreferencesRepository by inject()
     private val backgroundGracePeriodTimer: BackgroundGracePeriodTimer by inject()
+    private val applyAutomaticPageSizeUseCase: ApplyAutomaticPageSizeUseCase by inject()
 
     override fun onCreate() {
         super.onCreate()
+        applyAutomaticPageSizeUseCase.execute(Unit)
         registerAppForegroundListener()
     }
 
@@ -65,7 +68,7 @@ class PassboltApplication :
             runtimeAuthenticatedFlag.isAuthenticated = false
             appForegroundListener.appWentForegroundFlow.collect {
                 val skipAuth =
-                    !getGlobalPreferencesUseCase.execute(Unit).isAuthRequiredOnEveryEntry &&
+                    !globalPreferencesRepository.getGlobalPreferences().isAuthRequiredOnEveryEntry &&
                         backgroundGracePeriodTimer.isWithinGracePeriod()
                 backgroundGracePeriodTimer.reset()
 
@@ -81,7 +84,7 @@ class PassboltApplication :
         }
         applicationScope.launch {
             appForegroundListener.appWentBackgroundFlow.collect {
-                if (!getGlobalPreferencesUseCase.execute(Unit).isAuthRequiredOnEveryEntry) {
+                if (!globalPreferencesRepository.getGlobalPreferences().isAuthRequiredOnEveryEntry) {
                     backgroundGracePeriodTimer.start()
                 }
             }

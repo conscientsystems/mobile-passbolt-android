@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.authentication.mfa.yubikey
 
-import PassboltTheme
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.BackHandler
@@ -41,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState.Unauthenticated.Reason.Mfa.MfaProvider
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator

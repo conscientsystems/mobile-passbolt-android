@@ -28,18 +28,21 @@ import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.common.validation.StringMaxLength
 import com.passbolt.mobile.android.common.validation.StringNotBlank
 import com.passbolt.mobile.android.common.validation.validation
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
+import com.passbolt.mobile.android.domain.users.profile.UserProfileInteractor
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.GoBack
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.SaveChanges
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.StartTransferAccount
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsIntent.UpdateLabel
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsScreenSideEffect.NavigateToTransferAccount
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsScreenSideEffect.NavigateUp
+import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsScreenSideEffect.ShowProfileFetchError
 import com.passbolt.mobile.android.feature.accountdetails.screen.AccountDetailsValidationError.MaxLengthExceeded
+import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.mappers.AccountModelMapper
 import kotlinx.coroutines.launch
 
@@ -47,6 +50,7 @@ internal class AccountDetailsViewModel(
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
     private val updateAccountDataUseCase: UpdateAccountDataUseCase,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val userProfileInteractor: UserProfileInteractor,
     private val coroutineLaunchContext: CoroutineLaunchContext,
 ) : SideEffectViewModel<AccountDetailsState, AccountDetailsScreenSideEffect>(AccountDetailsState()) {
     init {
@@ -91,12 +95,25 @@ internal class AccountDetailsViewModel(
 
     private fun loadInitialValues() {
         viewModelScope.launch(coroutineLaunchContext.io) {
+            updateViewState { copy(showProgress = true) }
+            when (
+                val result =
+                    runAuthenticatedOperation {
+                        userProfileInteractor.fetchAndUpdateUserProfile()
+                    }
+            ) {
+                is UserProfileInteractor.Output.Success -> Unit
+                is UserProfileInteractor.Output.Failure ->
+                    emitSideEffect(ShowProfileFetchError(result.message))
+            }
+
             val data = getSelectedAccountDataUseCase.execute(Unit)
             val defaultLabel = AccountModelMapper.defaultLabel(data.firstName, data.lastName)
             val label = data.label ?: defaultLabel
 
             updateViewState {
                 copy(
+                    showProgress = false,
                     label = label,
                     name = "${data.firstName.orEmpty()} ${data.lastName.orEmpty()}",
                     email = data.email.orEmpty(),

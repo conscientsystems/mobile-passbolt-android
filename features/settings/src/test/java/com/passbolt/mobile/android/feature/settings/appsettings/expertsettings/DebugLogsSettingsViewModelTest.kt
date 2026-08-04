@@ -23,12 +23,12 @@ package com.passbolt.mobile.android.feature.settings.appsettings.expertsettings
  * @since v1.0
  */
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateGlobalPreferencesUseCase
-import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateGlobalPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleHideRootWarning
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsViewModel
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -58,8 +58,8 @@ class DebugLogsSettingsViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<UpdateGlobalPreferencesUseCase>() }
                         single { mock<GetGlobalPreferencesUseCase>() }
+                        single { mock<UpdateGlobalPreferencesUseCase>() }
                         factoryOf(::ExpertSettingsViewModel)
                     },
                 ),
@@ -81,114 +81,69 @@ class DebugLogsSettingsViewModelTest : KoinTest {
     }
 
     @Test
-    fun `initial state should be correct for disabled settings`() =
+    fun `initial state should be unchecked when hide root dialog preference is disabled`() =
         runTest {
             val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
             whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
             viewModel = get()
 
-            val state = viewModel.viewState.value
-
-            assertThat(state.isDeveloperModeChecked).isFalse()
-            assertThat(state.isHideRootWarningChecked).isFalse()
-            assertThat(state.isHideRootWarningEnabled).isFalse()
+            assertThat(viewModel.viewState.value.isHideRootWarningChecked).isFalse()
         }
 
     @Test
-    fun `hide root dialog should be enabled after enabling developer mode`() =
+    fun `initial state should be checked when hide root dialog preference is enabled`() =
         runTest {
             val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
             whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
-                    isHideRootDialogEnabled = false,
-                    isAuthRequiredOnEveryEntry = true,
-                    debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
-                    accessibilityPoliciesConsentGiven = true,
-                )
-
-            viewModel = get()
-
-            viewModel.onIntent(ToggleDeveloperMode)
-
-            viewModel.viewState.value.apply {
-                assertThat(isDeveloperModeChecked).isTrue()
-                assertThat(isHideRootWarningEnabled).isTrue()
-                assertThat(isHideRootWarningChecked).isFalse()
-            }
-        }
-
-    @Test
-    fun `hide root dialog should be disabled and unchecked after disabling developer mode`() =
-        runTest {
-            val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
-            whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
-                    areDebugLogsEnabled = false,
-                    debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = true,
                     isHideRootDialogEnabled = true,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
             viewModel = get()
 
-            viewModel.onIntent(ToggleDeveloperMode)
-
-            viewModel.viewState.value.apply {
-                assertThat(isDeveloperModeChecked).isFalse()
-                assertThat(isHideRootWarningEnabled).isFalse()
-                assertThat(isHideRootWarningChecked).isFalse()
-            }
+            assertThat(viewModel.viewState.value.isHideRootWarningChecked).isTrue()
         }
 
     @Test
-    fun `hide root dialog should be enabled and checked after enabling developer mode and checking`() =
+    fun `toggleHideRootWarning should flip checked state`() =
         runTest {
             val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
             whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
-                GetGlobalPreferencesUseCase.Output(
+                GlobalPreferencesUiModel(
                     areDebugLogsEnabled = false,
                     debugLogFileCreationDateTime = null,
-                    isDeveloperModeEnabled = false,
                     isHideRootDialogEnabled = false,
                     isAuthRequiredOnEveryEntry = true,
                     debugLogLastAppVersion = null,
-                    apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                    apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                    isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
                 )
 
             viewModel = get()
 
-            viewModel.onIntent(ToggleDeveloperMode)
-            viewModel.viewState.value.apply {
-                assertThat(isDeveloperModeChecked).isTrue()
-                assertThat(isHideRootWarningEnabled).isTrue()
-                assertThat(isHideRootWarningChecked).isFalse()
-            }
+            viewModel.onIntent(ToggleHideRootWarning)
+            assertThat(viewModel.viewState.value.isHideRootWarningChecked).isTrue()
 
             viewModel.onIntent(ToggleHideRootWarning)
-            viewModel.viewState.value.apply {
-                assertThat(isDeveloperModeChecked).isTrue()
-                assertThat(isHideRootWarningEnabled).isTrue()
-                assertThat(isHideRootWarningChecked).isTrue()
-            }
+            assertThat(viewModel.viewState.value.isHideRootWarningChecked).isFalse()
         }
 }

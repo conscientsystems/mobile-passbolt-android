@@ -26,18 +26,18 @@ package com.passbolt.mobile.android.groupdetails.groupmembers
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
-import com.passbolt.mobile.android.core.commongroups.usecase.db.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoBack
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.Initialize
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateUp
-import com.passbolt.mobile.android.ui.GpgKeyModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.GroupModel
 import com.passbolt.mobile.android.ui.GroupWithUsersModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -179,12 +179,12 @@ class GroupMembersViewModelTest : KoinTest {
             )
 
         private val testUser1 =
-            UserModel(
+            UserUiModel(
                 id = UUID.randomUUID().toString(),
                 userName = "john.doe@passbolt.com",
                 disabled = false,
                 gpgKey =
-                    GpgKeyModel(
+                    GpgKeyUiModel(
                         armoredKey = "test-armored-key-1",
                         fingerprint = "ABCD1234EFGH5678IJKL9012MNOP3456QRST7890",
                         bits = 4096,
@@ -196,7 +196,7 @@ class GroupMembersViewModelTest : KoinTest {
                         id = UUID.randomUUID().toString(),
                     ),
                 profile =
-                    UserProfileModel(
+                    UserProfileUiModel(
                         username = "john.doe",
                         firstName = "John",
                         lastName = "Doe",
@@ -205,12 +205,12 @@ class GroupMembersViewModelTest : KoinTest {
             )
 
         private val testUser2 =
-            UserModel(
+            UserUiModel(
                 id = UUID.randomUUID().toString(),
                 userName = "jane.smith@passbolt.com",
                 disabled = false,
                 gpgKey =
-                    GpgKeyModel(
+                    GpgKeyUiModel(
                         armoredKey = "test-armored-key-2",
                         fingerprint = "1234ABCD5678EFGH9012IJKL3456MNOP7890QRST",
                         bits = 4096,
@@ -222,7 +222,7 @@ class GroupMembersViewModelTest : KoinTest {
                         id = UUID.randomUUID().toString(),
                     ),
                 profile =
-                    UserProfileModel(
+                    UserProfileUiModel(
                         username = "jane.smith",
                         firstName = "Jane",
                         lastName = "Smith",

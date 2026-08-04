@@ -1,13 +1,13 @@
 plugins {
     id("passbolt.android.library")
-    id(libs.plugins.kotlin.parcelize.get().pluginId)
     id(libs.plugins.compose.compiler.get().pluginId)
     id(libs.plugins.kotlin.serialization.get().pluginId)
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":architecture"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":common"))
     implementation(project(":localization"))
@@ -17,20 +17,19 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":authentication"))
     implementation(project(":resourcetypes"))
-    implementation(project(":resources"))
+    implementation(project(":resources-domain"))
     implementation(project(":serializers"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":jsonmodel"))
-    implementation(project(":secrets"))
+    implementation(project(":secrets-domain"))
     implementation(project(":metadatakeytrust"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.koin.compose)
     implementation(libs.camerax.view)
     implementation(libs.camerax)
-    implementation(libs.camerax.lifecycle)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.foundation)

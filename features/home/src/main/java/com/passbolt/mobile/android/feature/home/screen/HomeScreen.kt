@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +44,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.clipboard.ClipboardAccess
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
@@ -62,6 +63,7 @@ import com.passbolt.mobile.android.core.navigation.compose.keys.SettingsNavigati
 import com.passbolt.mobile.android.core.ui.dialogs.ConfirmResourceDeleteAlertDialog
 import com.passbolt.mobile.android.core.ui.fab.AddFloatingActionButton
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
+import com.passbolt.mobile.android.core.ui.pulltorefresh.SlidingFeedbackPullToRefreshBox
 import com.passbolt.mobile.android.core.ui.scaffold.HomeScaffold
 import com.passbolt.mobile.android.core.ui.search.SearchInput
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
@@ -89,6 +91,7 @@ import com.passbolt.mobile.android.feature.home.screen.HomeIntent.DeleteResource
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.EditResource
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.Initialize
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.LaunchResourceWebsite
+import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OnResume
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenFiltersBottomSheet
 import com.passbolt.mobile.android.feature.home.screen.HomeIntent.OpenFolderMoreMenu
@@ -162,6 +165,10 @@ internal fun HomeScreen(
                 appContext = resourceHandlingStrategy.appContext,
             ),
         )
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.onIntent(OnResume)
     }
 
     HomeScreen(
@@ -272,6 +279,7 @@ private fun HomeScreen(
                         .fillMaxWidth()
                         .padding(end = 16.dp),
                 avatarUrl = state.userAvatar,
+                avatarPlaceholderRes = CoreUiR.drawable.ic_avatar_placeholder,
                 initialValue = state.searchQuery,
                 onEndIconClick = { onIntent(SearchEndIconAction) },
                 leadingIcon = {
@@ -292,8 +300,9 @@ private fun HomeScreen(
             }
         },
         content = { paddingValues ->
-            PullToRefreshBox(
+            SlidingFeedbackPullToRefreshBox(
                 isRefreshing = state.isRefreshing,
+                refreshProgress = state.refreshProgress,
                 onRefresh = { DataRefreshService.start(context) },
                 modifier =
                     Modifier

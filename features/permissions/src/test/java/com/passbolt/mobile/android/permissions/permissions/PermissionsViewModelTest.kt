@@ -10,19 +10,19 @@ import com.jayway.jsonpath.spi.mapper.GsonMappingProvider
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.commontest.session.validSessionTestModule
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderDetailsUseCase
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.usecase.ResourceShareInteractor
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissionsUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.usecase.ResourceShareInteractor
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.GroupPermissionDeleted
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.GroupPermissionModified
 import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.MainButtonIntent
@@ -35,8 +35,8 @@ import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.PermissionsItem
 import com.passbolt.mobile.android.ui.PermissionsMode
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.UserWithAvatar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -81,7 +81,7 @@ class PermissionsViewModelTest : KoinTest {
                     single { mock<ResourceShareInteractor>() }
                     single { mock<MetadataPrivateKeysHelperInteractor>() }
                     single { mock<ResourceUpdateActionsInteractorFactory>() }
-                    single { mock<CanShareResourceUseCase>() }
+                    single { mock<ResourceAccessInteractor>() }
                     singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                     singleOf(::SessionRefreshTrackingFlow)
                     singleOf(::DataRefreshTrackingFlow)
@@ -108,7 +108,7 @@ class PermissionsViewModelTest : KoinTest {
                             permissionModelUiComparator = get(),
                             resourceShareInteractor = get(),
                             metadataPrivateKeysHelperInteractor = get(),
-                            canShareResourceUseCase = get(),
+                            resourceAccessInteractor = get(),
                             dataRefreshTrackingFlow = get(),
                             coroutineLaunchContext = get(),
                             resourceUpdateActionsInteractorFactory = get(),
@@ -133,8 +133,8 @@ class PermissionsViewModelTest : KoinTest {
             onBlocking { execute(GetLocalResourceUseCase.Input(RESOURCE_ID)) }
                 .doReturn(GetLocalResourceUseCase.Output(RESOURCE_MODEL))
         }
-        get<CanShareResourceUseCase>().stub {
-            onBlocking { execute(Unit) } doReturn CanShareResourceUseCase.Output(canShareResource = true)
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canShareResource() } doReturn true
         }
     }
 
@@ -180,8 +180,8 @@ class PermissionsViewModelTest : KoinTest {
     @Test
     fun `error should be shown when sharing not possible`() =
         runTest {
-            get<CanShareResourceUseCase>().stub {
-                onBlocking { execute(Unit) } doReturn CanShareResourceUseCase.Output(canShareResource = false)
+            get<ResourceAccessInteractor>().stub {
+                onBlocking { canShareResource() } doReturn false
             }
             get<GetLocalResourceUseCase>().stub {
                 onBlocking { execute(GetLocalResourceUseCase.Input(RESOURCE_ID)) }
@@ -361,7 +361,7 @@ class PermissionsViewModelTest : KoinTest {
         private val RESOURCE_TYPE_ID = UUID.randomUUID()
         private val FOLDER_ID = UUID.randomUUID()
         private val RESOURCE_MODEL by lazy {
-            ResourceModel(
+            ResourceUiModel(
                 resourceId = RESOURCE_ID,
                 resourceTypeId = RESOURCE_TYPE_ID.toString(),
                 slug = "password-and-description",

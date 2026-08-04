@@ -8,10 +8,10 @@ import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor.Outpu
 import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor.Output.Success
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Passbolt - Open source password manager for teams
@@ -39,46 +39,33 @@ import timber.log.Timber
 class FullDataRefreshExecutor(
     private val homeDataInteractor: HomeDataInteractor,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
-    coroutineLaunchContext: CoroutineLaunchContext,
+    private val coroutineLaunchContext: CoroutineLaunchContext,
 ) {
-    private val job = SupervisorJob()
-    private val scope = CoroutineScope(job + coroutineLaunchContext.ui)
-
-    fun performFullDataRefresh() {
-        scope.launch {
-            Timber.d("Full data refresh initiated")
-            if (!dataRefreshTrackingFlow.isInProgress()) {
-                dataRefreshTrackingFlow.updateStatus(InProgress)
-                val output =
-                    runAuthenticatedOperation {
-                        homeDataInteractor.refreshAllHomeScreenData()
+    suspend fun performFullDataRefresh() {
+        Timber.d("Full data refresh initiated")
+        if (!dataRefreshTrackingFlow.isInProgress()) {
+            dataRefreshTrackingFlow.updateStatus(InProgress(progress = 0f))
+            val output =
+                runAuthenticatedOperation {
+                    withContext(coroutineLaunchContext.default) {
+                        homeDataInteractor.refreshAllHomeScreenData { progress ->
+                            dataRefreshTrackingFlow.updateStatus(InProgress(progress))
+                        }
                     }
+                }
 
-                dataRefreshTrackingFlow.updateStatus(
-                    when (output) {
-                        is Success -> FinishedWithSuccess
-                        is Failure -> FinishedWithFailure
-                    },
-                )
+            when (output) {
+                is Success -> {
+                    dataRefreshTrackingFlow.updateStatus(InProgress(progress = 1f))
+                    delay(FULL_PROGRESS_DISPLAY_MILLIS.milliseconds)
+                    dataRefreshTrackingFlow.updateStatus(FinishedWithSuccess)
+                }
+                is Failure -> dataRefreshTrackingFlow.updateStatus(FinishedWithFailure)
             }
         }
     }
 
-    suspend fun susPerformFullDataRefresh() {
-        Timber.d("Full data refresh initiated")
-        if (!dataRefreshTrackingFlow.isInProgress()) {
-            dataRefreshTrackingFlow.updateStatus(InProgress)
-            val output =
-                runAuthenticatedOperation {
-                    homeDataInteractor.refreshAllHomeScreenData()
-                }
-
-            dataRefreshTrackingFlow.updateStatus(
-                when (output) {
-                    is Success -> FinishedWithSuccess
-                    is Failure -> FinishedWithFailure
-                },
-            )
-        }
+    private companion object {
+        private const val FULL_PROGRESS_DISPLAY_MILLIS = 300L
     }
 }

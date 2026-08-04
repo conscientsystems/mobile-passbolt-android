@@ -1,11 +1,8 @@
 package com.passbolt.mobile.android.feature.authentication.auth.usecase
 
-import com.passbolt.mobile.android.common.CookieExtractor
 import com.passbolt.mobile.android.common.usecase.AsyncUseCase
-import com.passbolt.mobile.android.core.networking.NetworkResult
-import com.passbolt.mobile.android.mappers.SignInMapper
-import com.passbolt.mobile.android.passboltapi.auth.AuthRepository
-import java.net.HttpURLConnection
+import com.passbolt.mobile.android.domain.auth.AuthRepository
+import com.passbolt.mobile.android.domain.auth.model.SignInResult
 
 /**
  * Passbolt - Open source password manager for teams
@@ -29,62 +26,15 @@ import java.net.HttpURLConnection
  * @link https://www.passbolt.com Passbolt (tm)
  * @since v1.0
  */
-
-typealias SignInFailureType = SignInUseCase.Output.Failure.FailureType
-
 class SignInUseCase(
     private val authRepository: AuthRepository,
-    private val signInMapper: SignInMapper,
-    private val cookieExtractor: CookieExtractor,
-) : AsyncUseCase<SignInUseCase.Input, SignInUseCase.Output> {
-    override suspend fun execute(input: Input): Output =
-        when (
-            val result =
-                authRepository.signIn(
-                    signInMapper.mapRequestToDto(input.userId, input.challenge),
-                    input.mfaToken,
-                )
-        ) {
-            is NetworkResult.Failure.NetworkError ->
-                Output.Failure(
-                    result.headerMessage,
-                    Output.Failure.FailureType.OTHER,
-                )
-            is NetworkResult.Failure.ServerError ->
-                Output.Failure(
-                    result.headerMessage,
-                    getFailureType(result.errorCode),
-                )
-            is NetworkResult.Success -> {
-                result.value.body()?.body?.challenge?.let {
-                    Output.Success(it, cookieExtractor.get(result.value, CookieExtractor.MFA_COOKIE))
-                } ?: Output.Failure("", Output.Failure.FailureType.OTHER)
-            }
-        }
-
-    private fun getFailureType(errorCode: Int?) =
-        if (errorCode == HttpURLConnection.HTTP_NOT_FOUND) {
-            SignInFailureType.ACCOUNT_DOES_NOT_EXIST
-        } else {
-            SignInFailureType.OTHER
-        }
-
-    sealed class Output {
-        data class Success(
-            val challenge: String,
-            val mfaToken: String?,
-        ) : Output()
-
-        data class Failure(
-            val message: String,
-            val type: FailureType,
-        ) : Output() {
-            enum class FailureType {
-                ACCOUNT_DOES_NOT_EXIST,
-                OTHER,
-            }
-        }
-    }
+) : AsyncUseCase<SignInUseCase.Input, SignInResult> {
+    override suspend fun execute(input: Input): SignInResult =
+        authRepository.signIn(
+            userId = input.userId,
+            challenge = input.challenge,
+            mfaToken = input.mfaToken,
+        )
 
     data class Input(
         val userId: String,

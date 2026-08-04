@@ -27,8 +27,8 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyTotp
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.Initialize

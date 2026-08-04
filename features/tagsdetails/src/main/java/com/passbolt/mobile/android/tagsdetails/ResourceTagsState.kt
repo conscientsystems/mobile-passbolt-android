@@ -23,11 +23,12 @@
 
 package com.passbolt.mobile.android.tagsdetails
 
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.TagModel
 
 data class ResourceTagsState(
-    val resourceModel: ResourceModel? = null,
+    val resourceModel: ResourceUiModel? = null,
     val tags: List<TagModel> = emptyList(),
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
 )

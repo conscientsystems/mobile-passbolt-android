@@ -1,7 +1,7 @@
 package com.passbolt.mobile.android.database.snapshot
 
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.database.DatabaseProvider
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.entity.resource.ResourceWithMetadata
 
 /**

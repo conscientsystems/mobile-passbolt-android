@@ -1,15 +1,17 @@
 package com.passbolt.mobile.android.feature.settings.appsettings.defaultfilter
 
 import com.google.common.truth.Truth.assertThat
-import com.passbolt.mobile.android.core.preferences.usecase.GetHomeDisplayViewPrefsUseCase
-import com.passbolt.mobile.android.core.preferences.usecase.HomeDisplayViewPrefsValidator
-import com.passbolt.mobile.android.core.preferences.usecase.UpdateHomeDisplayViewPrefsUseCase
-import com.passbolt.mobile.android.entity.home.HomeDisplayView.ALL_ITEMS
+import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
+import com.passbolt.mobile.android.domain.preferences.usecase.GetAvailableDefaultFiltersUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.GetHomeDisplayViewPreferencesUseCase
+import com.passbolt.mobile.android.domain.preferences.usecase.UpdateHomeDisplayViewPreferencesUseCase
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterIntent.SelectDefaultFilter
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.defaultfilter.DefaultFilterViewModel
-import com.passbolt.mobile.android.ui.DefaultFilterModel
-import com.passbolt.mobile.android.ui.DefaultFilterModel.EXPIRY
-import com.passbolt.mobile.android.ui.DefaultFilterModel.FAVOURITES
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel.EXPIRY
+import com.passbolt.mobile.android.ui.DefaultFilterUiModel.FAVOURITES
+import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
+import com.passbolt.mobile.android.ui.HomeDisplayViewUiModel.ALL_ITEMS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -63,9 +65,9 @@ class DefaultFilterViewModelTest : KoinTest {
             modules(
                 listOf(
                     module {
-                        single { mock<UpdateHomeDisplayViewPrefsUseCase>() }
-                        single { mock<HomeDisplayViewPrefsValidator>() }
-                        single { mock<GetHomeDisplayViewPrefsUseCase>() }
+                        single { mock<GetAvailableDefaultFiltersUseCase>() }
+                        single { mock<GetHomeDisplayViewPreferencesUseCase>() }
+                        single { mock<UpdateHomeDisplayViewPreferencesUseCase>() }
                         factoryOf(::DefaultFilterViewModel)
                     },
                 ),
@@ -88,28 +90,24 @@ class DefaultFilterViewModelTest : KoinTest {
 
     @Test
     fun `should show validated filter list and selected filter initially`() {
-        val homeDisplayViewPrefsValidator: HomeDisplayViewPrefsValidator = get()
-        whenever(homeDisplayViewPrefsValidator.validatedDefaultFiltersList()) doReturn DefaultFilterModel.entries
-        val getHomeDisplayViewPrefsUseCase: GetHomeDisplayViewPrefsUseCase = get()
-        whenever(getHomeDisplayViewPrefsUseCase.execute(Unit)) doReturn
-            GetHomeDisplayViewPrefsUseCase.Output(
+        whenever(get<GetAvailableDefaultFiltersUseCase>().execute(Unit)) doReturn DefaultFilterUiModel.entries
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)) doReturn
+            HomeDisplayViewPreferencesUiModel(
                 lastUsedHomeView = ALL_ITEMS,
                 userSetHomeView = EXPIRY,
             )
 
         viewModel = get()
 
-        assertThat(viewModel.viewState.value.allFilters).containsExactlyElementsIn(DefaultFilterModel.entries)
+        assertThat(viewModel.viewState.value.allFilters).containsExactlyElementsIn(DefaultFilterUiModel.entries)
         assertThat(viewModel.viewState.value.selectedFilter).isEqualTo(EXPIRY)
     }
 
     @Test
     fun `selected filter should be updated`() {
-        val homeDisplayViewPrefsValidator: HomeDisplayViewPrefsValidator = get()
-        whenever(homeDisplayViewPrefsValidator.validatedDefaultFiltersList()) doReturn DefaultFilterModel.entries
-        val getHomeDisplayViewPrefsUseCase: GetHomeDisplayViewPrefsUseCase = get()
-        whenever(getHomeDisplayViewPrefsUseCase.execute(Unit)) doReturn
-            GetHomeDisplayViewPrefsUseCase.Output(
+        whenever(get<GetAvailableDefaultFiltersUseCase>().execute(Unit)) doReturn DefaultFilterUiModel.entries
+        whenever(get<GetHomeDisplayViewPreferencesUseCase>().execute(Unit)) doReturn
+            HomeDisplayViewPreferencesUiModel(
                 lastUsedHomeView = ALL_ITEMS,
                 userSetHomeView = EXPIRY,
             )
@@ -117,10 +115,10 @@ class DefaultFilterViewModelTest : KoinTest {
         viewModel = get()
         viewModel.onIntent(SelectDefaultFilter(FAVOURITES))
 
-        assertThat(viewModel.viewState.value.allFilters).containsExactlyElementsIn(DefaultFilterModel.entries)
+        assertThat(viewModel.viewState.value.allFilters).containsExactlyElementsIn(DefaultFilterUiModel.entries)
         assertThat(viewModel.viewState.value.selectedFilter).isEqualTo(FAVOURITES)
-        argumentCaptor<UpdateHomeDisplayViewPrefsUseCase.Input> {
-            verify(get<UpdateHomeDisplayViewPrefsUseCase>()).execute(capture())
+        argumentCaptor<HomeDisplayViewPreferencesUpdate> {
+            verify(get<UpdateHomeDisplayViewPreferencesUseCase>()).execute(capture())
             assertThat(firstValue.userSetHomeView).isEqualTo(FAVOURITES)
         }
     }

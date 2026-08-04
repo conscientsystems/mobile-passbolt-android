@@ -11,24 +11,32 @@ import com.passbolt.mobile.android.core.idlingresource.CreateResourceIdlingResou
 import com.passbolt.mobile.android.core.idlingresource.UpdateResourceIdlingResource
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passwordgenerator.PinCodeGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.SecretGenerator
 import com.passbolt.mobile.android.core.passwordgenerator.entropy.EntropyCalculator
 import com.passbolt.mobile.android.core.passwordgenerator.usecase.CheckPasswordPropertiesUseCase
-import com.passbolt.mobile.android.core.policies.usecase.GetPasswordPoliciesUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCreateActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.usecase.GetDefaultCreateContentTypeUseCase
-import com.passbolt.mobile.android.core.resources.usecase.GetEditContentTypeUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.core.resourcetypes.graph.redesigned.ResourceTypesUpdatesAdjacencyGraph
+import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.domain.metadata.usecase.GetMetadataTypesSettingsUseCase
+import com.passbolt.mobile.android.domain.passwordexpiry.usecase.PasswordExpiryPoliciesInteractor
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.GetPasswordPoliciesUseCase
+import com.passbolt.mobile.android.domain.passwordpolicies.usecase.PasswordPoliciesInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.GetEditContentTypeUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
+import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.mappers.EntropyViewMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
-import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.ui.MetadataTypeModel.V4
+import com.passbolt.mobile.android.ui.MetadataTypesSettingsModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -37,6 +45,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
 import java.util.EnumSet
 
 /**
@@ -62,7 +72,28 @@ import java.util.EnumSet
  * @since v1.0
  */
 
+internal val DEFAULT_TEST_FEATURE_FLAGS =
+    FeatureFlagsModel(
+        privacyPolicyUrl = null,
+        termsAndConditionsUrl = null,
+        isPreviewPasswordAvailable = false,
+        areFoldersAvailable = false,
+        areTagsAvailable = false,
+        isTotpAvailable = false,
+        isRbacAvailable = false,
+        isPasswordExpiryAvailable = false,
+        arePasswordPoliciesAvailable = false,
+        canUpdatePasswordPolicies = false,
+        isV5MetadataAvailable = false,
+    )
+
 internal val mockGetPasswordPoliciesUseCase = mock<GetPasswordPoliciesUseCase>()
+internal val mockPasswordPoliciesInteractor = mock<PasswordPoliciesInteractor>()
+internal val mockPasswordExpiryPoliciesInteractor = mock<PasswordExpiryPoliciesInteractor>()
+internal val mockGetFeatureFlagsUseCase =
+    mock<GetFeatureFlagsUseCase>().apply {
+        stub { onBlocking { execute(Unit) } doReturn GetFeatureFlagsUseCase.Output(DEFAULT_TEST_FEATURE_FLAGS) }
+    }
 internal val mockSecretGenerator = mock<SecretGenerator>()
 internal val mockPinCodeGenerator = mock<PinCodeGenerator>()
 internal val mockEntropyCalculator = mock<EntropyCalculator>()
@@ -75,13 +106,43 @@ internal val mockSecretPropertiesActionsInteractorSecretPropertiesActionsInterac
 internal val mockResourceUpdateActionsInteractorFactory = mock<ResourceUpdateActionsInteractorFactory>()
 internal val mockResourceCreateActionsInteractor = mock<ResourceCreateActionsInteractor>()
 internal val mockCheckPasswordPropertiesUseCase = mock<CheckPasswordPropertiesUseCase>()
+internal val mockGetMetadataTypesSettingsUseCase = mock<GetMetadataTypesSettingsUseCase>()
+
+internal val DEFAULT_FEATURE_FLAGS =
+    FeatureFlagsModel(
+        privacyPolicyUrl = null,
+        termsAndConditionsUrl = null,
+        isPreviewPasswordAvailable = false,
+        areFoldersAvailable = false,
+        areTagsAvailable = false,
+        isTotpAvailable = false,
+        isRbacAvailable = false,
+        isPasswordExpiryAvailable = false,
+        arePasswordPoliciesAvailable = false,
+        canUpdatePasswordPolicies = false,
+        isV5MetadataAvailable = false,
+    )
+
+internal val DEFAULT_METADATA_TYPES_SETTINGS =
+    MetadataTypesSettingsModel(
+        defaultMetadataType = V4,
+        defaultFolderType = V4,
+        defaultTagType = V4,
+        allowCreationOfV5Resources = false,
+        allowCreationOfV5Folders = false,
+        allowCreationOfV5Tags = false,
+        allowCreationOfV4Resources = true,
+        allowCreationOfV4Folders = true,
+        allowCreationOfV4Tags = true,
+        allowV4V5Upgrade = false,
+        allowV5V4Downgrade = false,
+    )
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal val testResourceFormModule =
     module {
         factoryOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
         factoryOf(::ResourceFormMapper)
-        factoryOf(::EntropyViewMapper)
         singleOf(::ResourceModelHandler)
         factoryOf(::ResourceTypesUpdatesAdjacencyGraph)
         factoryOf(::CreateResourceIdlingResource)
@@ -99,16 +160,23 @@ internal val testResourceFormModule =
             )
         }
 
+        single { mock<GetSessionExpiryUseCase>() }
+        single { mock<PassphraseMemoryCache>() }
+
         viewModel { params ->
             ResourceFormViewModel(
                 mode = params.get(),
                 getPasswordPoliciesUseCase = mockGetPasswordPoliciesUseCase,
+                getOrLoadGeneratorSettingsUseCase = GetOrLoadGeneratorSettingsUseCase(mockGetPasswordPoliciesUseCase),
+                passwordPoliciesInteractor = mockPasswordPoliciesInteractor,
+                passwordExpiryPoliciesInteractor = mockPasswordExpiryPoliciesInteractor,
+                getFeatureFlagsUseCase = mockGetFeatureFlagsUseCase,
+                coroutineLaunchContext = get(),
                 secretGenerator = mockSecretGenerator,
                 pinCodeGenerator = mockPinCodeGenerator,
                 entropyCalculator = mockEntropyCalculator,
                 metadataPrivateKeysHelperInteractor = mockMetadataPrivateKeysHelperInteractor,
                 getLocalResourceUseCase = get(),
-                entropyViewMapper = get(),
                 resourceFormMapper = get(),
                 resourceModelHandler = get(),
                 dataRefreshTrackingFlow = get(),
@@ -116,6 +184,7 @@ internal val testResourceFormModule =
                 updateResourceIdlingResource = get(),
                 resourceUpdateActionsInteractorFactory = get(),
                 checkPasswordPropertiesUseCase = mockCheckPasswordPropertiesUseCase,
+                getMetadataTypesSettingsUseCase = mockGetMetadataTypesSettingsUseCase,
             )
         }
 

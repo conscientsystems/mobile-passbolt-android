@@ -2,6 +2,7 @@ package com.passbolt.mobile.android.database
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.withTransaction
 import com.passbolt.mobile.android.common.hash.MessageDigestHash
 import com.passbolt.mobile.android.database.migrations.Migration10to11
 import com.passbolt.mobile.android.database.migrations.Migration11to12
@@ -19,6 +20,8 @@ import com.passbolt.mobile.android.database.migrations.Migration21to22
 import com.passbolt.mobile.android.database.migrations.Migration22to23
 import com.passbolt.mobile.android.database.migrations.Migration23to24
 import com.passbolt.mobile.android.database.migrations.Migration24to25
+import com.passbolt.mobile.android.database.migrations.Migration25to26
+import com.passbolt.mobile.android.database.migrations.Migration26to27
 import com.passbolt.mobile.android.database.migrations.Migration2to3
 import com.passbolt.mobile.android.database.migrations.Migration3to4
 import com.passbolt.mobile.android.database.migrations.Migration4to5
@@ -27,11 +30,13 @@ import com.passbolt.mobile.android.database.migrations.Migration6to7
 import com.passbolt.mobile.android.database.migrations.Migration7to8
 import com.passbolt.mobile.android.database.migrations.Migration8to9
 import com.passbolt.mobile.android.database.migrations.Migration9to10
-import com.passbolt.mobile.android.database.usecase.GetResourcesDatabasePassphraseUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.GetResourcesDatabasePassphraseUseCase
+import kotlinx.coroutines.suspendCancellableCoroutine
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import timber.log.Timber
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Passbolt - Open source password manager for teams
@@ -60,59 +65,66 @@ class DatabaseProvider(
     private val context: Context,
     private val messageDigestHash: MessageDigestHash,
 ) {
-    @Volatile
-    private var instance: HashMap<String, ResourceDatabase?> = hashMapOf()
+    private val instance = ConcurrentHashMap<String, ResourceDatabase>()
 
     fun get(userId: String): ResourceDatabase {
         System.loadLibrary("sqlcipher")
         val currentUser = messageDigestHash.sha256(userId)
-        instance[currentUser]?.let {
-            return it
+        return instance.computeIfAbsent(currentUser) {
+            try {
+                val passphrase = getResourcesDatabasePassphraseUseCase.execute(Unit).passphrase
+                val factory = SupportOpenHelperFactory(passphrase.toByteArray(StandardCharsets.UTF_8))
+                Room
+                    .databaseBuilder(
+                        context,
+                        ResourceDatabase::class.java,
+                        "${currentUser}_$RESOURCE_DATABASE_NAME",
+                    ).addMigrations(
+                        Migration1to2,
+                        Migration2to3,
+                        Migration3to4,
+                        Migration4to5,
+                        Migration5to6,
+                        Migration6to7,
+                        Migration7to8,
+                        Migration8to9,
+                        Migration9to10,
+                        Migration10to11,
+                        Migration11to12,
+                        Migration12to13,
+                        Migration13to14,
+                        Migration14to15,
+                        Migration15to16,
+                        Migration16to17,
+                        Migration17to18,
+                        Migration18to19,
+                        Migration19to20,
+                        Migration20to21,
+                        Migration21to22,
+                        Migration22to23,
+                        Migration23to24,
+                        Migration24to25,
+                        Migration25to26,
+                        Migration26to27,
+                    ).openHelperFactory(factory)
+                    .build()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to open resources database")
+                throw e
+            }
         }
-        val passphrase = getResourcesDatabasePassphraseUseCase.execute(Unit).passphrase
-        val factory = SupportOpenHelperFactory(passphrase.toByteArray(StandardCharsets.UTF_8))
-        val newInstance =
-            Room
-                .databaseBuilder(
-                    context,
-                    ResourceDatabase::class.java,
-                    "${currentUser}_$RESOURCE_DATABASE_NAME",
-                ).addMigrations(
-                    Migration1to2,
-                    Migration2to3,
-                    Migration3to4,
-                    Migration4to5,
-                    Migration5to6,
-                    Migration6to7,
-                    Migration7to8,
-                    Migration8to9,
-                    Migration9to10,
-                    Migration10to11,
-                    Migration11to12,
-                    Migration12to13,
-                    Migration13to14,
-                    Migration14to15,
-                    Migration15to16,
-                    Migration16to17,
-                    Migration17to18,
-                    Migration18to19,
-                    Migration19to20,
-                    Migration20to21,
-                    Migration21to22,
-                    Migration22to23,
-                    Migration23to24,
-                    Migration24to25,
-                ).openHelperFactory(factory)
-                .build()
-
-        instance[currentUser] = newInstance
-        return newInstance
     }
 
+    suspend fun <T> inTransaction(
+        userId: String,
+        block: suspend () -> T,
+    ): T = get(userId).withTransaction { block() }
+
     suspend fun delete(userId: String) {
+        Timber.d("Deleting resources database")
         val currentUser = messageDigestHash.sha256(userId)
         if (currentUser in instance.keys) {
-            suspendCoroutine { continuation ->
+            suspendCancellableCoroutine { continuation ->
                 Thread {
                     instance[currentUser]?.clearAllTables()
                     continuation.resume(Unit)

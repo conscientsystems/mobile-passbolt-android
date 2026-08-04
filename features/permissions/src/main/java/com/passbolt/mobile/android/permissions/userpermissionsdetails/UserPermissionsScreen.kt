@@ -55,7 +55,7 @@ import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermis
 import com.passbolt.mobile.android.permissions.userpermissionsdetails.UserPermissionsSideEffect.SetUpdatedPermissionResult
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.PermissionsMode
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -160,7 +160,7 @@ private fun UserPermissionsScreen(
 
 @Composable
 private fun UserHeader(
-    user: UserModel?,
+    user: UserUiModel?,
     modifier: Modifier = Modifier,
     disabledUserAlpha: Float = 0.5f,
     fingerprintFormatter: FingerprintFormatter = koinInject(),

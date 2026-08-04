@@ -4,22 +4,20 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":resourcetypes-domain"))
     implementation(project(":common"))
     implementation(project(":coreui"))
     implementation(project(":localization"))
-    implementation(project(":featureflags"))
-    implementation(project(":ui"))
-    implementation(project(":accounts"))
+    implementation(project(":featureflags-domain"))
+    implementation(project(":uimodel"))
     implementation(project(":architecture"))
     implementation(project(":idlingresource"))
     implementation(project(":entity"))
-    implementation(project(":resourcetypes"))
     implementation(project(":supportedresourcetypes"))
-    implementation(project(":metadata"))
+    implementation(project(":metadata-domain"))
     implementation(project(":navigation"))
 
     implementation(libs.androidx.core)
-    implementation(libs.appcompat)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.koin.compose)

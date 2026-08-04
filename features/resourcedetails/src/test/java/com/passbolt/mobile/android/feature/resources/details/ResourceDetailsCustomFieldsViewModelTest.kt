@@ -26,8 +26,8 @@ package com.passbolt.mobile.android.feature.resources.details
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.JsonPrimitive
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CopyCustomField
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.Initialize

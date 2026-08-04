@@ -1,6 +1,5 @@
 package com.passbolt.mobile.android.feature.home.switchaccount
 
-import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.ui.SwitchAccountUiModel.AccountItem
 
 /**
@@ -27,9 +26,7 @@ import com.passbolt.mobile.android.ui.SwitchAccountUiModel.AccountItem
  */
 
 sealed interface SwitchAccountIntent {
-    data class Initialize(
-        val appContext: AppContext,
-    ) : SwitchAccountIntent
+    data object Refresh : SwitchAccountIntent
 
     data object SeeCurrentAccountDetails : SwitchAccountIntent
 

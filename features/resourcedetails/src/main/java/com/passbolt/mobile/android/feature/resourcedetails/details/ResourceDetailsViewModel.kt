@@ -31,22 +31,24 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.Idle.Not
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgress
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.common.types.ClipboardLabel
-import com.passbolt.mobile.android.core.commonfolders.usecase.db.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.ResourceDetailActionIdlingResource
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
-import com.passbolt.mobile.android.core.rbac.usecase.GetRbacRulesUseCase
-import com.passbolt.mobile.android.core.resources.actions.ResourceCommonActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.ResourcePropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractor
-import com.passbolt.mobile.android.core.resources.actions.performCommonResourceAction
-import com.passbolt.mobile.android.core.resources.actions.performResourcePropertyAction
-import com.passbolt.mobile.android.core.resources.actions.performSecretPropertyAction
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcePermissionsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceTagsUseCase
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourceUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
+import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
+import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.performCommonResourceAction
+import com.passbolt.mobile.android.domain.resources.actions.performResourcePropertyAction
+import com.passbolt.mobile.android.domain.resources.actions.performSecretPropertyAction
+import com.passbolt.mobile.android.domain.resources.mapper.toOtpItemWrapper
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcePermissionsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceTagsUseCase
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.entity.featureflags.FeatureFlagsModel
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.CANNOT_PERFORM_ACTION
 import com.passbolt.mobile.android.feature.resourcedetails.details.ErrorSnackbarType.DECRYPTION_FAILURE
@@ -99,9 +101,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetai
 import com.passbolt.mobile.android.feature.resourcedetails.details.SuccessSnackbarType.RESOURCE_EDITED
 import com.passbolt.mobile.android.featureflags.usecase.GetFeatureFlagsUseCase
 import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
-import com.passbolt.mobile.android.mappers.OtpModelMapper
 import com.passbolt.mobile.android.mappers.ResourceFormMapper
-import com.passbolt.mobile.android.metadata.usecase.CanShareResourceUseCase
 import com.passbolt.mobile.android.ui.CustomFieldModel.BooleanCustomField
 import com.passbolt.mobile.android.ui.CustomFieldModel.NumberCustomField
 import com.passbolt.mobile.android.ui.CustomFieldModel.PasswordCustomField
@@ -110,8 +110,8 @@ import com.passbolt.mobile.android.ui.CustomFieldModel.UriCustomField
 import com.passbolt.mobile.android.ui.PermissionsMode
 import com.passbolt.mobile.android.ui.RbacModel
 import com.passbolt.mobile.android.ui.RbacRuleModel.ALLOW
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.contentType
 import com.passbolt.mobile.android.ui.isExpired
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -133,7 +133,6 @@ class ResourceDetailsViewModel(
     private val getLocalResourceTagsUseCase: GetLocalResourceTagsUseCase,
     private val getLocalFolderLocation: GetLocalFolderLocationUseCase,
     private val totpParametersProvider: TotpParametersProvider,
-    private val otpModelMapper: OtpModelMapper,
     private val getRbacRulesUseCase: GetRbacRulesUseCase,
     private val resourceDetailActionIdlingResource: ResourceDetailActionIdlingResource,
     private val canShareResourceUseCase: CanShareResourceUseCase,
@@ -152,7 +151,7 @@ class ResourceDetailsViewModel(
 
     private val missingItemExceptionHandler =
         CoroutineExceptionHandler { _, throwable ->
-            if (throwable is NullPointerException) {
+            if (throwable is IllegalStateException) {
                 emitSideEffect(ShowToast(ToastType.CONTENT_NOT_AVAILABLE))
                 emitSideEffect(NavigateBack)
             }
@@ -161,7 +160,7 @@ class ResourceDetailsViewModel(
     private var dataRefreshJob: Job? = null
     private var otpTimerJob: Job? = null
 
-    private val resource: ResourceModel
+    private val resource: ResourceUiModel
         get() = viewState.value.requiredResourceModel
 
     @Suppress("CyclomaticComplexMethod")
@@ -200,7 +199,7 @@ class ResourceDetailsViewModel(
         }
     }
 
-    private fun initialize(resourceModel: ResourceModel) {
+    private fun initialize(resourceModel: ResourceUiModel) {
         updateViewState { copy(resourceData = resourceData.copy(resourceModel = resourceModel)) }
 
         viewModelScope.launch(coroutineLaunchContext.io + missingItemExceptionHandler) {
@@ -209,7 +208,7 @@ class ResourceDetailsViewModel(
 
         dataRefreshJob?.cancel()
         dataRefreshJob =
-            viewModelScope.launch(coroutineLaunchContext.io) {
+            viewModelScope.launch(coroutineLaunchContext.io + missingItemExceptionHandler) {
                 synchronizeWithDataRefresh()
             }
 
@@ -282,7 +281,7 @@ class ResourceDetailsViewModel(
                 totpData =
                     totpData.copy(
                         showTotpSection = contentType.hasTotp(),
-                        totpModel = otpModelMapper.map(resource),
+                        totpModel = resource.toOtpItemWrapper(),
                     ),
                 noteData =
                     noteData.copy(
@@ -372,7 +371,7 @@ class ResourceDetailsViewModel(
     private suspend fun synchronizeWithDataRefresh() {
         dataRefreshTrackingFlow.dataRefreshStatusFlow.collect { status ->
             when (status) {
-                InProgress -> updateViewState { copy(isRefreshing = true) }
+                is InProgress -> updateViewState { copy(isRefreshing = true, refreshProgress = status.progress) }
                 FinishedWithFailure -> {
                     emitSideEffect(ShowErrorSnackbar(ErrorSnackbarType.DATA_REFRESH_ERROR))
                     updateViewState { copy(isRefreshing = false) }
@@ -388,7 +387,7 @@ class ResourceDetailsViewModel(
                             resourceData = resourceData.copy(resourceModel = refreshedResource),
                         )
                     }
-                    viewModelScope.launch { loadResourceDetails() }
+                    viewModelScope.launch(missingItemExceptionHandler) { loadResourceDetails() }
                 }
                 NotCompleted -> {
                     // do nothing
@@ -437,7 +436,7 @@ class ResourceDetailsViewModel(
     private fun openMoreMenu() {
         updateViewState {
             copy(
-                totpData = totpData.copy(totpModel = otpModelMapper.map(resource)),
+                totpData = totpData.copy(totpModel = resource.toOtpItemWrapper()),
                 showMoreMenu = true,
             )
         }
@@ -671,12 +670,12 @@ class ResourceDetailsViewModel(
     private fun toggleTotpVisibility() {
         val currentOtpModel = viewState.value.totpData.totpModel
         if (currentOtpModel?.isVisible == true) {
-            updateViewState { copy(totpData = totpData.copy(totpModel = otpModelMapper.map(resource))) }
+            updateViewState { copy(totpData = totpData.copy(totpModel = resource.toOtpItemWrapper())) }
         } else {
             resourceDetailActionIdlingResource.setIdle(false)
             updateViewState {
                 copy(
-                    totpData = totpData.copy(totpModel = otpModelMapper.map(resource).copy(isRefreshing = true)),
+                    totpData = totpData.copy(totpModel = resource.toOtpItemWrapper().copy(isRefreshing = true)),
                 )
             }
 
@@ -686,7 +685,7 @@ class ResourceDetailsViewModel(
                         totpData =
                             totpData.copy(
                                 totpModel =
-                                    otpModelMapper.map(resource).copy(
+                                    resource.toOtpItemWrapper().copy(
                                         otpValue = otpParameters.otpValue,
                                         isVisible = true,
                                         otpExpirySeconds = otp.period,
@@ -786,7 +785,7 @@ class ResourceDetailsViewModel(
 
     private fun toggleFavourite(option: ResourceMoreMenuModel.FavouriteOption) {
         resourceDetailActionIdlingResource.setIdle(false)
-        viewModelScope.launch(coroutineLaunchContext.io) {
+        viewModelScope.launch(coroutineLaunchContext.io + missingItemExceptionHandler) {
             updateViewState { copy(isLoading = true) }
             performCommonResourceAction(
                 action = { resourceCommonActionsInteractor.toggleFavourite(option) },
@@ -808,13 +807,13 @@ class ResourceDetailsViewModel(
     }
 
     private fun handleResourceEdited(resourceName: String?) {
-        viewModelScope.launch(coroutineLaunchContext.io) {
+        viewModelScope.launch(coroutineLaunchContext.io + missingItemExceptionHandler) {
             val refreshedResource =
                 getLocalResourceUseCase
                     .execute(GetLocalResourceUseCase.Input(resource.resourceId))
                     .resource
             updateViewState { copy(resourceData = resourceData.copy(resourceModel = refreshedResource)) }
-            viewModelScope.launch { loadResourceDetails() }
+            viewModelScope.launch(missingItemExceptionHandler) { loadResourceDetails() }
 
             emitSideEffect(ShowSuccessSnackbar(RESOURCE_EDITED))
             emitSideEffect(SetResourceEditedResult(resourceName.orEmpty()))

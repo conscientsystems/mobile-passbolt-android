@@ -41,7 +41,10 @@ import com.passbolt.mobile.android.accountinit.AccountInitializer
 import com.passbolt.mobile.android.core.idlingresource.ResourcesFullRefreshIdlingResource
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
 import com.passbolt.mobile.android.feature.startup.StartUpActivity
+import com.passbolt.mobile.android.helpers.acceptAccessibilityPolicies
 import com.passbolt.mobile.android.helpers.getString
+import com.passbolt.mobile.android.helpers.waitForHomeScreen
+import com.passbolt.mobile.android.helpers.waitForText
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
 import com.passbolt.mobile.android.rules.IdlingResourceRule
@@ -116,6 +119,7 @@ class SetupAutofillNotConfiguredTest : KoinTest {
         //    Given     Autofill is not configured for Passbolt
         //    When      I skip or finish the biometric configuration
         composeTestRule.apply {
+            waitForText(getString(LocalizationR.string.common_maybe_later))
             onNodeWithText(getString(LocalizationR.string.common_maybe_later)).performClick()
             //    Then      I am on the page explaining the Autofill configuration
             onNodeWithText(getString(LocalizationR.string.dialog_encourage_autofill_header)).assertIsDisplayed()
@@ -133,8 +137,10 @@ class SetupAutofillNotConfiguredTest : KoinTest {
         try {
             //    Given     I am on the Autofill setup page
             composeTestRule.apply {
+                waitForText(getString(LocalizationR.string.common_maybe_later))
                 onNodeWithText(getString(LocalizationR.string.common_maybe_later)).performClick()
                 //    When      I click on the "Go to settings" button
+                waitForText(getString(LocalizationR.string.dialog_encourage_autofill_go_to_settings))
                 onNodeWithText(getString(LocalizationR.string.dialog_encourage_autofill_go_to_settings)).performClick()
             }
             //    Then      I am redirected to the settings of the page for Autofill
@@ -154,10 +160,15 @@ class SetupAutofillNotConfiguredTest : KoinTest {
     fun asAMobileUserIShouldBeAbleToSkipTheAutofillConfigurationDuringTheSetupProcess() {
         //    Given     I am on the Autofill setup page
         composeTestRule.apply {
+            waitForText(getString(LocalizationR.string.common_maybe_later))
             onNodeWithText(getString(LocalizationR.string.common_maybe_later)).performClick()
             //    When      I click on the "Maybe later" button
+            waitForText(getString(LocalizationR.string.common_maybe_later))
             onNodeWithText(getString(LocalizationR.string.common_maybe_later)).performClick()
+            //    And       I accept the Accessibility Service consent screen shown before home
+            acceptAccessibilityPolicies()
             //    Then      I am redirected to the home page
+            waitForHomeScreen(timeoutMillis = 10_000)
             onNodeWithTag(Home.SCREEN).assertIsDisplayed()
         }
     }

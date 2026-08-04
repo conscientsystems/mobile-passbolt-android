@@ -27,13 +27,13 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
-import com.passbolt.mobile.android.core.users.usecase.db.GetLocalUserUseCase
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUserUseCase
 import com.passbolt.mobile.android.groupdetails.groupmemberdetails.GroupMemberDetailsIntent.GoBack
 import com.passbolt.mobile.android.groupdetails.groupmemberdetails.GroupMemberDetailsIntent.Initialize
 import com.passbolt.mobile.android.groupdetails.groupmemberdetails.GroupMemberDetailsSideEffect.NavigateUp
-import com.passbolt.mobile.android.ui.GpgKeyModel
-import com.passbolt.mobile.android.ui.UserModel
-import com.passbolt.mobile.android.ui.UserProfileModel
+import com.passbolt.mobile.android.ui.GpgKeyUiModel
+import com.passbolt.mobile.android.ui.UserProfileUiModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -168,12 +168,12 @@ class GroupMemberDetailsViewModelTest : KoinTest {
 
     private companion object {
         private val testUser =
-            UserModel(
+            UserUiModel(
                 id = UUID.randomUUID().toString(),
                 userName = "john.doe@passbolt.com",
                 disabled = false,
                 gpgKey =
-                    GpgKeyModel(
+                    GpgKeyUiModel(
                         armoredKey = "test-armored-key",
                         fingerprint = "ABCD1234EFGH5678IJKL9012MNOP3456QRST7890",
                         bits = 4096,
@@ -185,7 +185,7 @@ class GroupMemberDetailsViewModelTest : KoinTest {
                         id = UUID.randomUUID().toString(),
                     ),
                 profile =
-                    UserProfileModel(
+                    UserProfileUiModel(
                         username = "john.doe",
                         firstName = "John",
                         lastName = "Doe",

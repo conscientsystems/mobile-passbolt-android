@@ -38,7 +38,10 @@ import com.passbolt.mobile.android.accountinit.AccountInitializer
 import com.passbolt.mobile.android.core.idlingresource.ResourcesFullRefreshIdlingResource
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
 import com.passbolt.mobile.android.feature.startup.StartUpActivity
+import com.passbolt.mobile.android.helpers.acceptAccessibilityPolicies
 import com.passbolt.mobile.android.helpers.getString
+import com.passbolt.mobile.android.helpers.waitForHomeScreen
+import com.passbolt.mobile.android.helpers.waitForText
 import com.passbolt.mobile.android.instrumentationTestsModule
 import com.passbolt.mobile.android.intents.ManagedAccountIntentCreator
 import com.passbolt.mobile.android.rules.IdlingResourceRule
@@ -112,9 +115,13 @@ class SetupAutofillConfiguredTest : KoinTest {
         composeTestRule.apply {
             //    Given     Autofill is configured for Passbolt
             //    When      I skip or finish the biometric configuration
+            waitForText(getString(LocalizationR.string.common_maybe_later))
             onNodeWithText(getString(LocalizationR.string.common_maybe_later)).performClick()
+            //    And       I accept the Accessibility Service consent screen shown before home
+            acceptAccessibilityPolicies()
             //    Then      I do not see the page explaining the autofill configuration
             //    And       I see the home page
+            waitForHomeScreen(timeoutMillis = 10_000)
             onNodeWithTag(Home.SCREEN).assertIsDisplayed()
         }
     }

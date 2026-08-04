@@ -33,9 +33,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -46,12 +44,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
-import com.passbolt.mobile.android.core.fulldatarefresh.service.DataRefreshService
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.results.NavigationResultEventBus
 import com.passbolt.mobile.android.core.navigation.compose.results.ResourcePickerResultEvent
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
 import com.passbolt.mobile.android.core.ui.dialogs.ConfirmAlertDialog
+import com.passbolt.mobile.android.core.ui.progressindicator.DataRefreshProgressIndicator
 import com.passbolt.mobile.android.core.ui.scaffold.HomeScaffold
 import com.passbolt.mobile.android.core.ui.search.SearchInput
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
@@ -59,7 +57,6 @@ import com.passbolt.mobile.android.resourcepicker.model.ConfirmationModelFactory
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.CloseConfirmationDialog
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.ConfirmOtpLink
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.GoBack
-import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.Initialize
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.Search
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerIntent.SearchEndIconAction
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerSideEffect.NavigateBackWithResult
@@ -67,16 +64,14 @@ import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerSideEffec
 import com.passbolt.mobile.android.resourcepicker.screen.ResourcePickerSideEffect.ShowErrorSnackbar
 import com.passbolt.mobile.android.resourcepicker.screen.list.ResourcePickerList
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 @Composable
 internal fun ResourcePickerScreen(
-    suggestionUri: String?,
+    viewModel: ResourcePickerViewModel,
     modifier: Modifier = Modifier,
-    viewModel: ResourcePickerViewModel = koinViewModel(),
     navigator: AppNavigator = koinInject(),
 ) {
     val context = LocalContext.current
@@ -85,10 +80,6 @@ internal fun ResourcePickerScreen(
     val coroutineScope = rememberCoroutineScope()
     val resultBus = NavigationResultEventBus.current
     val errorColor = colorResource(CoreUiR.color.red)
-
-    LaunchedEffect(suggestionUri) {
-        viewModel.onIntent(Initialize(suggestionUri))
-    }
 
     ResourcePickerScreen(
         state = state.value,
@@ -128,8 +119,6 @@ private fun ResourcePickerScreen(
     modifier: Modifier = Modifier,
     confirmationModelFactory: ConfirmationModelFactory = koinInject(),
 ) {
-    val context = LocalContext.current
-
     HomeScaffold(
         snackbarHostState = snackbarHostState,
         modifier = modifier,
@@ -170,15 +159,19 @@ private fun ResourcePickerScreen(
             }
         },
         content = { paddingValues ->
-            PullToRefreshBox(
-                isRefreshing = state.isRefreshing,
-                onRefresh = { DataRefreshService.start(context) },
+            Box(
                 modifier =
                     Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
             ) {
                 ResourcePickerList(state, onIntent)
+                if (state.isRefreshing) {
+                    DataRefreshProgressIndicator(
+                        progress = state.refreshProgress,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                    )
+                }
             }
 
             if (state.showConfirmationDialog && state.confirmationType != null && state.pickAction != null) {

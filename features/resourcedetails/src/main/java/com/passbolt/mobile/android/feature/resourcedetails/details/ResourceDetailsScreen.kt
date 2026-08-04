@@ -23,9 +23,9 @@
 
 package com.passbolt.mobile.android.feature.resourcedetails.details
 
-import PassboltTheme
 import android.graphics.drawable.Drawable
 import android.widget.Toast
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.clipboard.ClipboardAccess
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.LocationDetailsNavigationKey.LocationDetails
@@ -67,13 +68,12 @@ import com.passbolt.mobile.android.core.navigation.compose.results.NavigationRes
 import com.passbolt.mobile.android.core.navigation.compose.results.ResourceDetailsCompleteResult
 import com.passbolt.mobile.android.core.navigation.compose.results.ResourceFormCompleteResult
 import com.passbolt.mobile.android.core.navigation.compose.results.ResultEffect
-import com.passbolt.mobile.android.core.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.core.ui.dialogs.ConfirmResourceDeleteAlertDialog
 import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
-import com.passbolt.mobile.android.core.ui.pulltorefresh.PullToRefreshIndicatorBox
 import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
+import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseDeleteConfirmationDialog
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.CloseMoreMenu
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ConfirmDeleteResource
@@ -117,7 +117,7 @@ import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheet
 import com.passbolt.mobile.android.testtags.composetags.ResourceDetails
 import com.passbolt.mobile.android.ui.PermissionsItem
 import com.passbolt.mobile.android.ui.ResourceFormMode
-import com.passbolt.mobile.android.ui.ResourceModel
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.isExpired
 import com.passbolt.mobile.android.ui.isFavourite
 import kotlinx.coroutines.launch
@@ -128,7 +128,7 @@ import com.passbolt.mobile.android.core.ui.R as CoreUiR
 @Composable
 @Suppress("CyclomaticComplexMethod")
 fun ResourceDetailsScreen(
-    resourceModel: ResourceModel,
+    resourceModel: ResourceUiModel,
     modifier: Modifier = Modifier,
     viewModel: ResourceDetailsViewModel = koinViewModel(),
     clipboardAccess: ClipboardAccess = koinInject(),
@@ -269,6 +269,7 @@ private fun ResourceDetailsScreen(
         topBar = {
             TitleAppBar(
                 navigationIcon = { BackNavigationIcon(onBackClick = { onIntent(GoBack) }) },
+                refreshProgress = if (state.isRefreshing) state.refreshProgress else null,
                 actions = {
                     IconButton(
                         onClick = { onIntent(OpenMoreMenu) },
@@ -300,8 +301,7 @@ private fun ResourceDetailsScreen(
             )
         },
         content = { paddingValues ->
-            PullToRefreshIndicatorBox(
-                isRefreshing = state.isRefreshing,
+            Box(
                 modifier =
                     Modifier
                         .fillMaxSize()

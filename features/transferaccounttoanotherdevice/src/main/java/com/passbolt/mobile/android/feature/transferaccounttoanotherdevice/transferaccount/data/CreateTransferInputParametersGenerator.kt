@@ -1,7 +1,8 @@
 package com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data
 
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetSelectedUserPrivateKeyUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.privatekey.PrivateKeyRepository
 import com.passbolt.mobile.android.dto.response.qrcode.AssembledKeyDto
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data.QrGenerationConstants.MAX_QR_DATA_BYTES
 import com.passbolt.mobile.android.feature.transferaccounttoanotherdevice.transferaccount.data.QrGenerationConstants.RESERVED_BYTES_COUNT
@@ -40,13 +41,15 @@ import kotlin.math.ceil
  * @since v1.0
  */
 class CreateTransferInputParametersGenerator(
-    private val getSelectedAccountPrivateKeyUseCase: GetSelectedUserPrivateKeyUseCase,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val privateKeyRepository: PrivateKeyRepository,
     private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
     private val openPgp: OpenPgp,
 ) {
     suspend fun calculateCreateTransferParameters(): Output =
         try {
-            val armoredPrivateKey = requireNotNull(getSelectedAccountPrivateKeyUseCase.execute(Unit).privateKey)
+            val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
+            val armoredPrivateKey = requireNotNull(privateKeyRepository.getPrivateKey(userId)?.armoredKey)
             val accountData = getSelectedAccountDataUseCase.execute(Unit)
             val userServerId = requireNotNull(accountData.serverId)
             val privateKeyFingerprint =

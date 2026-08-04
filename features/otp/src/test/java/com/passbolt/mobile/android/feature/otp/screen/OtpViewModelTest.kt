@@ -38,26 +38,29 @@ import com.passbolt.mobile.android.common.time.TimeProvider
 import com.passbolt.mobile.android.common.urimatcher.AutofillUriMatcher
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.commontest.coroutinetimer.TestCoroutineTimerFactory
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.core.mvp.authentication.SessionRefreshTrackingFlow
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
-import com.passbolt.mobile.android.core.resources.actions.ResourceUpdateActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.actions.SecretPropertiesActionsInteractorFactory
-import com.passbolt.mobile.android.core.resources.usecase.db.GetLocalResourcesUseCase
+import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider.OtpParametersResult.OtpParameters
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.AVATAR
 import com.passbolt.mobile.android.core.ui.search.SearchInputEndIconMode.CLEAR
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKeysHelperInteractor
+import com.passbolt.mobile.android.domain.metadata.interactor.ResourceAccessInteractor
+import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractorFactory
+import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
+import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesUseCase
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePassword
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreatePinCode
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CreateTotp
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Dispose
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.EditOtp
-import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenCreateResourceMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OpenOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.OtpQRScanReturned
+import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.RevealOtp
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.Search
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.SearchEndIconAction
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.InitiateDataRefresh
@@ -67,21 +70,19 @@ import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.NavigateToEd
 import com.passbolt.mobile.android.feature.otp.screen.OtpSideEffect.ShowSuccessSnackbar
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarSuccessType.RESOURCE_CREATED
 import com.passbolt.mobile.android.feature.otp.screen.SnackbarSuccessType.RESOURCE_EDITED
+import com.passbolt.mobile.android.jsonmodel.delegates.TotpSecret
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
-import com.passbolt.mobile.android.mappers.OtpModelMapper
-import com.passbolt.mobile.android.metadata.interactor.MetadataPrivateKeysHelperInteractor
-import com.passbolt.mobile.android.metadata.usecase.CanCreateResourceUseCase
-import com.passbolt.mobile.android.ui.LeadingContentType.PASSWORD
-import com.passbolt.mobile.android.ui.LeadingContentType.PIN_CODE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.MetadataJsonModel
 import com.passbolt.mobile.android.ui.OtpItemWrapper
-import com.passbolt.mobile.android.ui.ResourceModel
 import com.passbolt.mobile.android.ui.ResourcePermission
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -100,6 +101,7 @@ import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.get
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
@@ -122,7 +124,7 @@ class OtpViewModelTest : KoinTest {
                         single { mock<GetLocalResourcesUseCase>() }
                         single { mock<TotpParametersProvider>() }
                         single { mock<MetadataPrivateKeysHelperInteractor>() }
-                        single { mock<CanCreateResourceUseCase>() }
+                        single { mock<ResourceAccessInteractor>() }
                         single { mock<ResourceUpdateActionsInteractorFactory>() }
                         single { mock<SecretPropertiesActionsInteractorFactory>() }
                         single { mock<AutofillUriMatcher>() }
@@ -134,13 +136,12 @@ class OtpViewModelTest : KoinTest {
                                 showSuggestedModel = showSuggestedModel,
                                 getSelectedAccountDataUseCase = get(),
                                 getLocalResourcesUseCase = get(),
-                                otpModelMapper = get(),
                                 totpParametersProvider = get(),
                                 coroutineLaunchContext = get(),
                                 dataRefreshTrackingFlow = get(),
                                 metadataPrivateKeysHelperInteractor = get(),
                                 timerFactory = get(),
-                                canCreateResourceUse = get(),
+                                resourceAccessInteractor = get(),
                                 resourceUpdateActionsInteractorFactory = get(),
                                 secretPropertiesActionsInteractorFactory = get(),
                                 autofillUriMatcher = get(),
@@ -156,7 +157,6 @@ class OtpViewModelTest : KoinTest {
                                 .options(EnumSet.noneOf(Option::class.java))
                                 .build()
                         }
-                        factoryOf(::OtpModelMapper)
                         factoryOf(::SearchableMatcher)
                         singleOf(::DataRefreshTrackingFlow)
                         singleOf(::SessionRefreshTrackingFlow)
@@ -180,10 +180,8 @@ class OtpViewModelTest : KoinTest {
             onBlocking { execute(any()) } doReturn GetLocalResourcesUseCase.Output(otpResources)
         }
 
-        val canCreateResourceUseCase = get<CanCreateResourceUseCase>()
-        canCreateResourceUseCase.stub {
-            onBlocking { execute(any()) } doReturn
-                CanCreateResourceUseCase.Output(canCreateResource = true)
+        get<ResourceAccessInteractor>().stub {
+            onBlocking { canCreateResource(anyOrNull()) } doReturn true
         }
     }
 
@@ -191,21 +189,6 @@ class OtpViewModelTest : KoinTest {
     fun tearDown() {
         Dispatchers.resetMain()
     }
-
-    @Test
-    fun `should be able to open and close create resource`() =
-        runTest {
-            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
-
-            viewModel.onIntent(OpenCreateResourceMenu)
-
-            viewModel.viewState.test {
-                assertThat(awaitItem().showCreateResourceBottomSheet).isTrue()
-
-                viewModel.onIntent(CloseCreateResourceMenu)
-                assertThat(awaitItem().showCreateResourceBottomSheet).isFalse()
-            }
-        }
 
     @Test
     fun `should be able to open and close switch account`() =
@@ -247,7 +230,7 @@ class OtpViewModelTest : KoinTest {
 
             viewModel.onIntent(Search("abc"))
 
-            viewModel.viewState.drop(1).test {
+            viewModel.viewState.test {
                 assertThat(awaitItem().searchInputEndIconMode).isEqualTo(CLEAR)
 
                 viewModel.onIntent(SearchEndIconAction)
@@ -264,7 +247,7 @@ class OtpViewModelTest : KoinTest {
 
             viewModel.onIntent(Search("resource 2"))
 
-            viewModel.viewState.drop(1).test {
+            viewModel.viewState.test {
                 val state = awaitItem()
                 assertThat(state.searchQuery).isEqualTo("resource 2")
                 assertThat(state.searchInputEndIconMode).isEqualTo(CLEAR)
@@ -273,13 +256,66 @@ class OtpViewModelTest : KoinTest {
         }
 
     @Test
+    fun `should reveal otp on filtered list when search query is active`() =
+        runTest {
+            mockSuccessfulTotpFetch()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
+
+            viewModel.onIntent(Search("resource"))
+            viewModel.onIntent(RevealOtp(otpResources.first()))
+
+            viewModel.viewState.test {
+                val state = expectMostRecentItem()
+                assertThat(state.isInFilteringMode).isTrue()
+                val revealedItem = state.uiOtps.first { it.resource.resourceId == otpResources.first().resourceId }
+                assertThat(revealedItem.isVisible).isTrue()
+                assertThat(revealedItem.otpValue).isEqualTo(OTP_VALUE)
+            }
+        }
+
+    @Test
+    fun `should reset revealed otp but keep search filter on dispose`() =
+        runTest {
+            mockSuccessfulTotpFetch()
+            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
+
+            viewModel.onIntent(Search("resource"))
+            viewModel.onIntent(RevealOtp(otpResources.first()))
+
+            viewModel.viewState.test {
+                assertThat(expectMostRecentItem().uiOtps.any { it.isVisible }).isTrue()
+
+                viewModel.onIntent(Dispose)
+
+                val state = expectMostRecentItem()
+                assertThat(state.searchQuery).isEqualTo("resource")
+                assertThat(state.isInFilteringMode).isTrue()
+                assertThat(state.otps.none { it.isVisible }).isTrue()
+                assertThat(state.filteredOtps.none { it.isVisible }).isTrue()
+            }
+        }
+
+    private fun mockSuccessfulTotpFetch(otpFlow: Flow<SecretPropertyActionResult<TotpSecret>> = flowOf(totpFetchSuccess)) {
+        val secretPropertiesActionsInteractor =
+            mock<SecretPropertiesActionsInteractor> {
+                onBlocking { provideOtp() } doReturn otpFlow
+            }
+        val secretPropertiesActionsInteractorFactory = get<SecretPropertiesActionsInteractorFactory>()
+        whenever(secretPropertiesActionsInteractorFactory.create(any())) doReturn secretPropertiesActionsInteractor
+
+        val totpParametersProvider = get<TotpParametersProvider>()
+        whenever(totpParametersProvider.provideOtpParameters(any(), any(), any(), any())) doReturn
+            OtpParameters(OTP_VALUE, secondsValid = 25)
+    }
+
+    @Test
     fun `should show refresh while resources are loading`() =
         runTest {
             viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.viewState.drop(1).test {
                 val dataRefreshStatusFlow = get<DataRefreshTrackingFlow>()
-                dataRefreshStatusFlow.updateStatus(InProgress)
+                dataRefreshStatusFlow.updateStatus(InProgress(progress = 0f))
                 val state = awaitItem()
                 assertThat(state.isRefreshing).isTrue()
 
@@ -299,34 +335,6 @@ class OtpViewModelTest : KoinTest {
                 val state = awaitItem()
                 assertThat(state.userAvatar).isEqualTo(selectedAccountData.avatarUrl)
                 assertThat(state.otps).hasSize(otpResources.size)
-            }
-        }
-
-    @Test
-    fun `should navigate to create resource form when create password intent is received`() =
-        runTest {
-            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
-
-            viewModel.sideEffect.test {
-                viewModel.onIntent(CreatePassword)
-
-                val sideEffect = awaitItem()
-                assertIs<NavigateToCreateResourceForm>(sideEffect)
-                assertThat(sideEffect.leadingContentType).isEqualTo(PASSWORD)
-            }
-        }
-
-    @Test
-    fun `should navigate to create resource form when create pin code intent is received`() =
-        runTest {
-            viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
-
-            viewModel.sideEffect.test {
-                viewModel.onIntent(CreatePinCode)
-
-                val sideEffect = awaitItem()
-                assertIs<NavigateToCreateResourceForm>(sideEffect)
-                assertThat(sideEffect.leadingContentType).isEqualTo(PIN_CODE)
             }
         }
 
@@ -446,18 +454,13 @@ class OtpViewModelTest : KoinTest {
     @Test
     fun `should show error when resource creation not possible`() =
         runTest {
-            val canCreateResourceUseCase = get<CanCreateResourceUseCase>()
-            whenever(canCreateResourceUseCase.execute(any())) doReturn
-                CanCreateResourceUseCase.Output(canCreateResource = false)
+            get<ResourceAccessInteractor>().stub {
+                onBlocking { canCreateResource(anyOrNull()) } doReturn false
+            }
 
             viewModel = get { parametersOf(ShowSuggestedModel.DoNotShow) }
 
             viewModel.sideEffect.test {
-                viewModel.onIntent(CreatePassword)
-                val stateAfterCreatePassword = awaitItem()
-                assertIs<OtpSideEffect.ShowErrorSnackbar>(stateAfterCreatePassword)
-                assertThat(stateAfterCreatePassword.type).isEqualTo(SnackbarErrorType.NO_SHARED_KEY_ACCESS)
-
                 viewModel.onIntent(CreateTotp)
                 val stateAfterCreateTotp = awaitItem()
                 assertIs<OtpSideEffect.ShowErrorSnackbar>(stateAfterCreateTotp)
@@ -466,6 +469,21 @@ class OtpViewModelTest : KoinTest {
         }
 
     private companion object {
+        private const val OTP_VALUE = "123456"
+
+        private val totpFetchSuccess by lazy {
+            SecretPropertyActionResult.Success(
+                SecretPropertiesActionsInteractor.OTP_LABEL,
+                isSecret = true,
+                TotpSecret(
+                    algorithm = "SHA1",
+                    key = "JBSWY3DPEHPK3PXP",
+                    digits = 6,
+                    period = 30L,
+                ),
+            )
+        }
+
         private val selectedAccountData =
             GetSelectedAccountDataUseCase.Output(
                 firstName = "John",
@@ -480,7 +498,7 @@ class OtpViewModelTest : KoinTest {
 
         private val otpResources by lazy {
             listOf(
-                ResourceModel(
+                ResourceUiModel(
                     resourceId = "resId",
                     resourceTypeId = "resTypeId",
                     slug = "password-and-description",
@@ -503,7 +521,7 @@ class OtpViewModelTest : KoinTest {
                     metadataKeyId = null,
                     metadataKeyType = null,
                 ),
-                ResourceModel(
+                ResourceUiModel(
                     resourceId = "resId2",
                     resourceTypeId = "resTypeId",
                     slug = "password-and-description",

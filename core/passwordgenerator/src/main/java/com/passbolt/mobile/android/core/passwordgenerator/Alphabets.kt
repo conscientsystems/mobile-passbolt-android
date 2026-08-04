@@ -3,7 +3,7 @@ package com.passbolt.mobile.android.core.passwordgenerator
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.Codepoint
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.CodepointSet
 import com.passbolt.mobile.android.core.passwordgenerator.codepoints.CodepointSet.Companion.withLookAlikeExcluded
-import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsModel
+import com.passbolt.mobile.android.ui.PasswordGeneratorSettingsUiModel
 
 /**
  * Passbolt - Open source password manager for teams
@@ -261,7 +261,7 @@ object Alphabets {
         excludeLookAlike: Boolean,
     ): CodepointSet = all[name]!!.withLookAlikeExcluded(excludeLookAlike)
 
-    fun getCodepointSetsForModel(model: PasswordGeneratorSettingsModel): Set<CodepointSet> {
+    fun getCodepointSetsForModel(model: PasswordGeneratorSettingsUiModel): Set<CodepointSet> {
         val result = mutableSetOf<CodepointSet>()
         val excludeLookAlike = model.excludeLookAlikeChars
         if (model.maskUpper) {

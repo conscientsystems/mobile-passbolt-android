@@ -6,11 +6,15 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.ActivityIntents
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig.SignIn
@@ -100,14 +104,23 @@ private fun AutofillResourcesScreen(
     autofillType: AutofillType,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
-        if (showHome) {
-            when (autofillType) {
-                AutofillType.CREDENTIALS, AutofillType.CREDENTIALS_AND_TOTP -> HomeTabContent()
-                AutofillType.TOTP -> TotpTabContent()
+    PassboltTheme {
+        Scaffold(modifier = modifier) { innerPadding ->
+            Box(
+                modifier =
+                    Modifier
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding),
+            ) {
+                if (showHome) {
+                    when (autofillType) {
+                        AutofillType.CREDENTIALS, AutofillType.CREDENTIALS_AND_TOTP -> HomeTabContent()
+                        AutofillType.TOTP -> TotpTabContent()
+                    }
+                }
+
+                ProgressDialog(showProgress)
             }
         }
-
-        ProgressDialog(showProgress)
     }
 }

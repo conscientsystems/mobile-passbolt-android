@@ -46,7 +46,6 @@ import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoBack
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.GoToPageSize
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleAuthRequiredOnEveryEntry
-import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleDeveloperMode
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsIntent.ToggleHideRootWarning
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateToPageSize
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.expertsettings.ExpertSettingsScreenSideEffect.NavigateUp
@@ -106,17 +105,9 @@ private fun ExpertSettingsScreen(
                 )
 
                 SwitchableSettingsItem(
-                    iconPainter = painterResource(R.drawable.ic_dev_mode),
-                    title = stringResource(LocalizationR.string.settings_app_settings_expert_settings_dev_mode),
-                    isChecked = state.isDeveloperModeChecked,
-                    onCheckedChange = { onIntent(ToggleDeveloperMode) },
-                )
-
-                SwitchableSettingsItem(
                     iconPainter = painterResource(R.drawable.ic_hash),
                     title = stringResource(LocalizationR.string.settings_app_settings_expert_settings_hide_root),
                     isChecked = state.isHideRootWarningChecked,
-                    isEnabled = state.isHideRootWarningEnabled,
                     onCheckedChange = { onIntent(ToggleHideRootWarning) },
                 )
 

@@ -22,13 +22,13 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.passbolt.mobile.android.core.ui.circularimage.CircularProfileImage
 import com.passbolt.mobile.android.core.ui.sharedwith.xFor
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 // TODO: Identical UI offset logic to "SharedWith" section - prepare one composable that abstracts model and use in both
 @Composable
 fun GroupMembersSection(
-    users: List<UserModel>,
+    users: List<UserUiModel>,
     modifier: Modifier = Modifier,
     avatarSize: Dp = 40.dp,
 ) {

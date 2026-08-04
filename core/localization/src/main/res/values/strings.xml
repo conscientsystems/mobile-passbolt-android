@@ -62,6 +62,8 @@
     <string name="common_metadata_key_verification_failure">Could not verify metadata keys</string>
     <string name="common_metadata_key_is_trusted">New metadata key is trusted</string>
     <string name="common_metadata_key_trust_failed">Failed to trust new metadata key</string>
+    <string name="common_password_policies_fetch_failed">Failed to fetch password policies - using defaults</string>
+    <string name="common_password_expiry_fetch_failed">Failed to fetch password expiry settings - using defaults</string>
     <string name="common_bullet_format"
         translatable="false">• %s</string>
     <string name="common_bullet"
@@ -318,6 +320,12 @@
     <string name="resource_details_invalid_totp_scanned">Invalid TOTP QR code scanned</string>
     <string name="resource_details_metadata_header">Metadata</string>
     <string name="resource_details_custom_fields_header">Custom fields</string>
+    <string name="resource_details_upgrade_available_header">Upgrade available</string>
+    <string name="resource_details_upgrade_panel_message">This is a legacy resource. Upgrade for security improvements and new features.</string>
+    <string name="resource_details_upgrade_action">Upgrade</string>
+    <string name="resource_details_upgrade_learn_more">Learn more</string>
+    <string name="resource_details_upgrade_success">Resource upgraded.</string>
+    <string name="resource_details_upgrade_failure">Could not upgrade the resource. Please try again.</string>
     <string name="additional_uri_format">• %s</string>
 
     <string name="more_details_copy_password">Copy password</string>
@@ -337,6 +345,34 @@
     <string name="resource_form_totp_url_issuer">URL (Issuer)</string>
     <string name="resource_form_totp_more_settings">More TOTP settings</string>
     <string name="resource_form_totp_settings">TOTP settings</string>
+    <string name="resource_form_advanced_password_generation">Advanced password generation</string>
+    <string name="resource_form_advanced_passphrase_generation">Advanced passphrase generation</string>
+    <string name="resource_form_advanced_password_generation_save_preferences">Save preferences</string>
+    <string name="resource_form_advanced_password_generation_password_preview">Password preview</string>
+    <string name="resource_form_advanced_password_generation_passphrase_preview">Passphrase preview</string>
+    <string name="resource_form_advanced_password_generation_tab_password">Password</string>
+    <string name="resource_form_advanced_password_generation_tab_passphrase">Passphrase</string>
+    <string name="resource_form_advanced_password_generation_length">Length</string>
+    <string name="resource_form_advanced_password_generation_character_types">Character Types</string>
+    <string name="resource_form_advanced_password_generation_exclude_look_alike">Exclude look-alike characters</string>
+    <string name="resource_form_advanced_password_generation_exclude_look_alike_description">Skip characters that can be confused with each other (O/0, l/I/1).</string>
+    <string name="resource_form_advanced_password_generation_number_of_words">Number of words</string>
+    <string name="resource_form_advanced_password_generation_word_separator">Word separator</string>
+    <string name="resource_form_advanced_password_generation_word_separator_hint">Type one or more characters</string>
+    <string name="resource_form_advanced_password_generation_word_case">Word case</string>
+    <string name="resource_form_character_set_upper">A-Z</string>
+    <string name="resource_form_character_set_digit">0-9</string>
+    <string name="resource_form_character_set_lower">a-z</string>
+    <string name="resource_form_character_set_parenthesis">{ [ ( | ) ] }</string>
+    <string name="resource_form_character_set_special_char1"># $ % &amp; @ ^ ~</string>
+    <string name="resource_form_character_set_special_char2">. , : ;</string>
+    <string name="resource_form_character_set_special_char3">\' \" `</string>
+    <string name="resource_form_character_set_special_char4">/ \\ _ -</string>
+    <string name="resource_form_character_set_special_char5">&lt; * + ! ? =</string>
+    <string name="resource_form_character_set_emoji">🙂</string>
+    <string name="resource_form_word_case_lowercase">Lower case</string>
+    <string name="resource_form_word_case_uppercase">Upper case</string>
+    <string name="resource_form_word_case_camelcase">Camel case</string>
     <string name="resource_form_description">Description</string>
     <string name="resource_form_additional_uris">Additional URIs</string>
     <string name="resource_form_enter_description">Enter description</string>
@@ -424,10 +460,11 @@
     <string name="settings_app_settings_expert_settings">Expert settings</string>
 
     <string name="settings_app_settings_expert_settings_require_auth_on_every_entry">Require auth on every entry</string>
-    <string name="settings_app_settings_expert_settings_dev_mode">Developer mode</string>
     <string name="settings_app_settings_expert_settings_hide_root">Hide “device is rooted” dialog</string>
     <string name="settings_app_settings_expert_settings_fetch_page_size">API fetch page size</string>
     <string name="settings_page_size_description">Number of resources fetched per API request. Higher values use more memory but reduce the number of network requests.</string>
+    <string name="settings_page_size_exceeds_recommended_limit">Exceeds recommended limit. May cause app slowdowns.</string>
+    <string name="settings_page_size_restore_default_values">Restore default values</string>
 
     <string name="settings_autofill_autofill_title">Here you can change autofill methods</string>
     <string name="settings_autofill_autofill_desc">It is recommended to use the Autofill Service method, but the Service performance may depend on your device and battery optimization settings. \n\nIf the Autofill Service is not working reliably on your device you can try enabling autofill based on Accessibility Service.</string>

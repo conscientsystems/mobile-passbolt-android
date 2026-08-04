@@ -1,13 +1,13 @@
 package com.passbolt.mobile.android.permissions.grouppermissionsdetails.ui
 
 import com.passbolt.mobile.android.core.ui.overlap.OverlapCalculator
-import com.passbolt.mobile.android.ui.UserModel
+import com.passbolt.mobile.android.ui.UserUiModel
 
 class UsersDatasetCreator(
     private val membersRecyclerWidth: Int,
     private val membersItemWidth: Float,
 ) {
-    fun prepareDataset(users: List<UserModel>): Output {
+    fun prepareDataset(users: List<UserUiModel>): Output {
         val overlapCalculationResult =
             OverlapCalculator(
                 membersRecyclerWidth,
@@ -39,7 +39,7 @@ class UsersDatasetCreator(
     }
 
     data class Output(
-        val users: List<UserModel>,
+        val users: List<UserUiModel>,
         val counterValue: List<String>,
         val overlap: Int,
     )

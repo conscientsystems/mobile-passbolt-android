@@ -3,24 +3,26 @@ package com.passbolt.mobile.android.feature.authentication.auth
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.common.usecase.UserIdInput
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.GetAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.SaveServerFingerprintUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.GetPrivateKeyUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveSelectedAccountUseCase
-import com.passbolt.mobile.android.core.authenticationcore.passphrase.GetPassphraseUseCase
-import com.passbolt.mobile.android.core.authenticationcore.session.SaveSessionUseCase
 import com.passbolt.mobile.android.core.idlingresource.SignInIdlingResource
-import com.passbolt.mobile.android.core.inappreview.InAppReviewInteractor
 import com.passbolt.mobile.android.core.mvp.authentication.MfaProvidersHandler
 import com.passbolt.mobile.android.core.navigation.ActivityIntents.AuthConfig
 import com.passbolt.mobile.android.core.navigation.AppContext
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.core.passphrasememorycache.PotentialPassphrase
-import com.passbolt.mobile.android.core.preferences.usecase.DEFAULT_API_FETCH_PAGE_SIZE
-import com.passbolt.mobile.android.core.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.core.security.rootdetection.RootDetector
 import com.passbolt.mobile.android.core.security.runtimeauth.RuntimeAuthenticatedFlag
+import com.passbolt.mobile.android.domain.accounts.usecase.GetAccountDataUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveServerFingerprintUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.GetPassphraseUseCase
+import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
+import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
+import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
+import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
+import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationError
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.BiometricAuthenticationSuccess
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.ConnectToExistingAccount
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.DismissNoAccountExplanation
@@ -36,6 +38,8 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Hi
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.NavigateBack
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.NavigateToAccountList
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.ShowErrorSnackbar
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.BIOMETRIC_LOCKOUT_PERMANENT
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.WRONG_PASSPHRASE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthState.RefreshAuthReason.PASSPHRASE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthState.RefreshAuthReason.SESSION
@@ -44,9 +48,12 @@ import com.passbolt.mobile.android.feature.authentication.auth.usecase.BiometryI
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.PostSignInActionsInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.ServerKeysWarmup
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignInVerifyInteractor
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.SignOutUseCase
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.VerifyPassphraseUseCase
+import com.passbolt.mobile.android.ui.BiometricAuthError
+import com.passbolt.mobile.android.ui.GlobalPreferencesUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.drop
@@ -71,6 +78,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -104,6 +112,7 @@ class AuthViewModelTest : KoinTest {
                     single { mock<InAppReviewInteractor>() }
                     single { mock<PostSignInActionsInteractor>() }
                     single { mock<RefreshSessionUseCase>() }
+                    single { mock<ServerKeysWarmup>() }
                     single { RuntimeAuthenticatedFlag() }
                     singleOf(::SignInIdlingResource)
                     factoryOf(::MfaProvidersHandler)
@@ -134,6 +143,7 @@ class AuthViewModelTest : KoinTest {
                             postSignInActionsInteractor = get(),
                             refreshSessionUseCase = get(),
                             mfaProvidersHandler = get(),
+                            serverKeysWarmup = get(),
                         )
                     }
                 },
@@ -149,15 +159,15 @@ class AuthViewModelTest : KoinTest {
         Dispatchers.setMain(testDispatcher)
 
         val getGlobalPreferencesUseCase: GetGlobalPreferencesUseCase = get()
-        whenever(getGlobalPreferencesUseCase.execute(any())) doReturn
-            GetGlobalPreferencesUseCase.Output(
+        whenever(getGlobalPreferencesUseCase.execute(Unit)) doReturn
+            GlobalPreferencesUiModel(
                 areDebugLogsEnabled = false,
                 debugLogFileCreationDateTime = null,
                 debugLogLastAppVersion = null,
-                isDeveloperModeEnabled = false,
                 isHideRootDialogEnabled = true,
                 isAuthRequiredOnEveryEntry = true,
-                apiFetchPageSize = DEFAULT_API_FETCH_PAGE_SIZE,
+                apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
+                isApiFetchPageSizeManuallySet = false,
                 accessibilityPoliciesConsentGiven = false,
             )
 
@@ -165,7 +175,7 @@ class AuthViewModelTest : KoinTest {
         whenever(getAccountDataUseCase.execute(UserIdInput(USER_ID))) doReturn accountData
 
         val getPrivateKeyUseCase: GetPrivateKeyUseCase = get()
-        whenever(getPrivateKeyUseCase.execute(any())) doReturn GetPrivateKeyUseCase.Output("privateKey")
+        whenever(getPrivateKeyUseCase.execute(any())) doReturn GetPrivateKeyUseCase.Output(PrivateKey("privateKey"))
     }
 
     @After
@@ -488,6 +498,43 @@ class AuthViewModelTest : KoinTest {
         }
 
     @Test
+    fun `server keys warm-up is triggered on init for every full sign-in config`() =
+        runTest {
+            val warmup: ServerKeysWarmup = get()
+            val configsThatWarmUp =
+                listOf(
+                    AuthConfig.Startup,
+                    AuthConfig.Setup,
+                    AuthConfig.ManageAccount,
+                    AuthConfig.SignIn,
+                    AuthConfig.RefreshSession,
+                )
+
+            configsThatWarmUp.forEach { config ->
+                reset(warmup)
+                viewModel = get(parameters = { parametersOf(config, USER_ID, AppContext.APP) })
+                verify(warmup).warmUp(USER_ID)
+            }
+        }
+
+    @Test
+    fun `server keys warm-up is skipped on init for passphrase-only and MFA configs`() =
+        runTest {
+            val warmup: ServerKeysWarmup = get()
+            val configsThatSkip =
+                listOf(
+                    AuthConfig.RefreshPassphrase,
+                    AuthConfig.Mfa("totp"),
+                )
+
+            configsThatSkip.forEach { config ->
+                reset(warmup)
+                viewModel = get(parameters = { parametersOf(config, USER_ID, AppContext.APP) })
+                verify(warmup, never()).warmUp(any())
+            }
+        }
+
+    @Test
     fun `biometric auth success does not expose decrypted passphrase in view state`() =
         runTest {
             val mockCipher = mock<Cipher>()
@@ -507,6 +554,24 @@ class AuthViewModelTest : KoinTest {
             }
 
             assertThat(viewModel.viewState.value.passphrase).isEmpty()
+        }
+
+    @Test
+    fun `biometric lockout errors show dedicated messages`() =
+        runTest {
+            viewModel = get(parameters = { parametersOf(AuthConfig.Startup, USER_ID, AppContext.APP) })
+
+            viewModel.sideEffect.test {
+                viewModel.onIntent(BiometricAuthenticationError(BiometricAuthError.ERROR_LOCKOUT))
+                val lockout = awaitItem()
+                assertIs<ShowErrorSnackbar>(lockout)
+                assertThat(lockout.kind).isEqualTo(BIOMETRIC_LOCKOUT)
+
+                viewModel.onIntent(BiometricAuthenticationError(BiometricAuthError.ERROR_LOCKOUT_PERMANENT))
+                val permanentLockout = awaitItem()
+                assertIs<ShowErrorSnackbar>(permanentLockout)
+                assertThat(permanentLockout.kind).isEqualTo(BIOMETRIC_LOCKOUT_PERMANENT)
+            }
         }
 
     private companion object {

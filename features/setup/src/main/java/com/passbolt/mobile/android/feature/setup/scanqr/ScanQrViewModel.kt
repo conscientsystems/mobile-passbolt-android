@@ -28,16 +28,20 @@ import com.passbolt.mobile.android.common.HttpsVerifier
 import com.passbolt.mobile.android.common.UuidProvider
 import com.passbolt.mobile.android.common.usecase.FetchFileAsStringUseCase
 import com.passbolt.mobile.android.core.accounts.AccountKitParser
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
-import com.passbolt.mobile.android.core.accounts.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
-import com.passbolt.mobile.android.core.accounts.usecase.accountdata.UpdateAccountDataUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.accounts.CheckAccountExistsUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.privatekey.SavePrivateKeyUseCase
-import com.passbolt.mobile.android.core.accounts.usecase.selectedaccount.SaveCurrentApiUrlUseCase
+import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.OFFLINE
+import com.passbolt.mobile.android.core.architecture.result.DomainResult.Incomplete.Error.Reason.TIMEOUT
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
-import com.passbolt.mobile.android.core.navigation.AccountSetupDataModel
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ACCOUNT_ALREADY_LINKED
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_NON_HTTPS_DOMAIN
+import com.passbolt.mobile.android.domain.accounts.usecase.AccountsInteractor.InjectAccountFailureType.ERROR_WHEN_SAVING_PRIVATE_KEY
+import com.passbolt.mobile.android.domain.accounts.usecase.CheckAccountExistsUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.SaveCurrentApiUrlUseCase
+import com.passbolt.mobile.android.domain.accounts.usecase.UpdateAccountDataUseCase
+import com.passbolt.mobile.android.domain.mobiletransfer.usecase.UpdateTransferUseCase
+import com.passbolt.mobile.android.domain.privatekey.model.PrivateKey
+import com.passbolt.mobile.android.domain.privatekey.usecase.SavePrivateKeyUseCase
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.AccessLogs
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.ConfirmSetupLeave
 import com.passbolt.mobile.android.feature.setup.scanqr.ScanQrIntent.DismissHelpMenu
@@ -66,7 +70,7 @@ import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.Use
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NOT_A_PASSBOLT_QR
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ParseResult.UserResolvableError.ErrorType.NO_BARCODES_IN_RANGE
 import com.passbolt.mobile.android.feature.setup.scanqr.qrparser.ScanQrParser
-import com.passbolt.mobile.android.feature.setup.scanqr.usecase.UpdateTransferUseCase
+import com.passbolt.mobile.android.ui.AccountSetupDataModel
 import com.passbolt.mobile.android.ui.ResultStatus
 import com.passbolt.mobile.android.ui.Status
 import kotlinx.coroutines.Job
@@ -228,15 +232,12 @@ internal class ScanQrViewModel(
     }
 
     private suspend fun parserFinishedWithSuccess(armoredKey: String) {
-        when (savePrivateKeyUseCase.execute(SavePrivateKeyUseCase.Input(userId, armoredKey))) {
-            SavePrivateKeyUseCase.Output.Failure -> {
-                updateTransfer(pageNumber = currentPage, Status.ERROR)
-                emitSideEffect(NavigateToSummary(ResultStatus.Failure("")))
-            }
-            SavePrivateKeyUseCase.Output.Success -> {
-                updateTransfer(pageNumber = currentPage, Status.COMPLETE)
-                emitSideEffect(NavigateToSummary(ResultStatus.Success(userId)))
-            }
+        if (savePrivateKeyUseCase.execute(SavePrivateKeyUseCase.Input(userId, PrivateKey(armoredKey))).saved) {
+            updateTransfer(pageNumber = currentPage, Status.COMPLETE)
+            emitSideEffect(NavigateToSummary(ResultStatus.Success(userId)))
+        } else {
+            updateTransfer(pageNumber = currentPage, Status.ERROR)
+            emitSideEffect(NavigateToSummary(ResultStatus.Failure("")))
         }
     }
 
@@ -273,21 +274,23 @@ internal class ScanQrViewModel(
             )
         when (response) {
             is UpdateTransferUseCase.Output.Failure -> {
-                Timber.e(response.error.exception, "There was an error during transfer update")
+                Timber.e("There was an error during transfer update. Failure: %s", response.incomplete)
                 if (status == Status.ERROR || status == Status.CANCEL) {
                     // ignoring
                 } else {
-                    if (response.error.isServerNotReachable) {
-                        updateViewState {
-                            copy(
-                                showServerNotReachableDialog = true,
-                                serverDomain = serverDomain,
-                            )
-                        }
-                    } else if (response.error.isNoNetworkException) {
-                        emitSideEffect(NavigateToSummary(ResultStatus.NoNetwork()))
-                    } else {
-                        emitSideEffect(ScanQrSideEffect.ShowToast(ToastType.UPDATE_TRANSFER_ERROR))
+                    val incomplete = response.incomplete
+                    when {
+                        incomplete is DomainResult.Incomplete.Error && incomplete.reason == TIMEOUT ->
+                            updateViewState {
+                                copy(
+                                    showServerNotReachableDialog = true,
+                                    serverDomain = serverDomain,
+                                )
+                            }
+                        incomplete is DomainResult.Incomplete.Error && incomplete.reason == OFFLINE ->
+                            emitSideEffect(NavigateToSummary(ResultStatus.NoNetwork()))
+                        else ->
+                            emitSideEffect(ScanQrSideEffect.ShowToast(ToastType.UPDATE_TRANSFER_ERROR))
                     }
                 }
             }

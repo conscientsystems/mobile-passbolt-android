@@ -1,9 +1,10 @@
 package com.passbolt.mobile.android.feature.resourceform.navigation
 
-import PassboltTheme
+import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.navigation.compose.base.EntryProviderInstaller
 import com.passbolt.mobile.android.core.navigation.compose.base.FeatureModuleNavigation
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AdditionalUrisForm
+import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AdvancedSecretGenerationForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.AppearanceForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.CustomFieldsForm
 import com.passbolt.mobile.android.core.navigation.compose.keys.ResourceFormNavigationKey.DescriptionForm
@@ -21,9 +22,11 @@ import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.note.N
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.password.PasswordFormScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.PinCodeFormScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.pincode.advanced.PinCodeAdvancedGenerationFormScreen
+import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.secret.advanced.AdvancedSecretGenerationScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.TotpFormScreen
 import com.passbolt.mobile.android.feature.resourceform.additionalsecrets.totp.advanced.TotpAdvancedSettingsFormScreen
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdditionalUrisResult
+import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AdvancedSecretGenerationResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.AppearanceResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.CustomFieldsResult
 import com.passbolt.mobile.android.feature.resourceform.main.ResourceFormIntent.DescriptionResult
@@ -62,6 +65,9 @@ class ResourceFormFeatureNavigation : FeatureModuleNavigation {
                 }
                 ResultEffect<TotpAdvancedSettingsFormResult> { result ->
                     viewModel.onIntent(TotpAdvancedSettingsResult(result.totpModel))
+                }
+                ResultEffect<AdvancedSecretGenerationFormResult> { result ->
+                    viewModel.onIntent(AdvancedSecretGenerationResult(result))
                 }
                 ResultEffect<NoteFormResult> { result ->
                     viewModel.onIntent(NoteResult(result.note))
@@ -118,6 +124,16 @@ class ResourceFormFeatureNavigation : FeatureModuleNavigation {
                     TotpAdvancedSettingsFormScreen(
                         mode = key.mode,
                         totpUiModel = key.totpUiModel,
+                    )
+                }
+            }
+
+            entry<AdvancedSecretGenerationForm> { key ->
+                PassboltTheme {
+                    AdvancedSecretGenerationScreen(
+                        initialTab = key.selectedTab,
+                        initialPasswordSettings = key.passwordSettings,
+                        initialPassphraseSettings = key.passphraseSettings,
                     )
                 }
             }

@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":architecture"))
     implementation(project(":authentication"))
@@ -15,11 +15,11 @@ dependencies {
     implementation(project(":permissions"))
     implementation(project(":folderdetails"))
     implementation(project(":networking"))
-    implementation(project(":folders"))
+    implementation(project(":folders-domain"))
     implementation(project(":idlingresource"))
-    implementation(project(":users"))
+    implementation(project(":users-domain"))
     implementation(project(":localization"))
-    implementation(project(":accounts"))
+    implementation(project(":accounts-domain"))
     implementation(project(":navigation"))
     implementation(project(":testtags"))
 

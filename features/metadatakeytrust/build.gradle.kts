@@ -4,13 +4,12 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":common"))
     implementation(project(":localization"))
     implementation(project(":architecture"))
 
-    implementation(libs.fragment)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.koin.compose)

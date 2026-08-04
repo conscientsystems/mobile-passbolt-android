@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":ui"))
+    implementation(project(":uimodel"))
     implementation(project(":coreui"))
     implementation(project(":architecture"))
     implementation(project(":authentication"))
@@ -14,8 +14,8 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":navigation"))
     implementation(project(":fulldatarefresh"))
-    implementation(project(":folders"))
-    implementation(project(":resources"))
+    implementation(project(":folders-domain"))
+    implementation(project(":resources-domain"))
     implementation(project(":localization"))
     implementation(project(":jsonmodel"))
 
