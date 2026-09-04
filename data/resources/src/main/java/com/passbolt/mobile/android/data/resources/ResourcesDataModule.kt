@@ -54,6 +54,7 @@ val resourcesDataModule =
                 resourceModelMapper = get(),
                 permissionsModelMapper = get(),
                 querySanitizer = get(),
+                resourcesSnapshot = get(),
             )
         }
 

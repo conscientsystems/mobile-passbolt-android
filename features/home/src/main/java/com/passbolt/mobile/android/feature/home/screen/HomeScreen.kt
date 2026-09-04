@@ -224,7 +224,7 @@ internal fun HomeScreen(
                         ),
                     ),
                 )
-            InitiateDataRefresh -> DataRefreshService.start(context)
+            InitiateDataRefresh -> DataRefreshService.start(context, force = true)
             is NavigateToResourceUri -> navigator.openExternalWebsite(context, it.url)
             is NavigateToShare ->
                 navigator.navigateToKey(
@@ -303,7 +303,7 @@ private fun HomeScreen(
             SlidingFeedbackPullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 refreshProgress = state.refreshProgress,
-                onRefresh = { DataRefreshService.start(context) },
+                onRefresh = { DataRefreshService.start(context, force = true) },
                 modifier =
                     Modifier
                         .fillMaxSize()

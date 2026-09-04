@@ -174,7 +174,7 @@ internal fun OtpScreen(
                 navigator.navigateToKey(MainResourceForm(ResourceFormMode.Create(it.leadingContentType, null)))
             is NavigateToEditResourceForm ->
                 navigator.navigateToKey(MainResourceForm(ResourceFormMode.Edit(it.resourceId, it.resourceName)))
-            InitiateDataRefresh -> DataRefreshService.start(context)
+            InitiateDataRefresh -> DataRefreshService.start(context, force = true)
             is ShowToast -> Toast.makeText(context, getToastMessage(context, it.type), Toast.LENGTH_SHORT).show()
         }
     }
@@ -231,7 +231,7 @@ fun OtpScreen(
                 SlidingFeedbackPullToRefreshBox(
                     isRefreshing = state.isRefreshing,
                     refreshProgress = state.refreshProgress,
-                    onRefresh = { DataRefreshService.start(context) },
+                    onRefresh = { DataRefreshService.start(context, force = true) },
                     modifier =
                         Modifier
                             .fillMaxSize()

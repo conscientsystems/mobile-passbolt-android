@@ -136,7 +136,7 @@ fun PermissionsScreen(
                 resultBus.sendResult(result = ShareCompleteResult(shared = true))
                 navigator.navigateBack()
             }
-            InitiateDataRefresh -> DataRefreshService.start(context)
+            InitiateDataRefresh -> DataRefreshService.start(context, force = true)
             NavigateToHome -> navigator.popToRoot()
             ShowContentNotAvailable ->
                 Toast

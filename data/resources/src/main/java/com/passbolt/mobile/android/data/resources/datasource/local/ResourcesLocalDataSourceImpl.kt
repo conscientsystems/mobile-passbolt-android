@@ -42,6 +42,7 @@ import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.ByNameAs
 import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.HasExpiry
 import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.HasPermissions
 import com.passbolt.mobile.android.entity.resource.ResourceDatabaseView.IsFavourite
+import com.passbolt.mobile.android.database.snapshot.ResourcesSnapshot
 import com.passbolt.mobile.android.entity.resource.ResourceUpdateState
 import com.passbolt.mobile.android.entity.resource.ResourceUpdateState.UPDATED
 import com.passbolt.mobile.android.entity.user.ResourceAndUsersCrossRef
@@ -60,6 +61,7 @@ internal class ResourcesLocalDataSourceImpl(
     private val resourceModelMapper: ResourceModelMapper,
     private val permissionsModelMapper: PermissionsModelMapper,
     private val querySanitizer: QuerySanitizer,
+    private val resourcesSnapshot: ResourcesSnapshot,
 ) : ResourcesLocalDataSource {
     override suspend fun getLocalResource(
         resourceId: String,
@@ -416,19 +418,37 @@ internal class ResourcesLocalDataSourceImpl(
         resources: List<Resource>,
         userId: String,
     ) {
-        val uiResources = resources.map { it.toUiModel() }
         val db = databaseProvider.get(userId)
         val resourcesDao = db.resourcesDao()
         val resourceMetadataDao = db.resourceMetadataDao()
         val resourceUriDao = db.resourceUriDao()
 
-        val resourceEntities = uiResources.map { resourceModelMapper.map(it, resourceUpdateState = UPDATED) }
-        val resourceMetadata = uiResources.map { resourceModelMapper.mapResourceMetadata(it) }
-        val resourceUris = uiResources.map { resourceModelMapper.mapResourceUris(it) }
+        val uiResources = resources.map { it.toUiModel() }
 
+        // The Resource row itself is always upserted: it is small, has no FTS
+        // trigger, and carries per-user state (favourite, permission, expiry)
+        // that can change without the server bumping `modified`.
+        val resourceEntities = uiResources.map { resourceModelMapper.map(it, resourceUpdateState = UPDATED) }
         resourcesDao.upsertAll(resourceEntities)
-        resourceMetadataDao.upsertAll(resourceMetadata)
+
+        // The metadata row is only rewritten when the server `modified` is newer
+        // than what we hold. Otherwise it is byte-identical (the deserializer
+        // reused the cached metadata for exactly this reason), and rewriting it
+        // only fires the ResourceMetadataFts triggers and re-encrypts the same
+        // pages under SQLCipher - for a 1500-entry vault that was most of the
+        // post-download time of every refresh. Outside a full refresh the
+        // snapshot is empty and every row takes the write path.
+        val changedMetadata =
+            uiResources
+                .filterNot { resource ->
+                    resourcesSnapshot.getCachedResource(resource.resourceId)?.let { cached ->
+                        !cached.modified.isBefore(resource.modified)
+                    } ?: false
+                }.map { resourceModelMapper.mapResourceMetadata(it) }
+        resourceMetadataDao.upsertAll(changedMetadata)
+
         // URIs are still deleted and re-inserted
+        val resourceUris = uiResources.map { resourceModelMapper.mapResourceUris(it) }
         resourceUriDao.insertAll(resourceUris.flatten())
     }
 

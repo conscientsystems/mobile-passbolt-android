@@ -10,6 +10,7 @@ import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchCont
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -40,9 +41,21 @@ class FullDataRefreshExecutor(
     private val homeDataInteractor: HomeDataInteractor,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val coroutineLaunchContext: CoroutineLaunchContext,
+    private val refreshRecencyTracker: RefreshRecencyTracker,
+    private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) {
-    suspend fun performFullDataRefresh() {
-        Timber.d("Full data refresh initiated")
+    /**
+     * @param force run even if a refresh for this account completed recently.
+     * Automatic refreshes (app entry) pass false; user-initiated ones true.
+     */
+    suspend fun performFullDataRefresh(force: Boolean = false) {
+        Timber.d("Full data refresh initiated (force=$force)")
+        val accountId = getSelectedAccountUseCase.execute(Unit).selectedAccount
+        if (!force && accountId != null && refreshRecencyTracker.isFresh(accountId)) {
+            Timber.d("Full data refresh skipped - last successful refresh is recent")
+            dataRefreshTrackingFlow.updateStatus(FinishedWithSuccess)
+            return
+        }
         if (!dataRefreshTrackingFlow.isInProgress()) {
             dataRefreshTrackingFlow.updateStatus(InProgress(progress = 0f))
             val output =
@@ -56,6 +69,7 @@ class FullDataRefreshExecutor(
 
             when (output) {
                 is Success -> {
+                    accountId?.let { refreshRecencyTracker.markSuccess(it) }
                     dataRefreshTrackingFlow.updateStatus(InProgress(progress = 1f))
                     delay(FULL_PROGRESS_DISPLAY_MILLIS.milliseconds)
                     dataRefreshTrackingFlow.updateStatus(FinishedWithSuccess)

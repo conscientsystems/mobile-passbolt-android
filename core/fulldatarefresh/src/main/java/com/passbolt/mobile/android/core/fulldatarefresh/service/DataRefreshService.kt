@@ -64,7 +64,9 @@ class DataRefreshService : LifecycleService() {
             refreshJob =
                 lifecycleScope.launch {
                     try {
-                        fullDataRefreshExecutor.performFullDataRefresh()
+                        fullDataRefreshExecutor.performFullDataRefresh(
+                            force = intent?.getBooleanExtra(EXTRA_FORCE, false) ?: false,
+                        )
                     } finally {
                         stopForeground(ServiceCompat.STOP_FOREGROUND_REMOVE)
                         stopSelf()
@@ -100,8 +102,20 @@ class DataRefreshService : LifecycleService() {
     }
 
     companion object {
-        fun start(context: Context) {
-            context.startForegroundService(Intent(context, DataRefreshService::class.java))
+        private const val EXTRA_FORCE = "EXTRA_FORCE"
+
+        /**
+         * @param force true for user-initiated refreshes (pull to refresh, after
+         * a create/edit/share) - they always run. Automatic refreshes on app
+         * entry pass false and are skipped when the last one is recent.
+         */
+        fun start(
+            context: Context,
+            force: Boolean = false,
+        ) {
+            context.startForegroundService(
+                Intent(context, DataRefreshService::class.java).putExtra(EXTRA_FORCE, force),
+            )
         }
     }
 }
