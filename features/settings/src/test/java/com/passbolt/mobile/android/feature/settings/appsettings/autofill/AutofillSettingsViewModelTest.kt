@@ -225,6 +225,7 @@ class AutofillSettingsViewModelTest : KoinTest {
                     apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = true,
+                    isCopyTotpOnAutofillEnabled = false,
                 )
 
             viewModel = get()
@@ -260,6 +261,7 @@ class AutofillSettingsViewModelTest : KoinTest {
                     apiFetchPageSize = PreferencesDefaults.API_FETCH_PAGE_SIZE,
                     isApiFetchPageSizeManuallySet = false,
                     accessibilityPoliciesConsentGiven = false,
+                    isCopyTotpOnAutofillEnabled = false,
                 )
 
             viewModel = get()
