@@ -192,8 +192,11 @@ internal class ResourcesLocalDataSourceImpl(
                 val ftsQuery = querySanitizer.sanitize(searchQuery)
 
                 when (val viewType = homeDisplayView.toResourceDatabaseView()) {
-                    is ByModifiedDateDescending, is ByNameAscending ->
+                    is ByModifiedDateDescending ->
                         resourceDao.getAllOrderedByModifiedDatePaginated(slugs, ftsQuery)
+                    // Was routed to the modified-date query, so "sort by name"
+                    // silently returned date order.
+                    is ByNameAscending -> resourceDao.getAllOrderedByNamePaginated(slugs, ftsQuery)
                     is IsFavourite -> resourceDao.getFavouritesPaginated(slugs, ftsQuery)
                     is HasPermissions ->
                         resourceDao.getWithPermissionsPaginated(
@@ -206,7 +209,9 @@ internal class ResourcesLocalDataSourceImpl(
             },
         ).flow.map { pagingData ->
             pagingData.map {
-                resourceModelMapper.map(it).toDomain()
+                // Parse name/username/icon here, on the paging worker, instead
+                // of lazily inside each list row during composition.
+                resourceModelMapper.map(it).toDomain().also { resource -> resource.metadataJsonModel.warmCache() }
             }
         }
 
@@ -231,7 +236,9 @@ internal class ResourcesLocalDataSourceImpl(
             },
         ).flow.map { pagingData ->
             pagingData.map {
-                resourceModelMapper.map(it).toDomain()
+                // Parse name/username/icon here, on the paging worker, instead
+                // of lazily inside each list row during composition.
+                resourceModelMapper.map(it).toDomain().also { resource -> resource.metadataJsonModel.warmCache() }
             }
         }
 
@@ -256,7 +263,9 @@ internal class ResourcesLocalDataSourceImpl(
             },
         ).flow.map { pagingData ->
             pagingData.map {
-                resourceModelMapper.map(it).toDomain()
+                // Parse name/username/icon here, on the paging worker, instead
+                // of lazily inside each list row during composition.
+                resourceModelMapper.map(it).toDomain().also { resource -> resource.metadataJsonModel.warmCache() }
             }
         }
 
@@ -278,7 +287,9 @@ internal class ResourcesLocalDataSourceImpl(
             },
         ).flow.map { pagingData ->
             pagingData.map {
-                resourceModelMapper.map(it).toDomain()
+                // Parse name/username/icon here, on the paging worker, instead
+                // of lazily inside each list row during composition.
+                resourceModelMapper.map(it).toDomain().also { resource -> resource.metadataJsonModel.warmCache() }
             }
         }
 
@@ -299,7 +310,9 @@ internal class ResourcesLocalDataSourceImpl(
             },
         ).flow.map { pagingData ->
             pagingData.map {
-                resourceModelMapper.map(it).toDomain()
+                // Parse name/username/icon here, on the paging worker, instead
+                // of lazily inside each list row during composition.
+                resourceModelMapper.map(it).toDomain().also { resource -> resource.metadataJsonModel.warmCache() }
             }
         }
 

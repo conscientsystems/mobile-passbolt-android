@@ -34,7 +34,14 @@ import java.time.ZonedDateTime
  */
 
 @Entity(
-    indices = [Index(value = ["folderId"]), Index(value = ["resourceTypeId"])],
+    indices = [
+        Index(value = ["folderId"]),
+        Index(value = ["resourceTypeId"]),
+        // Every home list is "ORDER BY modified DESC" and the refresh marks /
+        // sweeps rows by updateState; both were full scans + sorts before.
+        Index(value = ["modified"]),
+        Index(value = ["updateState"]),
+    ],
     foreignKeys = [
         ForeignKey(
             entity = Folder::class,
