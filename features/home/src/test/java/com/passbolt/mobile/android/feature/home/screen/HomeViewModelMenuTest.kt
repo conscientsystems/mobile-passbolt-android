@@ -91,6 +91,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import com.passbolt.mobile.android.domain.secrets.usecase.offline.GetOfflineCacheStatusUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.offline.MarkResourceOfflineUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.offline.UnmarkResourceOfflineUseCase
@@ -133,6 +134,7 @@ class HomeViewModelMenuTest : KoinTest {
                     single { mock<GetLocalFolderDetailsUseCase>() }
                     single { mock<ResourceAccessInteractor>() }
                     single { mock<DetectAutofillConflict>() }
+                    singleOf(::OfflineSessionState)
                     single { mock<MarkResourceOfflineUseCase>() }
                     single { mock<UnmarkResourceOfflineUseCase>() }
                     single {
