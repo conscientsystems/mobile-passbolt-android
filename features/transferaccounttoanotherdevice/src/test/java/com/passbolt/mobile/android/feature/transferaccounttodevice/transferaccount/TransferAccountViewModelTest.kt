@@ -67,6 +67,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -97,6 +98,7 @@ class TransferAccountViewModelTest : KoinTest {
                         single { mock<ViewTransferUseCase>() }
                         single { mock<GetSessionUseCase>() }
                         single { mock<GetSessionExpiryUseCase>() }
+                        singleOf(::OfflineSessionState)
                         single { mock<PassphraseMemoryCache>() }
                         singleOf(::TransferAccountIdlingResource)
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class

@@ -39,6 +39,7 @@ import com.passbolt.mobile.android.ui.MetadataTypeModel.V4
 import com.passbolt.mobile.android.ui.MetadataTypesSettingsModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -161,6 +162,8 @@ internal val testResourceFormModule =
         }
 
         single { mock<GetSessionExpiryUseCase>() }
+
+        singleOf(::OfflineSessionState)
         single { mock<PassphraseMemoryCache>() }
 
         viewModel { params ->

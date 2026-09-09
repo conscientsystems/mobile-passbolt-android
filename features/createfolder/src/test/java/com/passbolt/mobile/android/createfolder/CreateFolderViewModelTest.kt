@@ -73,6 +73,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -109,6 +110,7 @@ class CreateFolderViewModelTest : KoinTest {
                         single { mock<GetLocalCurrentUserUseCase>() }
                         single { mock<UsersModelMapper>() }
                         single { mock<GetSessionExpiryUseCase>() }
+                        singleOf(::OfflineSessionState)
                         single { mock<PassphraseMemoryCache>() }
                         single { CreateFolderIdlingResource() }
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class

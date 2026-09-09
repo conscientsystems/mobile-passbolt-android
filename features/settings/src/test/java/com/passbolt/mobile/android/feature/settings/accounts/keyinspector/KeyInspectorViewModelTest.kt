@@ -58,6 +58,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -88,6 +89,7 @@ class KeyInspectorViewModelTest : KoinTest {
                         single { mock<DateFormatter>() }
                         single { mock<FingerprintFormatter>() }
                         single { mock<GetSessionExpiryUseCase>() }
+                        singleOf(::OfflineSessionState)
                         single { mock<PassphraseMemoryCache>() }
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factoryOf(::KeyInspectorViewModel)

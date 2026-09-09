@@ -38,6 +38,8 @@ import com.passbolt.mobile.android.core.otpcore.TotpParametersProvider
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderLocationUseCase
 import com.passbolt.mobile.android.domain.metadata.usecase.CanShareResourceUseCase
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.MarkResourceOfflineUseCase
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.UnmarkResourceOfflineUseCase
 import com.passbolt.mobile.android.domain.rbac.usecase.GetRbacRulesUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
@@ -60,6 +62,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import org.koin.core.Koin
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
@@ -83,11 +86,14 @@ internal val testModule =
         single { mock<TotpParametersProvider>() }
         single { mock<GetRbacRulesUseCase>() }
         single { mock<CanShareResourceUseCase>() }
+        single { mock<MarkResourceOfflineUseCase>() }
+        single { mock<UnmarkResourceOfflineUseCase>() }
         single { mock<ResourceDetailActionIdlingResource>() }
         single { mock<SecretPropertiesActionsInteractor>() }
         single { mock<ResourcePropertiesActionsInteractor>() }
         single { mock<ResourceCommonActionsInteractor>() }
         single { mock<GetSessionExpiryUseCase>() }
+        singleOf(::OfflineSessionState)
         single { mock<PassphraseMemoryCache>() }
         single { mock<TimerFactory>() }
         singleOf(::DataRefreshTrackingFlow)

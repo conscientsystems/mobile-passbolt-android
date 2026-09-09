@@ -91,6 +91,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.GetOfflineCacheStatusUseCase
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.MarkResourceOfflineUseCase
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.UnmarkResourceOfflineUseCase
+import com.passbolt.mobile.android.ui.OfflineModeSetting
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
@@ -102,6 +106,7 @@ import org.koin.test.mock.declare
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.onBlocking
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
@@ -129,6 +134,20 @@ class HomeViewModelMenuTest : KoinTest {
                     single { mock<GetLocalFolderDetailsUseCase>() }
                     single { mock<ResourceAccessInteractor>() }
                     single { mock<DetectAutofillConflict>() }
+                    single { mock<MarkResourceOfflineUseCase>() }
+                    single { mock<UnmarkResourceOfflineUseCase>() }
+                    single {
+                        mock<GetOfflineCacheStatusUseCase> {
+                            onBlocking { execute(Unit) } doReturn
+                                GetOfflineCacheStatusUseCase.Output(
+                                    mode = OfflineModeSetting.OFF,
+                                    lastSyncEpochMillis = null,
+                                    cachedCount = 0,
+                                    markedCount = 0,
+                                    isOfflineSession = false,
+                                )
+                        }
+                    }
                     single {
                         mock<UserProfileInteractor> {
                             onBlocking { fetchAndUpdateUserProfile() } doReturn UserProfileInteractor.Output.Success
