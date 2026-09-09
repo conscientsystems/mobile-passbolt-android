@@ -6,12 +6,15 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshStatus.InProgre
 import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor.Output.Failure
 import com.passbolt.mobile.android.core.fulldatarefresh.HomeDataInteractor.Output.Success
+import com.passbolt.mobile.android.core.mvp.authentication.AuthenticationState
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.core.networking.ServerReachabilityTracker
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
 import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.OfflineSignInGate
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
@@ -47,6 +50,8 @@ class FullDataRefreshExecutor(
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
     private val offlineSessionState: OfflineSessionState,
     private val refreshSessionUseCase: RefreshSessionUseCase,
+    private val serverReachabilityTracker: ServerReachabilityTracker,
+    private val offlineSignInGate: OfflineSignInGate,
 ) {
     /**
      * @param force run even if a refresh for this account completed recently.
@@ -66,6 +71,7 @@ class FullDataRefreshExecutor(
             return
         }
         if (!dataRefreshTrackingFlow.isInProgress()) {
+            val startedAt = serverReachabilityTracker.now()
             dataRefreshTrackingFlow.updateStatus(InProgress(progress = 0f))
             val output =
                 runAuthenticatedOperation {
@@ -83,8 +89,32 @@ class FullDataRefreshExecutor(
                     delay(FULL_PROGRESS_DISPLAY_MILLIS.milliseconds)
                     dataRefreshTrackingFlow.updateStatus(FinishedWithSuccess)
                 }
-                is Failure -> dataRefreshTrackingFlow.updateStatus(FinishedWithFailure)
+                is Failure -> {
+                    if (output.authenticationState is AuthenticationState.Authenticated &&
+                        serverReachabilityTracker.unreachableSince(startedAt)
+                    ) {
+                        accountId?.let { tryEnterOfflineSession(it) }
+                    }
+                    dataRefreshTrackingFlow.updateStatus(FinishedWithFailure)
+                }
             }
+        }
+    }
+
+    /**
+     * The refresh failed because the server could not be reached (not because it answered
+     * with an error). If the user opted in to offline mode and the cache is still within
+     * its retention window, switch to an offline session right away: the offline banner
+     * appears, secrets come from the cache and the UI turns read-only - instead of a
+     * "failed to refresh" error and an offline session only at the next sign-in.
+     */
+    private suspend fun tryEnterOfflineSession(accountId: String) {
+        when (val gate = offlineSignInGate.evaluate(accountId)) {
+            is OfflineSignInGate.Result.Allowed -> {
+                Timber.d("Server unreachable during refresh - entering offline session")
+                offlineSessionState.enterOfflineSession()
+            }
+            else -> Timber.d("Server unreachable during refresh - offline session not possible: $gate")
         }
     }
 

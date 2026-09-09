@@ -73,6 +73,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Sn
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_TOKEN_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CHALLENGE_VERIFICATION_FAILURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CONNECTION_FAILURE
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.OFFLINE_DATA_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.DECRYPTION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.GENERIC
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.TIME_OUT_OF_SYNC
@@ -539,6 +540,12 @@ class AuthViewModel(
                     passphrase.erase()
                     loginState = null
                     emitSideEffect(AuthSuccess(authConfig, appContext))
+                }
+                is OfflineSignInGate.Result.Expired -> {
+                    // say why instead of the generic connection error: the cache was
+                    // purged because it is older than the retention window
+                    Timber.d("[Offline] Offline data expired - cannot sign in offline")
+                    emitSideEffect(ShowErrorSnackbar(OFFLINE_DATA_EXPIRED))
                 }
                 else -> {
                     Timber.d("[Offline] Offline sign in not possible: $gate")

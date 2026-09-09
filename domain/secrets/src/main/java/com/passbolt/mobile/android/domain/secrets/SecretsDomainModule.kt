@@ -1,6 +1,7 @@
 package com.passbolt.mobile.android.domain.secrets
 
 import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSyncTracker
 import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.DecryptSecretUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.FetchSecretUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.decrypt.SecretInteractor
@@ -25,6 +26,7 @@ val secretsDomainModule =
         singleOf(::SecretParser)
         // offline mode
         singleOf(::OfflineSessionState)
+        singleOf(::OfflineSyncTracker)
         singleOf(::OfflineSecretsSyncInteractor)
         singleOf(::OfflineSignInGate)
         singleOf(::MarkResourceOfflineUseCase)

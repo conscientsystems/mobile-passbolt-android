@@ -9,6 +9,8 @@ import com.passbolt.mobile.android.domain.preferences.AccountFlagsUpdate
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesRepository
 import com.passbolt.mobile.android.domain.secrets.offline.OfflineCacheRepository
 import com.passbolt.mobile.android.domain.secrets.offline.OfflineCachedSecret
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSyncStatus
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSyncTracker
 import com.passbolt.mobile.android.domain.secrets.offline.ResourceModifiedState
 import com.passbolt.mobile.android.ui.OfflineModeSetting
 import timber.log.Timber
@@ -27,6 +29,7 @@ class OfflineSecretsSyncInteractor(
     private val offlineCacheRepository: OfflineCacheRepository,
     private val accountPreferencesRepository: AccountPreferencesRepository,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val offlineSyncTracker: OfflineSyncTracker,
 ) {
     suspend fun sync(onProgress: suspend (done: Int, total: Int) -> Unit = { _, _ -> }): Output {
         val userId = requireNotNull(getSelectedAccountUseCase.execute(Unit).selectedAccount)
@@ -36,8 +39,10 @@ class OfflineSecretsSyncInteractor(
                 Timber.d("[Offline] Mode is off - dropping cached secrets")
                 offlineCacheRepository.removeAllCachedSecrets(userId)
             }
+            offlineSyncTracker.update(OfflineSyncStatus.Idle)
             return Output.Disabled
         }
+        offlineSyncTracker.update(OfflineSyncStatus.InProgress(done = 0, total = 0))
 
         val localResources = offlineCacheRepository.getLocalResourcesState(userId).associateBy { it.resourceId }
         val targetIds: Set<String> =
@@ -68,6 +73,7 @@ class OfflineSecretsSyncInteractor(
             when (val result = offlineCacheRepository.fetchSecretsForResources(batch)) {
                 is DomainResult.Incomplete -> {
                     Timber.e("[Offline] Secret batch fetch failed: $result")
+                    offlineSyncTracker.update(OfflineSyncStatus.Failure(atEpochMillis = System.currentTimeMillis()))
                     return Output.Failure(result)
                 }
                 is DomainResult.Finished -> {
@@ -84,17 +90,22 @@ class OfflineSecretsSyncInteractor(
                         userId,
                     )
                     done += batch.size
+                    offlineSyncTracker.update(OfflineSyncStatus.InProgress(done = done, total = stale.size))
                     onProgress(done, stale.size)
                 }
             }
         }
 
+        val finishedAt = System.currentTimeMillis()
         accountPreferencesRepository.updateAccountFlags(
-            AccountFlagsUpdate(offlineLastSyncEpochMillis = System.currentTimeMillis()),
+            AccountFlagsUpdate(offlineLastSyncEpochMillis = finishedAt),
             userId,
         )
         val cachedCount = offlineCacheRepository.countCachedSecrets(userId)
         Timber.d("[Offline] Sync finished - $cachedCount secrets cached")
+        offlineSyncTracker.update(
+            OfflineSyncStatus.Success(cachedCount = cachedCount, fetchedCount = done, atEpochMillis = finishedAt),
+        )
         return Output.Success(cachedCount)
     }
 

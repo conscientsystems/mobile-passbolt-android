@@ -17,6 +17,7 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
+    implementation(libs.kotlin.coroutines)
     implementation(libs.gson)
     implementation(libs.jsonschema.friend)
     implementation(libs.json.path)

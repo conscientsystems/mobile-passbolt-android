@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":coreui"))
     implementation(project(":notifications"))
     implementation(project(":secrets-domain"))
+    implementation(project(":networking"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

@@ -1,5 +1,6 @@
 package com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode
 
+import android.content.Context
 import android.text.format.DateUtils
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -12,15 +13,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,8 +41,10 @@ import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.ui.banner.WarningBanner
 import com.passbolt.mobile.android.core.ui.button.PrimaryButton
 import com.passbolt.mobile.android.core.ui.menu.SwitchableSettingsItem
+import com.passbolt.mobile.android.core.ui.snackbar.ColoredSnackbarVisuals
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.OfflineSignInGate
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsIntent.CancelClear
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsIntent.ClearClick
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsIntent.ConfirmClear
@@ -43,8 +53,10 @@ import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemo
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsIntent.SyncNow
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsIntent.ToggleEnabled
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsSideEffect.NavigateUp
+import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsSideEffect.ShowSyncResult
 import com.passbolt.mobile.android.feature.settings.screen.appsettings.offlinemode.OfflineModeSettingsSideEffect.StartDataRefresh
 import com.passbolt.mobile.android.ui.OfflineModeSetting
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
@@ -58,23 +70,48 @@ internal fun OfflineModeSettingsScreen(
 ) {
     val context = LocalContext.current
     val state = viewModel.viewState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    val successColor = colorResource(CoreUiR.color.green)
+    val errorColor = colorResource(CoreUiR.color.red)
     OfflineModeSettingsScreen(
         modifier = modifier,
         state = state.value,
+        snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
     )
     SideEffectDispatcher(viewModel.sideEffect) {
         when (it) {
             NavigateUp -> navigator.navigateBack()
             StartDataRefresh -> DataRefreshService.start(context, force = true)
+            is ShowSyncResult ->
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        ColoredSnackbarVisuals(
+                            message = syncResultMessage(context, it.result),
+                            backgroundColor = if (it.result is SyncResult.Success) successColor else errorColor,
+                        ),
+                    )
+                }
         }
     }
 }
+
+private fun syncResultMessage(
+    context: Context,
+    result: SyncResult,
+): String =
+    when (result) {
+        is SyncResult.Success -> context.getString(LocalizationR.string.offline_settings_sync_result_success, result.cachedCount)
+        SyncResult.Partial -> context.getString(LocalizationR.string.offline_settings_sync_result_partial)
+        SyncResult.Failed -> context.getString(LocalizationR.string.offline_settings_sync_result_failed)
+    }
 
 @Suppress("LongMethod")
 @Composable
 private fun OfflineModeSettingsScreen(
     state: OfflineModeSettingsState,
+    snackbarHostState: SnackbarHostState,
     onIntent: (OfflineModeSettingsIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -84,6 +121,19 @@ private fun OfflineModeSettingsScreen(
             TitleAppBar(
                 title = stringResource(LocalizationR.string.settings_app_settings_offline_mode),
                 navigationIcon = { BackNavigationIcon(onBackClick = { onIntent(GoBack) }) },
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { data ->
+                    val visuals = data.visuals as? ColoredSnackbarVisuals
+                    if (visuals != null) {
+                        Snackbar(snackbarData = data, containerColor = visuals.backgroundColor, contentColor = visuals.contentColor)
+                    } else {
+                        Snackbar(snackbarData = data)
+                    }
+                },
             )
         },
         content = { paddingValues ->
@@ -123,23 +173,7 @@ private fun OfflineModeSettingsScreen(
                         onClick = { onIntent(SelectMode(OfflineModeSetting.ALL_ENTRIES)) },
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    StatusLine(
-                        label = stringResource(LocalizationR.string.offline_settings_status_cached),
-                        value = state.cachedCount.toString(),
-                    )
-                    if (state.mode == OfflineModeSetting.SELECTED_ENTRIES) {
-                        StatusLine(
-                            label = stringResource(LocalizationR.string.offline_settings_status_marked),
-                            value = state.markedCount.toString(),
-                        )
-                    }
-                    StatusLine(
-                        label = stringResource(LocalizationR.string.offline_settings_status_last_sync),
-                        value =
-                            state.lastSyncEpochMillis
-                                ?.let { DateUtils.getRelativeTimeSpanString(it).toString() }
-                                ?: stringResource(LocalizationR.string.offline_settings_status_never),
-                    )
+                    StatusSection(state)
                     Text(
                         text = stringResource(LocalizationR.string.offline_settings_retention_note),
                         style = MaterialTheme.typography.bodySmall,
@@ -153,14 +187,10 @@ private fun OfflineModeSettingsScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    PrimaryButton(
-                        text = stringResource(LocalizationR.string.offline_settings_sync_now),
-                        isEnabled = !state.isRefreshing && !state.isOfflineSession,
-                        onClick = { onIntent(SyncNow) },
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
+                    SyncSection(state, onIntent)
                     TextButton(
                         onClick = { onIntent(ClearClick) },
+                        enabled = !state.isRefreshing,
                         modifier =
                             Modifier
                                 .fillMaxWidth()
@@ -194,6 +224,99 @@ private fun OfflineModeSettingsScreen(
             }
         },
     )
+}
+
+@Composable
+private fun StatusSection(state: OfflineModeSettingsState) {
+    val context = LocalContext.current
+    StatusLine(
+        label = stringResource(LocalizationR.string.offline_settings_status_cached),
+        value = state.cachedCount.toString(),
+    )
+    if (state.mode == OfflineModeSetting.SELECTED_ENTRIES) {
+        StatusLine(
+            label = stringResource(LocalizationR.string.offline_settings_status_marked),
+            value = state.markedCount.toString(),
+        )
+    }
+    StatusLine(
+        label = stringResource(LocalizationR.string.offline_settings_status_last_sync),
+        value =
+            state.lastSyncEpochMillis
+                ?.let { relativeTime(context, it) }
+                ?: stringResource(LocalizationR.string.offline_settings_status_never),
+    )
+    // the retention window is renewed by every update - showing the concrete date makes
+    // "7 days" tangible and shows that it moves forward
+    state.lastSyncEpochMillis?.let { lastSync ->
+        StatusLine(
+            label = stringResource(LocalizationR.string.offline_settings_status_valid_until),
+            value =
+                DateUtils.formatDateTime(
+                    context,
+                    lastSync + OfflineSignInGate.DATA_RETENTION.toMillis(),
+                    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_ABBREV_MONTH,
+                ),
+        )
+    }
+}
+
+@Composable
+private fun SyncSection(
+    state: OfflineModeSettingsState,
+    onIntent: (OfflineModeSettingsIntent) -> Unit,
+) {
+    PrimaryButton(
+        text =
+            stringResource(
+                if (state.isRefreshing) {
+                    LocalizationR.string.offline_settings_syncing
+                } else {
+                    LocalizationR.string.offline_settings_sync_now
+                },
+            ),
+        isEnabled = !state.isRefreshing && !state.isOfflineSession,
+        onClick = { onIntent(SyncNow) },
+        modifier = Modifier.padding(horizontal = 16.dp),
+    )
+    if (state.isRefreshing) {
+        LinearProgressIndicator(
+            progress = { state.refreshProgress },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        Text(
+            text =
+                state.syncProgress
+                    ?.takeIf { it.total > 0 }
+                    ?.let { stringResource(LocalizationR.string.offline_settings_syncing_progress, it.done, it.total) }
+                    ?: stringResource(LocalizationR.string.offline_settings_syncing_indeterminate),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+    } else {
+        Text(
+            text = stringResource(LocalizationR.string.offline_settings_sync_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    }
+}
+
+private fun relativeTime(
+    context: Context,
+    epochMillis: Long,
+): String {
+    val age = System.currentTimeMillis() - epochMillis
+    return if (age in 0 until DateUtils.MINUTE_IN_MILLIS) {
+        context.getString(LocalizationR.string.offline_settings_status_just_now)
+    } else {
+        DateUtils.getRelativeTimeSpanString(epochMillis).toString()
+    }
 }
 
 @Composable
@@ -258,7 +381,14 @@ private fun StatusLine(
 @Composable
 private fun OfflineModeSettingsPreview() {
     OfflineModeSettingsScreen(
-        state = OfflineModeSettingsState(mode = OfflineModeSetting.SELECTED_ENTRIES, cachedCount = 12, markedCount = 12),
+        state =
+            OfflineModeSettingsState(
+                mode = OfflineModeSetting.SELECTED_ENTRIES,
+                cachedCount = 12,
+                markedCount = 12,
+                lastSyncEpochMillis = System.currentTimeMillis(),
+            ),
+        snackbarHostState = SnackbarHostState(),
         onIntent = {},
     )
 }
