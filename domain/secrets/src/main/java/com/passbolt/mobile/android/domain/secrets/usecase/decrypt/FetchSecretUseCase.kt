@@ -8,19 +8,22 @@ import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUse
 import com.passbolt.mobile.android.domain.secrets.SecretsRepository
 import com.passbolt.mobile.android.domain.secrets.offline.OfflineCacheRepository
 import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.OfflineSignInGate
 import timber.log.Timber
 
 /**
  * Fetches the (still encrypted) secret of a resource.
  *
- * Online: from the server, as always. When the server cannot be reached and the entry is
- * cached for offline use, the cached ciphertext is returned instead. During an offline
- * session the cache is the only source - no request is attempted.
+ * Online: from the server, as always. When the server cannot be reached and the user has
+ * opted in to offline mode (with a cache inside its retention window), the app switches to
+ * an offline session on the spot - the banner appears and the cached ciphertext is served.
+ * During an offline session the cache is the only source - no request is attempted.
  */
 class FetchSecretUseCase(
     private val secretsRepository: SecretsRepository,
     private val offlineCacheRepository: OfflineCacheRepository,
     private val offlineSessionState: OfflineSessionState,
+    private val offlineSignInGate: OfflineSignInGate,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
 ) : AsyncUseCase<FetchSecretUseCase.Input, FetchSecretUseCase.Output> {
     override suspend fun execute(input: Input): Output {
@@ -34,12 +37,23 @@ class FetchSecretUseCase(
             is DomainResult.Incomplete -> {
                 Timber.e("Failed to fetch secret")
                 if (result.isNetworkFailure()) {
+                    enterOfflineSessionIfAllowed()
                     fromCache(input.resourceId)?.also { Timber.d("Server unreachable - using offline cache") }
                         ?: Output.Failure(result)
                 } else {
                     Output.Failure(result)
                 }
             }
+        }
+    }
+
+    // evaluated before reading the cache: an expired cache is purged by the gate, so the
+    // retention rule holds for this fallback exactly as it does for an offline sign-in
+    private suspend fun enterOfflineSessionIfAllowed() {
+        val userId = getSelectedAccountUseCase.execute(Unit).selectedAccount ?: return
+        when (val gate = offlineSignInGate.evaluate(userId)) {
+            is OfflineSignInGate.Result.Allowed -> offlineSessionState.enterOfflineSession()
+            else -> Timber.d("[Offline] Server unreachable, offline session not possible: $gate")
         }
     }
 

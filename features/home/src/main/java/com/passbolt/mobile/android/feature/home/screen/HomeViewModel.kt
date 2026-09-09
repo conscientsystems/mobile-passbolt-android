@@ -130,6 +130,7 @@ import com.passbolt.mobile.android.ui.LeadingContentType.STANDALONE_NOTE
 import com.passbolt.mobile.android.ui.LeadingContentType.TOTP
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.OfflineOption
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import com.passbolt.mobile.android.domain.secrets.usecase.offline.GetOfflineCacheStatusUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.offline.MarkResourceOfflineUseCase
 import com.passbolt.mobile.android.domain.secrets.usecase.offline.UnmarkResourceOfflineUseCase
@@ -162,6 +163,7 @@ internal class HomeViewModel(
     private val markResourceOfflineUseCase: MarkResourceOfflineUseCase,
     private val unmarkResourceOfflineUseCase: UnmarkResourceOfflineUseCase,
     private val getOfflineCacheStatusUseCase: GetOfflineCacheStatusUseCase,
+    private val offlineSessionState: OfflineSessionState,
 ) : SideEffectViewModel<HomeState, HomeSideEffect>(HomeState()),
     KoinComponent {
     private val resourcePropertiesActionsInteractor: ResourcePropertiesActionsInteractor
@@ -173,6 +175,7 @@ internal class HomeViewModel(
 
     private var dataRefreshJob: Job? = null
     private var accountSwitchJob: Job? = null
+    private var offlineSessionJob: Job? = null
     private var lastInitializeIntent: Initialize? = null
     private var loadedAccountId: String? = null
 
@@ -573,6 +576,21 @@ internal class HomeViewModel(
             dataRefreshJob =
                 viewModelScope.launch(coroutineLaunchContext.io) {
                     synchronizeWithDataRefresh()
+                }
+            offlineSessionJob?.cancel()
+            offlineSessionJob =
+                viewModelScope.launch(coroutineLaunchContext.io) {
+                    // the app can enter (server vanished under a live session) or leave
+                    // (server back) the offline session at any time - the banner and the
+                    // create button follow immediately, not only at the next refresh
+                    offlineSessionState.isOfflineSessionFlow
+                        .drop(1)
+                        .collect { isOffline ->
+                            refreshOfflineState()
+                            val showCreateResourceButton =
+                                !isOffline && !viewState.value.isRefreshing && shouldShowCreateButton()
+                            updateViewState { copy(canCreateResource = showCreateResourceButton) }
+                        }
                 }
             accountSwitchJob?.cancel()
             accountSwitchJob =

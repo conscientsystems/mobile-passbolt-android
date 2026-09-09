@@ -9,8 +9,16 @@ internal data class OfflineModeSettingsState(
     val lastSyncEpochMillis: Long? = null,
     val isOfflineSession: Boolean = false,
     val isRefreshing: Boolean = false,
+    val refreshProgress: Float = 0f,
+    val syncProgress: SyncProgress? = null,
     val showClearConfirmation: Boolean = false,
 ) {
     val isEnabled: Boolean
         get() = mode.isEnabled
 }
+
+/** Progress of the secret-cache step itself (the last step of a full refresh). */
+internal data class SyncProgress(
+    val done: Int,
+    val total: Int,
+)
