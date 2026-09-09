@@ -34,6 +34,8 @@ import com.passbolt.mobile.android.domain.auth.usecase.SaveSessionUseCase
 import com.passbolt.mobile.android.domain.inappreview.usecase.InAppReviewInteractor
 import com.passbolt.mobile.android.domain.preferences.usecase.GetGlobalPreferencesUseCase
 import com.passbolt.mobile.android.domain.privatekey.usecase.GetPrivateKeyUseCase
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.OfflineSignInGate
 import com.passbolt.mobile.android.encryptedstorage.biometric.BiometricCipher
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AcceptChangedServerFingerprint
 import com.passbolt.mobile.android.feature.authentication.auth.AuthIntent.AccessLogs
@@ -80,6 +82,7 @@ import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.Sn
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.CONNECTION_FAILURE
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.DECRYPTION_ERROR
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.GENERIC
+import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.OFFLINE_DATA_EXPIRED
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.SERVER_SIGNATURE_INVALID
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.TIME_OUT_OF_SYNC
 import com.passbolt.mobile.android.feature.authentication.auth.AuthSideEffect.SnackbarErrorType.WRONG_PASSPHRASE
@@ -153,6 +156,8 @@ class AuthViewModel(
     private val refreshSessionUseCase: RefreshSessionUseCase,
     private val mfaProvidersHandler: MfaProvidersHandler,
     private val serverKeysWarmup: ServerKeysWarmup,
+    private val offlineSignInGate: OfflineSignInGate,
+    private val offlineSessionState: OfflineSessionState,
 ) : SideEffectViewModel<AuthState, AuthSideEffect>(
         AuthState(
             authReason = mapAuthReason(authConfig),
@@ -348,6 +353,7 @@ class AuthViewModel(
                 signInIdlingResource.setIdle(true)
                 when (refreshSessionResult) {
                     is RefreshSessionUseCase.Output.Success -> {
+                        offlineSessionState.exitOfflineSession()
                         runtimeAuthenticatedFlag.isAuthenticated = true
                         emitSideEffect(AuthSuccess(authConfig, appContext))
                     }
@@ -393,12 +399,14 @@ class AuthViewModel(
                                 }
                             }
                             is ServerNotReachable -> {
-                                updateViewState {
-                                    copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl)
+                                tryOfflineSignIn {
+                                    updateViewState {
+                                        copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl)
+                                    }
                                 }
                             }
                             is ServerKeysNoNetwork -> {
-                                emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+                                tryOfflineSignIn { emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE)) }
                             }
                             is TimeIsOutOfSync -> {
                                 emitSideEffect(ShowErrorSnackbar(TIME_OUT_OF_SYNC))
@@ -475,9 +483,11 @@ class AuthViewModel(
             is ChallengeDecryptionError -> emitSideEffect(ShowErrorSnackbar(DECRYPTION_ERROR, error.message))
             ServerSignatureInvalid -> emitSideEffect(ShowErrorSnackbar(SERVER_SIGNATURE_INVALID))
             is ChallengeVerificationError -> handleChallengeVerificationError(error.type)
-            is NoNetwork -> emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+            is NoNetwork -> tryOfflineSignIn { emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE)) }
             is SignInServerNotReachable ->
-                updateViewState { copy(showServerNotReachable = true, serverNotReachableDomain = error.serverUrl) }
+                tryOfflineSignIn {
+                    updateViewState { copy(showServerNotReachable = true, serverNotReachableDomain = error.serverUrl) }
+                }
             is IncorrectPassphrase -> emitSideEffect(ShowErrorSnackbar(WRONG_PASSPHRASE))
             is SignInFailure -> emitSideEffect(ShowErrorSnackbar(AUTHENTICATION_ERROR, error.message))
         }
@@ -495,6 +505,7 @@ class AuthViewModel(
 
     private fun signInSuccess(updateSession: Boolean = true) {
         Timber.d("Authentication success")
+        offlineSessionState.exitOfflineSession()
         runtimeAuthenticatedFlag.isAuthenticated = true
         passphraseMemoryCache.set(passphrase)
         val currentLoginState = requireNotNull(loginState)
@@ -536,6 +547,39 @@ class AuthViewModel(
                 updateViewState { copy(showProgress = false) }
                 emitSideEffect(AuthSuccess(authConfig, appContext))
                 signInIdlingResource.setIdle(true)
+            }
+        }
+    }
+
+    /**
+     * Offline mode: the passphrase has already been verified against the local private
+     * key, so when the server cannot be reached and the user opted in (with a cache that
+     * is still within its retention window) the session is established locally.
+     * Otherwise the regular connection error UI is shown by [onNotAllowed].
+     */
+    private fun tryOfflineSignIn(onNotAllowed: () -> Unit) {
+        launch {
+            when (val gate = offlineSignInGate.evaluate(userId)) {
+                is OfflineSignInGate.Result.Allowed -> {
+                    Timber.d("[Offline] Server unreachable - signing in offline (last sync ${gate.lastSyncEpochMillis})")
+                    updateViewState { copy(showProgress = false) }
+                    signInIdlingResource.setIdle(true)
+                    offlineSessionState.enterOfflineSession()
+                    runtimeAuthenticatedFlag.isAuthenticated = true
+                    saveSelectedAccountUseCase.execute(UserIdInput(userId))
+                    loginState = null
+                    emitSideEffect(AuthSuccess(authConfig, appContext))
+                }
+                is OfflineSignInGate.Result.Expired -> {
+                    // say why instead of the generic connection error: the cache was
+                    // purged because it is older than the retention window
+                    Timber.d("[Offline] Offline data expired - cannot sign in offline")
+                    emitSideEffect(ShowErrorSnackbar(OFFLINE_DATA_EXPIRED))
+                }
+                else -> {
+                    Timber.d("[Offline] Offline sign in not possible: $gate")
+                    onNotAllowed()
+                }
             }
         }
     }

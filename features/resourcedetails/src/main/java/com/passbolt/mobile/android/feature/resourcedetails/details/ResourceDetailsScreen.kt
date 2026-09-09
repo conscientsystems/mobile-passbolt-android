@@ -94,6 +94,7 @@ import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetai
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.OpenMoreMenu
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ResourceEdited
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleFavourite
+import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ToggleOfflineAvailability
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsIntent.ViewPermissions
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsSideEffect.AddToClipboard
 import com.passbolt.mobile.android.feature.resourcedetails.details.ResourceDetailsSideEffect.CloseWithDeleteSuccess
@@ -347,6 +348,7 @@ fun ResourceDetailsScreen(
                         onEdit = { onIntent(Edit) },
                         onShare = { onIntent(EditPermissions) },
                         onToggleFavourite = { onIntent(ToggleFavourite(it)) },
+                        onToggleOfflineAvailability = { onIntent(ToggleOfflineAvailability(it)) },
                     )
                 }
             }

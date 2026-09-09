@@ -26,6 +26,7 @@ import com.passbolt.mobile.android.database.migrations.Migration25to26
 import com.passbolt.mobile.android.database.migrations.Migration26to27
 import com.passbolt.mobile.android.database.migrations.Migration27to28
 import com.passbolt.mobile.android.database.migrations.Migration28to29
+import com.passbolt.mobile.android.database.migrations.Migration29to30
 import com.passbolt.mobile.android.database.migrations.Migration2to3
 import com.passbolt.mobile.android.database.migrations.Migration3to4
 import com.passbolt.mobile.android.database.migrations.Migration4to5
@@ -111,6 +112,7 @@ class DatabaseProvider(
                         Migration26to27,
                         Migration27to28,
                         Migration28to29,
+                        Migration29to30,
                     ).setDriver(driver)
                     .build()
             } catch (e: Exception) {

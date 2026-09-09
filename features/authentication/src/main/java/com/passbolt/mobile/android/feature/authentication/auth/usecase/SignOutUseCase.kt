@@ -13,6 +13,7 @@ import com.passbolt.mobile.android.domain.auth.SessionRepository
 import com.passbolt.mobile.android.domain.auth.model.ServerSignOutStatus
 import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.RemovePermissionsSnapshotUseCase
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.ClearOfflineSecretsUseCase
 import timber.log.Timber
 
 /**
@@ -47,6 +48,7 @@ class SignOutUseCase(
     private val sessionRepository: SessionRepository,
     private val signOutIdlingResource: SignOutIdlingResource,
     private val runtimeAuthenticatedFlag: RuntimeAuthenticatedFlag,
+    private val clearOfflineSecretsUseCase: ClearOfflineSecretsUseCase,
 ) : AsyncUseCase<Unit, SignOutUseCase.Output> {
     override suspend fun execute(input: Unit): Output {
         Timber.d("Signing out")
@@ -54,6 +56,8 @@ class SignOutUseCase(
         runtimeAuthenticatedFlag.isAuthenticated = false
         val serverSignOutStatus = signOutFromServer()
         passphraseMemoryCache.clear()
+        // an explicit sign-out ends offline access: drop the cached ciphertext
+        clearOfflineSecretsUseCase.execute(Unit)
         getSelectedAccountUseCase.execute(Unit).selectedAccount?.let { selectedAccount ->
             sessionRepository.removeSession(selectedAccount)
             removePermissionsSnapshotUseCase.execute(UserIdInput(selectedAccount))

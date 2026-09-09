@@ -28,6 +28,8 @@ import com.passbolt.mobile.android.data.preferences.AccountPreferencesFileName
 import com.passbolt.mobile.android.data.preferences.KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN
 import com.passbolt.mobile.android.data.preferences.KEY_LAST_USED_HOME_VIEW_ID
 import com.passbolt.mobile.android.data.preferences.KEY_USER_SET_HOME_VIEW_ID
+import com.passbolt.mobile.android.data.preferences.KEY_OFFLINE_LAST_SYNC_EPOCH_MILLIS
+import com.passbolt.mobile.android.data.preferences.KEY_OFFLINE_MODE
 import com.passbolt.mobile.android.domain.preferences.AccountFlagsUpdate
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesLocalDataSource
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate
@@ -35,6 +37,7 @@ import com.passbolt.mobile.android.domain.preferences.PreferencesDefaults
 import com.passbolt.mobile.android.encryptedstorage.EncryptedSharedPreferencesFactory
 import com.passbolt.mobile.android.ui.AccountFlagsUiModel
 import com.passbolt.mobile.android.ui.HomeDisplayViewPreferencesUiModel
+import com.passbolt.mobile.android.ui.OfflineModeSetting
 import timber.log.Timber
 
 internal class AccountPreferencesLocalDataSourceImpl(
@@ -81,6 +84,12 @@ internal class AccountPreferencesLocalDataSourceImpl(
         with(sharedPreferences(userId)) {
             return AccountFlagsUiModel(
                 wasChromeNativeAutofillDialogShown = getBoolean(KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN, false),
+                offlineMode =
+                    getString(KEY_OFFLINE_MODE, null)
+                        ?.let { stored -> OfflineModeSetting.entries.firstOrNull { it.name == stored } }
+                        ?: OfflineModeSetting.OFF,
+                offlineLastSyncEpochMillis =
+                    getLong(KEY_OFFLINE_LAST_SYNC_EPOCH_MILLIS, NO_OFFLINE_SYNC).takeIf { it != NO_OFFLINE_SYNC },
             )
         }
     }
@@ -91,8 +100,17 @@ internal class AccountPreferencesLocalDataSourceImpl(
     ) {
         sharedPreferences(userId).edit {
             update.wasChromeNativeAutofillDialogShown?.let { putBoolean(KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN, it) }
+            update.offlineMode?.let { putString(KEY_OFFLINE_MODE, it.name) }
+            update.offlineLastSyncEpochMillis?.let { putLong(KEY_OFFLINE_LAST_SYNC_EPOCH_MILLIS, it) }
+            if (update.clearOfflineLastSync) {
+                remove(KEY_OFFLINE_LAST_SYNC_EPOCH_MILLIS)
+            }
         }
     }
 
     private fun sharedPreferences(userId: String) = encryptedSharedPreferencesFactory.get("${AccountPreferencesFileName(userId).name}.xml")
+
+    private companion object {
+        private const val NO_OFFLINE_SYNC = -1L
+    }
 }

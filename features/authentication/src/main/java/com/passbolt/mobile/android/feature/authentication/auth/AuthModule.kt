@@ -60,6 +60,8 @@ fun Module.authModule() {
             refreshSessionUseCase = get(),
             mfaProvidersHandler = get(),
             serverKeysWarmup = get(),
+            offlineSignInGate = get(),
+            offlineSessionState = get(),
         )
     }
 
