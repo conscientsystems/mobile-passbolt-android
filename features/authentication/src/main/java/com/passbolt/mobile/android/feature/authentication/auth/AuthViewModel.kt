@@ -108,6 +108,8 @@ import com.passbolt.mobile.android.feature.authentication.mfa.MfaDialogState.Unk
 import com.passbolt.mobile.android.feature.authentication.mfa.MfaDialogState.Yubikey
 import com.passbolt.mobile.android.mappers.AccountModelMapper
 import com.passbolt.mobile.android.ui.BiometricAuthError
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.OfflineSignInGate
 import timber.log.Timber
 import javax.crypto.Cipher
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetAndVerifyServerKeysAndTimeInteractor.Error.NoNetwork as ServerKeysNoNetwork
@@ -141,6 +143,8 @@ class AuthViewModel(
     private val refreshSessionUseCase: RefreshSessionUseCase,
     private val mfaProvidersHandler: MfaProvidersHandler,
     private val serverKeysWarmup: ServerKeysWarmup,
+    private val offlineSignInGate: OfflineSignInGate,
+    private val offlineSessionState: OfflineSessionState,
 ) : SideEffectViewModel<AuthState, AuthSideEffect>(
         AuthState(
             authReason = mapAuthReason(authConfig),
@@ -337,6 +341,7 @@ class AuthViewModel(
             when (refreshSessionResult) {
                 is RefreshSessionUseCase.Output.Success -> {
                     passphrase.erase()
+                    offlineSessionState.exitOfflineSession()
                     runtimeAuthenticatedFlag.isAuthenticated = true
                     emitSideEffect(AuthSuccess(authConfig, appContext))
                 }
@@ -377,12 +382,14 @@ class AuthViewModel(
                             }
                         }
                         is ServerNotReachable -> {
-                            updateViewState {
-                                copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl)
+                            tryOfflineSignIn {
+                                updateViewState {
+                                    copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl)
+                                }
                             }
                         }
                         is ServerKeysNoNetwork -> {
-                            emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+                            tryOfflineSignIn { emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE)) }
                         }
                         is TimeIsOutOfSync -> {
                             emitSideEffect(ShowErrorSnackbar(TIME_OUT_OF_SYNC))
@@ -429,9 +436,11 @@ class AuthViewModel(
                             FAILURE -> emitSideEffect(ShowErrorSnackbar(CHALLENGE_VERIFICATION_FAILURE))
                         }
                     }
-                    is NoNetwork -> emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE))
+                    is NoNetwork -> tryOfflineSignIn { emitSideEffect(ShowErrorSnackbar(CONNECTION_FAILURE)) }
                     is SignInServerNotReachable ->
-                        updateViewState { copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl) }
+                        tryOfflineSignIn {
+                            updateViewState { copy(showServerNotReachable = true, serverNotReachableDomain = it.serverUrl) }
+                        }
                     is IncorrectPassphrase -> emitSideEffect(ShowErrorSnackbar(WRONG_PASSPHRASE))
                     is SignInFailure -> emitSideEffect(ShowErrorSnackbar(AUTHENTICATION_ERROR, it.message))
                 }
@@ -468,6 +477,7 @@ class AuthViewModel(
 
     private fun signInSuccess(updateSession: Boolean = true) {
         Timber.d("Authentication success")
+        offlineSessionState.exitOfflineSession()
         runtimeAuthenticatedFlag.isAuthenticated = true
         passphraseMemoryCache.set(passphrase.copyOf())
         val currentLoginState = requireNotNull(loginState)
@@ -506,6 +516,34 @@ class AuthViewModel(
                 updateViewState { copy(showProgress = false) }
                 emitSideEffect(AuthSuccess(authConfig, appContext))
                 signInIdlingResource.setIdle(true)
+            }
+        }
+    }
+
+    /**
+     * Offline mode: the passphrase has already been verified against the local private
+     * key, so when the server cannot be reached and the user opted in (with a cache that
+     * is still within its retention window) the session is established locally.
+     * Otherwise the regular connection error UI is shown by [onNotAllowed].
+     */
+    private fun tryOfflineSignIn(onNotAllowed: () -> Unit) {
+        launch {
+            when (val gate = offlineSignInGate.evaluate(userId)) {
+                is OfflineSignInGate.Result.Allowed -> {
+                    Timber.d("[Offline] Server unreachable - signing in offline (last sync ${gate.lastSyncEpochMillis})")
+                    updateViewState { copy(showProgress = false) }
+                    signInIdlingResource.setIdle(true)
+                    offlineSessionState.enterOfflineSession()
+                    runtimeAuthenticatedFlag.isAuthenticated = true
+                    saveSelectedAccountUseCase.execute(UserIdInput(userId))
+                    passphrase.erase()
+                    loginState = null
+                    emitSideEffect(AuthSuccess(authConfig, appContext))
+                }
+                else -> {
+                    Timber.d("[Offline] Offline sign in not possible: $gate")
+                    onNotAllowed()
+                }
             }
         }
     }

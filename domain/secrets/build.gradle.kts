@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":passphrasememorycache"))
     implementation(project(":privatekey-domain"))
     implementation(project(":jsonmodel"))
+    implementation(project(":preferences-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

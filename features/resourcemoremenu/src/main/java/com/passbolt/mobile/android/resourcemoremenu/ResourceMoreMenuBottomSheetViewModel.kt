@@ -40,6 +40,7 @@ import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetI
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.LaunchWebsite
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Share
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.ToggleFavourite
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.ToggleOfflineAvailability
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.Dismiss
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.ShowContentNotAvailable
 import com.passbolt.mobile.android.resourcemoremenu.usecase.CreateResourceMoreMenuModelUseCase
@@ -105,6 +106,12 @@ class ResourceMoreMenuBottomSheetViewModel(
                     emitSideEffect(Dismiss)
                 }
             }
+            ToggleOfflineAvailability -> {
+                menuModel?.offlineOption?.let { option ->
+                    emitSideEffect(ResourceMoreMenuBottomSheetSideEffect.ToggleOfflineAvailability(option))
+                    emitSideEffect(Dismiss)
+                }
+            }
         }
     }
 
@@ -133,6 +140,7 @@ class ResourceMoreMenuBottomSheetViewModel(
                             showEdit = model.canEdit,
                             showShare = model.canShare,
                             favouriteOption = model.favouriteOption,
+                            offlineOption = model.offlineOption,
                         )
                     }
                 }

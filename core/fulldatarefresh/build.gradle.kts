@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":database"))
     implementation(project(":coreui"))
     implementation(project(":notifications"))
+    implementation(project(":secrets-domain"))
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)

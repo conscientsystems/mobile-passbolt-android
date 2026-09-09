@@ -11,6 +11,8 @@ import com.passbolt.mobile.android.feature.authentication.session.runAuthenticat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountUseCase
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
+import com.passbolt.mobile.android.feature.authentication.auth.usecase.RefreshSessionUseCase
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -43,6 +45,8 @@ class FullDataRefreshExecutor(
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val refreshRecencyTracker: RefreshRecencyTracker,
     private val getSelectedAccountUseCase: GetSelectedAccountUseCase,
+    private val offlineSessionState: OfflineSessionState,
+    private val refreshSessionUseCase: RefreshSessionUseCase,
 ) {
     /**
      * @param force run even if a refresh for this account completed recently.
@@ -54,6 +58,11 @@ class FullDataRefreshExecutor(
         if (!force && accountId != null && refreshRecencyTracker.isFresh(accountId)) {
             Timber.d("Full data refresh skipped - last successful refresh is recent")
             dataRefreshTrackingFlow.updateStatus(FinishedWithSuccess)
+            return
+        }
+        if (offlineSessionState.isOfflineSession && !tryLeaveOfflineSession()) {
+            Timber.d("Full data refresh skipped - offline session and the server is still unreachable")
+            dataRefreshTrackingFlow.updateStatus(FinishedWithFailure)
             return
         }
         if (!dataRefreshTrackingFlow.isInProgress()) {
@@ -78,6 +87,21 @@ class FullDataRefreshExecutor(
             }
         }
     }
+
+    /**
+     * During an offline session a refresh is only possible if the server is back: a
+     * session refresh with the stored refresh token is the cheapest probe, and on success
+     * it also restores the JWT, so the refresh below runs as a normal online one.
+     */
+    private suspend fun tryLeaveOfflineSession(): Boolean =
+        when (refreshSessionUseCase.execute(Unit)) {
+            is RefreshSessionUseCase.Output.Success -> {
+                Timber.d("Server reachable again - leaving offline session")
+                offlineSessionState.exitOfflineSession()
+                true
+            }
+            is RefreshSessionUseCase.Output.Failure -> false
+        }
 
     private companion object {
         private const val FULL_PROGRESS_DISPLAY_MILLIS = 300L

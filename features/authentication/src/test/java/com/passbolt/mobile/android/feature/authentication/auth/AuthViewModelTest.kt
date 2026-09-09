@@ -67,6 +67,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.factoryOf
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.OfflineSignInGate
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
@@ -113,6 +115,8 @@ class AuthViewModelTest : KoinTest {
                     single { mock<PostSignInActionsInteractor>() }
                     single { mock<RefreshSessionUseCase>() }
                     single { mock<ServerKeysWarmup>() }
+                    single { mock<OfflineSignInGate>() }
+                    single { OfflineSessionState() }
                     single { RuntimeAuthenticatedFlag() }
                     singleOf(::SignInIdlingResource)
                     factoryOf(::MfaProvidersHandler)
@@ -144,6 +148,8 @@ class AuthViewModelTest : KoinTest {
                             refreshSessionUseCase = get(),
                             mfaProvidersHandler = get(),
                             serverKeysWarmup = get(),
+                            offlineSignInGate = get(),
+                            offlineSessionState = get(),
                         )
                     }
                 },

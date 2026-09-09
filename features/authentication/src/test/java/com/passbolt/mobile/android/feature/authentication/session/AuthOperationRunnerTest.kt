@@ -44,6 +44,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.core.component.get
 import org.koin.core.logger.Level
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
@@ -76,6 +77,7 @@ class AuthOperationRunnerTest : KoinTest {
                     single { mockRefreshSessionUseCase }
                     single { mockAppForegroundListener }
                     singleOf(::SessionRefreshTrackingFlow)
+                    singleOf(::OfflineSessionState)
                 },
             )
         }

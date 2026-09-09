@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import timber.log.Timber
 import java.time.ZonedDateTime
 
@@ -54,9 +55,12 @@ class AuthenticatedOperationRunner : KoinComponent {
     private val passphraseMemoryCache: PassphraseMemoryCache by inject()
     private val appForegroundListener: AppForegroundListener by inject()
     private val sessionRefreshTrackingFlow: SessionRefreshTrackingFlow by inject()
+    private val offlineSessionState: OfflineSessionState by inject()
 
     suspend fun <OUTPUT : AuthenticatedUseCaseOutput> runOperation(request: suspend () -> OUTPUT): OUTPUT {
-        val needFullSignIn = isFullSignInNeeded()
+        // offline session: there is no JWT to check and no server to refresh it with;
+        // only the local passphrase session is enforced
+        val needFullSignIn = if (offlineSessionState.isOfflineSession) false else isFullSignInNeeded()
         val needPassphraseRefresh = isPassphraseRefreshNeeded()
 
         // session is refreshed proactively to avoid waiting for the first request to fail
