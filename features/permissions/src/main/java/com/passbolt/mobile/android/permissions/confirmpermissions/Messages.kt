@@ -28,11 +28,11 @@ import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorT
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.ENCRYPTION_ERROR
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.FAILED_TO_TRUST_METADATA_KEY
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.FAILED_TO_VERIFY_METADATA_KEY
+import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.FOLDER_CONTENT_SHARE_PARTIALLY_FAILED
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.JSON_RESOURCE_SCHEMA_ERROR
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.JSON_SECRET_SCHEMA_ERROR
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.ONE_OWNER_REQUIRED
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.SHARE_FAILED
-import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.FOLDER_CONTENT_SHARE_PARTIALLY_FAILED
 import com.passbolt.mobile.android.permissions.confirmpermissions.ToastType.PERMISSIONS_FETCH_FAILURE
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 

@@ -125,7 +125,9 @@ class GroupMembershipInteractor(
                 ?: return Encrypted.Error(Output.CryptoFailure("Unable to restore private key"))
         val publicKeys =
             needed.map { it.second }.distinct().associateWith { userId ->
-                getLocalUserUseCase.execute(GetLocalUserUseCase.Input(userId)).user.gpgKey.armoredKey
+                getLocalUserUseCase
+                    .execute(GetLocalUserUseCase.Input(userId))
+                    .user.gpgKey.armoredKey
             }
         val mySecretByResource = mySecrets.associateBy { it.resourceId }
         Timber.d("Re-encrypting ${needed.size} secret(s) for group ${membership.groupId}")

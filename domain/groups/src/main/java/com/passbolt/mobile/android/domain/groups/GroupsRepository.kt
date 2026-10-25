@@ -26,11 +26,11 @@ package com.passbolt.mobile.android.domain.groups
 import androidx.paging.PagingData
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.domain.groups.model.Group
-import com.passbolt.mobile.android.domain.groups.model.GroupWithItemsCount
 import com.passbolt.mobile.android.domain.groups.model.GroupMemberChange
 import com.passbolt.mobile.android.domain.groups.model.GroupMembership
 import com.passbolt.mobile.android.domain.groups.model.GroupSecret
 import com.passbolt.mobile.android.domain.groups.model.GroupUpdateDryRun
+import com.passbolt.mobile.android.domain.groups.model.GroupWithItemsCount
 import com.passbolt.mobile.android.domain.groups.model.GroupWithMembers
 import com.passbolt.mobile.android.domain.groups.model.GroupWithUsers
 import kotlinx.coroutines.flow.Flow

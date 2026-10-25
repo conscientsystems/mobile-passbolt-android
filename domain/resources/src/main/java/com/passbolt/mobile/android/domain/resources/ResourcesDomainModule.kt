@@ -5,9 +5,6 @@ import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonAction
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceShareActionsInteractor
-import com.passbolt.mobile.android.domain.resources.share.FolderShareWithContentInteractor
-import com.passbolt.mobile.android.domain.resources.share.GroupMembershipInteractor
-import com.passbolt.mobile.android.domain.resources.share.MoveResourceInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
@@ -16,6 +13,9 @@ import com.passbolt.mobile.android.domain.resources.interactor.create.CreateReso
 import com.passbolt.mobile.android.domain.resources.interactor.update.UpdateResourceInteractor
 import com.passbolt.mobile.android.domain.resources.resourceicon.BackgroundColorIconProvider
 import com.passbolt.mobile.android.domain.resources.resourceicon.ResourceIconProvider
+import com.passbolt.mobile.android.domain.resources.share.FolderShareWithContentInteractor
+import com.passbolt.mobile.android.domain.resources.share.GroupMembershipInteractor
+import com.passbolt.mobile.android.domain.resources.share.MoveResourceInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.CreatePermissionsConfirmationInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.CreatePermissionsSnapshotInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.DeleteResourceUseCase

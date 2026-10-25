@@ -29,11 +29,11 @@ import com.passbolt.mobile.android.domain.groups.GroupsRepository
 import com.passbolt.mobile.android.domain.groups.datasource.GroupsLocalDataSource
 import com.passbolt.mobile.android.domain.groups.datasource.GroupsRemoteDataSource
 import com.passbolt.mobile.android.domain.groups.model.Group
-import com.passbolt.mobile.android.domain.groups.model.GroupWithItemsCount
 import com.passbolt.mobile.android.domain.groups.model.GroupMemberChange
 import com.passbolt.mobile.android.domain.groups.model.GroupMembership
 import com.passbolt.mobile.android.domain.groups.model.GroupSecret
 import com.passbolt.mobile.android.domain.groups.model.GroupUpdateDryRun
+import com.passbolt.mobile.android.domain.groups.model.GroupWithItemsCount
 import com.passbolt.mobile.android.domain.groups.model.GroupWithMembers
 import com.passbolt.mobile.android.domain.groups.model.GroupWithUsers
 import kotlinx.coroutines.flow.Flow
@@ -68,8 +68,7 @@ internal class GroupsRepositoryImpl(
     override suspend fun fetchGroupsByIds(groupIds: List<String>): DomainResult<List<GroupWithMembers>> =
         remoteDataSource.getGroupsByIds(groupIds)
 
-    override suspend fun getGroupMembership(groupId: String): DomainResult<GroupMembership> =
-        remoteDataSource.getGroupMembership(groupId)
+    override suspend fun getGroupMembership(groupId: String): DomainResult<GroupMembership> = remoteDataSource.getGroupMembership(groupId)
 
     override suspend fun updateGroupDryRun(
         membership: GroupMembership,

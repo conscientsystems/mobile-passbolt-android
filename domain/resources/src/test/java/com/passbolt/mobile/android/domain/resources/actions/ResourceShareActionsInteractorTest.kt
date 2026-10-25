@@ -276,20 +276,19 @@ class ResourceShareActionsInteractorTest : KoinTest {
         private fun resourceModel(
             slug: String,
             keyType: MetadataKeyTypeModel = PERSONAL,
-        ) =
-            ResourceUiModel(
-                resourceId = RESOURCE_ID,
-                resourceTypeId = UUID.randomUUID().toString(),
-                slug = slug,
-                folderId = null,
-                permission = ResourcePermission.OWNER,
-                favouriteId = null,
-                modified = ZonedDateTime.now(),
-                expiry = null,
-                metadataKeyId = null,
-                metadataKeyType = keyType,
-                metadataJsonModel = MetadataJsonModel("""{"name": "Test"}"""),
-            )
+        ) = ResourceUiModel(
+            resourceId = RESOURCE_ID,
+            resourceTypeId = UUID.randomUUID().toString(),
+            slug = slug,
+            folderId = null,
+            permission = ResourcePermission.OWNER,
+            favouriteId = null,
+            modified = ZonedDateTime.now(),
+            expiry = null,
+            metadataKeyId = null,
+            metadataKeyType = keyType,
+            metadataJsonModel = MetadataJsonModel("""{"name": "Test"}"""),
+        )
 
         private fun userPermissionUi(
             userId: String,

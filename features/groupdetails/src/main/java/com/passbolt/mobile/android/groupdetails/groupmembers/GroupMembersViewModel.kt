@@ -27,13 +27,13 @@ import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
 import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
-import com.passbolt.mobile.android.domain.groups.usecase.GroupsInteractor
 import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GroupsInteractor
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.GetPermissionsSnapshotUseCase
 import com.passbolt.mobile.android.domain.resources.share.GroupMembershipInteractor
+import com.passbolt.mobile.android.domain.users.mapper.toUserModel
 import com.passbolt.mobile.android.domain.users.usecase.GetLocalUsersUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
-import com.passbolt.mobile.android.domain.users.mapper.toUserModel
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.AddMember
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.ConfirmRemoveMember
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.DismissAddMember
@@ -90,7 +90,10 @@ internal class GroupMembersViewModel(
 
     private fun openAddMember() {
         viewModelScope.launch(coroutineLaunchContext.io) {
-            val memberIds = viewState.value.members.map { it.id }.toSet()
+            val memberIds =
+                viewState.value.members
+                    .map { it.id }
+                    .toSet()
             val users =
                 getLocalUsersUseCase
                     .execute(GetLocalUsersUseCase.Input())

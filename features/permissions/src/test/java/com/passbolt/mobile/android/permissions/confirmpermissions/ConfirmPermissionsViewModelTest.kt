@@ -38,8 +38,8 @@ import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKey
 import com.passbolt.mobile.android.domain.permissionsconfirmation.model.PermissionsSnapshot
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.GetPermissionsSnapshotUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceShareActionsInteractor
-import com.passbolt.mobile.android.domain.resources.share.FolderShareWithContentInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ShareActionResult
+import com.passbolt.mobile.android.domain.resources.share.FolderShareWithContentInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.CreatePermissionsSnapshotInteractor
 import com.passbolt.mobile.android.domain.users.model.GpgKey
 import com.passbolt.mobile.android.domain.users.model.UserProfile

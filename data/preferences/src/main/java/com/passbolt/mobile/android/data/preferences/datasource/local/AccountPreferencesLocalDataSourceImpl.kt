@@ -27,9 +27,9 @@ import androidx.core.content.edit
 import com.passbolt.mobile.android.data.preferences.AccountPreferencesFileName
 import com.passbolt.mobile.android.data.preferences.KEY_CHROME_NATIVE_AUTOFILL_DIALOG_SHOWN
 import com.passbolt.mobile.android.data.preferences.KEY_LAST_USED_HOME_VIEW_ID
-import com.passbolt.mobile.android.data.preferences.KEY_USER_SET_HOME_VIEW_ID
 import com.passbolt.mobile.android.data.preferences.KEY_OFFLINE_LAST_SYNC_EPOCH_MILLIS
 import com.passbolt.mobile.android.data.preferences.KEY_OFFLINE_MODE
+import com.passbolt.mobile.android.data.preferences.KEY_USER_SET_HOME_VIEW_ID
 import com.passbolt.mobile.android.domain.preferences.AccountFlagsUpdate
 import com.passbolt.mobile.android.domain.preferences.AccountPreferencesLocalDataSource
 import com.passbolt.mobile.android.domain.preferences.HomeDisplayViewPreferencesUpdate

@@ -113,8 +113,8 @@ import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.NO_SHAR
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.PROFILE_FETCH_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.TOGGLE_FAVOURITE_FAILURE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarErrorType.TOGGLE_OFFLINE_AVAILABILITY_FAILURE
-import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_AVAILABLE_OFFLINE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.OTP_CREATED
+import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_AVAILABLE_OFFLINE
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_CREATED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_DELETED
 import com.passbolt.mobile.android.feature.home.screen.SnackbarSuccessType.RESOURCE_EDITED

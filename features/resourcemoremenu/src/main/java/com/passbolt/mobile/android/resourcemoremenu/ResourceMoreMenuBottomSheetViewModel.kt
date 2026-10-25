@@ -52,9 +52,9 @@ import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetS
 import com.passbolt.mobile.android.resourcemoremenu.usecase.CreateResourceMoreMenuModelUseCase
 import com.passbolt.mobile.android.ui.Folder
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
-import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.DescriptionOption.HAS_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.DescriptionOption.HAS_NOTE
+import com.passbolt.mobile.android.ui.ResourcePermission
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
