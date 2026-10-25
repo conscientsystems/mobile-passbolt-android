@@ -53,6 +53,11 @@ internal class FoldersRepositoryImpl(
         parentFolderId: String?,
     ): DomainResult<FolderModelWithAttributes> = remoteDataSource.createFolder(name, parentFolderId)
 
+    override suspend fun moveResource(
+        resourceId: String,
+        folderParentId: String?,
+    ): DomainResult<Unit> = remoteDataSource.moveResource(resourceId, folderParentId)
+
     override suspend fun fetchFolderPermissions(folderId: String): DomainResult<List<PermissionModel>> =
         remoteDataSource.getFolderPermissions(folderId)
 

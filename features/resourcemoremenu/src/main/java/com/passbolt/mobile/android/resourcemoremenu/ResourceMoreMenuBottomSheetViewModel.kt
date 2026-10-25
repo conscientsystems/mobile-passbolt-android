@@ -28,6 +28,8 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.idlingresource.CreateMenuModelIdlingResource
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderUseCase
+import com.passbolt.mobile.android.domain.resources.share.MoveResourceInteractor
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Close
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyMetadataDescription
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyNote
@@ -35,16 +37,22 @@ import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetI
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyUrl
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyUsername
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Delete
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.DismissMoveDestinations
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Edit
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Initialize
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.LaunchWebsite
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Move
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.MoveTo
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Share
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.ToggleFavourite
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.ToggleOfflineAvailability
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.Dismiss
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.MoveFinished
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.ShowContentNotAvailable
 import com.passbolt.mobile.android.resourcemoremenu.usecase.CreateResourceMoreMenuModelUseCase
+import com.passbolt.mobile.android.ui.Folder
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel
+import com.passbolt.mobile.android.ui.ResourcePermission
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.DescriptionOption.HAS_METADATA_DESCRIPTION
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.DescriptionOption.HAS_NOTE
 import kotlinx.coroutines.launch
@@ -55,10 +63,13 @@ class ResourceMoreMenuBottomSheetViewModel(
     private val coroutineLaunchContext: CoroutineLaunchContext,
     private val dataRefreshTrackingFlow: DataRefreshTrackingFlow,
     private val createMenuModelIdlingResource: CreateMenuModelIdlingResource,
+    private val moveResourceInteractor: MoveResourceInteractor,
+    private val getLocalSubFoldersForFolderUseCase: GetLocalSubFoldersForFolderUseCase,
 ) : SideEffectViewModel<ResourceMoreMenuBottomSheetState, ResourceMoreMenuBottomSheetSideEffect>(
         ResourceMoreMenuBottomSheetState(),
     ) {
     private var menuModel: ResourceMoreMenuModel? = null
+    private var resourceId: String? = null
 
     @Suppress("CyclomaticComplexMethod")
     fun onIntent(intent: ResourceMoreMenuBottomSheetIntent) {
@@ -113,10 +124,50 @@ class ResourceMoreMenuBottomSheetViewModel(
                     emitSideEffect(Dismiss)
                 }
             }
+            Move -> showMoveDestinations()
+            is MoveTo -> moveTo(intent.folderId)
+            DismissMoveDestinations -> updateViewState { copy(moveDestinations = null) }
+        }
+    }
+
+    private fun showMoveDestinations() {
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            val folders =
+                getLocalSubFoldersForFolderUseCase
+                    .execute(GetLocalSubFoldersForFolderUseCase.Input(Folder.Root))
+                    .folders
+                    // a read-only folder cannot receive items
+                    .filter { it.permission != ResourcePermission.READ }
+                    .map { folder ->
+                        MoveDestination(
+                            folderId = folder.folderId,
+                            label = listOfNotNull(folder.path?.takeIf { it.isNotBlank() }, folder.name).joinToString(" / "),
+                            isShared = folder.isShared,
+                        )
+                    }.sortedBy { it.label.lowercase() }
+            updateViewState { copy(moveDestinations = listOf(MoveDestination(null, "", false)) + folders) }
+        }
+    }
+
+    private fun moveTo(folderId: String?) {
+        val id = resourceId ?: return
+        updateViewState { copy(moveDestinations = null, isMoving = true) }
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            val result =
+                when (val output = moveResourceInteractor.move(id, folderId)) {
+                    is MoveResourceInteractor.Output.Success ->
+                        if (output.permissionsChanged) MoveResultType.MOVED_AND_SHARED else MoveResultType.MOVED
+                    MoveResourceInteractor.Output.MovedButPermissionsNotUpdated -> MoveResultType.MOVED_PERMISSIONS_NOT_UPDATED
+                    MoveResourceInteractor.Output.Failure -> MoveResultType.FAILED
+                }
+            updateViewState { copy(isMoving = false) }
+            emitSideEffect(MoveFinished(result))
+            emitSideEffect(Dismiss)
         }
     }
 
     private fun initialize(resourceId: String) {
+        this.resourceId = resourceId
         viewModelScope.launch(coroutineLaunchContext.io) {
             createMenuModelIdlingResource.setIdle(false)
             updateViewState { ResourceMoreMenuBottomSheetState(title = title) }
@@ -142,6 +193,7 @@ class ResourceMoreMenuBottomSheetViewModel(
                             showShare = model.canShare,
                             favouriteOption = model.favouriteOption,
                             offlineOption = model.offlineOption,
+                            showMove = model.canMove,
                         )
                     }
                 }

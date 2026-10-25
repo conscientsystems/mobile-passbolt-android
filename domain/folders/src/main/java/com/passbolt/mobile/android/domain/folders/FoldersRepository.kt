@@ -53,6 +53,11 @@ interface FoldersRepository {
 
     suspend fun fetchFolderPermissions(folderId: String): DomainResult<List<PermissionModel>>
 
+    suspend fun moveResource(
+        resourceId: String,
+        folderParentId: String?,
+    ): DomainResult<Unit>
+
     suspend fun addFolder(
         folder: FolderModel,
         userId: String,

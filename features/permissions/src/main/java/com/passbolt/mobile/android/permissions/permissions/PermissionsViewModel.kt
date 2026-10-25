@@ -40,6 +40,7 @@ import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.See
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateBack
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToGroupPermissionDetails
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToHome
+import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToShareFolder
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToShareResource
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToUserPermissionDetails
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.ShowErrorSnackbar
@@ -163,7 +164,7 @@ class PermissionsViewModel(
                             .execute(GetLocalFolderDetailsUseCase.Input(viewState.value.permissionItemId))
                             .folder.permission == ResourcePermission.OWNER
                 }
-            if (isOwner && viewState.value.permissionsItem == PermissionsItem.RESOURCE) {
+            if (isOwner) {
                 updateViewState { copy(showEditButton = true) }
             }
         }
@@ -177,6 +178,10 @@ class PermissionsViewModel(
     }
 
     private fun shareResourceClick() {
+        if (viewState.value.permissionsItem == PermissionsItem.FOLDER) {
+            emitSideEffect(NavigateToShareFolder(viewState.value.permissionItemId))
+            return
+        }
         viewModelScope.launch(coroutineLaunchContext.io) {
             if (resourceAccessInteractor.canShareResource()) {
                 emitSideEffect(NavigateToShareResource(viewState.value.permissionItemId))

@@ -38,4 +38,15 @@ data class ResourceMoreMenuBottomSheetState(
     val showShare: Boolean = false,
     val favouriteOption: FavouriteOption? = null,
     val offlineOption: OfflineOption? = null,
+    val showMove: Boolean = false,
+    // non-null while the destination picker is open
+    val moveDestinations: List<MoveDestination>? = null,
+    val isMoving: Boolean = false,
+)
+
+data class MoveDestination(
+    // null = the root
+    val folderId: String?,
+    val label: String,
+    val isShared: Boolean,
 )

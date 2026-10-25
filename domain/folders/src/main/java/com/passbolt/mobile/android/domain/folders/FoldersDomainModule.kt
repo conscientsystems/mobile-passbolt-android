@@ -37,6 +37,7 @@ import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderPermissi
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalParentFolderPermissionsToApplyToNewItemUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderPaginatedUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderUseCase
+import com.passbolt.mobile.android.domain.folders.usecase.MoveResourceUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.RemoveLocalFolderPermissionsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.RemoveLocalFoldersWithUpdateStateUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.SetLocalFoldersUpdateStateUseCase
@@ -60,6 +61,7 @@ val foldersDomainModule =
         singleOf(::RemoveLocalFoldersWithUpdateStateUseCase)
         singleOf(::GetLocalDirectChildFoldersPaginatedUseCase)
         singleOf(::GetLocalSubFoldersForFolderUseCase)
+        singleOf(::MoveResourceUseCase)
         singleOf(::GetLocalSubFoldersForFolderPaginatedUseCase)
         singleOf(::GetLocalFolderDetailsUseCase)
         singleOf(::GetLocalFolderLocationUseCase)

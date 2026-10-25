@@ -35,6 +35,7 @@ import com.passbolt.mobile.android.domain.folders.datasource.FoldersRemoteDataSo
 import com.passbolt.mobile.android.domain.folders.model.FolderModelWithAttributes
 import com.passbolt.mobile.android.domain.folders.model.FoldersPage
 import com.passbolt.mobile.android.dto.request.CreateFolderRequestDto
+import com.passbolt.mobile.android.dto.request.MoveRequestDto
 import com.passbolt.mobile.android.mappers.PermissionsModelMapper
 import com.passbolt.mobile.android.ui.PermissionModel
 
@@ -59,6 +60,14 @@ internal class FoldersRemoteDataSourceImpl(
             foldersApi.createFolder(CreateFolderRequestDto(parentFolderId, name)).body
         }.toDomainResult()
             .map { it.toFolderModelWithAttributes(permissionsModelMapper) }
+
+    override suspend fun moveResource(
+        resourceId: String,
+        folderParentId: String?,
+    ): DomainResult<Unit> =
+        callWithHandler(responseHandler) {
+            foldersApi.moveResource(resourceId, MoveRequestDto(folderParentId)).body
+        }.toDomainResult()
 
     override suspend fun getFolderPermissions(folderId: String): DomainResult<List<PermissionModel>> =
         callWithHandler(responseHandler) { foldersApi.getFolder(folderId).body }

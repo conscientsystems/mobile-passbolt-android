@@ -24,15 +24,27 @@
 package com.passbolt.mobile.android.resourcemoremenu
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -42,8 +54,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
+import com.passbolt.mobile.android.core.fulldatarefresh.service.DataRefreshService
 import com.passbolt.mobile.android.core.ui.bottomsheet.BottomSheetHeader
 import com.passbolt.mobile.android.core.ui.menu.OpenableSettingsItem
+import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Close
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyMetadataDescription
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyNote
@@ -51,13 +65,17 @@ import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetI
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyUrl
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.CopyUsername
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Delete
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.DismissMoveDestinations
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Edit
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Initialize
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.LaunchWebsite
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Move
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.MoveTo
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.Share
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.ToggleFavourite
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetIntent.ToggleOfflineAvailability
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.Dismiss
+import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.MoveFinished
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.ShowContentNotAvailable
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption
 import com.passbolt.mobile.android.ui.ResourceMoreMenuModel.FavouriteOption.ADD_TO_FAVOURITES
@@ -121,8 +139,65 @@ fun ResourceMoreMenuBottomSheet(
             ResourceMoreMenuBottomSheetSideEffect.Share -> onShare()
             is ResourceMoreMenuBottomSheetSideEffect.ToggleFavourite -> onToggleFavourite(sideEffect.option)
             is ResourceMoreMenuBottomSheetSideEffect.ToggleOfflineAvailability -> onToggleOfflineAvailability(sideEffect.option)
+            is MoveFinished -> {
+                if (sideEffect.result != MoveResultType.FAILED) {
+                    DataRefreshService.start(context)
+                }
+                Toast.makeText(context, resources.getString(sideEffect.result.messageRes()), Toast.LENGTH_LONG).show()
+            }
         }
     }
+}
+
+private fun MoveResultType.messageRes() =
+    when (this) {
+        MoveResultType.MOVED -> LocalizationR.string.move_resource_success
+        MoveResultType.MOVED_AND_SHARED -> LocalizationR.string.move_resource_success_permissions_updated
+        MoveResultType.MOVED_PERMISSIONS_NOT_UPDATED -> LocalizationR.string.move_resource_permissions_not_updated
+        MoveResultType.FAILED -> LocalizationR.string.move_resource_failed
+    }
+
+@Composable
+private fun MoveDestinationsDialog(
+    destinations: List<MoveDestination>,
+    onSelect: (String?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(LocalizationR.string.move_resource_title)) },
+        text = {
+            LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
+                items(destinations) { destination ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { onSelect(destination.folderId) }
+                                .padding(vertical = 12.dp),
+                    ) {
+                        Image(
+                            painter =
+                                painterResource(
+                                    if (destination.isShared) CoreUiR.drawable.ic_shared_folder else CoreUiR.drawable.ic_folder,
+                                ),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                        Text(
+                            text = destination.label.ifEmpty { stringResource(LocalizationR.string.move_resource_root) },
+                            modifier = Modifier.padding(start = 12.dp),
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(LocalizationR.string.cancel)) }
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -274,6 +349,17 @@ private fun ResourceMoreMenuBottomSheet(
                     }
                 }
 
+                if (state.showMove) {
+                    item {
+                        OpenableSettingsItem(
+                            title = stringResource(LocalizationR.string.more_move),
+                            iconPainter = painterResource(CoreUiR.drawable.ic_folder),
+                            onClick = { onIntent(Move) },
+                            opensInternally = true,
+                        )
+                    }
+                }
+
                 if (state.showEdit) {
                     item {
                         OpenableSettingsItem(
@@ -299,4 +385,12 @@ private fun ResourceMoreMenuBottomSheet(
             }
         }
     }
+    state.moveDestinations?.let { destinations ->
+        MoveDestinationsDialog(
+            destinations = destinations,
+            onSelect = { onIntent(MoveTo(it)) },
+            onDismiss = { onIntent(DismissMoveDestinations) },
+        )
+    }
+    ProgressDialog(isVisible = state.isMoving)
 }

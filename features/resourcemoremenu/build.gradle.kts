@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":gopenpgp"))
     implementation(project(":localization"))
     implementation(project(":resources-domain"))
+    implementation(project(":folders-domain"))
     implementation(project(":supportedresourcetypes"))
     implementation(project(":fulldatarefresh"))
     implementation(project(":authentication"))

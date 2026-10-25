@@ -51,4 +51,13 @@ sealed interface ResourceMoreMenuBottomSheetIntent {
     data object ToggleFavourite : ResourceMoreMenuBottomSheetIntent
 
     data object ToggleOfflineAvailability : ResourceMoreMenuBottomSheetIntent
+
+    data object Move : ResourceMoreMenuBottomSheetIntent
+
+    data class MoveTo(
+        // null = the root
+        val folderId: String?,
+    ) : ResourceMoreMenuBottomSheetIntent
+
+    data object DismissMoveDestinations : ResourceMoreMenuBottomSheetIntent
 }

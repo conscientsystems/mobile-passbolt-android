@@ -57,6 +57,7 @@ import com.passbolt.mobile.android.permissions.permissions.PermissionsIntent.See
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateBack
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToGroupPermissionDetails
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToHome
+import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToShareFolder
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToShareResource
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.NavigateToUserPermissionDetails
 import com.passbolt.mobile.android.permissions.permissions.PermissionsSideEffect.ShowErrorSnackbar
@@ -107,6 +108,8 @@ fun PermissionsScreen(
                 )
             is NavigateToShareResource ->
                 navigator.navigateToKey(ConfirmPermissions(ConfirmPermissionsMode.Share(effect.resourceId)))
+            is NavigateToShareFolder ->
+                navigator.navigateToKey(ConfirmPermissions(ConfirmPermissionsMode.ShareFolder(effect.folderId)))
             NavigateToHome -> navigator.popToRoot()
             is ShowToast ->
                 Toast

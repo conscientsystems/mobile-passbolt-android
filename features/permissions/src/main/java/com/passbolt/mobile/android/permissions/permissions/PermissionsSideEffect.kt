@@ -44,6 +44,10 @@ sealed interface PermissionsSideEffect {
         val resourceId: String,
     ) : PermissionsSideEffect
 
+    data class NavigateToShareFolder(
+        val folderId: String,
+    ) : PermissionsSideEffect
+
     data object NavigateToHome : PermissionsSideEffect
 
     data class ShowErrorSnackbar(

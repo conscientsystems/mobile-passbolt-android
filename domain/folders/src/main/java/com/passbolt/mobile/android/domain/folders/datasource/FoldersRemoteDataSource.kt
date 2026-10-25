@@ -40,4 +40,9 @@ interface FoldersRemoteDataSource {
     ): DomainResult<FolderModelWithAttributes>
 
     suspend fun getFolderPermissions(folderId: String): DomainResult<List<PermissionModel>>
+
+    suspend fun moveResource(
+        resourceId: String,
+        folderParentId: String?,
+    ): DomainResult<Unit>
 }

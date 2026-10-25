@@ -32,6 +32,7 @@ import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorT
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.JSON_SECRET_SCHEMA_ERROR
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.ONE_OWNER_REQUIRED
 import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.SHARE_FAILED
+import com.passbolt.mobile.android.permissions.confirmpermissions.SnackbarErrorType.FOLDER_CONTENT_SHARE_PARTIALLY_FAILED
 import com.passbolt.mobile.android.permissions.confirmpermissions.ToastType.PERMISSIONS_FETCH_FAILURE
 import com.passbolt.mobile.android.core.localization.R as LocalizationR
 
@@ -43,6 +44,7 @@ internal fun getErrorMessage(
         when (type) {
             ONE_OWNER_REQUIRED -> LocalizationR.string.resource_permissions_one_owner
             SHARE_FAILED -> LocalizationR.string.resource_permissions_share_failed
+            FOLDER_CONTENT_SHARE_PARTIALLY_FAILED -> LocalizationR.string.folder_permissions_content_share_partially_failed
             ENCRYPTION_ERROR -> LocalizationR.string.common_encryption_failure
             JSON_RESOURCE_SCHEMA_ERROR -> LocalizationR.string.common_json_schema_resource_validation_error
             JSON_SECRET_SCHEMA_ERROR -> LocalizationR.string.common_json_schema_secret_validation_error

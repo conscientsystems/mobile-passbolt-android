@@ -36,6 +36,7 @@ import com.passbolt.mobile.android.domain.permissionsconfirmation.model.Permissi
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.GetPermissionsSnapshotUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceShareActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ShareActionResult
+import com.passbolt.mobile.android.domain.resources.share.FolderShareWithContentInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.CreatePermissionsSnapshotInteractor
 import com.passbolt.mobile.android.domain.users.usecase.GetLocalCurrentUserUseCase
 import com.passbolt.mobile.android.domain.users.usecase.UsersInteractor
@@ -83,6 +84,7 @@ class ConfirmPermissionsViewModel(
     private val driftedEntityNames: List<String>?,
     private val createPermissionsSnapshotInteractor: CreatePermissionsSnapshotInteractor,
     private val resourceShareActionsInteractor: ResourceShareActionsInteractor,
+    private val folderShareWithContentInteractor: FolderShareWithContentInteractor,
     private val metadataPrivateKeysHelperInteractor: MetadataPrivateKeysHelperInteractor,
     private val getPermissionsSnapshotUseCase: GetPermissionsSnapshotUseCase,
     private val getGroupWithUsersUseCase: GetGroupWithUsersUseCase,
@@ -140,6 +142,7 @@ class ConfirmPermissionsViewModel(
                         is ConfirmPermissionsMode.Create -> showCreateModePermissions(output.snapshot, operator)
                         is ConfirmPermissionsMode.Edit,
                         is ConfirmPermissionsMode.Share,
+                        is ConfirmPermissionsMode.ShareFolder,
                         -> showEditModePermissions(output.snapshot, operator)
                     }
                 }
@@ -157,6 +160,7 @@ class ConfirmPermissionsViewModel(
             is ConfirmPermissionsMode.Create -> createPermissionsSnapshotInteractor.createForFolder(confirmMode.folderId)
             is ConfirmPermissionsMode.Edit -> createPermissionsSnapshotInteractor.createForResource(confirmMode.resourceId)
             is ConfirmPermissionsMode.Share -> createPermissionsSnapshotInteractor.createForResource(confirmMode.resourceId)
+            is ConfirmPermissionsMode.ShareFolder -> createPermissionsSnapshotInteractor.createForFolder(confirmMode.folderId)
         }
 
     private fun showCreateModePermissions(
@@ -330,9 +334,43 @@ class ConfirmPermissionsViewModel(
     private fun confirmPermissions() {
         when (confirmMode) {
             is ConfirmPermissionsMode.Share -> performConfirmedShare(confirmMode.resourceId)
+            is ConfirmPermissionsMode.ShareFolder -> performConfirmedFolderShare(confirmMode.folderId)
             else -> {
                 Timber.d("Permissions confirmed for ${viewState.value.permissions.size} recipient(s)")
                 emitSideEffect(CloseWithPermissionsConfirmed(viewState.value.permissions))
+            }
+        }
+    }
+
+    private fun performConfirmedFolderShare(folderId: String) {
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            // the snapshot was taken from the server when the screen opened - it is the
+            // folder's state the user edited, so the changes are calculated against it
+            val original =
+                getPermissionsSnapshotUseCase
+                    .execute(Unit)
+                    .snapshot
+                    ?.toEditModePermissions()
+            if (original == null) {
+                loadSnapshotPermissions()
+                emitSideEffect(ShowPermissionsDriftedSnackbar(emptyList()))
+                return@launch
+            }
+            updateViewState { copy(isApplyingShare = true) }
+            Timber.d("Sharing folder (with content) for ${viewState.value.permissions.size} recipient(s)")
+            val result =
+                folderShareWithContentInteractor.shareFolderWithContent(
+                    folderId = folderId,
+                    originalPermissions = original,
+                    confirmedPermissions = viewState.value.permissions,
+                )
+            updateViewState { copy(isApplyingShare = false) }
+            when (result) {
+                is FolderShareWithContentInteractor.Output.Success -> emitSideEffect(CloseWithShareSuccess)
+                is FolderShareWithContentInteractor.Output.PartialFailure ->
+                    emitSideEffect(ShowErrorSnackbar(SnackbarErrorType.FOLDER_CONTENT_SHARE_PARTIALLY_FAILED))
+                is FolderShareWithContentInteractor.Output.FolderShareFailure ->
+                    emitSideEffect(ShowErrorSnackbar(SnackbarErrorType.SHARE_FAILED))
             }
         }
     }

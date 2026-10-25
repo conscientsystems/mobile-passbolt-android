@@ -33,6 +33,7 @@ fun Module.confirmPermissionsModule() {
             driftedEntityNames = params.getOrNull(),
             createPermissionsSnapshotInteractor = get(),
             resourceShareActionsInteractor = get(),
+            folderShareWithContentInteractor = get(),
             metadataPrivateKeysHelperInteractor = get(),
             getPermissionsSnapshotUseCase = get(),
             getGroupWithUsersUseCase = get(),

@@ -585,6 +585,14 @@
     <string name="resource_permissions_one_owner">Please make sure there is at least one owner.</string>
     <string name="resource_permissions_share_simulation_failed">There was an error during share simulation</string>
     <string name="resource_permissions_share_failed">There was an error during share </string>
+    <string name="more_move">Move to folder</string>
+    <string name="move_resource_title">Move to</string>
+    <string name="move_resource_root">Root (no folder)</string>
+    <string name="move_resource_success">Moved</string>
+    <string name="move_resource_success_permissions_updated">Moved - the permissions now follow the folder</string>
+    <string name="move_resource_permissions_not_updated">Moved, but the permissions could not be updated</string>
+    <string name="move_resource_failed">The entry could not be moved</string>
+    <string name="folder_permissions_content_share_partially_failed">The folder was shared, but some items inside it could not be updated. Pull to refresh and try again.</string>
     <string name="resource_permissions_edit_permissions">Edit permissions</string>
 
     <string name="confirm_permissions_title">Confirm permissions</string>

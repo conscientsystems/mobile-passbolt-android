@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.data.folders.datasource.remote.api
 
 import com.passbolt.mobile.android.dto.request.CreateFolderRequestDto
+import com.passbolt.mobile.android.dto.request.MoveRequestDto
 import com.passbolt.mobile.android.dto.response.BasePaginatedResponse
 import com.passbolt.mobile.android.dto.response.BaseResponse
 import com.passbolt.mobile.android.dto.response.CreateFolderResponseDto
@@ -31,6 +32,7 @@ import com.passbolt.mobile.android.dto.response.FolderResponseDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -67,8 +69,16 @@ internal interface FoldersApi {
         @Query(QUERY_CONTAIN_PERMISSION) containingPermission: Int? = 1,
     ): BaseResponse<CreateFolderResponseDto>
 
+    @PUT(MOVE_RESOURCE)
+    suspend fun moveResource(
+        @Path(PATH_RESOURCE_ID) resourceId: String,
+        @Body request: MoveRequestDto,
+    ): BaseResponse<Unit>
+
     private companion object {
         private const val FOLDERS = "folders.json"
+        private const val PATH_RESOURCE_ID = "resourceId"
+        private const val MOVE_RESOURCE = "move/resource/{$PATH_RESOURCE_ID}.json"
         private const val PATH_FOLDER_ID = "folderId"
         private const val FOLDER_BY_ID = "folders/{$PATH_FOLDER_ID}.json"
 

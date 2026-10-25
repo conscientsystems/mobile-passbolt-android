@@ -72,6 +72,7 @@ sealed interface ConfirmPermissionsSideEffect {
 enum class SnackbarErrorType {
     ONE_OWNER_REQUIRED,
     SHARE_FAILED,
+    FOLDER_CONTENT_SHARE_PARTIALLY_FAILED,
     ENCRYPTION_ERROR,
     JSON_RESOURCE_SCHEMA_ERROR,
     JSON_SECRET_SCHEMA_ERROR,

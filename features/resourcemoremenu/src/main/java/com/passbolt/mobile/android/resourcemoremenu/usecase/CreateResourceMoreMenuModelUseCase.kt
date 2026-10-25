@@ -63,6 +63,7 @@ class CreateResourceMoreMenuModelUseCase(
                 canDelete = resource.permission in WRITE_PERMISSIONS,
                 canEdit = resource.permission in WRITE_PERMISSIONS,
                 canShare = isShareRbacAllowed && resource.permission == ResourcePermission.OWNER,
+                canMove = rbacModel.foldersUseRule == ALLOW && resource.permission in WRITE_PERMISSIONS,
                 favouriteOption =
                     if (resource.isFavourite()) {
                         REMOVE_FROM_FAVOURITES

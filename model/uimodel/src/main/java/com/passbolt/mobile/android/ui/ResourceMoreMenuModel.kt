@@ -10,6 +10,8 @@ data class ResourceMoreMenuModel(
     val descriptionOptions: List<DescriptionOption>,
     // null when offline mode is off or every entry is cached anyway
     val offlineOption: OfflineOption? = null,
+    // moving needs write access and the folders feature
+    val canMove: Boolean = false,
 ) {
     enum class FavouriteOption {
         ADD_TO_FAVOURITES,

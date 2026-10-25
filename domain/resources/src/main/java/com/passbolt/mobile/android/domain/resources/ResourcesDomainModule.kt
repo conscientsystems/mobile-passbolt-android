@@ -5,6 +5,8 @@ import com.passbolt.mobile.android.domain.resources.actions.ResourceCommonAction
 import com.passbolt.mobile.android.domain.resources.actions.ResourceCreateActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourcePropertiesActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceShareActionsInteractor
+import com.passbolt.mobile.android.domain.resources.share.FolderShareWithContentInteractor
+import com.passbolt.mobile.android.domain.resources.share.MoveResourceInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ResourceUpdateActionsInteractorFactory
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActionsInteractor
@@ -69,6 +71,8 @@ val resourcesDomainModule =
         singleOf(::ShareResourceUseCase)
         singleOf(::ResourceShareInteractor)
         singleOf(::ResourceShareActionsInteractor)
+        singleOf(::FolderShareWithContentInteractor)
+        singleOf(::MoveResourceInteractor)
         singleOf(::EditPermissionsConfirmationInteractor)
         singleOf(::CreatePermissionsConfirmationInteractor)
         singleOf(::UpdateResourceInteractor)

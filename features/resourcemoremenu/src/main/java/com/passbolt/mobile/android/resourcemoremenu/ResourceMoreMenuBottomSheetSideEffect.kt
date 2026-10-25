@@ -55,4 +55,15 @@ sealed interface ResourceMoreMenuBottomSheetSideEffect {
     data class ToggleOfflineAvailability(
         val option: ResourceMoreMenuModel.OfflineOption,
     ) : ResourceMoreMenuBottomSheetSideEffect
+
+    data class MoveFinished(
+        val result: MoveResultType,
+    ) : ResourceMoreMenuBottomSheetSideEffect
+}
+
+enum class MoveResultType {
+    MOVED,
+    MOVED_AND_SHARED,
+    MOVED_PERMISSIONS_NOT_UPDATED,
+    FAILED,
 }
