@@ -29,6 +29,8 @@ import com.passbolt.mobile.android.common.datarefresh.DataRefreshTrackingFlow
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.idlingresource.CreateMenuModelIdlingResource
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderUseCase
+import com.passbolt.mobile.android.domain.resources.share.MoveResourceInteractor
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.Dismiss
 import com.passbolt.mobile.android.resourcemoremenu.ResourceMoreMenuBottomSheetSideEffect.ShowContentNotAvailable
 import com.passbolt.mobile.android.resourcemoremenu.usecase.CreateResourceMoreMenuModelUseCase
@@ -74,6 +76,8 @@ class ResourceMoreMenuTest : KoinTest {
                     factoryOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                     singleOf(::DataRefreshTrackingFlow)
                     singleOf(::CreateMenuModelIdlingResource)
+                    single { mock(MoveResourceInteractor::class.java) }
+                    single { mock(GetLocalSubFoldersForFolderUseCase::class.java) }
                     factoryOf(::ResourceMoreMenuBottomSheetViewModel)
                 },
             )

@@ -55,6 +55,7 @@ import com.passbolt.mobile.android.domain.resources.actions.SecretPropertiesActi
 import com.passbolt.mobile.android.domain.resources.actions.SecretPropertyActionResult
 import com.passbolt.mobile.android.domain.resources.usecase.EditPermissionsConfirmationInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourcesUseCase
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import com.passbolt.mobile.android.feature.home.screen.ShowSuggestedModel
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseOtpMoreMenu
 import com.passbolt.mobile.android.feature.otp.screen.OtpIntent.CloseSwitchAccount
@@ -170,6 +171,7 @@ class OtpViewModelTest : KoinTest {
                         }
                         singleOf(::DataRefreshTrackingFlow)
                         singleOf(::SessionRefreshTrackingFlow)
+                        singleOf(::OfflineSessionState)
                     },
                 ),
             )

@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(project(":architecture"))
     implementation(project(":authentication"))
+    implementation(project(":secrets-domain"))
     implementation(project(":passphrasememorycache"))
     implementation(project(":common"))
 

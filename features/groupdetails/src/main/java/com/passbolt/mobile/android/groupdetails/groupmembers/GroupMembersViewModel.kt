@@ -47,6 +47,7 @@ import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEff
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateUp
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.ShowMessage
 import com.passbolt.mobile.android.ui.PermissionModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -119,11 +120,19 @@ internal class GroupMembersViewModel(
 
     private fun loadManagerFlag(groupId: String) {
         viewModelScope.launch(coroutineLaunchContext.io) {
-            val myServerId = getSelectedAccountDataUseCase.execute(Unit).serverId
-            val output = runAuthenticatedOperation { groupMembershipInteractor.getMembership(groupId) }
+            // managing is an extra: any failure here just leaves the screen read-only
             val isManager =
-                output is GroupMembershipInteractor.Output.Membership &&
-                    output.membership.members.any { it.userId == myServerId && it.isManager }
+                try {
+                    val myServerId = getSelectedAccountDataUseCase.execute(Unit).serverId
+                    val output = runAuthenticatedOperation { groupMembershipInteractor.getMembership(groupId) }
+                    output is GroupMembershipInteractor.Output.Membership &&
+                        output.membership.members.any { it.userId == myServerId && it.isManager }
+                } catch (exception: CancellationException) {
+                    throw exception
+                } catch (exception: Exception) {
+                    Timber.e(exception, "Could not check the group manager role")
+                    false
+                }
             updateViewState { copy(canManage = isManager) }
         }
     }

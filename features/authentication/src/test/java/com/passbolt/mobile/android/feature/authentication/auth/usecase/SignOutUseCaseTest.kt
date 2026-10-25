@@ -13,6 +13,7 @@ import com.passbolt.mobile.android.domain.auth.SessionRepository
 import com.passbolt.mobile.android.domain.auth.model.ServerSignOutStatus
 import com.passbolt.mobile.android.domain.auth.usecase.GetSessionUseCase
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.RemovePermissionsSnapshotUseCase
+import com.passbolt.mobile.android.domain.secrets.usecase.offline.ClearOfflineSecretsUseCase
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -54,6 +55,7 @@ class SignOutUseCaseTest {
     private val sessionRepository = mock<SessionRepository>()
     private val signOutIdlingResource = mock<SignOutIdlingResource>()
     private val runtimeAuthenticatedFlag = RuntimeAuthenticatedFlag()
+    private val clearOfflineSecretsUseCase = mock<ClearOfflineSecretsUseCase>()
 
     private val useCase =
         SignOutUseCase(
@@ -66,6 +68,7 @@ class SignOutUseCaseTest {
             sessionRepository = sessionRepository,
             signOutIdlingResource = signOutIdlingResource,
             runtimeAuthenticatedFlag = runtimeAuthenticatedFlag,
+            clearOfflineSecretsUseCase = clearOfflineSecretsUseCase,
         )
 
     @Test

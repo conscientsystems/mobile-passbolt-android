@@ -24,6 +24,7 @@
 package com.passbolt.mobile.android.commontest.session
 
 import com.passbolt.mobile.android.core.passphrasememorycache.PassphraseMemoryCache
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import com.passbolt.mobile.android.feature.authentication.auth.usecase.GetSessionExpiryUseCase
 import org.koin.dsl.module
 import org.mockito.Mockito.mock
@@ -51,4 +52,6 @@ val validSessionTestModule =
             whenever(mockPassphraseMemoryCache.getSessionDurationSeconds()).thenReturn(VALID_SESSION_DURATION_SECONDS)
             mockPassphraseMemoryCache
         }
+        // offline mode: the runner checks it before touching the session
+        single { OfflineSessionState() }
     }

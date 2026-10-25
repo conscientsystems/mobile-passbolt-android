@@ -27,8 +27,12 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.passbolt.mobile.android.commontest.TestCoroutineLaunchContext
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
 import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GroupsInteractor
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.GetPermissionsSnapshotUseCase
+import com.passbolt.mobile.android.domain.resources.share.GroupMembershipInteractor
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUsersUseCase
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoBack
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.Initialize
@@ -76,6 +80,10 @@ class GroupMembersViewModelTest : KoinTest {
                     module {
                         single { mock<GetGroupWithUsersUseCase>() }
                         single { mock<GetPermissionsSnapshotUseCase>() }
+                        single { mock(GroupMembershipInteractor::class.java) }
+                        single { mock(GroupsInteractor::class.java) }
+                        single { mock(GetLocalUsersUseCase::class.java) }
+                        single { mock(GetSelectedAccountDataUseCase::class.java) }
                         singleOf(::TestCoroutineLaunchContext) bind CoroutineLaunchContext::class
                         factoryOf(::GroupMembersViewModel)
                     },

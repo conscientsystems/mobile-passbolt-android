@@ -14,6 +14,7 @@ import com.passbolt.mobile.android.domain.resources.usecase.CreatePermissionsCon
 import com.passbolt.mobile.android.domain.resources.usecase.EditPermissionsConfirmationInteractor
 import com.passbolt.mobile.android.domain.resources.usecase.GetDefaultCreateContentTypeUseCase
 import com.passbolt.mobile.android.domain.resourcetypes.usecase.ResourceTypeIdToSlugMappingProvider
+import com.passbolt.mobile.android.domain.secrets.offline.OfflineSessionState
 import com.passbolt.mobile.android.jsonmodel.JSON_MODEL_GSON
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathJsonPathOps
 import com.passbolt.mobile.android.jsonmodel.jsonpathops.JsonPathsOps
@@ -43,6 +44,7 @@ internal val testScanOtpSuccessModule =
         single { mockEditPermissionsConfirmationInteractor }
         single { mockCreatePermissionsConfirmationInteractor }
         singleOf(::SessionRefreshTrackingFlow)
+        singleOf(::OfflineSessionState)
         factory { params ->
             ScanOtpSuccessViewModel(
                 scannedTotp = params.get(),
