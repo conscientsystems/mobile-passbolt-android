@@ -23,20 +23,30 @@
 
 package com.passbolt.mobile.android.groupdetails.groupmembers
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -47,13 +57,22 @@ import com.passbolt.mobile.android.core.compose.PassboltTheme
 import com.passbolt.mobile.android.core.compose.SideEffectDispatcher
 import com.passbolt.mobile.android.core.navigation.compose.AppNavigator
 import com.passbolt.mobile.android.core.navigation.compose.keys.GroupDetailsNavigationKey.GroupMemberDetails
+import com.passbolt.mobile.android.core.ui.fab.AddFloatingActionButton
+import com.passbolt.mobile.android.core.ui.progressdialog.ProgressDialog
 import com.passbolt.mobile.android.core.ui.topbar.BackNavigationIcon
 import com.passbolt.mobile.android.core.ui.topbar.TitleAppBar
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.AddMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.ConfirmRemoveMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.DismissAddMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.DismissRemoveMember
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoBack
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.Initialize
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.OpenAddMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.RequestRemoveMember
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateUp
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.ShowMessage
 import com.passbolt.mobile.android.ui.GpgKeyUiModel
 import com.passbolt.mobile.android.ui.UserProfileUiModel
 import com.passbolt.mobile.android.ui.UserUiModel
@@ -72,6 +91,7 @@ internal fun GroupMembersScreen(
     navigator: AppNavigator = koinInject(),
 ) {
     val state = viewModel.viewState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     LaunchedEffect(groupId) {
         viewModel.onIntent(Initialize(groupId, fromSnapshot))
@@ -87,12 +107,82 @@ internal fun GroupMembersScreen(
         when (it) {
             NavigateUp -> navigator.navigateBack()
             is NavigateToMemberDetails -> navigator.navigateToKey(GroupMemberDetails(it.userId, it.fromSnapshot))
+            is ShowMessage ->
+                Toast
+                    .makeText(
+                        context,
+                        context.getString(
+                            when (it.type) {
+                                MembershipMessage.MEMBER_ADDED -> LocalizationR.string.group_member_added
+                                MembershipMessage.MEMBER_REMOVED -> LocalizationR.string.group_member_removed
+                                MembershipMessage.FAILED -> LocalizationR.string.group_member_change_failed
+                            },
+                        ),
+                        Toast.LENGTH_LONG,
+                    ).show()
         }
     }
 }
 
 @Composable
 private fun GroupMembersContent(
+    state: GroupMembersState,
+    onIntent: (GroupMembersIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        GroupMembersList(state = state, onIntent = onIntent)
+        if (state.canManage) {
+            AddFloatingActionButton(
+                onClick = { onIntent(OpenAddMember) },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+            )
+        }
+    }
+    state.addableUsers?.let { users ->
+        AlertDialog(
+            onDismissRequest = { onIntent(DismissAddMember) },
+            title = { Text(stringResource(LocalizationR.string.group_member_add)) },
+            text = {
+                LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
+                    items(items = users, key = { it.id }) { user ->
+                        Text(
+                            text = "${user.fullName} (${user.userName})",
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onIntent(AddMember(user.id)) }
+                                    .padding(vertical = 12.dp),
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { onIntent(DismissAddMember) }) { Text(stringResource(LocalizationR.string.cancel)) } },
+        )
+    }
+    state.memberToRemove?.let { member ->
+        AlertDialog(
+            onDismissRequest = { onIntent(DismissRemoveMember) },
+            title = { Text(stringResource(LocalizationR.string.group_member_remove)) },
+            text = {
+                Text(
+                    stringResource(
+                        LocalizationR.string.group_member_remove_confirm,
+                        member.fullName,
+                        state.groupName,
+                    ),
+                )
+            },
+            confirmButton = { TextButton(onClick = { onIntent(ConfirmRemoveMember) }) { Text(stringResource(LocalizationR.string.group_member_remove)) } },
+            dismissButton = { TextButton(onClick = { onIntent(DismissRemoveMember) }) { Text(stringResource(LocalizationR.string.cancel)) } },
+        )
+    }
+    ProgressDialog(isVisible = state.isWorking)
+}
+
+@Composable
+private fun GroupMembersList(
     state: GroupMembersState,
     onIntent: (GroupMembersIntent) -> Unit,
     modifier: Modifier = Modifier,
@@ -135,11 +225,21 @@ private fun GroupMembersContent(
                 items = state.members,
                 key = { it.id },
             ) { member ->
-                GroupMemberItem(
-                    member = member,
-                    onClick = { onIntent(GoToMemberDetails(member.id)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    GroupMemberItem(
+                        member = member,
+                        onClick = { onIntent(GoToMemberDetails(member.id)) },
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (state.canManage) {
+                        IconButton(onClick = { onIntent(RequestRemoveMember(member)) }) {
+                            Icon(
+                                painter = painterResource(CoreUiR.drawable.ic_trash),
+                                contentDescription = stringResource(LocalizationR.string.group_member_remove),
+                            )
+                        }
+                    }
+                }
             }
         }
     }

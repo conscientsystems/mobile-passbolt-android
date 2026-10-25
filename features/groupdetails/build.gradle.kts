@@ -15,6 +15,8 @@ dependencies {
     implementation(project(":authentication"))
     implementation(project(":coreui"))
     implementation(project(":groups-domain"))
+    implementation(project(":resources-domain"))
+    implementation(project(":accounts-domain"))
     implementation(project(":users-domain"))
     implementation(project(":permissionsconfirmation-domain"))
     implementation(project(":localization"))

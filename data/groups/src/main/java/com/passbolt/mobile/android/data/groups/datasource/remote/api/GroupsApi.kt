@@ -23,9 +23,13 @@
 
 package com.passbolt.mobile.android.data.groups.datasource.remote.api
 
+import com.google.gson.JsonObject
 import com.passbolt.mobile.android.dto.response.BaseResponse
 import com.passbolt.mobile.android.dto.response.GroupsResponseDto
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 internal interface GroupsApi {
@@ -35,8 +39,30 @@ internal interface GroupsApi {
         @Query(QUERY_HAS_ID) hasIds: List<String>? = null,
     ): BaseResponse<List<GroupsResponseDto>>
 
+    @GET(GROUP_BY_ID)
+    suspend fun getGroup(
+        @Path(PATH_GROUP_ID) groupId: String,
+        @Query(QUERY_CONTAIN_GROUPS_USERS) containingGroupsUsers: Int = 1,
+    ): BaseResponse<JsonObject>
+
+    @PUT(GROUP_UPDATE_DRY_RUN)
+    suspend fun updateGroupDryRun(
+        @Path(PATH_GROUP_ID) groupId: String,
+        @Body body: JsonObject,
+    ): BaseResponse<JsonObject>
+
+    @PUT(GROUP_BY_ID)
+    suspend fun updateGroup(
+        @Path(PATH_GROUP_ID) groupId: String,
+        @Body body: JsonObject,
+    ): BaseResponse<JsonObject>
+
     private companion object {
         private const val GROUPS = "groups.json"
+        private const val PATH_GROUP_ID = "groupId"
+        private const val GROUP_BY_ID = "groups/{$PATH_GROUP_ID}.json"
+        private const val GROUP_UPDATE_DRY_RUN = "groups/{$PATH_GROUP_ID}/dry-run.json"
+        private const val QUERY_CONTAIN_GROUPS_USERS = "contain[groups_users]"
 
         private const val QUERY_CONTAIN_USER = "contain[user]"
         private const val QUERY_HAS_ID = "filter[has-id][]"

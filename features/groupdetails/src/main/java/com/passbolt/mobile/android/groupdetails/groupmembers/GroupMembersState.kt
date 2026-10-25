@@ -28,4 +28,10 @@ import com.passbolt.mobile.android.ui.UserUiModel
 data class GroupMembersState(
     val groupName: String = "",
     val members: List<UserUiModel> = emptyList(),
+    // the current user is a manager of this group (not shown for a permissions snapshot)
+    val canManage: Boolean = false,
+    // non-null while the "add member" picker is open
+    val addableUsers: List<UserUiModel>? = null,
+    val memberToRemove: UserUiModel? = null,
+    val isWorking: Boolean = false,
 )

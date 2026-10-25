@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":entity"))
     implementation(project(":users-domain"))
 
+    implementation(libs.gson)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.kotlin.coroutines)

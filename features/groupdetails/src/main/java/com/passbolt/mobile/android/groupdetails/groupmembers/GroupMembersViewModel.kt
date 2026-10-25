@@ -26,29 +26,48 @@ package com.passbolt.mobile.android.groupdetails.groupmembers
 import androidx.lifecycle.viewModelScope
 import com.passbolt.mobile.android.core.compose.SideEffectViewModel
 import com.passbolt.mobile.android.core.mvp.coroutinecontext.CoroutineLaunchContext
+import com.passbolt.mobile.android.domain.accounts.usecase.GetSelectedAccountDataUseCase
+import com.passbolt.mobile.android.domain.groups.usecase.GroupsInteractor
 import com.passbolt.mobile.android.domain.groups.usecase.GetGroupWithUsersUseCase
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.GetPermissionsSnapshotUseCase
+import com.passbolt.mobile.android.domain.resources.share.GroupMembershipInteractor
+import com.passbolt.mobile.android.domain.users.usecase.GetLocalUsersUseCase
+import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.domain.users.mapper.toUserModel
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.AddMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.ConfirmRemoveMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.DismissAddMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.DismissRemoveMember
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoBack
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.GoToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.Initialize
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.OpenAddMember
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersIntent.RequestRemoveMember
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateToMemberDetails
 import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.NavigateUp
+import com.passbolt.mobile.android.groupdetails.groupmembers.GroupMembersSideEffect.ShowMessage
 import com.passbolt.mobile.android.ui.PermissionModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 internal class GroupMembersViewModel(
     private val getGroupWithUsersUseCase: GetGroupWithUsersUseCase,
     private val getPermissionsSnapshotUseCase: GetPermissionsSnapshotUseCase,
     private val coroutineLaunchContext: CoroutineLaunchContext,
+    private val groupMembershipInteractor: GroupMembershipInteractor,
+    private val groupsInteractor: GroupsInteractor,
+    private val getLocalUsersUseCase: GetLocalUsersUseCase,
+    private val getSelectedAccountDataUseCase: GetSelectedAccountDataUseCase,
 ) : SideEffectViewModel<GroupMembersState, GroupMembersSideEffect>(GroupMembersState()) {
     private var fromSnapshot = false
+    private var groupId: String? = null
 
     fun onIntent(intent: GroupMembersIntent) {
         when (intent) {
             GoBack -> emitSideEffect(NavigateUp)
             is Initialize -> {
                 fromSnapshot = intent.fromSnapshot
+                groupId = intent.groupId
                 if (intent.fromSnapshot) {
                     loadSnapshotGroupMembers(intent.groupId)
                 } else {
@@ -56,6 +75,56 @@ internal class GroupMembersViewModel(
                 }
             }
             is GoToMemberDetails -> emitSideEffect(NavigateToMemberDetails(intent.userId, fromSnapshot))
+            OpenAddMember -> openAddMember()
+            is AddMember -> changeMembership { id -> groupMembershipInteractor.addMember(id, intent.userId, isManager = false) }
+            DismissAddMember -> updateViewState { copy(addableUsers = null) }
+            is RequestRemoveMember -> updateViewState { copy(memberToRemove = intent.member) }
+            ConfirmRemoveMember -> {
+                val member = viewState.value.memberToRemove ?: return
+                changeMembership { id -> groupMembershipInteractor.removeMember(id, member.id) }
+            }
+            DismissRemoveMember -> updateViewState { copy(memberToRemove = null) }
+        }
+    }
+
+    private fun openAddMember() {
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            val memberIds = viewState.value.members.map { it.id }.toSet()
+            val users =
+                getLocalUsersUseCase
+                    .execute(GetLocalUsersUseCase.Input())
+                    .users
+                    .filter { it.id !in memberIds && !it.disabled }
+            updateViewState { copy(addableUsers = users) }
+        }
+    }
+
+    private fun changeMembership(change: suspend (groupId: String) -> GroupMembershipInteractor.Output) {
+        val id = groupId ?: return
+        val isAdding = viewState.value.memberToRemove == null
+        updateViewState { copy(addableUsers = null, memberToRemove = null, isWorking = true) }
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            val result = runAuthenticatedOperation { change(id) }
+            if (result is GroupMembershipInteractor.Output.Success) {
+                runAuthenticatedOperation { groupsInteractor.fetchAndSaveGroups() }
+                emitSideEffect(ShowMessage(if (isAdding) MembershipMessage.MEMBER_ADDED else MembershipMessage.MEMBER_REMOVED))
+            } else {
+                Timber.e("Group membership change failed: $result")
+                emitSideEffect(ShowMessage(MembershipMessage.FAILED))
+            }
+            updateViewState { copy(isWorking = false) }
+            loadGroupMembers(id)
+        }
+    }
+
+    private fun loadManagerFlag(groupId: String) {
+        viewModelScope.launch(coroutineLaunchContext.io) {
+            val myServerId = getSelectedAccountDataUseCase.execute(Unit).serverId
+            val output = runAuthenticatedOperation { groupMembershipInteractor.getMembership(groupId) }
+            val isManager =
+                output is GroupMembershipInteractor.Output.Membership &&
+                    output.membership.members.any { it.userId == myServerId && it.isManager }
+            updateViewState { copy(canManage = isManager) }
         }
     }
 
@@ -87,6 +156,9 @@ internal class GroupMembersViewModel(
     }
 
     private fun loadGroupMembers(groupId: String) {
+        if (!fromSnapshot) {
+            loadManagerFlag(groupId)
+        }
         viewModelScope.launch(coroutineLaunchContext.io) {
             val result = getGroupWithUsersUseCase.execute(GetGroupWithUsersUseCase.Input(groupId))
             updateViewState {

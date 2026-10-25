@@ -23,6 +23,8 @@
 
 package com.passbolt.mobile.android.groupdetails.groupmembers
 
+import com.passbolt.mobile.android.ui.UserUiModel
+
 internal sealed interface GroupMembersIntent {
     data object GoBack : GroupMembersIntent
 
@@ -34,4 +36,20 @@ internal sealed interface GroupMembersIntent {
     data class GoToMemberDetails(
         val userId: String,
     ) : GroupMembersIntent
+
+    data object OpenAddMember : GroupMembersIntent
+
+    data class AddMember(
+        val userId: String,
+    ) : GroupMembersIntent
+
+    data object DismissAddMember : GroupMembersIntent
+
+    data class RequestRemoveMember(
+        val member: UserUiModel,
+    ) : GroupMembersIntent
+
+    data object ConfirmRemoveMember : GroupMembersIntent
+
+    data object DismissRemoveMember : GroupMembersIntent
 }

@@ -30,4 +30,14 @@ internal sealed interface GroupMembersSideEffect {
         val userId: String,
         val fromSnapshot: Boolean = false,
     ) : GroupMembersSideEffect
+
+    data class ShowMessage(
+        val type: MembershipMessage,
+    ) : GroupMembersSideEffect
+}
+
+internal enum class MembershipMessage {
+    MEMBER_ADDED,
+    MEMBER_REMOVED,
+    FAILED,
 }

@@ -24,10 +24,27 @@
 package com.passbolt.mobile.android.domain.groups.datasource
 
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
+import com.passbolt.mobile.android.domain.groups.model.GroupMemberChange
+import com.passbolt.mobile.android.domain.groups.model.GroupMembership
+import com.passbolt.mobile.android.domain.groups.model.GroupSecret
+import com.passbolt.mobile.android.domain.groups.model.GroupUpdateDryRun
 import com.passbolt.mobile.android.domain.groups.model.GroupWithMembers
 
 interface GroupsRemoteDataSource {
     suspend fun getGroups(): DomainResult<List<GroupWithMembers>>
 
     suspend fun getGroupsByIds(groupIds: List<String>): DomainResult<List<GroupWithMembers>>
+
+    suspend fun getGroupMembership(groupId: String): DomainResult<GroupMembership>
+
+    suspend fun updateGroupDryRun(
+        membership: GroupMembership,
+        changes: List<GroupMemberChange>,
+    ): DomainResult<GroupUpdateDryRun>
+
+    suspend fun updateGroup(
+        membership: GroupMembership,
+        changes: List<GroupMemberChange>,
+        secrets: List<GroupSecret>,
+    ): DomainResult<Unit>
 }

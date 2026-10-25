@@ -613,6 +613,12 @@
     <string name="user_permission_delete">Delete permission</string>
 
     <string name="group_members_title">Group members</string>
+    <string name="group_member_add">Add member</string>
+    <string name="group_member_remove">Remove from group</string>
+    <string name="group_member_remove_confirm">Remove %1$s from %2$s? They lose access to everything shared with the group.</string>
+    <string name="group_member_added">Member added - the group\'s entries were shared with them</string>
+    <string name="group_member_removed">Member removed</string>
+    <string name="group_member_change_failed">The group could not be updated</string>
 
     <string name="group_member_details_group_member">Group member</string>
 
