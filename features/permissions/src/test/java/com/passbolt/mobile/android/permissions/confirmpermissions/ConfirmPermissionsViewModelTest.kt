@@ -38,6 +38,7 @@ import com.passbolt.mobile.android.domain.metadata.interactor.MetadataPrivateKey
 import com.passbolt.mobile.android.domain.permissionsconfirmation.model.PermissionsSnapshot
 import com.passbolt.mobile.android.domain.permissionsconfirmation.usecase.GetPermissionsSnapshotUseCase
 import com.passbolt.mobile.android.domain.resources.actions.ResourceShareActionsInteractor
+import com.passbolt.mobile.android.domain.resources.share.FolderShareWithContentInteractor
 import com.passbolt.mobile.android.domain.resources.actions.ShareActionResult
 import com.passbolt.mobile.android.domain.resources.usecase.CreatePermissionsSnapshotInteractor
 import com.passbolt.mobile.android.domain.users.model.GpgKey
@@ -109,6 +110,7 @@ class ConfirmPermissionsViewModelTest : KoinTest {
                 module {
                     single { mock<CreatePermissionsSnapshotInteractor>() }
                     single { mock<ResourceShareActionsInteractor>() }
+                    single { mock<FolderShareWithContentInteractor>() }
                     single { mock<MetadataPrivateKeysHelperInteractor>() }
                     single { mock<GetPermissionsSnapshotUseCase>() }
                     single { mock<GetGroupWithUsersUseCase>() }
@@ -126,6 +128,7 @@ class ConfirmPermissionsViewModelTest : KoinTest {
                             driftedEntityNames = params.getOrNull(),
                             createPermissionsSnapshotInteractor = get(),
                             resourceShareActionsInteractor = get(),
+                            folderShareWithContentInteractor = get(),
                             metadataPrivateKeysHelperInteractor = get(),
                             getPermissionsSnapshotUseCase = get(),
                             getGroupWithUsersUseCase = get(),
