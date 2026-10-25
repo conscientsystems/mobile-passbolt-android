@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.data.folders.datasource.remote
 
+import com.google.gson.JsonNull
 import com.passbolt.mobile.android.core.architecture.result.DomainResult
 import com.passbolt.mobile.android.core.architecture.result.map
 import com.passbolt.mobile.android.core.networking.ResponseHandler
@@ -66,7 +67,7 @@ internal class FoldersRemoteDataSourceImpl(
         folderParentId: String?,
     ): DomainResult<Unit> =
         callWithHandler(responseHandler) {
-            foldersApi.moveResource(resourceId, MoveRequestDto(folderParentId)).body
+            foldersApi.moveResource(resourceId, MoveRequestDto(folderParentId)).body ?: JsonNull.INSTANCE
         }.toDomainResult()
             .map { }
 
