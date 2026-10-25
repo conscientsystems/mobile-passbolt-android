@@ -35,6 +35,7 @@ import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
+import com.passbolt.mobile.android.ui.ResourceUiModel
 import com.passbolt.mobile.android.ui.TrustedKeyDeletedModel
 import com.passbolt.mobile.android.ui.contentType
 import kotlinx.coroutines.flow.single
@@ -56,11 +57,14 @@ class ResourceShareActionsInteractor(
             ?: reEncryptV5MetadataWithSharedKey(resourceId)
             ?: applyConfirmedShare(resourceId, confirmedPermissions)
 
+    // v4 has no metadata; a v5 entry already on the shared key needs no re-encryption
+    // (it would only rewrite the resource - one extra request per entry of a shared folder)
+    private fun needsSharedKeyReEncryption(resource: ResourceUiModel) =
+        resource.contentType().isV5() && resource.metadataKeyType != MetadataKeyTypeModel.SHARED
+
     private suspend fun reEncryptV5MetadataWithSharedKey(resourceId: String): ShareActionResult? {
         val resource = getLocalResourceUseCase.execute(GetLocalResourceUseCase.Input(resourceId)).resource
-        // v4 has no metadata; a v5 entry already on the shared key needs no re-encryption
-        // (it would only rewrite the resource - one extra request per entry of a shared folder)
-        if (!resource.contentType().isV5() || resource.metadataKeyType == MetadataKeyTypeModel.SHARED) {
+        if (!needsSharedKeyReEncryption(resource)) {
             return null
         }
         Timber.d("Re-encrypting the v5 resource metadata with a shared key before the share")
