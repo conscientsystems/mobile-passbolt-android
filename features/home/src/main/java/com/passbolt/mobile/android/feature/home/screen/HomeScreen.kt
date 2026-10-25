@@ -243,6 +243,7 @@ internal fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("CyclomaticComplexMethod")
 fun HomeScreen(
     state: HomeState,
     onIntent: (HomeIntent) -> Unit,

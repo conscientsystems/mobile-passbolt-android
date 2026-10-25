@@ -56,6 +56,7 @@ class MoveResourceInteractor(
     private val getLocalCurrentUserUseCase: GetLocalCurrentUserUseCase,
     private val usersModelMapper: UsersModelMapper,
 ) {
+    @Suppress("ReturnCount")
     suspend fun move(
         resourceId: String,
         destinationFolderId: String?,

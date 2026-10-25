@@ -158,7 +158,11 @@ private fun GroupMembersContent(
                 }
             },
             confirmButton = {},
-            dismissButton = { TextButton(onClick = { onIntent(DismissAddMember) }) { Text(stringResource(LocalizationR.string.cancel)) } },
+            dismissButton = {
+                TextButton(onClick = { onIntent(DismissAddMember) }) {
+                    Text(stringResource(LocalizationR.string.cancel))
+                }
+            },
         )
     }
     state.memberToRemove?.let { member ->
@@ -174,8 +178,16 @@ private fun GroupMembersContent(
                     ),
                 )
             },
-            confirmButton = { TextButton(onClick = { onIntent(ConfirmRemoveMember) }) { Text(stringResource(LocalizationR.string.group_member_remove)) } },
-            dismissButton = { TextButton(onClick = { onIntent(DismissRemoveMember) }) { Text(stringResource(LocalizationR.string.cancel)) } },
+            confirmButton = {
+                TextButton(onClick = { onIntent(ConfirmRemoveMember) }) {
+                    Text(stringResource(LocalizationR.string.group_member_remove))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(DismissRemoveMember) }) {
+                    Text(stringResource(LocalizationR.string.cancel))
+                }
+            },
         )
     }
     ProgressDialog(isVisible = state.isWorking)

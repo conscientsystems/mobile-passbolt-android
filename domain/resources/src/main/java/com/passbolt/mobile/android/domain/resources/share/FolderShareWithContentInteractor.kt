@@ -23,7 +23,6 @@
 
 package com.passbolt.mobile.android.domain.resources.share
 
-import com.passbolt.mobile.android.domain.folders.usecase.GetLocalFolderDetailsUseCase
 import com.passbolt.mobile.android.domain.folders.usecase.GetLocalSubFoldersForFolderUseCase
 import com.passbolt.mobile.android.domain.permissionsconfirmation.mapper.toEditModePermissions
 import com.passbolt.mobile.android.domain.resources.actions.ResourceShareActionsInteractor
@@ -52,7 +51,6 @@ class FolderShareWithContentInteractor(
     private val createPermissionsSnapshotInteractor: CreatePermissionsSnapshotInteractor,
     private val shareFolderUseCase: ShareFolderUseCase,
     private val sharePermissionsModelMapper: SharePermissionsModelMapper,
-    private val getLocalFolderDetailsUseCase: GetLocalFolderDetailsUseCase,
     private val getLocalSubFoldersForFolderUseCase: GetLocalSubFoldersForFolderUseCase,
     private val getLocalResourcesUseCase: GetLocalResourcesUseCase,
     private val resourceShareActionsInteractor: ResourceShareActionsInteractor,

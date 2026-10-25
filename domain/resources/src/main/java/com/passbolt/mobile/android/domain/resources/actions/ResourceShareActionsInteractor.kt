@@ -58,12 +58,9 @@ class ResourceShareActionsInteractor(
 
     private suspend fun reEncryptV5MetadataWithSharedKey(resourceId: String): ShareActionResult? {
         val resource = getLocalResourceUseCase.execute(GetLocalResourceUseCase.Input(resourceId)).resource
-        if (!resource.contentType().isV5()) {
-            return null
-        }
-        if (resource.metadataKeyType == MetadataKeyTypeModel.SHARED) {
-            // already encrypted with the shared key - re-encrypting would only rewrite the
-            // resource (one extra request per entry when a whole folder is shared)
+        // v4 has no metadata; a v5 entry already on the shared key needs no re-encryption
+        // (it would only rewrite the resource - one extra request per entry of a shared folder)
+        if (!resource.contentType().isV5() || resource.metadataKeyType == MetadataKeyTypeModel.SHARED) {
             return null
         }
         Timber.d("Re-encrypting the v5 resource metadata with a shared key before the share")

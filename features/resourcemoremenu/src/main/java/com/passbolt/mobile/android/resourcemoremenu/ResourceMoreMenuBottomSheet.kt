@@ -86,6 +86,7 @@ import com.passbolt.mobile.android.core.localization.R as LocalizationR
 import com.passbolt.mobile.android.core.ui.R as CoreUiR
 
 @Composable
+@Suppress("CyclomaticComplexMethod")
 fun ResourceMoreMenuBottomSheet(
     resourceId: String,
     resourceName: String,

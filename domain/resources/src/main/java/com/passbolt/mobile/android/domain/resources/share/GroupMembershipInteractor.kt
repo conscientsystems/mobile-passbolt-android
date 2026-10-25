@@ -78,6 +78,7 @@ class GroupMembershipInteractor(
         }
     }
 
+    @Suppress("ReturnCount")
     suspend fun addMember(
         groupId: String,
         userId: String,

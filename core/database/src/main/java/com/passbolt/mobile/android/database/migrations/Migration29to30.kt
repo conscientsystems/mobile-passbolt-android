@@ -4,6 +4,7 @@ import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 
+@Suppress("MagicNumber")
 object Migration29to30 : Migration(29, 30) {
     private const val CREATE_OFFLINE_ITEM =
         "CREATE TABLE IF NOT EXISTS `OfflineItem` (" +
