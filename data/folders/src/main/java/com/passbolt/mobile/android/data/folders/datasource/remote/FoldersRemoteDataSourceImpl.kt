@@ -68,6 +68,7 @@ internal class FoldersRemoteDataSourceImpl(
         callWithHandler(responseHandler) {
             foldersApi.moveResource(resourceId, MoveRequestDto(folderParentId)).body
         }.toDomainResult()
+            .map { }
 
     override suspend fun getFolderPermissions(folderId: String): DomainResult<List<PermissionModel>> =
         callWithHandler(responseHandler) { foldersApi.getFolder(folderId).body }

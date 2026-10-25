@@ -83,27 +83,7 @@ internal class GroupsRemoteDataSourceImpl(
         callWithHandler(responseHandler) {
             groupsApi.updateGroupDryRun(membership.groupId, updateBody(membership, changes, emptyList())).body
         }.toDomainResult()
-            .map { body ->
-                // API >= 2.14 answers {secrets, needed_secrets}; older ones wrap a v1 format in "dry-run"
-                val secrets = body.getAsJsonArray("secrets") ?: JsonArray()
-                val needed = body.getAsJsonArray("needed_secrets") ?: JsonArray()
-                GroupUpdateDryRun(
-                    secrets =
-                        secrets.map {
-                            val secret = it.asJsonObject
-                            GroupSecret(
-                                resourceId = secret.get("resource_id").asString,
-                                userId = secret.get("user_id").asString,
-                                data = secret.get("data").asString,
-                            )
-                        },
-                    neededSecrets =
-                        needed.map {
-                            val secret = it.asJsonObject
-                            secret.get("resource_id").asString to secret.get("user_id").asString
-                        },
-                )
-            }
+            .map { body -> parseDryRun(body) }
 
     override suspend fun updateGroup(
         membership: GroupMembership,
@@ -114,6 +94,46 @@ internal class GroupsRemoteDataSourceImpl(
             groupsApi.updateGroup(membership.groupId, updateBody(membership, changes, secrets)).body
         }.toDomainResult()
             .map { }
+
+    /**
+     * The server answers in the legacy (v1) shape:
+     * {"dry-run": {"SecretsNeeded": [{"Secret": {resource_id, user_id}}], "Secrets": [{"Secret": [{..., data}]}]}}
+     * Newer APIs may answer {secrets, needed_secrets} - both are read (as the browser extension does).
+     */
+    private fun parseDryRun(body: JsonObject): GroupUpdateDryRun {
+        val legacy = body.getAsJsonObject("dry-run")
+        val secrets: List<JsonObject>
+        val needed: List<JsonObject>
+        if (legacy != null) {
+            secrets =
+                (legacy.getAsJsonArray("Secrets") ?: JsonArray()).mapNotNull { wrapper ->
+                    val inner = wrapper.asJsonObject.get("Secret")
+                    when {
+                        inner == null -> null
+                        inner.isJsonArray -> inner.asJsonArray.firstOrNull()?.asJsonObject
+                        else -> inner.asJsonObject
+                    }
+                }
+            needed =
+                (legacy.getAsJsonArray("SecretsNeeded") ?: JsonArray()).mapNotNull { wrapper ->
+                    wrapper.asJsonObject.getAsJsonObject("Secret")
+                }
+        } else {
+            secrets = (body.getAsJsonArray("secrets") ?: JsonArray()).map { it.asJsonObject }
+            needed = (body.getAsJsonArray("needed_secrets") ?: JsonArray()).map { it.asJsonObject }
+        }
+        return GroupUpdateDryRun(
+            secrets =
+                secrets.map { secret ->
+                    GroupSecret(
+                        resourceId = secret.get("resource_id").asString,
+                        userId = secret.get("user_id").asString,
+                        data = secret.get("data").asString,
+                    )
+                },
+            neededSecrets = needed.map { it.get("resource_id").asString to it.get("user_id").asString },
+        )
+    }
 
     // only the changed memberships are sent, like the browser extension does
     private fun updateBody(

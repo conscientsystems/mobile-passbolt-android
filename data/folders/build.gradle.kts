@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":mappers"))
     implementation(project(":uimodel"))
 
+    implementation(libs.gson)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin)
     implementation(libs.kotlin.coroutines)

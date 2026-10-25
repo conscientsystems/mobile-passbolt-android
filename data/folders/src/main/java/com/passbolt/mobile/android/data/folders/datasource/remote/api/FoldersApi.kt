@@ -23,6 +23,7 @@
 
 package com.passbolt.mobile.android.data.folders.datasource.remote.api
 
+import com.google.gson.JsonElement
 import com.passbolt.mobile.android.dto.request.CreateFolderRequestDto
 import com.passbolt.mobile.android.dto.request.MoveRequestDto
 import com.passbolt.mobile.android.dto.response.BasePaginatedResponse
@@ -73,7 +74,8 @@ internal interface FoldersApi {
     suspend fun moveResource(
         @Path(PATH_RESOURCE_ID) resourceId: String,
         @Body request: MoveRequestDto,
-    ): BaseResponse<Unit>
+        // the moved resource - not used, the next data refresh brings it
+    ): BaseResponse<JsonElement?>
 
     private companion object {
         private const val FOLDERS = "folders.json"
