@@ -40,7 +40,9 @@ import com.passbolt.mobile.android.jsonmodel.jsonModelModule
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.PasswordAndDescription
 import com.passbolt.mobile.android.supportedresourceTypes.ContentType.V5Default
 import com.passbolt.mobile.android.ui.MetadataJsonModel
+import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
 import com.passbolt.mobile.android.ui.MetadataKeyTypeModel.PERSONAL
+import com.passbolt.mobile.android.ui.MetadataKeyTypeModel.SHARED
 import com.passbolt.mobile.android.ui.PermissionModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.ResourcePermission
@@ -190,6 +192,17 @@ class ResourceShareActionsInteractorTest : KoinTest {
         }
 
     @Test
+    fun `v5 resource already on the shared key is shared without re-encrypting the metadata`() =
+        runTest {
+            stubV5Resource(SHARED)
+
+            val result = get<ResourceShareActionsInteractor>().shareWithConfirmedPermissions(RESOURCE_ID, listOf(OPERATOR_UI))
+
+            assertThat(result).isEqualTo(ShareActionResult.Success)
+            verifyNoInteractions(get<ResourceUpdateActionsInteractor>())
+        }
+
+    @Test
     fun `v5 metadata re-encryption failure stops before the share`() =
         runTest {
             stubV5Resource()
@@ -230,10 +243,10 @@ class ResourceShareActionsInteractorTest : KoinTest {
             assertThat(result).isEqualTo(ShareActionResult.ShareFailure(FAILURE.displayMessage()))
         }
 
-    private fun stubV5Resource() {
+    private fun stubV5Resource(keyType: MetadataKeyTypeModel = PERSONAL) {
         get<GetLocalResourceUseCase>().stub {
             on { execute(GetLocalResourceUseCase.Input(RESOURCE_ID)) } doReturn
-                GetLocalResourceUseCase.Output(resourceModel(V5Default.slug))
+                GetLocalResourceUseCase.Output(resourceModel(V5Default.slug, keyType))
         }
     }
 
@@ -260,7 +273,10 @@ class ResourceShareActionsInteractorTest : KoinTest {
                 created = ZonedDateTime.now(),
             )
 
-        private fun resourceModel(slug: String) =
+        private fun resourceModel(
+            slug: String,
+            keyType: MetadataKeyTypeModel = PERSONAL,
+        ) =
             ResourceUiModel(
                 resourceId = RESOURCE_ID,
                 resourceTypeId = UUID.randomUUID().toString(),
@@ -271,7 +287,7 @@ class ResourceShareActionsInteractorTest : KoinTest {
                 modified = ZonedDateTime.now(),
                 expiry = null,
                 metadataKeyId = null,
-                metadataKeyType = PERSONAL,
+                metadataKeyType = keyType,
                 metadataJsonModel = MetadataJsonModel("""{"name": "Test"}"""),
             )
 

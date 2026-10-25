@@ -32,6 +32,7 @@ import com.passbolt.mobile.android.domain.resources.usecase.ResourceShareInterac
 import com.passbolt.mobile.android.domain.resources.usecase.db.GetLocalResourceUseCase
 import com.passbolt.mobile.android.feature.authentication.session.runAuthenticatedOperation
 import com.passbolt.mobile.android.serializers.jsonschema.SchemaEntity
+import com.passbolt.mobile.android.ui.MetadataKeyTypeModel
 import com.passbolt.mobile.android.ui.NewMetadataKeyToTrustModel
 import com.passbolt.mobile.android.ui.PermissionModelUi
 import com.passbolt.mobile.android.ui.TrustedKeyDeletedModel
@@ -58,6 +59,11 @@ class ResourceShareActionsInteractor(
     private suspend fun reEncryptV5MetadataWithSharedKey(resourceId: String): ShareActionResult? {
         val resource = getLocalResourceUseCase.execute(GetLocalResourceUseCase.Input(resourceId)).resource
         if (!resource.contentType().isV5()) {
+            return null
+        }
+        if (resource.metadataKeyType == MetadataKeyTypeModel.SHARED) {
+            // already encrypted with the shared key - re-encrypting would only rewrite the
+            // resource (one extra request per entry when a whole folder is shared)
             return null
         }
         Timber.d("Re-encrypting the v5 resource metadata with a shared key before the share")
